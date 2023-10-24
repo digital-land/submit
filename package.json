@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "standard",
-    "start": "node index.js"
+    "start": "node index.js",
+    "nodemon": "nodemon index.js"
   },
   "engines": {
     "node": ">=18.0.0 <20.0.0"
@@ -14,11 +15,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "nodemon": "^3.0.1",
     "standard": "^17.1.0"
   },
   "dependencies": {
     "express": "^4.18.2",
     "govuk-frontend": "^4.7.0",
     "nunjucks": "^3.2.4"
+  },
+  "nodemonConfig": {
+    "ignore": ["**/test/**", "**/docs/**"],
+    "ext": "html js css"
   }
 }
