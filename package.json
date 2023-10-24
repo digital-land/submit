@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
     "lint": "standard",
     "start": "node index.js",
     "nodemon": "nodemon index.js"
@@ -16,7 +16,8 @@
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^3.0.1",
-    "standard": "^17.1.0"
+    "standard": "^17.1.0",
+    "vitest": "^0.34.6"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -24,7 +25,10 @@
     "nunjucks": "^3.2.4"
   },
   "nodemonConfig": {
-    "ignore": ["**/test/**", "**/docs/**"],
+    "ignore": [
+      "**/test/**",
+      "**/docs/**"
+    ],
     "ext": "html js css"
   }
 }
