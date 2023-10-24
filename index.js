@@ -7,7 +7,11 @@ nunjucks.configure('src/views', {
 });
 
 app.get('/', (req, res) => {
-    res.render('helloWorld.html');
+    let data = {
+        title: 'Hello World',
+        content: 'This is a sample content',
+    }
+    res.render('helloWorld.html', data);
 });
 
 app.listen(3000, () => {
