@@ -13,9 +13,17 @@ This is the frontend for the LPA Data Validator application. It is a nodeJS expr
     ```
     npm run prepare
     ```
+- compile scss file
+    ```
+    npm run scss
+    ```
 
 ## Running the application
 - Run the application
+    ```
+    npm run start
+    ```
+- Run the application in watch mode
     ```
     npm run start
     ```

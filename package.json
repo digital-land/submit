@@ -10,7 +10,7 @@
     "lint": "standard",
     "lint:fix": "standard --fix",
     "start": "node index.js",
-    "nodemon": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
+    "start:watch": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
     "prepare": "husky install",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
     "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets"
