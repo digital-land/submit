@@ -10,8 +10,10 @@
     "lint": "standard",
     "lint:fix": "standard --fix",
     "start": "node index.js",
-    "nodemon": "nodemon index.js",
-    "prepare": "husky install"
+    "nodemon": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
+    "prepare": "husky install",
+    "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
+    "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets"
   },
   "engines": {
     "node": ">=18.0.0 <20.0.0"
@@ -19,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "husky": "^8.0.0",
     "nodemon": "^3.0.1",
     "standard": "^17.1.0",
@@ -27,7 +30,8 @@
   "dependencies": {
     "express": "^4.18.2",
     "govuk-frontend": "^4.7.0",
-    "nunjucks": "^3.2.4"
+    "nunjucks": "^3.2.4",
+    "sass": "^1.69.4"
   },
   "nodemonConfig": {
     "ignore": [
