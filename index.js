@@ -18,16 +18,6 @@ const nunjucksEnv = nunjucks.configure([
 
 nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
 
-// addFilters();
-
-app.get('/helloWorld', (req, res) => {
-  const data = {
-    title: 'Hello World',
-    content: 'This is a sample content'
-  }
-  res.render('helloWorld.html', data)
-})
-
 app.get('/', (req, res) => {
   const data = {
     serviceName: 'Publish planning and housing data for England'
