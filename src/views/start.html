@@ -1,0 +1,116 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "x-govuk/components/related-navigation/macro.njk" import xGovukRelatedNavigation %}
+
+
+{% set pageName = serviceName %}
+
+{% block content %}
+
+{% set example %}
+
+  ## About the data
+
+  This dataset shows the locations of conservation areas. Conservation areas are designated to safeguard areas of special architectural and historic interest, the character and appearance of which it is desirable to preserve or enhance. Within these areas special planning controls operate which need to be considered when undertaking development.
+
+  ## Data
+
+  [Southwark conservations areas (CSV, 188KB)](#)
+
+  ## Licensing
+
+  The data is provided under the [Open Government Licence](#).
+
+  ## Last updated
+
+  The data was last updated on 14 July 2023 at 9am.
+
+{% endset %}
+
+{% set content %}
+
+  Use this service to:
+
+  - check your data follows the standard
+  - get your data published
+
+  {{ govukButton({
+    text: "Start now",
+    href: "/data-subject",
+    isStartButton: true
+  }) }}
+
+  ## Before you check your data
+
+  You need to prepare your:
+
+  - conservation area data
+  - listed building data
+  - article 4 direction data
+  - tree preservation order data
+
+  You may need to create more than one set of data for each subject. You'll find what to include in the [data specifications](https://www.planning.data.gov.uk/guidance/specifications/).
+
+  We will accept data supplied as either:
+
+  - CSV
+  - GeoJSON
+  - GML
+  - GeoPackage
+
+  {# These may be uploaded to a single URL, or served via an OGC WFS or ArcGIS API. #}
+
+  ## Before you can publish your data
+
+  You must be able to create or edit a webpage on your local planning authority’s (LPA) website. This will probably have a URL ending in .gov.uk or .org.
+
+  If you’re not able to do this, you’ll need to ask the person who updates your website.
+
+  The webpage needs to include:
+
+  - a summary of what the data is about
+  - a confirmation that the data is provided under the Open Government License
+  - the date you created or updated the webpage
+  - links to your data on this page, for example a CSV
+
+  {{ govukDetails({
+    summaryText: "Example webpage",
+    text: example | govukMarkdown(headingsStartWith="m")
+  }) }}
+
+  This webpage URL must not change, so we can keep collecting the data. If the URL does change, send an email to [digitalland@levellingup.gov.uk](mailto:digitalland@levellingup.gov.uk).
+
+{% endset %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">
+        {{serviceName}}
+      </h1>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{content | govukMarkdown |safe}}
+    </div>
+    <div class="govuk-grid-column-one-third">
+      {{ xGovukRelatedNavigation({
+        sections: [{
+          items: [{
+            text: "Data specifications",
+            href: "/"
+          }],
+          subsections: [{
+            title: "Explore the topic",
+            items: [{
+              text: "Housing and planning",
+              href: "/browse/performing-arts"
+            }]
+          }]
+        }]
+      }) }}
+    </div>
+  </div>
+{% endblock %}

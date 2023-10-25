@@ -1,0 +1,68 @@
+{#
+For guidance on how to use layouts see:
+https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
+#}
+
+{% extends "govuk/template.njk" %}
+{% from 'govuk/components/header/macro.njk' import govukHeader%}
+{% from 'govuk/components/footer/macro.njk' import govukFooter%}
+{% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner%}
+
+{% block head %}
+  <link rel="stylesheet" href="public/stylesheets/index.css">
+{% endblock %}
+
+{% block header %}
+  {{ govukHeader({
+    homepageUrl: "#",
+    serviceName: serviceName,
+    serviceUrl: "/"
+  }) }}
+  {{ govukPhaseBanner({
+    tag: {
+      text: "Beta"
+    },
+    html: 'This is a new service – your <a class="govuk-link" href="#">feedback</a> will help us to improve it.',
+    classes: 'govuk-width-container'
+  }) }}
+  <link rel="stylesheet" href="public/stylesheets/index.css">
+{% endblock %}
+
+{% block footer %}
+{% set footerHtml %}
+  <h2 class="govuk-heading-m">Get help</h2>
+
+  <p class="govuk-!-font-size-16">Email: <a href="mailto:digitalland@levellingup.gov.uk">digitalland@levellingup.gov.uk</a></br>
+  You’ll get a response within 5 working days.</p>
+
+  <hr class="govuk-section-break govuk-section-break--l">
+  <ul class="govuk-footer__inline-list">
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/manage-prototype">
+        Manage your prototype
+      </a>
+    </li>
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/manage-prototype/clear-data">
+        Clear data
+      </a>
+    </li>
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/accessibility">
+        Accessibility
+      </a>
+    </li>
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/privacy-notice">
+        Privacy notice
+      </a>
+    </li>
+  </ul>
+  {% endset %}
+
+  {{ govukFooter({
+  meta: {
+    html: footerHtml
+  }
+  }) }}
+{% endblock %}
