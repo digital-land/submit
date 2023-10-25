@@ -3,15 +3,10 @@ const nunjucks = require('nunjucks')
 const app = express()
 const { govukMarkdown } = require('@x-govuk/govuk-prototype-filters')
 
-
-
-
 const path = require('path')
 app.use('/public', express.static(path.join(__dirname, '/public')))
 app.use('/govuk-frontend', express.static(path.join(__dirname, '/node_modules/govuk-frontend/govuk')))
 app.use('/assets', express.static(path.join(__dirname, '/node_modules/govuk-frontend/govuk/assets')))
-
-
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -21,7 +16,7 @@ const nunjucksEnv = nunjucks.configure([
   express: app
 })
 
-nunjucksEnv.addFilter("govukMarkdown", govukMarkdown)
+nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
 
 // addFilters();
 
@@ -35,7 +30,7 @@ app.get('/helloWorld', (req, res) => {
 
 app.get('/', (req, res) => {
   const data = {
-    serviceName: 'Publish planning and housing data for England',
+    serviceName: 'Publish planning and housing data for England'
   }
   res.render('start.html', data)
 })
