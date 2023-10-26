@@ -1,5 +1,5 @@
 name: Run Tests and Lint Files
-"on": push
+on: pull_request
 jobs:
   lint:
     runs-on: ubuntu-latest
