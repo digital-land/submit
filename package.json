@@ -4,14 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest --coverage",
-    "lint": "standard",
-    "lint:fix": "standard --fix",
+    "prepare": "husky install",
     "start": "node index.js",
-    "nodemon": "nodemon index.js",
-    "prepare": "husky install"
+    "start:watch": "nodemon index.js",
+    "test": "npm run test:unit && npm run test:integration && npm run test:contract && npm run test:acceptance",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "test:contract": "vitest run test/contract",
+    "test:watch": "vitest test/unit test/integration test/contract",
+    "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
+    "test:acceptance": "playwright test test/acceptance",
+    "lint": "standard",
+    "lint:fix": "standard --fix"
   },
   "engines": {
     "node": ">=18.0.0 <20.0.0"
@@ -19,8 +23,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@vitest/coverage-v8": "^0.34.6",
     "husky": "^8.0.0",
     "nodemon": "^3.0.1",
+    "playwright": "^1.39.0",
     "standard": "^17.1.0",
     "vitest": "^0.34.6"
   },
