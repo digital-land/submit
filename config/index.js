@@ -1,5 +1,5 @@
-const hmpoConfig = require('hmpo-config')
+const HmpoConfig = require('hmpo-config')
 
-const config = new hmpoConfig()
+const config = new HmpoConfig()
 config.addFile('./config/default.yaml')
 module.exports = config.toJSON()

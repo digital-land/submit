@@ -4,16 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest --coverage",
-    "lint": "standard",
-    "lint:fix": "standard --fix",
+    "prepare": "husky install",
     "start": "node index.js",
     "start:watch": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
-    "prepare": "husky install",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
-    "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets"
+    "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets",
+    "test": "npm run test:unit && npm run test:integration && npm run test:contract && npm run test:acceptance",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "test:contract": "vitest run test/contract",
+    "test:watch": "vitest test/unit test/integration test/contract",
+    "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
+    "test:acceptance": "playwright test",
+    "test:acceptance:ui": "playwright test --ui",
+    "test:acceptance:codegen": "playwright codegen http://localhost:3000",
+    "lint": "standard",
+    "lint:fix": "standard --fix"
   },
   "engines": {
     "node": ">=18.0.0 <20.0.0"
@@ -22,6 +28,9 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "@playwright/test": "^1.39.0",
+    "@types/node": "^20.8.9",
+    "@vitest/coverage-v8": "^0.34.6",
     "husky": "^8.0.0",
     "nodemon": "^3.0.1",
     "standard": "^17.1.0",
