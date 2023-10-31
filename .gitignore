@@ -130,3 +130,5 @@ dist
 .pnp.*
 
 public/*
+.vscode/launch.json
+playwright-report/index.html
