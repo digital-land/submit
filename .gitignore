@@ -133,3 +133,6 @@ dist
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+public/*
+.vscode/launch.json
