@@ -9,11 +9,13 @@ module.exports = {
     next: 'dataset'
   },
   '/dataset': {
+    controller: require('../../controllers/datasetController'),
     fields: ['dataset'],
     next: 'upload'
   },
   '/upload': {
-    fields: ['datafile'],
+    controller: require('../../controllers/uploadController'),
+    fields: ['datafile', 'path'],
     next: 'submit'
   },
   '/submit': {
