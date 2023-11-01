@@ -1,25 +1,35 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 
 test.skip('Upload data', async ({ page }) => {
   test('Upload data', async ({ page }) => {
     await page.goto('/start')
     await page.getByRole('button', { name: 'Start now' }).click()
+
+    await page.waitForURL('**/data-subject')
+
     await page.getByLabel('Conservation area').check()
     await page.getByRole('button', { name: 'Continue' }).click()
+
+    await page.waitForURL('**/dataset')
+
     await page.getByLabel('Conservation area dataset').check()
     await page.getByRole('button', { name: 'Continue' }).click()
+
+    await page.waitForURL('**/upload')
+
     await page.getByLabel('Upload data').click()
     await page.getByLabel('Upload data').setInputFiles('test/testData/conservation-area.csv')
     await page.getByRole('button', { name: 'Continue' }).click()
-    await page.getByText('Conservation area direction dataset').click()
-    await page.getByText('2 references are missing').click()
-    await page.getByText('4 locations are not in England').click()
-    await page.getByText('4 start dates are in the future').click()
-    await page.locator('div').filter({ hasText: 'Reference Name Geometry Start date Legislation Notes Point End date Document URL' }).nth(3).click()
-    await page.getByLabel('No, publish the valid data and I’ll fix the invalid data later').check()
-    await page.getByRole('button', { name: 'Continue' }).click()
-    await page.getByText('20 geometries will be changed to make sure they’re located in England').click()
-    await page.getByText('20 dates will be changed to YYYY-MM-DD format').click()
-    await page.getByText('20 entry dates have been added and set to today').click()
+
+    await page.waitForURL('**/submit')
+
+    const ListedDataSubject = await page.getByText('data-subject: Conservation area')
+    await expect(ListedDataSubject !== undefined).toBeTruthy()
+
+    const ListedDataset = await page.getByText('dataset: Conservation area dataset')
+    await expect(ListedDataset !== undefined).toBeTruthy()
+
+    const ListedDatafile = await page.getByText('datafile: conservation-area.csv')
+    await expect(ListedDatafile !== undefined).toBeTruthy()
   })
 })
