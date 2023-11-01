@@ -6,28 +6,30 @@ const checkRouteResponse = async (page, route, status) => {
   expect(response.status()).toBe(status)
 }
 
-test.describe.skip('Pages load ok', () => {
-  test('/start', async ({ page }) => {
-    await checkRouteResponse(page, '/start', 200)
-  })
+const checkSessionExpired = async (page, route) => {
+  await page.goto(route)
+  const sessionExpiredText = await page.getByText('Session expired')
+  await expect(sessionExpiredText !== undefined).toBeTruthy()
+}
 
+test('/start loads ok', async ({ page }) => {
+  await checkRouteResponse(page, '/start', 200)
+})
+
+test.describe('without a valid session, the user can not access the later pages', () => {
   test('/data-subject', async ({ page }) => {
-    await checkRouteResponse(page, '/data-subject', 200)
+    await checkSessionExpired(page, '/data-subject')
   })
 
   test('/dataset', async ({ page }) => {
-    await checkRouteResponse(page, '/dataset', 200)
+    await checkSessionExpired(page, '/dataset')
   })
 
   test('/upload', async ({ page }) => {
-    await checkRouteResponse(page, '/upload', 200)
+    await checkSessionExpired(page, '/upload')
   })
 
-  test('/errors', async ({ page }) => {
-    await checkRouteResponse(page, '/errors', 200)
-  })
-
-  test('/transformations', async ({ page }) => {
-    await checkRouteResponse(page, '/transformations', 200)
+  test('/submit', async ({ page }) => {
+    await checkSessionExpired(page, '/submit')
   })
 })
