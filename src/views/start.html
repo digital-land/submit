@@ -35,11 +35,11 @@
   - check your data follows the standard
   - get your data published
 
-  {{ govukButton({
-    text: "Start now",
-    href: "/data-subject",
-    isStartButton: true
-  }) }}
+  <form action="/start" method="POST">
+    {{ govukButton({
+      text: "Start now"
+    }) }}
+  </form>
 
   ## Before you check your data
 

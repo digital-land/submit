@@ -18,8 +18,8 @@
       <form novalidate method="post">
 
         {{ govukRadios({
-          idPrefix: "check[dataset]",
-          name: "check[dataset]",
+          idPrefix: "dataset",
+          name: "dataset",
           fieldset: {
             legend: {
               text: pageName,
@@ -27,7 +27,7 @@
               classes: "govuk-fieldset__legend--l"
             }
           },
-          items: options,
+          items: options.datasetItems,
           value: data.check.dataset
         }) }}
 
