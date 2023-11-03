@@ -12,8 +12,8 @@ const checkSessionExpired = async (page, route) => {
   await expect(sessionExpiredText !== undefined).toBeTruthy()
 }
 
-test('/start loads ok', async ({ page }) => {
-  await checkRouteResponse(page, '/start', 200)
+test('/ loads ok', async ({ page }) => {
+  await checkRouteResponse(page, '/', 200)
 })
 
 test.describe('without a valid session, the user can not access the later pages', () => {

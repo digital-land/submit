@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test('Upload data', async ({ page }) => {
-  await page.goto('/start')
+  await page.goto('/')
   await page.getByRole('button', { name: 'Start now' }).click()
 
   await page.waitForURL('**/data-subject')
