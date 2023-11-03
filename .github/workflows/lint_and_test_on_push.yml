@@ -15,4 +15,5 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
               npm ci
+              npm install playwright --with-deps
               npm run test
