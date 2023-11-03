@@ -1,8 +1,9 @@
 module.exports = {
-  '/start': {
+  '/': {
     entryPoint: true,
     resetJourney: true,
-    next: 'data-subject'
+    next: 'data-subject',
+    template: '../views/start.html'
   },
   '/data-subject': {
     fields: ['data-subject'],
