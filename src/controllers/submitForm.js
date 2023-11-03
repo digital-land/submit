@@ -8,7 +8,7 @@ const { lookup } = require('mime-types')
 const apiRoute = 'http://127.0.0.1:8082/api/dataset/validate/file/request/'
 
 class SubmitForm extends Controller {
-  async saveValues (req, res, next) {
+  async post (req, res, next) {
     const formData = new FormData()
     formData.append('dataset', req.sessionModel.get('dataset'))
     formData.append('collection', req.sessionModel.get('data-subject'))
@@ -19,15 +19,22 @@ class SubmitForm extends Controller {
 
     formData.append('upload_file', file, req.sessionModel.get('datafile').originalname)
 
-    // post the data to the api
-    const result = await fetch(apiRoute, {
-      method: 'POST',
-      body: formData
-    })
+    try {
+      // post the data to the api
+      const result = await fetch(apiRoute, {
+        method: 'POST',
+        body: formData
+      })
 
-    const json = await result.json()
+      const json = await result.json()
 
-    console.log(json)
+      console.log(json)
+
+      // send the response back to the user
+      res.send(json)
+    } catch (e) {
+      res.send(e)
+    }
   }
 }
 
