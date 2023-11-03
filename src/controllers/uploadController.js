@@ -10,11 +10,6 @@ class UploadController extends Controller {
     this.use('/upload', upload.single('datafile'))
   }
 
-  // get (req, res, next) {
-
-  //     super.get(req, res, next);
-  // }
-
   post (req, res, next) {
     req.body.datafile = req.file
     super.post(req, res, next)
