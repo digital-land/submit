@@ -5,6 +5,6 @@ const fields = require('./fields')
 
 const app = Router()
 
-app.use(wizard(steps, fields, { name: 'my-wizard' }))
+app.use(wizard(steps, fields, { name: 'my-wizard', csrf: false }))
 
 module.exports = app
