@@ -16,8 +16,10 @@ test('Upload data', async ({ page }) => {
 
   await page.waitForURL('**/upload')
 
-  await page.getByLabel('Upload data').click()
-  await page.getByLabel('Upload data').setInputFiles('test/testData/conservation-area.csv')
+  const fileChooserPromise = page.waitForEvent('filechooser')
+  await page.getByText('Upload data').click()
+  const fileChooser = await fileChooserPromise
+  await fileChooser.setFiles('test/testData/conservation-area.csv')
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/submit')
