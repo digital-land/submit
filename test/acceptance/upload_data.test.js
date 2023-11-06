@@ -21,4 +21,6 @@ test('Upload data', async ({ page }) => {
   const fileChooser = await fileChooserPromise
   await fileChooser.setFiles('test/testData/conservation-area.csv')
   await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/errors')
 })
