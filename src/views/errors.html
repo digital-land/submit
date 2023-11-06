@@ -1,0 +1,142 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
+
+{% set pageName = 'There’s a problem with your data' %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "javascript:window.history.back()"
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">
+        {% if data.check.dataset %}
+          {{data.check.dataset}}
+        {% else %}
+          {{data.check.dataSubject}}
+        {% endif %}
+      </span>
+      <h1 class="govuk-heading-l">
+        {{pageName}}
+      </h1>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>{{referenceErrorCount}} references are missing</li>
+        <li>{{locationErrorCount}} locations are not in England</li>
+        <li>{{startDateErrorCount}} start dates are in the future</li>
+        {# <li> Entry date is missing - what do we do in this case? </li> #}
+      </ul>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h2 class="govuk-heading-m">
+      Records with errors
+    </h2>
+
+    <div class="app-scrollable-container">
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Reference</th>
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Geometry</th>
+            <th scope="col" class="govuk-table__header">Start date</th>
+            <th scope="col" class="govuk-table__header">Legislation</th>
+            <th scope="col" class="govuk-table__header">Notes</th>
+            <th scope="col" class="govuk-table__header">Point</th>
+            <th scope="col" class="govuk-table__header">End date</th>
+            <th scope="col" class="govuk-table__header">Document URL</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+          {% for row in options.rows %}
+            <tr class="govuk-table__row">
+              <td class="govuk-table__cell">
+                {% if row.columns.Reference.error %}
+                  {{ govukInsetText({
+                    classes: "app-inset-text---error",
+                    html: '<p class="app-inset-text__error">Reference is missing</p>'
+                  }) }}
+                {% else %}
+                  {{row.columns.Reference.value}}
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">{{row.columns.Name.value}}</td>
+              <td class="govuk-table__cell app-wrap">
+                {% if row.columns.Geometry.error %}
+                  {{ govukInsetText({
+                    classes: "app-inset-text---error",
+                    html: '<p class="app-inset-text__value">'+row.columns.Geometry.value+'</p> <p class="app-inset-text__error">'+row.columns.Geometry.error +'</p>'
+                  }) }}
+                {% else %}
+                  {{row.columns.Geometry.value}}
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">
+                {% if row.columns['Start date'].error %}
+                  {{ govukInsetText({
+                    classes: "app-inset-text---error",
+                    html: '<p class="app-inset-text__value">'+row.columns['Start date'].value+'</p> <p class="app-inset-text__error">'+row.columns['Start date'].error +'</p>'
+                  }) }}
+                {% else %}
+                  {{row.columns['Start date'].value}}
+                {% endif %}
+              </td>
+              <td class="govuk-table__cell">{{row.columns.Legisliation.value}}</td>
+              <td class="govuk-table__cell">{{row.columns.Notes.value}}</td>
+              <td class="govuk-table__cell app-wrap">{{row.columns.Point.value}}</td>
+              <td class="govuk-table__cell">{{row.columns['End date'].value}}</td>
+              <td class="govuk-table__cell">{{row.columns['Document URL'].value}}</td>
+            </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form novalidate method="post">
+
+        {{ govukRadios({
+          name: "check[fixErrors]",
+          fieldset: {
+            legend: {
+              text: "Do you want to fix the errors before you publish the data?",
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          value: data.check.fixErrors,
+          items: [
+            {
+              value: "Yes",
+              text: "Yes"
+            },
+            {
+              value: "No",
+              text: "No, publish the valid data and I’ll fix the invalid data later"
+            }
+          ]
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+
+    </div>
+  </div>
+{% endblock %}

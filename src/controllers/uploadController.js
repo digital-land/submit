@@ -38,7 +38,9 @@ class UploadController extends Controller {
       console.log(json)
 
       // send the response back to the user
-      res.send(json)
+      // res.send(json)
+      req.sessionModel.set('validationResult', json)
+      super.post(req, res, next)
     } catch (e) {
       res.send(e)
     }

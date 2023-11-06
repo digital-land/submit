@@ -1,5 +1,5 @@
 
-{% from "hmpo-submit/macro.njk" import hmpoSubmit %}
+<!-- {% from "hmpo-submit/macro.njk" import hmpoSubmit %} -->
 
 {% set hmpoPageKey = "error" %}
 
@@ -8,10 +8,10 @@
 {% block content %}
     {{ super() }}
 
-    {{ hmpoSubmit(ctx, {
+    <!-- {{ hmpoSubmit(ctx, {
         key: "startAgain",
         href: "/"
-    }) }}
+    }) }} -->
 
     <h2>{{err.code + " - " if err.code}}{{err.message}}</h2>
     {%if err.stack %}

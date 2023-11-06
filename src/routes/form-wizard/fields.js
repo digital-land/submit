@@ -7,5 +7,8 @@ module.exports = {
   },
   datafile: {
     validate: 'required'
+  },
+  validationResult: {
+    validate: 'required'
   }
 }
