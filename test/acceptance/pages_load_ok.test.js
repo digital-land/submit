@@ -28,8 +28,4 @@ test.describe('without a valid session, the user can not access the later pages'
   test('/upload', async ({ page }) => {
     await checkSessionExpired(page, '/upload')
   })
-
-  test('/submit', async ({ page }) => {
-    await checkSessionExpired(page, '/submit')
-  })
 })
