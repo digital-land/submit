@@ -6,59 +6,14 @@ class DatasetController extends Controller {
   get (req, res, next) {
     const json = req.sessionModel.get('validationResult')
 
-    /* array of problematic rows
-        each entry in this array should be in the shape
-        {
-            "entryNumber": 0,
-            "columns": {
-
-                "Reference": {
-                    error: true,
-                    value: '...'
-                }
-                "Name": {
-                    error: false,
-                    value: '...'
-                }
-                "Geometry": {
-                    error: false,
-                    value: '...'
-                }
-                "Start date": {
-                    error: false,
-                    value: '...'
-                }
-                "Legislation": {
-                    error: false,
-                    value: '...'
-                }
-                "Notes": {
-                    error: false,
-                    value: '...'
-                }
-                "Point": {
-                    error: false,
-                    value: '...'
-                }
-                "End date": {
-                    error: false,
-                    value: '...'
-                }
-                "Document URL": {
-                    error: false,
-                    value: '...'
-                }
-            }
-        }
-    */
-
     const aggregatedIssues = {}
+    const issueCounts = {}
 
     json['issue-log'].forEach(issue => {
       const entryNumber = issue['entry-number']
 
+      const rowColumns = json['converted-csv'][issue['line-number'] - 1]
       if (!(entryNumber in aggregatedIssues)) {
-        const rowColumns = json['converted-csv'][issue['line-number'] - 1]
         aggregatedIssues[entryNumber] = Object.keys(rowColumns).reduce((acc, key) => {
           acc[key] = {
             error: false,
@@ -70,9 +25,10 @@ class DatasetController extends Controller {
 
       if (entryNumber in aggregatedIssues) {
         aggregatedIssues[entryNumber][issue.field] = {
-          error: 'issue type: ' + issue['issue-type'],
-          value: issue.value
+          error: issue['issue-type'],
+          value: rowColumns[issue.field]
         }
+        issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
       }
     })
 
@@ -84,6 +40,10 @@ class DatasetController extends Controller {
     })
 
     req.form.options.rows = rows
+    req.form.options.issueCounts = issueCounts
+    req.form.options.dataset = req.sessionModel.get('dataset')
+    req.form.options.dataSubject = req.sessionModel.get('data-subject')
+
     super.get(req, res, next)
   }
 }

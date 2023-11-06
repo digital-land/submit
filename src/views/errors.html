@@ -19,10 +19,10 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-l">
-        {% if data.check.dataset %}
-          {{data.check.dataset}}
+        {% if options.dataset %}
+          {{options.dataset}}
         {% else %}
-          {{data.check.dataSubject}}
+          {{options.dataSubject}}
         {% endif %}
       </span>
       <h1 class="govuk-heading-l">
@@ -30,10 +30,9 @@
       </h1>
 
       <ul class="govuk-list govuk-list--bullet">
-        <li>{{referenceErrorCount}} references are missing</li>
-        <li>{{locationErrorCount}} locations are not in England</li>
-        <li>{{startDateErrorCount}} start dates are in the future</li>
-        {# <li> Entry date is missing - what do we do in this case? </li> #}
+        {% for issue, count in options.issueCounts %}
+          <li>{{count}} issue, relating to {{issue}}</li>
+        {% endfor %}
       </ul>
   </div>
 </div>

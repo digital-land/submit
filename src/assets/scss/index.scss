@@ -1,2 +1,37 @@
 @import "node_modules/govuk-frontend/govuk/all";
 @import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
+@import "src/assets/scss/_scrollable-container.scss";
+
+.app-inset-text---error {
+    border-left: 5px solid govuk-colour('red');
+    padding: govuk-spacing(1) govuk-spacing(2);
+    margin: 0;
+  
+    .app-inset-text__value {
+      margin-bottom: govuk-spacing(1);
+    }
+  
+    .app-inset-text__error {
+      color: govuk-colour('red');
+      font-weight: bold;
+    }
+  
+  
+  }
+  
+  .app-inset-text---warning {
+    border-left: 5px solid govuk-colour('blue');
+    padding: govuk-spacing(1) govuk-spacing(2);
+    margin: 0;
+  
+    .app-inset-text__value {
+      margin-bottom: govuk-spacing(1);
+    }
+  
+    .app-inset-text__warning {
+      color: govuk-colour('blue');
+      font-weight: bold;
+    }
+  
+  
+  }
