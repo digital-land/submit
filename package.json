@@ -4,14 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest --coverage",
-    "lint": "standard",
-    "lint:fix": "standard --fix",
+    "prepare": "husky install",
     "start": "node index.js",
-    "nodemon": "nodemon index.js",
-    "prepare": "husky install"
+    "start:watch": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
+    "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
+    "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets",
+    "test": "npm run test:unit && npm run test:integration && npm run test:contract && npm run test:acceptance",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "test:contract": "vitest run test/contract",
+    "test:watch": "vitest test/unit test/integration test/contract",
+    "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
+    "test:acceptance": "playwright test",
+    "test:acceptance:ui": "playwright test --ui",
+    "test:acceptance:codegen": "playwright codegen http://localhost:3000",
+    "lint": "standard",
+    "lint:fix": "standard --fix"
   },
   "engines": {
     "node": ">=18.0.0 <20.0.0"

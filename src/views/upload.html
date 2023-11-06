@@ -1,0 +1,39 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageName = 'Upload data' %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "javascript:window.history.back()"
+  }) }}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form novalidate method="post" enctype="multipart/form-data">
+
+        {{ govukFileUpload({
+          id: "datafile",
+          name: "datafile",
+          label: {
+            text: pageName,
+            isPageHeading: true,
+            classes: 'govuk-label--l'
+          },
+          hint: {
+            text: "You can upload a CSV, GeoJSON, GML or Geopackage file"
+          }
+        }) }}
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
