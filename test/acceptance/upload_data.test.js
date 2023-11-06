@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 
 test('Upload data', async ({ page }) => {
   await page.goto('/')
@@ -21,15 +21,4 @@ test('Upload data', async ({ page }) => {
   const fileChooser = await fileChooserPromise
   await fileChooser.setFiles('test/testData/conservation-area.csv')
   await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/submit')
-
-  const ListedDataSubject = await page.getByText('data-subject: Conservation area')
-  await expect(ListedDataSubject !== undefined).toBeTruthy()
-
-  const ListedDataset = await page.getByText('dataset: Conservation area dataset')
-  await expect(ListedDataset !== undefined).toBeTruthy()
-
-  const ListedDatafile = await page.getByText('datafile: conservation-area.csv')
-  await expect(ListedDatafile !== undefined).toBeTruthy()
 })

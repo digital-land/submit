@@ -17,10 +17,6 @@ module.exports = {
   '/upload': {
     controller: require('../../controllers/uploadController'),
     fields: ['datafile', 'path'],
-    next: 'submit'
-  },
-  '/submit': {
-    controller: require('../../controllers/submitForm'),
     next: 'done'
   }
 }
