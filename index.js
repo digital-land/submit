@@ -65,22 +65,20 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   logger.error('Request error', { req, err })
 
-  res.send(err.message)
+  // handle session expired
+  if (err.code === 'SESSION_TIMEOUT') {
+    err.template = 'pages/session-expired'
+  }
 
-  // // handle session expired
-  // if (err.code === 'SESSION_TIMEOUT') {
-  //   err.template = 'pages/session-expired'
-  // }
+  // handle errors with automatic redirects
+  if (err.redirect) {
+    return res.redirect(err.redirect)
+  }
 
-  // // handle errors with automatic redirects
-  // if (err.redirect) {
-  //   return res.redirect(err.redirect)
-  // }
-
-  // // show error page
-  // err.status = err.status || 500
-  // err.template = err.template || 'pages/error'
-  // res.status(err.status).render(err.template, { err })
+  // show error page
+  err.status = err.status || 500
+  err.template = err.template || 'pages/error'
+  res.status(err.status).render(err.template, { err })
 })
 
 // listen for incomming requests
