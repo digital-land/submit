@@ -9,7 +9,7 @@ const { lookup } = require('mime-types')
 
 const config = require('../../config')
 
-const apiRoute = config.api.url + config.api.validationEndpoint;
+const apiRoute = config.api.url + config.api.validationEndpoint
 
 class UploadController extends Controller {
   middlewareSetup () {
