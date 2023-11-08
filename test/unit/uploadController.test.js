@@ -1,7 +1,3 @@
-// write a hello world test in vitest
-
-// Path: test/unit/test.test.js
-
 import UploadController from '../../src/controllers/uploadController.js'
 
 import { describe, it, expect, vi } from 'vitest'
