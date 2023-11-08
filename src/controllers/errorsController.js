@@ -2,7 +2,7 @@
 
 const { Controller } = require('hmpo-form-wizard')
 
-class DatasetController extends Controller {
+class ErrorsController extends Controller {
   get (req, res, next) {
     const json = req.sessionModel.get('validationResult')
 
@@ -48,4 +48,4 @@ class DatasetController extends Controller {
   }
 }
 
-module.exports = DatasetController
+module.exports = ErrorsController
