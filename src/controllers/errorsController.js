@@ -25,7 +25,7 @@ class ErrorsController extends Controller {
 
       if (entryNumber in aggregatedIssues) {
         aggregatedIssues[entryNumber][issue.field] = {
-          error: issue['issue-type'],
+          error: this.lookupIssueType(issue['issue-type']),
           value: rowColumns[issue.field]
         }
         issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
@@ -45,6 +45,11 @@ class ErrorsController extends Controller {
     req.form.options.dataSubject = req.sessionModel.get('data-subject')
 
     super.get(req, res, next)
+  }
+
+  lookupIssueType (issueType) {
+    // this needs to be implemented once we know what the issue types are
+    return issueType
   }
 }
 
