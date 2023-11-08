@@ -37,10 +37,6 @@ class UploadController extends Controller {
 
       const json = await result.json()
 
-      console.log(json)
-
-      // send the response back to the user
-      // res.send(json)
       req.sessionModel.set('validationResult', json)
       super.post(req, res, next)
     } catch (e) {
