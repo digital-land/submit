@@ -9,6 +9,7 @@ describe('ErrorsController', () => {
     route: '/errors'
   }
   const errorsController = new ErrorsController(options)
+
   it('correctly serves the errors page when the session data is correctly set', async () => {
     const session = {
       validationResult: mockApiValue,
@@ -29,7 +30,7 @@ describe('ErrorsController', () => {
 
     await errorsController.get(req, res, next)
 
-    expect(req.form).toEqual({
+    const expectedFormValues = {
       options: {
         rows: [
           {
@@ -94,6 +95,8 @@ describe('ErrorsController', () => {
         dataset: 'test-dataset',
         dataSubject: 'test-data-subject'
       }
-    })
+    }
+
+    expect(req.form).toEqual(expectedFormValues)
   })
 })
