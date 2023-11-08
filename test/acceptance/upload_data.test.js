@@ -1,6 +1,6 @@
 import { test } from '@playwright/test'
 
-test('Upload data', async ({ page }) => {
+test('Enter form information', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Start now' }).click()
 
@@ -22,7 +22,4 @@ test('Upload data', async ({ page }) => {
   await fileChooser.setFiles('test/testData/conservation-area.csv')
 
   await page.getByRole('button', { name: 'Continue' }).click()
-
-  // this never goes to /errors as the data validator api isn't live. and route mocking seems to only work for the browser instance
-  // await page.waitForURL('**/errors')
 })
