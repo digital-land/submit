@@ -1,6 +1,6 @@
 import { test } from '@playwright/test'
 
-test('Upload data', async ({ page }) => {
+test('Enter form information', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Start now' }).click()
 
@@ -20,5 +20,6 @@ test('Upload data', async ({ page }) => {
   await page.getByText('Upload data').click()
   const fileChooser = await fileChooserPromise
   await fileChooser.setFiles('test/testData/conservation-area.csv')
+
   await page.getByRole('button', { name: 'Continue' }).click()
 })

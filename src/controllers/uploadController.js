@@ -7,7 +7,9 @@ const { Controller } = require('hmpo-form-wizard')
 const { readFile } = require('node:fs/promises')
 const { lookup } = require('mime-types')
 
-const apiRoute = 'http://127.0.0.1:8082/api/dataset/validate/file/request/'
+const config = require('../../config')
+
+const apiRoute = config.api.url + config.api.validationEndpoint
 
 class UploadController extends Controller {
   middlewareSetup () {
@@ -35,10 +37,8 @@ class UploadController extends Controller {
 
       const json = await result.json()
 
-      console.log(json)
-
-      // send the response back to the user
-      res.send(json)
+      req.sessionModel.set('validationResult', json)
+      super.post(req, res, next)
     } catch (e) {
       res.send(e)
     }

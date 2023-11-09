@@ -16,7 +16,10 @@ module.exports = {
   },
   '/upload': {
     controller: require('../../controllers/uploadController'),
-    fields: ['datafile', 'path'],
-    next: 'done'
+    next: 'errors'
+  },
+  '/errors': {
+    controller: require('../../controllers/errorsController'),
+    next: 'transformations'
   }
 }
