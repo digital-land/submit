@@ -5,7 +5,7 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 
-{% set pageName = 'There’s a problem with your data' %}
+{% set pageName = 'There’s a problem' %}
 
 {% block beforeContent %}
   {{ govukBackLink({
@@ -30,6 +30,13 @@
       </h1>
 
       <ul class="govuk-list govuk-list--bullet">
+        {# <li>We could not find a ‘Geometry’ column that contains your polygons</li> #}
+        <li>There’s no column for the name of the conservation area</li>
+        <li>There are no references</li>
+        {# <li>{{referenceErrorCount}} references are missing</li> #}
+        <li>{{locationErrorCount}} locations are not in England</li>
+        <li>{{startDateErrorCount}} start dates are in the future</li>
+        {# <li> Entry date is missing - what do we do in this case? </li> #}
         {% for issue, count in options.issueCounts %}
           <li>{{count}} issue, relating to {{issue}}</li>
         {% endfor %}
@@ -40,7 +47,7 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     <h2 class="govuk-heading-m">
-      Records with errors
+      Errors
     </h2>
 
     <div class="app-scrollable-container">
@@ -108,33 +115,10 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <form novalidate method="post">
-
-        {{ govukRadios({
-          name: "check[fixErrors]",
-          fieldset: {
-            legend: {
-              text: "Do you want to fix the errors before you publish the data?",
-              classes: "govuk-fieldset__legend--m"
-            }
-          },
-          value: data.check.fixErrors,
-          items: [
-            {
-              value: "Yes",
-              text: "Yes"
-            },
-            {
-              value: "No",
-              text: "No, publish the valid data and I’ll fix the invalid data later"
-            }
-          ]
-        }) }}
-
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-      </form>
+      {{ govukButton({
+        text: "Upload a new version",
+        href: "/upload"
+      }) }}
 
     </div>
   </div>
