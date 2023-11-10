@@ -2,8 +2,25 @@
 {% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from 'govuk/components/button/macro.njk' import govukButton %}
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 {% set pageName = 'Dataset' %}
+
+{% set errorMessage = 'Please select a dataset' %}
+
+
+{% if 'dataset' in errors %}
+  {% set datasetError = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if datasetError %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
 
 {% block beforeContent %}
   {{ govukBackLink({
@@ -13,28 +30,42 @@
 {% endblock %}
 
 {% block content %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <form novalidate method="post">
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if datasetError %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: [
+          {
+            text: errorMessage,
+            href: "#dataset"
+          }
+        ]
+      }) }}
+    {% endif %}
+    <form novalidate method="post">
 
-        {{ govukRadios({
-          idPrefix: "dataset",
-          name: "dataset",
-          fieldset: {
-            legend: {
-              text: pageName,
-              isPageHeading: true,
-              classes: "govuk-fieldset__legend--l"
-            }
-          },
-          items: options.datasetItems,
-          value: data.check.dataset
-        }) }}
+      {{ govukRadios({
+        idPrefix: "dataset",
+        name: "dataset",
+        fieldset: {
+          legend: {
+            text: pageName,
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        items: options.datasetItems,
+        value: data.check.dataset,
+        errorMessage: {
+          text: errorMessage 
+        } if datasetError else undefined
+      }) }}
 
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-      </form>
-    </div>
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+    </form>
   </div>
+</div>
 {% endblock %}
