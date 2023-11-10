@@ -27,7 +27,7 @@ class UploadController extends Controller {
           dataSubject: req.sessionModel.get('data-subject'),
           organization: 'mockOrg'
         })
-        req.sessionModel.set('validationResult', jsonResult)
+        req.body.validationResult = jsonResult
       } catch (error) {
         console.log(error)
       }
