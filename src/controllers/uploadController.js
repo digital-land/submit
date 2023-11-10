@@ -18,30 +18,40 @@ class UploadController extends Controller {
   }
 
   async post (req, res, next) {
-    const formData = new FormData()
-    formData.append('dataset', req.sessionModel.get('dataset'))
-    formData.append('collection', req.sessionModel.get('data-subject'))
-    formData.append('organization', 'mockOrg')
+    if (req.file !== undefined) {
+      try {
+        const jsonResult = await this.validateFile({
+          filePath: req.file.path,
+          fileName: req.file.originalname,
+          dataset: req.sessionModel.get('dataset'),
+          dataSubject: req.sessionModel.get('data-subject'),
+          organization: 'mockOrg'
+        })
+        req.sessionModel.set('validationResult', jsonResult)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    super.post(req, res, next)
+  }
 
-    const filePath = req.file.path
+  async validateFile ({ filePath, fileName, dataset, dataSubject, organization }) {
+    const formData = new FormData()
+    formData.append('dataset', dataset)
+    formData.append('collection', dataSubject)
+    formData.append('organization', organization)
+
     const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
 
-    formData.append('upload_file', file, req.file.originalname)
+    formData.append('upload_file', file, fileName)
 
-    try {
-      // post the data to the api
-      const result = await fetch(apiRoute, {
-        method: 'POST',
-        body: formData
-      })
+    // post the data to the api
+    const result = await fetch(apiRoute, {
+      method: 'POST',
+      body: formData
+    })
 
-      const json = await result.json()
-
-      req.sessionModel.set('validationResult', json)
-      super.post(req, res, next)
-    } catch (e) {
-      res.send(e)
-    }
+    return await result.json()
   }
 }
 
