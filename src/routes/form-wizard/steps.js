@@ -6,6 +6,7 @@ module.exports = {
     template: '../views/start.html'
   },
   '/data-subject': {
+    controller: require('../../controllers/dataSubjectController'),
     fields: ['data-subject'],
     next: 'dataset'
   },

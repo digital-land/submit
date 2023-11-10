@@ -1,8 +1,8 @@
 'use strict'
 
-const { Controller } = require('hmpo-form-wizard')
+const MyController = require('./MyController.js')
 
-class ErrorsController extends Controller {
+class ErrorsController extends MyController {
   get (req, res, next) {
     const json = req.sessionModel.get('validationResult')
 

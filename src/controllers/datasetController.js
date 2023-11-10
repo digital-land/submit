@@ -1,6 +1,6 @@
 'use strict'
 
-const { Controller } = require('hmpo-form-wizard')
+const MyController = require('./MyController.js')
 
 const datasetOptions = {
   'Article 4': [
@@ -40,7 +40,7 @@ const datasetOptions = {
   'Listed building': false
 }
 
-class DatasetController extends Controller {
+class DatasetController extends MyController {
   get (req, res, next) {
     const dataset = req.sessionModel.get('data-subject')
     const options = datasetOptions[dataset]
