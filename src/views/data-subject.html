@@ -16,8 +16,6 @@
   {% set dataSubjectError = true %}
 {% endif %}
 
-{% set pageTitle = 'Enter a datasubject'%}
-
 {% block pageTitle %}
   {% if dataSubjectError %}
     Error: {{super()}}
