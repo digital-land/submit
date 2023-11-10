@@ -74,7 +74,7 @@ test('when the user clicks continue on the file upload page without selecting a 
   expect(await errorLink.isVisible(), 'Page should the error message that is a link to the problem field').toBeTruthy()
   expect(await fieldError.isVisible(), 'Page should show the error message next to the problem field').toBeTruthy()
   await errorLink.click()
-  
+
   const problemFieldIsFocused = await page.$eval('input#datafile.govuk-file-upload', (el) => el === document.activeElement)
   expect(problemFieldIsFocused, 'The focus should be on the problem field').toBeTruthy()
 
