@@ -24,7 +24,8 @@ describe('UploadController', () => {
       sessionModel: {
         get: () => 'test',
         set: vi.fn()
-      }
+      },
+      body: {}
     }
     const res = {
       send: vi.fn(),
@@ -34,6 +35,6 @@ describe('UploadController', () => {
 
     await uploadController.post(req, res, next)
 
-    expect(req.sessionModel.set).toHaveBeenCalledWith('validationResult', mockApiValue)
+    expect(req.body.validationResult).toEqual(mockApiValue)
   })
 })

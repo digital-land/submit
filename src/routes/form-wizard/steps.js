@@ -16,6 +16,7 @@ module.exports = {
   },
   '/upload': {
     controller: require('../../controllers/uploadController'),
+    fields: ['validationResult'],
     next: 'errors'
   },
   '/errors': {
