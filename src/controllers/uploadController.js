@@ -2,7 +2,7 @@
 const multer = require('multer')
 const upload = multer({ dest: 'uploads/' })
 
-const { Controller } = require('hmpo-form-wizard')
+const MyController = require('./MyController.js')
 
 const { readFile } = require('node:fs/promises')
 const { lookup } = require('mime-types')
@@ -11,7 +11,7 @@ const config = require('../../config')
 
 const apiRoute = config.api.url + config.api.validationEndpoint
 
-class UploadController extends Controller {
+class UploadController extends MyController {
   middlewareSetup () {
     super.middlewareSetup()
     this.use('/upload', upload.single('datafile'))
