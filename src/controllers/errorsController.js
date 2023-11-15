@@ -15,7 +15,7 @@ class ErrorsController extends MyController {
       const rowColumns = json['converted-csv'][issue['line-number'] - 2]
       if (!(entryNumber in aggregatedIssues)) {
         aggregatedIssues[entryNumber] = Object.keys(rowColumns).reduce((acc, originalColumnName) => {
-          const mappedColumnName = this.lookupMappedColumnName(originalColumnName, json['column-field-log'])
+          const mappedColumnName = this.lookupMappedColumnNameFromOriginal(originalColumnName, json['column-field-log'])
           acc[mappedColumnName] = {
             error: false,
             value: rowColumns[originalColumnName]
@@ -27,7 +27,7 @@ class ErrorsController extends MyController {
       if (entryNumber in aggregatedIssues) {
         aggregatedIssues[entryNumber][issue.field] = {
           error: this.lookupIssueType(issue['issue-type']),
-          value: rowColumns[issue.field]
+          value: rowColumns[this.lookupOriginalColumnNameFromMapped(issue.field, json['column-field-log'])]
         }
         issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
       }
@@ -54,13 +54,22 @@ class ErrorsController extends MyController {
     return issueType
   }
 
-  lookupMappedColumnName (originalColumnName, columnFieldLogs) {
+  lookupMappedColumnNameFromOriginal (originalColumnName, columnFieldLogs) {
     const columnFieldLog = columnFieldLogs.find(columnField => columnField.column === originalColumnName)
     let mappedColumnName = originalColumnName
     if (columnFieldLog) {
       mappedColumnName = columnFieldLog.field
     }
     return mappedColumnName
+  }
+
+  lookupOriginalColumnNameFromMapped (mappedColumnName, columnFieldLogs) {
+    const columnFieldLog = columnFieldLogs.find(columnField => columnField.field === mappedColumnName)
+    let originalColumnName = mappedColumnName
+    if (columnFieldLog) {
+      originalColumnName = columnFieldLog.column
+    }
+    return originalColumnName
   }
 }
 
