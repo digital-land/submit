@@ -1,5 +1,6 @@
 'use strict'
 const multer = require('multer')
+const axios = require('axios')
 const upload = multer({ dest: 'uploads/' })
 
 const MyController = require('./MyController.js')
@@ -25,8 +26,10 @@ class UploadController extends MyController {
           fileName: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
-          organization: 'mockOrg'
+          organization: 'local-authority-eng:CAT'
         })
+        this.result = jsonResult
+        this.errorCount = jsonResult['issue-log'].length
         req.body.validationResult = jsonResult
       } catch (error) {
         console.log(error)
@@ -45,13 +48,13 @@ class UploadController extends MyController {
 
     formData.append('upload_file', file, fileName)
 
-    // post the data to the api
-    const result = await fetch(apiRoute, {
-      method: 'POST',
-      body: formData
-    })
+    const result = await axios.post(apiRoute, formData)
 
-    return await result.json()
+    return JSON.parse(result.data)
+  }
+
+  hasErrors () {
+    return this.errorCount > 0
   }
 }
 

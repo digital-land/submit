@@ -1,40 +1,40 @@
 'use strict'
 
-const MyController = require('./MyController.js')
+const MyController = require('./MyController')
 
 const datasetOptions = {
   'Article 4': [
     {
-      value: 'Article 4 direction dataset',
-      text: 'Article 4 direction dataset'
+      value: 'article-4-direction',
+      text: 'Article 4 direction'
     },
     {
-      value: 'Article 4 direction area dataset',
-      text: 'Article 4 direction area dataset'
+      value: 'article-4-direction area',
+      text: 'Article 4 direction area'
     }
   ],
   'Conservation area': [
     {
-      value: 'Conservation area dataset',
-      text: 'Conservation area dataset'
+      value: 'conservation-area',
+      text: 'Conservation area'
     },
     {
-      value: 'Conservation area document dataset',
-      text: 'Conservation area document dataset'
+      value: 'conservation-area-document',
+      text: 'Conservation area document'
     }
   ],
   'Tree preservation order': [
     {
-      value: 'Tree preservation order dataset',
-      text: 'Tree preservation order dataset'
+      value: 'tree-preservation-order',
+      text: 'Tree preservation order'
     },
     {
-      value: 'Tree preservation zone dataset',
-      text: 'Tree preservation zone dataset'
+      value: 'tree-preservation-zone',
+      text: 'Tree preservation zone'
     },
     {
-      value: 'Tree dataset',
-      text: 'Tree dataset'
+      value: 'tree',
+      text: 'Tree'
     }
   ],
   'Listed building': false
