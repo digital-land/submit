@@ -3,6 +3,7 @@
 const MyController = require('./MyController')
 
 class ErrorsController extends MyController {
+  // ToDo: Not happy with this implementation, it's too complex, needs refactoring. can look at this after the demo
   get (req, res, next) {
     const json = req.sessionModel.get('validationResult')
 
