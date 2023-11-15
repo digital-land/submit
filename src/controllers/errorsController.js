@@ -12,13 +12,13 @@ class ErrorsController extends MyController {
     json['issue-log'].forEach(issue => {
       const entryNumber = issue['entry-number']
 
-      const rowColumns = json['converted-csv'][issue['line-number'] - 2]
+      const rowValues = json['converted-csv'][issue['line-number'] - 2]
       if (!(entryNumber in aggregatedIssues)) {
-        aggregatedIssues[entryNumber] = Object.keys(rowColumns).reduce((acc, originalColumnName) => {
+        aggregatedIssues[entryNumber] = Object.keys(rowValues).reduce((acc, originalColumnName) => {
           const mappedColumnName = this.lookupMappedColumnNameFromOriginal(originalColumnName, json['column-field-log'])
           acc[mappedColumnName] = {
             error: false,
-            value: rowColumns[originalColumnName]
+            value: rowValues[originalColumnName]
           }
           return acc
         }, {})
@@ -27,7 +27,7 @@ class ErrorsController extends MyController {
       if (entryNumber in aggregatedIssues) {
         aggregatedIssues[entryNumber][issue.field] = {
           error: this.lookupIssueType(issue['issue-type']),
-          value: rowColumns[this.lookupOriginalColumnNameFromMapped(issue.field, json['column-field-log'])]
+          value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, json['column-field-log'])]
         }
         issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
       }
