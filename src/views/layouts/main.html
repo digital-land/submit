@@ -7,6 +7,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% from 'govuk/components/header/macro.njk' import govukHeader%}
 {% from 'govuk/components/footer/macro.njk' import govukFooter%}
 {% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner%}
+{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 
 {% block head %}
   <link rel="stylesheet" href="public/stylesheets/index.css">
@@ -26,6 +27,15 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
     classes: 'govuk-width-container'
   }) }}
   <link rel="stylesheet" href="public/stylesheets/index.css">
+{% endblock %}
+
+{% block beforeContent %}
+  {% if options.lastPage %}
+    {{ govukBackLink({
+      text: "Back",
+      href: options.lastPage
+    }) }}
+  {% endif %}
 {% endblock %}
 
 {% block footer %}

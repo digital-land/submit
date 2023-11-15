@@ -1,18 +1,10 @@
 {% extends "layouts/main.html" %}
 
-{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from 'govuk/components/button/macro.njk' import govukButton %}
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 
 {% set pageName = 'There’s a problem' %}
-
-{% block beforeContent %}
-  {{ govukBackLink({
-    text: "Back",
-    href: "javascript:window.history.back()"
-  }) }}
-{% endblock %}
 
 {% block content %}
 
