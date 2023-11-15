@@ -18,10 +18,17 @@ module.exports = {
   '/upload': {
     controller: require('../../controllers/uploadController'),
     fields: ['validationResult'],
-    next: 'errors'
+    next: [
+      { fn: 'hasErrors', next: 'errors' },
+      'no-errors'
+    ]
   },
   '/errors': {
     controller: require('../../controllers/errorsController'),
+    next: 'no-errors'
+  },
+  '/no-errors': {
+    controller: require('../../controllers/MyController'),
     next: 'transformations'
   }
 }

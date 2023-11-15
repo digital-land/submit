@@ -5,5 +5,6 @@ logs:
     error: false
 api: {
     url: http://127.0.0.1:8082,
-    validationEndpoint: /api/dataset/validate/file/request/
+    port: 8082,
+    validationEndpoint: /api/dataset/validate/file/request
 }

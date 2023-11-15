@@ -19,7 +19,9 @@ test('Enter form information', async ({ page }) => {
   const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByText('Upload data').click()
   const fileChooser = await fileChooserPromise
-  await fileChooser.setFiles('test/testData/conservation-area.csv')
+  await fileChooser.setFiles('test/testData/conservation-area-errors.csv')
 
   await page.getByRole('button', { name: 'Continue' }).click()
+
+  // ToDo: extend this test to check that the error page loads and that the errors on the page are correct
 })
