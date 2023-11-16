@@ -46,7 +46,7 @@
         <tbody class="govuk-table__body">
           {% for row in options.rows %}
             <tr class="govuk-table__row">
-              {% for columnName, column in row.columns %}
+              {% for columnName, column in row %}
               <td class="govuk-table__cell app-wrap">
                   {% if column.error %}
                     {{ govukInsetText({
