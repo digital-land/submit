@@ -12,7 +12,9 @@ class ErrorsController extends MyController {
 
     req.form.options.rows = rows
     req.form.options.issueCounts = issueCounts
-    req.form.options.columnNames = Object.keys(rows[0]) // ToDo: should the api return the columns here?
+    req.form.options.columnNames = Object.keys(rows[0]) 
+    // ToDo: should the api return the columns here?
+    //  or should we get them from the specification?
     req.form.options.dataset = req.sessionModel.get('dataset')
     req.form.options.dataSubject = req.sessionModel.get('data-subject')
 
