@@ -2,40 +2,40 @@
 
 const MyController = require('./MyController')
 
-// ToDo: we shouldn't hardcode these values here, should we get them from the API?
+// ToDo: we shouldn't hardcode these values here, should we get them from the API
 const datasetOptions = {
   'Article 4': [
     {
       value: 'article-4-direction',
-      text: 'Article 4 direction'
+      text: 'Article 4 direction dataset'
     },
     {
       value: 'article-4-direction area',
-      text: 'Article 4 direction area'
+      text: 'Article 4 direction area dataset'
     }
   ],
   'Conservation area': [
     {
       value: 'conservation-area',
-      text: 'Conservation area'
+      text: 'Conservation area dataset'
     },
     {
       value: 'conservation-area-document',
-      text: 'Conservation area document'
+      text: 'Conservation area document dataset'
     }
   ],
   'Tree preservation order': [
     {
       value: 'tree-preservation-order',
-      text: 'Tree preservation order'
+      text: 'Tree preservation order dataset'
     },
     {
       value: 'tree-preservation-zone',
-      text: 'Tree preservation zone'
+      text: 'Tree preservation zone dataset'
     },
     {
       value: 'tree',
-      text: 'Tree'
+      text: 'Tree dataset'
     }
   ],
   'Listed building': false
