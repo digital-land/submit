@@ -28,7 +28,6 @@ class UploadController extends MyController {
           dataSubject: req.sessionModel.get('data-subject'),
           organization: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
         })
-        this.result = jsonResult
         this.errorCount = jsonResult['issue-log'].length
         req.body.validationResult = jsonResult
       } catch (error) {
