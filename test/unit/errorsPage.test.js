@@ -21,56 +21,53 @@ describe('errors page', () => {
       options: {
         rows: [
           {
-            entryNumber: '1',
-            columns: {
-              'Document URL': {
-                error: false,
-                value: 'https://www.camden.gov.uk/holly-lodge-conservation-area'
-              },
-              'End date': {
-                error: false,
-                value: ''
-              },
-              Geometry: {
-                error: 'fake error',
-                value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
-              },
-              Legislation: {
-                error: false,
-                value: ''
-              },
-              Name: {
-                error: false,
-                value: 'Holly Lodge Estate'
-              },
-              Notes: {
-                error: false,
-                value: ''
-              },
-              Point: {
-                error: false,
-                value: 'POINT (-0.150097204178 51.564975754948)'
-              },
-              Reference: {
-                error: false,
-                value: 'CA20'
-              },
-              'Start date': {
-                error: false,
-                value: '01/06/1992'
-              },
-              'entry-date': {
-                error: 'default-value',
-                value: undefined
-              },
-              geometry: {
-                error: 'OSGB',
-                value: undefined
-              },
-              organisation: {
-                error: 'default-value',
-                value: undefined
-              }
+            'Document URL': {
+              error: false,
+              value: 'https://www.camden.gov.uk/holly-lodge-conservation-area'
+            },
+            'End date': {
+              error: false,
+              value: ''
+            },
+            Geometry: {
+              error: 'fake error',
+              value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
+            },
+            Legislation: {
+              error: false,
+              value: ''
+            },
+            Name: {
+              error: false,
+              value: 'Holly Lodge Estate'
+            },
+            Notes: {
+              error: false,
+              value: ''
+            },
+            Point: {
+              error: false,
+              value: 'POINT (-0.150097204178 51.564975754948)'
+            },
+            Reference: {
+              error: false,
+              value: 'CA20'
+            },
+            'Start date': {
+              error: false,
+              value: '01/06/1992'
+            },
+            'entry-date': {
+              error: 'default-value',
+              value: undefined
+            },
+            geometry: {
+              error: 'OSGB',
+              value: undefined
+            },
+            organisation: {
+              error: 'default-value',
+              value: undefined
             }
           }
         ],
