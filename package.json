@@ -10,6 +10,7 @@
     "mock:api": "node ./test/mock-api/index.js",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
     "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets",
+    "mock:api": "node ./test/mock-api/index.js",
     "test": "npm run test:unit && npm run test:integration && npm run test:contract && npm run test:acceptance",
     "test:unit": "vitest run test/unit",
     "test:integration": "vitest run test/integration",
@@ -40,7 +41,7 @@
   "dependencies": {
     "@x-govuk/govuk-prototype-components": "^2.0.3",
     "@x-govuk/govuk-prototype-filters": "^1.2.0",
-    "axios": "^1.6.1",
+    "axios": "^1.6.2",
     "express": "^4.18.2",
     "govuk-frontend": "^4.7.0",
     "hmpo-config": "^3.0.0",

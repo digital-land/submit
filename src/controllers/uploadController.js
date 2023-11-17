@@ -1,14 +1,12 @@
 'use strict'
-const multer = require('multer')
-const axios = require('axios')
-const upload = multer({ dest: 'uploads/' })
+import multer from 'multer';
+import axios from 'axios';
+import { readFile } from 'fs/promises';
+import { lookup } from 'mime-types';
+import MyController from './MyController.js';
+import config from '../../config';
 
-const MyController = require('./MyController.js')
-
-const { readFile } = require('node:fs/promises')
-const { lookup } = require('mime-types')
-
-const config = require('../../config')
+const upload = multer({ dest: 'uploads/' });
 
 const apiRoute = config.api.url + config.api.validationEndpoint
 
@@ -26,9 +24,8 @@ class UploadController extends MyController {
           fileName: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
-          organization: 'local-authority-eng:CAT'
+          organization: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
         })
-        this.result = jsonResult
         this.errorCount = jsonResult['issue-log'].length
         req.body.validationResult = jsonResult
       } catch (error) {
@@ -42,7 +39,7 @@ class UploadController extends MyController {
     const formData = new FormData()
     formData.append('dataset', dataset)
     formData.append('collection', dataSubject)
-    formData.append('organization', organization)
+    import { organization } from 'organization'
 
     const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
 
