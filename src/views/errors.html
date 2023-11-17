@@ -22,13 +22,6 @@
       </h1>
 
       <ul class="govuk-list govuk-list--bullet">
-        {# <li>We could not find a ‘Geometry’ column that contains your polygons</li> #}
-        <li>There’s no column for the name of the conservation area</li>
-        <li>There are no references</li>
-        {# <li>{{referenceErrorCount}} references are missing</li> #}
-        <li>{{locationErrorCount}} locations are not in England</li>
-        <li>{{startDateErrorCount}} start dates are in the future</li>
-        {# <li> Entry date is missing - what do we do in this case? </li> #}
         {% for issue, count in options.issueCounts %}
           <li>{{count}} issue, relating to {{issue}}</li>
         {% endfor %}
@@ -41,61 +34,30 @@
     <h2 class="govuk-heading-m">
       Errors
     </h2>
-
     <div class="app-scrollable-container">
       <table class="govuk-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Reference</th>
-            <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Geometry</th>
-            <th scope="col" class="govuk-table__header">Start date</th>
-            <th scope="col" class="govuk-table__header">Legislation</th>
-            <th scope="col" class="govuk-table__header">Notes</th>
-            <th scope="col" class="govuk-table__header">Point</th>
-            <th scope="col" class="govuk-table__header">End date</th>
-            <th scope="col" class="govuk-table__header">Document URL</th>
+            {% for column in options.columnNames %}
+              <th scope="col" class="govuk-table__header">{{column}}</th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody class="govuk-table__body">
           {% for row in options.rows %}
             <tr class="govuk-table__row">
-              <td class="govuk-table__cell">
-                {% if row.columns.Reference.error %}
-                  {{ govukInsetText({
-                    classes: "app-inset-text---error",
-                    html: '<p class="app-inset-text__error">Reference is missing</p>'
-                  }) }}
-                {% else %}
-                  {{row.columns.Reference.value}}
-                {% endif %}
-              </td>
-              <td class="govuk-table__cell">{{row.columns.Name.value}}</td>
+              {% for columnName, column in row %}
               <td class="govuk-table__cell app-wrap">
-                {% if row.columns.Geometry.error %}
-                  {{ govukInsetText({
-                    classes: "app-inset-text---error",
-                    html: '<p class="app-inset-text__value">'+row.columns.Geometry.value+'</p> <p class="app-inset-text__error">'+row.columns.Geometry.error +'</p>'
-                  }) }}
-                {% else %}
-                  {{row.columns.Geometry.value}}
-                {% endif %}
-              </td>
-              <td class="govuk-table__cell">
-                {% if row.columns['Start date'].error %}
-                  {{ govukInsetText({
-                    classes: "app-inset-text---error",
-                    html: '<p class="app-inset-text__value">'+row.columns['Start date'].value+'</p> <p class="app-inset-text__error">'+row.columns['Start date'].error +'</p>'
-                  }) }}
-                {% else %}
-                  {{row.columns['Start date'].value}}
-                {% endif %}
-              </td>
-              <td class="govuk-table__cell">{{row.columns.Legisliation.value}}</td>
-              <td class="govuk-table__cell">{{row.columns.Notes.value}}</td>
-              <td class="govuk-table__cell app-wrap">{{row.columns.Point.value}}</td>
-              <td class="govuk-table__cell">{{row.columns['End date'].value}}</td>
-              <td class="govuk-table__cell">{{row.columns['Document URL'].value}}</td>
+                  {% if column.error %}
+                    {{ govukInsetText({
+                      classes: "app-inset-text---error",
+                      html: '<p class="app-inset-text__value">'+column.value+'</p> <p class="app-inset-text__error">'+column.error +'</p>'
+                    }) }}
+                  {% else %}
+                    {{column.value}}
+                  {% endif %}
+                </td>
+              {% endfor %}
             </tr>
           {% endfor %}
 

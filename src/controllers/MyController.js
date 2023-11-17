@@ -1,4 +1,5 @@
-const { Controller } = require('hmpo-form-wizard')
+import hmpoFormWizard from 'hmpo-form-wizard'
+const { Controller } = hmpoFormWizard
 
 class MyController extends Controller {
   locals (req, res, callback) {
@@ -7,4 +8,4 @@ class MyController extends Controller {
   }
 }
 
-module.exports = MyController
+export default MyController

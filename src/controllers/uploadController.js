@@ -1,13 +1,12 @@
 'use strict'
-const multer = require('multer')
+import multer from 'multer'
+import axios from 'axios'
+import { readFile } from 'fs/promises'
+import { lookup } from 'mime-types'
+import MyController from './MyController.js'
+import config from '../../config/index.js'
+
 const upload = multer({ dest: 'uploads/' })
-
-const MyController = require('./MyController.js')
-
-const { readFile } = require('node:fs/promises')
-const { lookup } = require('mime-types')
-
-const config = require('../../config')
 
 const apiRoute = config.api.url + config.api.validationEndpoint
 
@@ -25,8 +24,9 @@ class UploadController extends MyController {
           fileName: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
-          organization: 'mockOrg'
+          organisation: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
         })
+        this.errorCount = jsonResult['issue-log'].length
         req.body.validationResult = jsonResult
       } catch (error) {
         console.log(error)
@@ -35,24 +35,24 @@ class UploadController extends MyController {
     super.post(req, res, next)
   }
 
-  async validateFile ({ filePath, fileName, dataset, dataSubject, organization }) {
+  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation }) {
     const formData = new FormData()
     formData.append('dataset', dataset)
     formData.append('collection', dataSubject)
-    formData.append('organization', organization)
+    formData.append('organisation', organisation)
 
     const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
 
     formData.append('upload_file', file, fileName)
 
-    // post the data to the api
-    const result = await fetch(apiRoute, {
-      method: 'POST',
-      body: formData
-    })
+    const result = await axios.post(apiRoute, formData)
 
-    return await result.json()
+    return result.data
+  }
+
+  hasErrors () {
+    return this.errorCount > 0
   }
 }
 
-module.exports = UploadController
+export default UploadController

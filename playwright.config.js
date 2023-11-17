@@ -1,5 +1,5 @@
 // @ts-check
-const { defineConfig, devices } = require('@playwright/test')
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Read environment variables from file.
@@ -10,7 +10,7 @@ const { defineConfig, devices } = require('@playwright/test')
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
-module.exports = defineConfig({
+export default defineConfig({
   testDir: './test/acceptance',
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -71,7 +71,7 @@ module.exports = defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run start',
+    command: 'concurrently "NODE_ENV=test npm run start" "NODE_ENV=test npm run mock:api"',
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: !process.env.CI
   }

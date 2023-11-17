@@ -1,10 +1,10 @@
-const { Router } = require('express')
-const wizard = require('hmpo-form-wizard')
-const steps = require('./steps')
-const fields = require('./fields')
+import { Router } from 'express'
+import wizard from 'hmpo-form-wizard'
+import steps from './steps.js'
+import fields from './fields.js'
 
 const app = Router()
 
 app.use(wizard(steps, fields, { name: 'my-wizard', csrf: false }))
 
-module.exports = app
+export default app

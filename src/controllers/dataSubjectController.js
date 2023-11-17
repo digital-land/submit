@@ -1,9 +1,9 @@
 'use strict'
 
-const MyController = require('./MyController.js')
+import MyController from './MyController.js'
 
 class DataSubjectController extends MyController {
 
 }
 
-module.exports = DataSubjectController
+export default DataSubjectController

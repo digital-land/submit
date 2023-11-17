@@ -1,39 +1,41 @@
 'use strict'
 
-const MyController = require('./MyController.js')
+import MyController from './MyController.js'
 
+// ToDo: we shouldn't hardcode these values here, should we get them from the API
+//  maybe take from specification
 const datasetOptions = {
   'Article 4': [
     {
-      value: 'Article 4 direction dataset',
+      value: 'article-4-direction',
       text: 'Article 4 direction dataset'
     },
     {
-      value: 'Article 4 direction area dataset',
+      value: 'article-4-direction area',
       text: 'Article 4 direction area dataset'
     }
   ],
   'Conservation area': [
     {
-      value: 'Conservation area dataset',
+      value: 'conservation-area',
       text: 'Conservation area dataset'
     },
     {
-      value: 'Conservation area document dataset',
+      value: 'conservation-area-document',
       text: 'Conservation area document dataset'
     }
   ],
   'Tree preservation order': [
     {
-      value: 'Tree preservation order dataset',
+      value: 'tree-preservation-order',
       text: 'Tree preservation order dataset'
     },
     {
-      value: 'Tree preservation zone dataset',
+      value: 'tree-preservation-zone',
       text: 'Tree preservation zone dataset'
     },
     {
-      value: 'Tree dataset',
+      value: 'tree',
       text: 'Tree dataset'
     }
   ],
@@ -56,4 +58,4 @@ class DatasetController extends MyController {
   }
 }
 
-module.exports = DatasetController
+export default DatasetController
