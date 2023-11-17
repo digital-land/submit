@@ -1,6 +1,6 @@
 'use strict'
 
-const MyController = require('./MyController')
+import MyController from './MyController.js'
 
 class ErrorsController extends MyController {
   get (req, res, next) {
@@ -76,4 +76,4 @@ class ErrorsController extends MyController {
   }
 }
 
-module.exports = ErrorsController
+export default ErrorsController

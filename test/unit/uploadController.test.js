@@ -4,19 +4,17 @@ import mockApiValue from '../testData/API_RUN_PIPELINE_RESPONSE.json'
 
 import UploadController from '../../src/controllers/uploadController.js'
 
-// import proxyquire from 'proxyquire'
-
-let uploadController
-const validateFileMock = vi.fn().mockReturnValue(mockApiValue)
-
-beforeEach(() => {
-  const options = {
-    route: '/upload'
-  }
-  uploadController = new UploadController(options)
-})
-
 describe('UploadController', () => {
+  let uploadController
+  const validateFileMock = vi.fn().mockReturnValue(mockApiValue)
+
+  beforeEach(() => {
+    const options = {
+      route: '/upload'
+    }
+    uploadController = new UploadController(options)
+  })
+
   it('post adds the validation result to the session and the error count to the controller', async () => {
     expect(uploadController.post).toBeDefined()
 
@@ -45,16 +43,16 @@ describe('UploadController', () => {
     expect(uploadController.errorCount).toEqual(mockApiValue['issue-log'].length)
   })
 
-  // skipping this for now and will come back to it in a later ticket as I can't get the stubbing to work
-  it.skip('validateFile returns the result of the API call', async () => {
-    /*
-      need to stub
-        - readfile
-        - lookup
-        - axios.post
-    */
-
-    // const uploadControllerRequireStubs = proxyquire('../../src/controllers/uploadController', {})
+  it('validateFile correctly calls the API', async () => {
+    vi.mock('axios', async () => {
+      const actualAxios = vi.importActual('axios')
+      return {
+        default: {
+          ...actualAxios.default,
+          post: vi.fn().mockResolvedValue({ data: { test: 'test' } })
+        }
+      }
+    })
 
     expect(uploadController.validateFile).toBeDefined()
 
@@ -66,6 +64,10 @@ describe('UploadController', () => {
       organization: 'local-authority-eng:CAT'
     }
 
-    await uploadController.validateFile(params)
+    const result = await uploadController.validateFile(params)
+
+    expect(result).toEqual({ test: 'test' })
+
+    // expect().toHaveBeenCalledWith(config.api.url + config.api.validationEndpoint, expect.any(FormData))
   })
 })

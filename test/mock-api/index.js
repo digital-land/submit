@@ -1,10 +1,10 @@
 // a basic json express server with one endpoint that returns a json object
 
-const express = require('express')
+import express from 'express'
+
+import config from '../../config/index.js'
 
 const app = express()
-
-const config = require('../../config')
 
 app.post(config.api.validationEndpoint, (req, res) => {
   const filename = req.file.originalname
