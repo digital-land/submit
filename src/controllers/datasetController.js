@@ -1,6 +1,6 @@
 'use strict'
 
-const MyController = require('./MyController')
+import MyController from './MyController.js'
 
 // ToDo: we shouldn't hardcode these values here, should we get them from the API
 //  maybe take from specification
@@ -58,4 +58,4 @@ class DatasetController extends MyController {
   }
 }
 
-module.exports = DatasetController
+export default DatasetController

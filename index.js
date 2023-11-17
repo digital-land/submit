@@ -1,14 +1,16 @@
 'use strict'
 
-const hmpoLogger = require('hmpo-logger')
-const express = require('express')
-const cookieParser = require('cookie-parser')
-const session = require('express-session')
-const nunjucks = require('nunjucks')
-const path = require('path')
-const bodyParser = require('body-parser')
-const config = require('./config')
-const { govukMarkdown } = require('@x-govuk/govuk-prototype-filters')
+import hmpoLogger from 'hmpo-logger'
+import express from 'express'
+import cookieParser from 'cookie-parser'
+import session from 'express-session'
+import nunjucks from 'nunjucks'
+import bodyParser from 'body-parser'
+import config from './config/index.js'
+import xGovFilters from '@x-govuk/govuk-prototype-filters'
+import formWizard from './src/routes/form-wizard/index.js'
+
+const { govukMarkdown } = xGovFilters
 
 const logger = hmpoLogger.config(config.logs).get()
 
@@ -18,7 +20,7 @@ const app = express()
 app.use(hmpoLogger.middleware())
 
 // add routing for static assets
-app.use('/public', express.static(path.resolve(__dirname, 'public')))
+app.use('/public', express.static('./public'))
 
 // cookies and sessions (redis or elasticache should be used in a prod env)
 app.use(cookieParser())
@@ -54,7 +56,7 @@ nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
 // body parser
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.use('/', require('./src/routes/form-wizard'))
+app.use('/', formWizard)
 
 // file not found handler
 app.use((req, res, next) => {

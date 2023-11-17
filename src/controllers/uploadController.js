@@ -1,12 +1,12 @@
 'use strict'
-import multer from 'multer';
-import axios from 'axios';
-import { readFile } from 'fs/promises';
-import { lookup } from 'mime-types';
-import MyController from './MyController.js';
-import config from '../../config';
+import multer from 'multer'
+import axios from 'axios'
+import { readFile } from 'fs/promises'
+import { lookup } from 'mime-types'
+import MyController from './MyController.js'
+import config from '../../config/index.js'
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: 'uploads/' })
 
 const apiRoute = config.api.url + config.api.validationEndpoint
 
@@ -24,7 +24,7 @@ class UploadController extends MyController {
           fileName: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
-          organization: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
+          organisation: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
         })
         this.errorCount = jsonResult['issue-log'].length
         req.body.validationResult = jsonResult
@@ -35,11 +35,11 @@ class UploadController extends MyController {
     super.post(req, res, next)
   }
 
-  async validateFile ({ filePath, fileName, dataset, dataSubject, organization }) {
+  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation }) {
     const formData = new FormData()
     formData.append('dataset', dataset)
     formData.append('collection', dataSubject)
-    import { organization } from 'organization'
+    formData.append('organisation', organisation)
 
     const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
 
@@ -47,7 +47,7 @@ class UploadController extends MyController {
 
     const result = await axios.post(apiRoute, formData)
 
-    return JSON.parse(result.data)
+    return result.data
   }
 
   hasErrors () {
@@ -55,4 +55,4 @@ class UploadController extends MyController {
   }
 }
 
-module.exports = UploadController
+export default UploadController

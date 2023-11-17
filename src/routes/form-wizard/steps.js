@@ -1,4 +1,10 @@
-module.exports = {
+import dataSubjectController from '../../controllers/dataSubjectController.js'
+import datasetController from '../../controllers/datasetController.js'
+import uploadController from '../../controllers/uploadController.js'
+import errorsController from '../../controllers/errorsController.js'
+import MyController from '../../controllers/MyController.js'
+
+export default {
   '/': {
     entryPoint: true,
     resetJourney: true,
@@ -6,17 +12,17 @@ module.exports = {
     template: '../views/start.html'
   },
   '/data-subject': {
-    controller: require('../../controllers/dataSubjectController'),
+    controller: dataSubjectController,
     fields: ['data-subject'],
     next: 'dataset'
   },
   '/dataset': {
-    controller: require('../../controllers/datasetController'),
+    controller: datasetController,
     fields: ['dataset'],
     next: 'upload'
   },
   '/upload': {
-    controller: require('../../controllers/uploadController'),
+    controller: uploadController,
     fields: ['validationResult'],
     next: [
       { fn: 'hasErrors', next: 'errors' },
@@ -24,11 +30,11 @@ module.exports = {
     ]
   },
   '/errors': {
-    controller: require('../../controllers/errorsController'),
+    controller: errorsController,
     next: 'no-errors'
   },
   '/no-errors': {
-    controller: require('../../controllers/MyController'),
+    controller: MyController,
     next: 'transformations'
   }
 }
