@@ -1,0 +1,35 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+
+{% set pageName = 'Your data has been checked and can be published' %}
+
+{% block content %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">
+        {% if data.check.dataset %}
+          {{data.check.dataset}}
+        {% else %}
+          {{data.check.dataSubject}}
+        {% endif %}
+      </span>
+      <h1 class="govuk-heading-l">
+        {{pageName}}
+      </h1>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form novalidate method="post">
+        {{ govukButton({
+          text: "Continue",
+          href: '/email-address'
+        }) }}
+      </form>
+
+    </div>
+  </div>
+{% endblock %}

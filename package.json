@@ -8,6 +8,7 @@
     "prepare": "husky install",
     "start": "node index.js",
     "start:watch": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
+    "mock:api": "node ./test/mock-api/index.js",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
     "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets",
     "mock:api": "node ./test/mock-api/index.js",

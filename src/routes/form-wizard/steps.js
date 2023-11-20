@@ -24,7 +24,10 @@ export default {
   '/upload': {
     controller: uploadController,
     fields: ['validationResult'],
-    next: 'errors'
+    next: [
+      { fn: 'hasErrors', next: 'errors' },
+      'no-errors'
+    ]
   },
   '/errors': {
     controller: errorsController,
