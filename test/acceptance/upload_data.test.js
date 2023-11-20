@@ -16,9 +16,9 @@ test('Enter form information', async ({ page }) => {
 
   await page.waitForURL('**/upload')
 
-  let fileChooserPromise = page.waitForEvent('filechooser')
+  const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByText('Upload data').click()
-  let fileChooser = await fileChooserPromise
+  const fileChooser = await fileChooserPromise
   await fileChooser.setFiles('test/testData/conservation-area-errors.csv')
 })
 
