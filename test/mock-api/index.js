@@ -10,11 +10,22 @@ app.post(config.api.validationEndpoint, (req, res) => {
   const filename = req.file.originalname
   if (filename === 'conservation-area-errors.csv') {
     res.json({
-      errors: 'true'
+      issueLog: [
+        {
+          row: 2,
+          column: 'name',
+          issue: 'Name is required'
+        },
+        {
+          row: 3,
+          column: 'location',
+          issue: 'Location is required'
+        }
+      ]
     })
   } else {
     res.json({
-      errors: 'false'
+      issueLog: []
     })
   }
 })
