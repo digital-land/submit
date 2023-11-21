@@ -64,19 +64,18 @@ test('when the user clicks continue on the email page without entering a valid e
   await page.getByRole('button', { name: 'Continue' }).click()
   await page.waitForSelector('input#datafile.govuk-file-upload')
 
-  
-  let fileChooserPromise = page.waitForEvent('filechooser')
+  const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByText('Upload data').click()
-  let fileChooser = await fileChooserPromise
+  const fileChooser = await fileChooserPromise
   await fileChooser.setFiles('test/testData/conservation-area-ok.csv')
 
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/no-errors')
   await page.getByRole('button', { name: 'Continue' }).click()
-  
+
   await page.waitForURL('**/email-address')
-  
+
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await testErrorMessage(page, 'input#email-address.govuk-input', 'Please enter a valid email address')
@@ -86,9 +85,6 @@ test('when the user clicks continue on the email page without entering a valid e
 
   await testErrorMessage(page, 'input#email-address.govuk-input', 'Please enter a valid email address')
 })
-
-
-
 
 const testErrorMessage = async (page, fieldName, expectedErrorMessage) => {
   const errorLink = await page.getByRole('link', { name: expectedErrorMessage })
