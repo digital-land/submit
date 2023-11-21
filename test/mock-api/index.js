@@ -11,7 +11,7 @@ import multer from 'multer'
 import { readFileSync } from 'fs'
 const upload = multer({ dest: 'uploads/' })
 
-const APIResponse = JSON.parse(readFileSync('../testData/API_RUN_PIPELINE_RESPONSE.json'))
+const APIResponse = JSON.parse(readFileSync('./test/testData/API_RUN_PIPELINE_RESPONSE.json'))
 
 const app = express()
 
