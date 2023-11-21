@@ -5,8 +5,6 @@ test('when the user clicks continue on the data subject page without entering a 
   await page.getByRole('button', { name: 'Start now' }).click()
   await page.getByRole('button', { name: 'Continue' }).click()
 
-  await page.waitForSelector('input#data-subject.govuk-radios__input')
-
   await testErrorMessage(page, 'input#data-subject.govuk-radios__input', 'Please select a data subject')
 })
 
@@ -21,8 +19,6 @@ test('when the user clicks continue on the dataset page without entering a datas
 
   // dataset page
   await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForSelector('input#dataset.govuk-radios__input')
 
   await testErrorMessage(page, 'input#dataset.govuk-radios__input', 'Please select a dataset')
 })
@@ -42,9 +38,8 @@ test('when the user clicks continue on the file upload page without selecting a 
 
   // file upload page
   await page.getByRole('button', { name: 'Continue' }).click()
-  await page.waitForSelector('input#datafile.govuk-file-upload')
 
-  await testErrorMessage(page, 'input#datafile.govuk-file-upload', 'Please select a file to upload')
+  await testErrorMessage(page, 'input#datafile.govuk-file-upload', 'Please select a file')
 })
 
 test('when the user clicks continue on the email page without entering a valid email, the page correctly indicates there\'s an error', async ({ page }) => {
@@ -83,16 +78,20 @@ test('when the user clicks continue on the email page without entering a valid e
   await page.getByLabel('Your email address').fill('invalidEmail1')
   await page.getByRole('button', { name: 'Continue' }).click()
 
+  await page.waitForSelector('input#email-address.govuk-input')
+
   await testErrorMessage(page, 'input#email-address.govuk-input', 'Please enter a valid email address')
 })
 
 const testErrorMessage = async (page, fieldName, expectedErrorMessage) => {
+  await page.waitForSelector(fieldName)
+
   const errorLink = await page.getByRole('link', { name: expectedErrorMessage })
   const fieldError = await page.getByText(`Error: ${expectedErrorMessage}`)
   const errorSummary = await page.getByText('There is a problem')
 
   expect(await errorSummary.isVisible(), 'Page should show the error summary').toBeTruthy()
-  expect(await errorLink.isVisible(), 'Page should the error message that is a link to the problem field').toBeTruthy()
+  expect(await errorLink.isVisible(), 'Page should show an error summary that is a link to the problem field').toBeTruthy()
   expect(await fieldError.isVisible(), 'Page should show the error message next to the problem field').toBeTruthy()
   await errorLink.click()
   const problemFieldIsFocused = await page.$eval(fieldName, (el) => el === document.activeElement)
