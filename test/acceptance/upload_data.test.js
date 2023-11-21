@@ -60,4 +60,11 @@ test('Enter form information and upload a file with errors and without errors', 
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/no-errors')
-})
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/email-address')
+  await page.getByLabel('Your email address').fill('dataOfficer@fakeLPA.com');
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/name')
+});
