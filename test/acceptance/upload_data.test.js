@@ -67,4 +67,9 @@ test('Enter form information and upload a file with errors and without errors', 
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/name')
+  await page.getByLabel('First name').fill('Bob')
+  await page.getByLabel('Last name').fill('Marley')
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/lpa')
 })
