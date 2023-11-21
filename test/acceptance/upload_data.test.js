@@ -23,7 +23,7 @@ test('Enter form information', async ({ page }) => {
 })
 
 // currently skipping this test as im not sure how to go about providing the pipeline runner api
-test.skip('Enter form information and upload a file with errors and without errors', async ({ page }) => {
+test('Enter form information and upload a file with errors and without errors', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Start now' }).click()
 
