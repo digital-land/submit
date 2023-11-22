@@ -72,8 +72,8 @@ test('Enter form information and upload a file with errors and without errors', 
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/lpa')
-  await page.getByLabel('Local planning authority').fill('My Fake LPA');
-  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByLabel('Local planning authority').fill('My Fake LPA')
+  await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/check')
 })
