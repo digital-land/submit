@@ -1,0 +1,29 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/panel/macro.njk' import govukPanel %}
+
+{% set pageName = "Data sent" %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukPanel({
+      titleHtml: pageName
+    }) }}
+
+    <p>We’ve sent you a confirmation email.</p>
+
+    <h2 class="govuk-heading-m">What happens next</h2>
+
+    <p>We’ll send you an email once we publish the data. This usually happens within 5 working days.</p>
+
+    <h2 class="govuk-heading-m">
+      Give feedback
+    </h2>
+
+    <p><a href="#">Give feedback about this service</a> (takes 30 seconds).</p>
+
+  </div>
+</div>
+
+{% endblock %}
