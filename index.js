@@ -22,6 +22,7 @@ const app = express()
 app.use(hmpoLogger.middleware())
 
 // add routing for static assets
+app.use('/assets', express.static('./src/assets'))
 app.use('/public', express.static('./public'))
 
 // cookies and sessions (redis or elasticache should be used in a prod env)
