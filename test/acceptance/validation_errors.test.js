@@ -150,14 +150,14 @@ test('when the user clicks continue on the name page without correctly completin
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.getByLabel('Your email address').fill('test@mail.com')
-  
+
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/name')
-  
+
   await page.getByRole('button', { name: 'Continue' }).click()
-  
-  let expectedErrors = [
+
+  const expectedErrors = [
     {
       fieldName: 'input#first-name.govuk-input',
       expectedErrorMessage: 'Enter your first name'
