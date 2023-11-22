@@ -24,5 +24,8 @@ export default {
   },
   'last-name': {
     validate: 'required'
+  },
+  lpa: {
+    validate: 'required'
   }
 }

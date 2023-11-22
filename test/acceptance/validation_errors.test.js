@@ -214,7 +214,7 @@ test('when the user clicks continue on the lpa page without correctly completing
   const expectedErrors = [
     {
       fieldName: 'input#lpa.govuk-input',
-      expectedErrorMessage: 'Enter a valid local planning authority'
+      expectedErrorMessage: 'Enter the name of your local planning authority'
     }
   ]
 
