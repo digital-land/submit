@@ -50,5 +50,9 @@ export default {
     controller: MyController,
     fields: ['lpa'],
     next: 'check'
+  },
+  '/check': {
+    controller: MyController,
+    next: 'confirmation'
   }
 }

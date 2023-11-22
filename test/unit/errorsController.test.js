@@ -102,9 +102,7 @@ describe('ErrorsController', () => {
           'entry-date': 1,
           geometry: 1,
           organisation: 1
-        },
-        dataset: 'test-dataset',
-        dataSubject: 'test-data-subject'
+        }
       }
     }
 
