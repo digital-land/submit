@@ -94,10 +94,10 @@ test('when the user clicks continue on the email page without entering a valid e
 
   await page.getByRole('button', { name: 'Continue' }).click()
 
-  const expectedErrors = [
+  let expectedErrors = [
     {
       fieldName: 'input#email-address.govuk-input',
-      expectedErrorMessage: 'Please enter a valid email address'
+      expectedErrorMessage: 'Enter an email address'
     }
   ]
 
@@ -107,6 +107,13 @@ test('when the user clicks continue on the email page without entering a valid e
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForSelector('input#email-address.govuk-input')
+
+  expectedErrors = [
+    {
+      fieldName: 'input#email-address.govuk-input',
+      expectedErrorMessage: 'Enter an email address in the correct format'
+    }
+  ]
 
   await testErrorMessage(page, expectedErrors)
 })
@@ -142,27 +149,22 @@ test('when the user clicks continue on the name page without correctly completin
 
   await page.getByRole('button', { name: 'Continue' }).click()
 
-  await testErrorMessage(page, 'input#email-address.govuk-input', 'Please enter a valid email address')
-
-  await page.getByLabel('Your email address').fill('invalidEmail1')
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForSelector('input#email-address.govuk-input')
-
+  await page.getByLabel('Your email address').fill('test@mail.com')
+  
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/name')
-
+  
   await page.getByRole('button', { name: 'Continue' }).click()
-
-  const expectedErrors = [
+  
+  let expectedErrors = [
     {
       fieldName: 'input#first-name.govuk-input',
-      expectedErrorMessage: 'Please enter your first name'
+      expectedErrorMessage: 'Enter your first name'
     },
     {
       fieldName: 'input#last-name.govuk-input',
-      expectedErrorMessage: 'Please enter your last name'
+      expectedErrorMessage: 'Enter your last name'
     }
   ]
 
