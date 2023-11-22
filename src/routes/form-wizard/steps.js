@@ -1,9 +1,7 @@
-import dataSubjectController from '../../controllers/dataSubjectController.js'
+import MyController from '../../controllers/MyController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadController from '../../controllers/uploadController.js'
 import errorsController from '../../controllers/errorsController.js'
-import MyController from '../../controllers/MyController.js'
-import emailAddressController from '../../controllers/emailAddressController.js'
 
 export default {
   '/': {
@@ -13,7 +11,7 @@ export default {
     template: '../views/start.html'
   },
   '/data-subject': {
-    controller: dataSubjectController,
+    controller: MyController,
     fields: ['data-subject'],
     next: 'dataset'
   },
@@ -39,8 +37,13 @@ export default {
     next: 'email-address'
   },
   '/email-address': {
-    controller: emailAddressController,
+    controller: MyController,
     fields: ['email-address'],
     next: 'name'
+  },
+  '/name': {
+    controller: MyController,
+    fields: ['first-name', 'last-name'],
+    next: 'lpa'
   }
 }

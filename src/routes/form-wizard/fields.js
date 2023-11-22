@@ -1,3 +1,5 @@
+import { validate } from 'email-validator'
+
 export default {
   'data-subject': {
     validate: 'required'
@@ -9,6 +11,18 @@ export default {
     validate: 'required'
   },
   validationResult: {
+    validate: 'required'
+  },
+  'email-address': {
+    validate: [
+      'required',
+      { type: 'format', fn: email => validate(email) }
+    ]
+  },
+  'first-name': {
+    validate: 'required'
+  },
+  'last-name': {
     validate: 'required'
   }
 }

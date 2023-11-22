@@ -9,6 +9,8 @@ import bodyParser from 'body-parser'
 import config from './config/index.js'
 import xGovFilters from '@x-govuk/govuk-prototype-filters'
 import formWizard from './src/routes/form-wizard/index.js'
+import validationMessageLookup from './src/filters/validationMessageLookup.js'
+import toErrorList from './src/filters/toErrorList.js'
 
 const { govukMarkdown } = xGovFilters
 
@@ -52,6 +54,8 @@ Object.keys(globalValues).forEach((key) => {
   nunjucksEnv.addGlobal(key, globalValues[key])
 })
 nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
+nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
+nunjucksEnv.addFilter('toErrorList', toErrorList)
 
 // body parser
 app.use(bodyParser.urlencoded({ extended: true }))

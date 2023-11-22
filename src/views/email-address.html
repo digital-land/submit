@@ -28,12 +28,7 @@
       {% if datasetError %}
         {{ govukErrorSummary({
           titleText: "There is a problem",
-          errorList: [
-            {
-              text: errorMessage,
-              href: "#email-address"
-            }
-          ]
+          errorList: errors | toErrorList
         }) }}
       {% endif %}
 
@@ -52,7 +47,7 @@
           spellcheck: false,
           value: data.check.emailAddress,
           errorMessage: {
-            text: errorMessage 
+            text: 'email-address' | validationMessageLookup(errors['email-address'].type)
           } if datasetError else undefined
         }) }}
 
