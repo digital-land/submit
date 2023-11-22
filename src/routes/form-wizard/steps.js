@@ -54,5 +54,7 @@ export default {
   '/check': {
     controller: MyController,
     next: 'confirmation'
+  },
+  '/confirmation': {
   }
 }
