@@ -77,7 +77,7 @@ test('Enter form information and upload a file with errors and without errors', 
 
   await page.waitForURL('**/check')
   expect(await page.getByText('Conservation area', { exact: true }).isVisible(), 'supplied data subject not on check page').toBeTruthy()
-  expect(await page.getByText('Conservation area dataset').isVisible(), 'supplied dataset not on check page').toBeTruthy()
+  expect(await page.getByText('conservation-area').isVisible(), 'supplied dataset not on check page').toBeTruthy()
   expect(await page.getByText('dataOfficer@fakeLPA.com').isVisible(), 'supplied email not on check page').toBeTruthy()
   expect(await page.getByText('Bob Marley').isVisible(), 'supplied name not on check page').toBeTruthy()
   expect(await page.getByText('My Fake LPA').isVisible(), 'supplied email not on check page').toBeTruthy()
