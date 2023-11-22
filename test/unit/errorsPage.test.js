@@ -76,7 +76,7 @@ describe('errors page', () => {
         }
       },
       values: {
-        'dataset': 'Dataset test'
+        dataset: 'Dataset test'
       }
     }
     const html = nunjucks.render('errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
