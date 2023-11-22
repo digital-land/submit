@@ -82,4 +82,6 @@ test('Enter form information and upload a file with errors and without errors', 
   expect(await page.getByText('Bob Marley').isVisible(), 'supplied name not on check page').toBeTruthy()
   expect(await page.getByText('My Fake LPA').isVisible(), 'supplied email not on check page').toBeTruthy()
   await page.getByRole('button', { name: 'Send data' }).click()
+
+  await page.waitForURL('**/confirmation')
 })
