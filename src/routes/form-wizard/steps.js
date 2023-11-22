@@ -45,5 +45,10 @@ export default {
     controller: MyController,
     fields: ['first-name', 'last-name'],
     next: 'lpa'
+  },
+  '/lpa': {
+    controller: MyController,
+    fields: ['lpa'],
+    next: 'check'
   }
 }

@@ -8,6 +8,9 @@ const validationMessages = {
   },
   'last-name': {
     required: 'Enter your last name'
+  },
+  lpa: {
+    required: 'Enter the name of your local planning authority'
   }
 }
 
