@@ -6,13 +6,15 @@
 {% extends "layouts/main.html" %}
 
 {% block content %}
-    {{ govukButton({
-        text: "Start again",
-        href: "/"
-    }) }}
+    <h1 class="govuk-heading-xl">Error</h1>
 
     <h2>{{err.code + " - " if err.code}}{{err.message}}</h2>
     {%if err.stack %}
         <pre>{{err.stack | safe}}</pre>
     {% endif %}
+
+    {{ govukButton({
+        text: "Start again",
+        href: "/"
+    }) }}
 {% endblock %}
