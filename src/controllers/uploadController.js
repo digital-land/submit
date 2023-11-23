@@ -27,6 +27,7 @@ class UploadController extends MyController {
           organisation: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
         })
         this.errorCount = jsonResult['issue-log'].length
+        req.body.datafile = req.file
         req.body.validationResult = jsonResult
       } catch (error) {
         console.log(error)
