@@ -45,7 +45,7 @@
           type: "email",
           autocomplete: "email",
           spellcheck: false,
-          value: data.check.emailAddress,
+          value: values['email-address'],
           errorMessage: {
             text: 'email-address' | validationMessageLookup(errors['email-address'].type)
           } if datasetError else undefined
