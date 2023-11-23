@@ -40,7 +40,7 @@
           hint: {
             text: "Or given name"
           },
-          value: data.check.firstName,
+          value: values['first-name'],
           errorMessage: {
             text: 'first-name' | validationMessageLookup(errors['first-name'].type) 
           } if 'first-name' in errors
@@ -56,7 +56,7 @@
           hint: {
             text: "Or family name"
           },
-          value: data.check.lastName,
+          value: values['last-name'],
           errorMessage: {
             text: 'last-name' | validationMessageLookup(errors['last-name'].type)
           } if 'last-name' in errors
