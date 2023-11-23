@@ -1,0 +1,22 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageName = 'Session Expired: ' + serviceName %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">
+            Session Expired
+        </h1>
+        </div>
+    </div>
+
+    <form method="POST">
+        {{ govukButton({
+          text: "Start over",
+          href: "/"
+        }) }}
+    </form>
+{% endblock %}

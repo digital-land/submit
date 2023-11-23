@@ -65,7 +65,7 @@ app.use('/', formWizard)
 
 // file not found handler
 app.use((req, res, next) => {
-  res.status(404).render('pages/file-not-found')
+  res.status(404).render('file-not-found')
 })
 
 // error handler
@@ -74,7 +74,7 @@ app.use((err, req, res, next) => {
 
   // handle session expired
   if (err.code === 'SESSION_TIMEOUT') {
-    err.template = 'pages/session-expired'
+    err.template = 'session-expired'
   }
 
   // handle errors with automatic redirects
@@ -84,7 +84,7 @@ app.use((err, req, res, next) => {
 
   // show error page
   err.status = err.status || 500
-  err.template = err.template || 'pages/error'
+  err.template = err.template || 'error'
   res.status(err.status).render(err.template, { err })
 })
 
