@@ -1,0 +1,15 @@
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageName = "File not found" %}
+
+{% extends "layouts/main.html" %}
+
+{% block content %}
+    <h2>Error: File not found</h2>
+
+    {{ govukButton({
+        text: "Start again",
+        href: "/"
+    }) }}
+{% endblock %}
