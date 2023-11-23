@@ -1,0 +1,18 @@
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageName = "Error" %}
+
+{% extends "layouts/main.html" %}
+
+{% block content %}
+    {{ govukButton({
+        text: "Start again",
+        href: "/"
+    }) }}
+
+    <h2>{{err.code + " - " if err.code}}{{err.message}}</h2>
+    {%if err.stack %}
+        <pre>{{err.stack | safe}}</pre>
+    {% endif %}
+{% endblock %}
