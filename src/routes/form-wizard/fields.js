@@ -2,13 +2,16 @@ import { validate } from 'email-validator'
 
 export default {
   'data-subject': {
-    validate: 'required'
+    validate: 'required',
+    invalidates: ['datafile', 'dataset', 'validationResult']
   },
   dataset: {
-    validate: 'required'
+    validate: 'required',
+    invalidates: ['datafile', 'validationResult']
   },
   datafile: {
-    validate: 'required'
+    validate: 'required',
+    invalidates: ['validationResult']
   },
   validationResult: {
     validate: 'required'

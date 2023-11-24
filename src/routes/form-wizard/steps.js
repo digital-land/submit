@@ -3,6 +3,12 @@ import datasetController from '../../controllers/datasetController.js'
 import uploadController from '../../controllers/uploadController.js'
 import errorsController from '../../controllers/errorsController.js'
 
+const baseSettings = {
+  controller: MyController,
+  editable: true,
+  editBackStep: 'check'
+}
+
 export default {
   '/': {
     entryPoint: true,
@@ -11,50 +17,55 @@ export default {
     template: '../views/start.html'
   },
   '/data-subject': {
-    controller: MyController,
+    ...baseSettings,
     fields: ['data-subject'],
     next: 'dataset'
   },
   '/dataset': {
+    ...baseSettings,
     controller: datasetController,
     fields: ['dataset'],
     next: 'upload'
   },
   '/upload': {
+    ...baseSettings,
     controller: uploadController,
-    fields: ['validationResult'],
+    fields: ['validationResult', 'datafile'],
     next: [
       { fn: 'hasErrors', next: 'errors' },
       'no-errors'
     ]
   },
   '/errors': {
+    ...baseSettings,
     controller: errorsController,
     next: 'no-errors'
   },
   '/no-errors': {
-    controller: MyController,
+    ...baseSettings,
     next: 'email-address'
   },
   '/email-address': {
-    controller: MyController,
+    ...baseSettings,
     fields: ['email-address'],
     next: 'name'
   },
   '/name': {
-    controller: MyController,
+    ...baseSettings,
     fields: ['first-name', 'last-name'],
     next: 'lpa'
   },
   '/lpa': {
-    controller: MyController,
+    ...baseSettings,
     fields: ['lpa'],
     next: 'check'
   },
   '/check': {
-    controller: MyController,
+    ...baseSettings,
     next: 'confirmation'
   },
   '/confirmation': {
+    ...baseSettings,
+    noPost: true
   }
 }
