@@ -13,13 +13,8 @@ export default {
   '/': {
     entryPoint: true,
     resetJourney: true,
-    next: 'data-subject',
+    next: 'dataset',
     template: '../views/start.html'
-  },
-  '/data-subject': {
-    ...baseSettings,
-    fields: ['data-subject'],
-    next: 'dataset'
   },
   '/dataset': {
     ...baseSettings,
