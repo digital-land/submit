@@ -2,11 +2,13 @@
 
 import MyController from './MyController.js'
 
+import { severityLevels } from '../utils/utils.js'
+
 class ErrorsController extends MyController {
   get (req, res, next) {
     const validationResult = req.sessionModel.get('validationResult')
 
-    const { aggregatedIssues, issueCounts } = this.aggregateIssues(validationResult)
+    const { aggregatedIssues, issueCounts } = this.getAggregatedErrors(validationResult)
 
     const rows = Object.values(aggregatedIssues)
 
@@ -19,31 +21,33 @@ class ErrorsController extends MyController {
     super.get(req, res, next)
   }
 
-  aggregateIssues (apiResponseData) {
+  getAggregatedErrors (apiResponseData) {
     const aggregatedIssues = {}
     const issueCounts = {}
 
     apiResponseData['issue-log'].forEach(issue => {
-      const entryNumber = issue['entry-number']
+      if (issue.severity === severityLevels.error) {
+        const entryNumber = issue['entry-number']
 
-      const rowValues = apiResponseData['converted-csv'][issue['line-number'] - 2]
-      if (!(entryNumber in aggregatedIssues)) {
-        aggregatedIssues[entryNumber] = Object.keys(rowValues).reduce((acc, originalColumnName) => {
-          const mappedColumnName = this.lookupMappedColumnNameFromOriginal(originalColumnName, apiResponseData['column-field-log'])
-          acc[mappedColumnName] = {
-            error: false,
-            value: rowValues[originalColumnName]
-          }
-          return acc
-        }, {})
-      }
-
-      if (entryNumber in aggregatedIssues) {
-        aggregatedIssues[entryNumber][issue.field] = {
-          error: this.lookupIssueType(issue['issue-type']),
-          value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])]
+        const rowValues = apiResponseData['converted-csv'][issue['line-number'] - 2]
+        if (!(entryNumber in aggregatedIssues)) {
+          aggregatedIssues[entryNumber] = Object.keys(rowValues).reduce((acc, originalColumnName) => {
+            const mappedColumnName = this.lookupMappedColumnNameFromOriginal(originalColumnName, apiResponseData['column-field-log'])
+            acc[mappedColumnName] = {
+              error: false,
+              value: rowValues[originalColumnName]
+            }
+            return acc
+          }, {})
         }
-        issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
+
+        if (entryNumber in aggregatedIssues) {
+          aggregatedIssues[entryNumber][issue.field] = {
+            error: this.lookupIssueType(issue['issue-type']),
+            value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])]
+          }
+          issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
+        }
       }
     })
 
