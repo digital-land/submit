@@ -10,7 +10,7 @@ describe('ErrorsController', () => {
   }
   const errorsController = new ErrorsController(options)
 
-  it('correctly serves the errors page when the session data is correctly set', async () => {
+  it('passes the correct options to the errors page', async () => {
     const session = {
       validationResult: mockApiValue,
       dataset: 'test-dataset',
@@ -41,10 +41,7 @@ describe('ErrorsController', () => {
           'Notes',
           'Point',
           'End date',
-          'Document URL',
-          'geometry',
-          'organisation',
-          'entry-date'
+          'Document URL'
         ],
         rows: [
           {
@@ -81,27 +78,13 @@ describe('ErrorsController', () => {
               value: 'CA6'
             },
             'Start date': {
-              error: false,
-              value: '01/04/1980'
-            },
-            'entry-date': {
-              error: 'default-value',
-              value: undefined
-            },
-            geometry: {
-              error: 'OSGB',
-              value: undefined
-            },
-            organisation: {
-              error: 'default-value',
-              value: undefined
+              error: 'invalid-value',
+              value: '40/04/1980'
             }
           }
         ],
         issueCounts: {
-          'entry-date': 1,
-          geometry: 1,
-          organisation: 1
+          'Start date': 1
         }
       }
     }

@@ -6,6 +6,8 @@ import { lookup } from 'mime-types'
 import MyController from './MyController.js'
 import config from '../../config/index.js'
 
+import { severityLevels } from '../utils/utils.js'
+
 const upload = multer({ dest: 'uploads/' })
 
 const apiRoute = config.api.url + config.api.validationEndpoint
@@ -26,7 +28,7 @@ class UploadController extends MyController {
           dataSubject: req.sessionModel.get('data-subject'),
           organisation: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
         })
-        this.errorCount = jsonResult['issue-log'].length
+        this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length
         req.body.datafile = req.file
         req.body.validationResult = jsonResult
       } catch (error) {
