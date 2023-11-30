@@ -2,7 +2,7 @@
 
 import MyController from './MyController.js'
 
-import { severityLevels } from '../utils/utils.js'
+import { severityLevels, dataSubjects } from '../utils/utils.js'
 
 class ErrorsController extends MyController {
   get (req, res, next) {
@@ -15,9 +15,18 @@ class ErrorsController extends MyController {
     req.form.options.rows = rows
     req.form.options.issueCounts = issueCounts
     req.form.options.columnNames = Object.keys(rows[0])
-    req.form.options.dataset = req.sessionModel.get('dataset')
-    // ToDo: should the api return the columns here?
-    //  or should we get them from the specification?
+
+    const dataSetValue = req.sessionModel.get('dataset')
+
+    // ToDo: optimise this
+    for(const [key, value] of Object.entries(dataSubjects)) {
+      for(const dataset of value.dataSets) {
+        if(dataset.value === dataSetValue) {
+          req.form.options.dataSubject = key
+          req.form.options.dataset = dataset.text
+        }
+      }
+    }
 
     super.get(req, res, next)
   }
