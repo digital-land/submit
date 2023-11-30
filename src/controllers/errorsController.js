@@ -19,9 +19,9 @@ class ErrorsController extends MyController {
     const dataSetValue = req.sessionModel.get('dataset')
 
     // ToDo: optimise this
-    for(const [key, value] of Object.entries(dataSubjects)) {
-      for(const dataset of value.dataSets) {
-        if(dataset.value === dataSetValue) {
+    for (const [key, value] of Object.entries(dataSubjects)) {
+      for (const dataset of value.dataSets) {
+        if (dataset.value === dataSetValue) {
           req.form.options.dataSubject = key
           req.form.options.dataset = dataset.text
         }
