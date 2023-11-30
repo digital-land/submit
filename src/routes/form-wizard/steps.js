@@ -43,27 +43,27 @@ export default {
   },
   '/no-errors': {
     ...baseSettings,
-    next: 'email-address'
-  },
-  '/email-address': {
-    ...baseSettings,
-    fields: ['email-address'],
-    next: 'name'
-  },
-  '/name': {
-    ...baseSettings,
-    fields: ['first-name', 'last-name'],
-    next: 'lpa'
-  },
-  '/lpa': {
-    ...baseSettings,
-    fields: ['lpa'],
-    next: 'check'
-  },
-  '/check': {
-    ...baseSettings,
     next: 'confirmation'
   },
+  // '/email-address': {
+  //   ...baseSettings,
+  //   fields: ['email-address'],
+  //   next: 'name'
+  // },
+  // '/name': {
+  //   ...baseSettings,
+  //   fields: ['first-name', 'last-name'],
+  //   next: 'lpa'
+  // },
+  // '/lpa': {
+  //   ...baseSettings,
+  //   fields: ['lpa'],
+  //   next: 'check'
+  // },
+  // '/check': {
+  //   ...baseSettings,
+  //   next: 'confirmation'
+  // },
   '/confirmation': {
     ...baseSettings,
     noPost: true
