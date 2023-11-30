@@ -73,11 +73,9 @@ describe('errors page', () => {
         ],
         issueCounts: {
           geography: 1
-        }
-      },
-      values: {
+        },
         dataset: 'Dataset test'
-      }
+      },
     }
     const html = nunjucks.render('errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
 
