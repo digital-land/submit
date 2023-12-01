@@ -46,39 +46,42 @@ describe('ErrorsController', () => {
         rows: [
           {
             'Document URL': {
-              error: false,
+              issue: false,
               value: 'https://www.camden.gov.uk/camden-square-conservation-area-appraisal-and-management-strategy'
             },
             'End date': {
-              error: false,
+              issue: false,
               value: ''
             },
             Geometry: {
-              error: false,
+              issue: false,
               value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
             },
             Legislation: {
-              error: false,
+              issue: false,
               value: ''
             },
             Name: {
-              error: false,
+              issue: false,
               value: 'Camden Square'
             },
             Notes: {
-              error: false,
+              issue: false,
               value: ''
             },
             Point: {
-              error: false,
+              issue: false,
               value: 'POINT (-0.130484959448 51.544845663239)'
             },
             Reference: {
-              error: false,
+              issue: false,
               value: 'CA6'
             },
             'Start date': {
-              error: 'invalid-value',
+              issue: {
+                type: 'invalid-value',
+                description: 'invalid-value'
+              },
               value: '40/04/1980'
             }
           }
