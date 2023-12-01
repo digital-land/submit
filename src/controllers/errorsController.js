@@ -55,7 +55,7 @@ class ErrorsController extends MyController {
           aggregatedIssues[entryNumber][issue.field] = {
             issue: {
               type: issue['issue-type'],
-              description: issue.description,
+              description: issue.description
             },
             value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])]
           }
