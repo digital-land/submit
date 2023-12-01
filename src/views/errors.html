@@ -43,10 +43,10 @@
             <tr class="govuk-table__row">
               {% for columnName, column in row %}
               <td class="govuk-table__cell app-wrap">
-                  {% if column.error %}
+                  {% if column.issue %}
                     {{ govukInsetText({
                       classes: "app-inset-text---error",
-                      html: '<p class="app-inset-text__value">'+column.value+'</p> <p class="app-inset-text__error">'+column.error +'</p>'
+                      html: '<p class="app-inset-text__value">'+column.value+'</p> <p class="app-inset-text__error">'+column.issue.description +'</p>'
                     }) }}
                   {% else %}
                     {{column.value}}
