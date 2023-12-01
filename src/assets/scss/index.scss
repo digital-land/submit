@@ -8,6 +8,7 @@ $govuk-global-styles: true;
     border-left: 5px solid govuk-colour('red');
     padding: govuk-spacing(1) govuk-spacing(2);
     margin: 0;
+    width: 500px;
   
     .app-inset-text__value {
       margin-bottom: govuk-spacing(1);
@@ -16,6 +17,8 @@ $govuk-global-styles: true;
     .app-inset-text__error {
       color: govuk-colour('red');
       font-weight: bold;
+      white-space: normal;
+      min-width: fit-content;
     }
   
   

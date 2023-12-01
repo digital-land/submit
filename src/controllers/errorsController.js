@@ -44,7 +44,7 @@ class ErrorsController extends MyController {
           aggregatedIssues[entryNumber] = Object.keys(rowValues).reduce((acc, originalColumnName) => {
             const mappedColumnName = this.lookupMappedColumnNameFromOriginal(originalColumnName, apiResponseData['column-field-log'])
             acc[mappedColumnName] = {
-              error: false,
+              issue: false,
               value: rowValues[originalColumnName]
             }
             return acc
@@ -53,7 +53,10 @@ class ErrorsController extends MyController {
 
         if (entryNumber in aggregatedIssues) {
           aggregatedIssues[entryNumber][issue.field] = {
-            error: this.lookupIssueType(issue['issue-type']),
+            issue: {
+              type: issue['issue-type'],
+              description: issue.description
+            },
             value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])]
           }
           issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
@@ -62,11 +65,6 @@ class ErrorsController extends MyController {
     })
 
     return { aggregatedIssues, issueCounts }
-  }
-
-  lookupIssueType (issueType) {
-    // this needs to be implemented once we know what the issue types are
-    return issueType
   }
 
   lookupMappedColumnNameFromOriginal (originalColumnName, columnFieldLogs) {
