@@ -1,27 +1,65 @@
+{% from 'govuk/components/panel/macro.njk' import govukPanel %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
 {% extends "layouts/main.html" %}
 
-{% from 'govuk/components/panel/macro.njk' import govukPanel %}
 
-{% set pageName = "Data sent" %}
+{% set pageName = "Send your data for us to publish" %}
 
 {% block content %}
+
+{% set example %}
+
+  ## About the data
+
+  This dataset shows the locations of conservation areas. Conservation areas are designated to safeguard areas of special architectural and historic interest, the character and appearance of which it is desirable to preserve or enhance. Within these areas special planning controls operate which need to be considered when undertaking development.
+
+  ## Data
+
+  [Southwark conservations areas (CSV, 188KB)](#)
+
+  ## Licensing
+
+  The data is provided under the [Open Government Licence](#).
+
+{% endset %}
+
+{% set content %}
+
+  ## What you need to do next
+
+  You need to send an email to [digitalland@levellingup.gov.uk](mailto:digitalland@levellingup.gov.uk).
+
+  The email must include:
+
+  - your full name
+  - the name of your local planning authority (LPA)
+  - a link to a webpage containing the data on your LPA website
+
+  The webpage must include:
+
+  - a link to the data
+  - a summary of what the data is about
+  - a statement that the data is provided under the Open Government Licence
+
+  {{ govukDetails({
+    summaryText: "Example webpage",
+    text: example | govukMarkdown(headingsStartWith="m") | safe
+  }) }}
+
+  ## Give feedback
+
+  [Give feedback about this service](/feedback) (takes 30 seconds).
+
+{% endset %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukPanel({
       titleHtml: pageName
     }) }}
 
-    <p>We’ve sent you a confirmation email.</p>
-
-    <h2 class="govuk-heading-m">What happens next</h2>
-
-    <p>We’ll send you an email once we publish the data. This usually happens within 5 working days.</p>
-
-    <h2 class="govuk-heading-m">
-      Give feedback
-    </h2>
-
-    <p><a href="#">Give feedback about this service</a> (takes 30 seconds).</p>
+    {{content | govukMarkdown(headingsStartWith="l") | safe}} 
 
   </div>
 </div>

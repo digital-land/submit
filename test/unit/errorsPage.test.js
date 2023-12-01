@@ -73,9 +73,7 @@ describe('errors page', () => {
         ],
         issueCounts: {
           geography: 1
-        }
-      },
-      values: {
+        },
         dataset: 'Dataset test'
       }
     }
