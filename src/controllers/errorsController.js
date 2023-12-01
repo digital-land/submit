@@ -44,7 +44,7 @@ class ErrorsController extends MyController {
           aggregatedIssues[entryNumber] = Object.keys(rowValues).reduce((acc, originalColumnName) => {
             const mappedColumnName = this.lookupMappedColumnNameFromOriginal(originalColumnName, apiResponseData['column-field-log'])
             acc[mappedColumnName] = {
-              error: false,
+              issue: false,
               value: rowValues[originalColumnName]
             }
             return acc
