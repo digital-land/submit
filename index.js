@@ -63,11 +63,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use('/', formWizard)
 
-// file not found handler
-app.use((req, res, next) => {
-  res.status(404).render('file-not-found')
-})
-
 // error handler
 app.use((err, req, res, next) => {
   logger.error('Request error', { req, err })
@@ -86,6 +81,16 @@ app.use((err, req, res, next) => {
   err.status = err.status || 500
   err.template = err.template || 'error'
   res.status(err.status).render(err.template, { err })
+})
+
+app.get('/health', (req, res) => {
+  logger.info('healthcheck')
+  res.status(200).json({ applicationHealth: 'ok' })
+})
+
+// file not found handler
+app.use((req, res, next) => {
+  res.status(404).render('file-not-found')
 })
 
 // listen for incomming requests
