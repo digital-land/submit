@@ -1,8 +1,4 @@
 port: 5000
-logs:
-    console: true
-    app: false
-    error: false
 api: {
     url: http://127.0.0.1:8082,
     port: 8082,

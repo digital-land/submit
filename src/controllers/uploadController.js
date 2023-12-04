@@ -7,6 +7,7 @@ import MyController from './MyController.js'
 import config from '../../config/index.js'
 
 import { severityLevels } from '../utils/utils.js'
+import logger from '../utils/logger.js'
 
 const upload = multer({ dest: 'uploads/' })
 
@@ -32,7 +33,7 @@ class UploadController extends MyController {
         req.body.datafile = req.file
         req.body.validationResult = jsonResult
       } catch (error) {
-        console.log(error)
+        logger.error({ type: 'Upload', message: 'Error uploading file', error })
       }
     }
     super.post(req, res, next)
