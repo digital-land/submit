@@ -72,7 +72,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'concurrently "NODE_ENV=test npm run start" "NODE_ENV=test npm run mock:api"',
-    url: 'http://127.0.0.1:3000',
+    url: 'http://127.0.0.1:5000',
     reuseExistingServer: !process.env.CI
   }
 })
