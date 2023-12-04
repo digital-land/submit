@@ -84,8 +84,8 @@ app.use((err, req, res, next) => {
 })
 
 app.get('/health', (req, res) => {
-  logger.info('healthcheck');
-  res.status(200).json({applicationHealth: 'ok'})
+  logger.info('healthcheck')
+  res.status(200).json({ applicationHealth: 'ok' })
 })
 
 // file not found handler
@@ -97,4 +97,3 @@ app.use((req, res, next) => {
 app.listen(config.port, () => {
   logger.info('App listening on http://localhost::port', { port: config.port })
 })
-
