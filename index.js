@@ -1,6 +1,6 @@
 'use strict'
 
-import hmpoLogger from 'hmpo-logger'
+import logger from './src/utils/logger.js'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
@@ -14,12 +14,18 @@ import toErrorList from './src/filters/toErrorList.js'
 
 const { govukMarkdown } = xGovFilters
 
-const logger = hmpoLogger.config(config.logs).get()
-
 const app = express()
 
-// log access requests
-app.use(hmpoLogger.middleware())
+app.use((req, res, next) => {
+  // log the request
+  logger.info({
+    type: 'Request',
+    method: req.method,
+    endpoint: req.originalUrl,
+    message: `${req.method} request made to ${req.originalUrl}`
+  })
+  next()
+})
 
 // add routing for static assets
 app.use('/assets', express.static('./node_modules/govuk-frontend/govuk/assets'))
@@ -28,7 +34,7 @@ app.use('/public', express.static('./public'))
 // cookies and sessions (redis or elasticache should be used in a prod env)
 app.use(cookieParser())
 app.use(session({
-  secret: 'keyboard cat',
+  secret: 'keyboard cat', // ToDo: move to config
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false }
@@ -65,7 +71,13 @@ app.use('/', formWizard)
 
 // error handler
 app.use((err, req, res, next) => {
-  logger.error('Request error', { req, err })
+  logger.info({
+    type: 'Request error',
+    method: req.method,
+    endpoint: req.originalUrl,
+    message: `${req.method} request made to ${req.originalUrl} but an error occurred`,
+    error: err
+  })
 
   // handle session expired
   if (err.code === 'SESSION_TIMEOUT') {
@@ -84,12 +96,18 @@ app.use((err, req, res, next) => {
 })
 
 app.get('/health', (req, res) => {
-  logger.info('healthcheck')
+  logger.info({ type: 'healthcheck', message: 'Application health endpoint was called and the health is ok' })
   res.status(200).json({ applicationHealth: 'ok' })
 })
 
 // file not found handler
 app.use((req, res, next) => {
+  logger.info({
+    type: 'File not found',
+    method: req.method,
+    endpoint: req.originalUrl,
+    message: `${req.method} request made to ${req.originalUrl} but the file/endpoint was not found`
+  })
   res.status(404).render('file-not-found')
 })
 

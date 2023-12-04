@@ -48,10 +48,10 @@
     "hmpo-config": "^3.0.0",
     "hmpo-form-wizard": "^13.0.0",
     "hmpo-i18n": "^6.0.1",
-    "hmpo-logger": "^7.0.1",
     "multer": "^1.4.5-lts.1",
     "nunjucks": "^3.2.4",
-    "sass": "^1.69.4"
+    "sass": "^1.69.4",
+    "winston": "^3.11.0"
   },
   "nodemonConfig": {
     "ignore": [
