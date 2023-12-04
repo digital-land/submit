@@ -134,7 +134,6 @@ dist
 /playwright-report/*
 /playwright/.cache/
 
-public/*
 .vscode/launch.json
 
 uploads/*
