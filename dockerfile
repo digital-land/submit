@@ -6,9 +6,9 @@ COPY package.json .
 
 RUN npm install
 
-RUN npm run scss
-
 COPY . .
+
+RUN npm run scss
 
 ENV PORT=5000
 
