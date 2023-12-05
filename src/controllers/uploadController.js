@@ -27,7 +27,9 @@ class UploadController extends MyController {
           fileName: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
-          organisation: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
+          organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
+          sessionId: req.sessionID,
+          ipAddress: req.ip
         })
         this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length
         req.body.datafile = req.file
@@ -39,11 +41,13 @@ class UploadController extends MyController {
     super.post(req, res, next)
   }
 
-  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation }) {
+  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress }) {
     const formData = new FormData()
     formData.append('dataset', dataset)
     formData.append('collection', dataSubject)
     formData.append('organisation', organisation)
+    formData.append('sessionId', sessionId)
+    formData.append('ipAddress', ipAddress)
 
     const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
 
