@@ -1,10 +1,10 @@
-import MyController from '../../controllers/MyController.js'
+import MyPageController from '../../controllers/MyPageController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadController from '../../controllers/uploadController.js'
 import errorsController from '../../controllers/errorsController.js'
 
 const baseSettings = {
-  controller: MyController,
+  controller: MyPageController,
   editable: true,
   editBackStep: 'check'
 }

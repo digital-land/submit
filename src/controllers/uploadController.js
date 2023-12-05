@@ -3,7 +3,7 @@ import multer from 'multer'
 import axios from 'axios'
 import { readFile } from 'fs/promises'
 import { lookup } from 'mime-types'
-import MyController from './MyController.js'
+import MyPageController from './MyPageController.js'
 import config from '../../config/index.js'
 
 import { severityLevels } from '../utils/utils.js'
@@ -13,7 +13,7 @@ const upload = multer({ dest: 'uploads/' })
 
 const apiRoute = config.api.url + config.api.validationEndpoint
 
-class UploadController extends MyController {
+class UploadController extends MyPageController {
   middlewareSetup () {
     super.middlewareSetup()
     this.use('/upload', upload.single('datafile'))
