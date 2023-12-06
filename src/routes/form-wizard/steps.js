@@ -11,6 +11,7 @@ const baseSettings = {
 
 export default {
   '/': {
+    controller: PageController,
     entryPoint: true,
     resetJourney: true,
     next: 'dataset',

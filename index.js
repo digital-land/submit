@@ -22,7 +22,9 @@ app.use((req, res, next) => {
     type: 'Request',
     method: req.method,
     endpoint: req.originalUrl,
-    message: `${req.method} request made to ${req.originalUrl}`
+    message: `${req.method} request made to ${req.originalUrl}`,
+    sessionId: req.sessionID,
+    ipAddress: req.ip
   })
   next()
 })
