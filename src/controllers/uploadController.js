@@ -3,7 +3,7 @@ import multer from 'multer'
 import axios from 'axios'
 import { readFile } from 'fs/promises'
 import { lookup } from 'mime-types'
-import PageController from './PageController.js'
+import PageController from './pageController.js'
 import config from '../../config/index.js'
 
 import { severityLevels } from '../utils/utils.js'

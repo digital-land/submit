@@ -1,6 +1,6 @@
 'use strict'
 
-import PageController from './PageController.js'
+import PageController from './pageController.js'
 
 import { severityLevels, dataSubjects } from '../utils/utils.js'
 

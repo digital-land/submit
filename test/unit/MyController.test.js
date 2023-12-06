@@ -1,4 +1,4 @@
-import PageController from '../../src/controllers/PageController.js'
+import PageController from '../../src/controllers/pageController.js'
 
 import { describe, it, vi, expect } from 'vitest'
 

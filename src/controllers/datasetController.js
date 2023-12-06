@@ -1,6 +1,6 @@
 'use strict'
 
-import PageController from './PageController.js'
+import PageController from './pageController.js'
 
 // ToDo: we shouldn't hardcode these values here, should we get them from the API
 //  maybe take from specification
