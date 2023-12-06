@@ -11,7 +11,7 @@ class MyPageController extends Controller {
   get (req, res) {
     logger.info({
       type: 'PageView',
-      endpoint: req.originalUrl,
+      pageRoute: this.options.route,
       message: `page view occurred for page: ${req.originalUrl}`,
       sessionId: req.sessionID,
       ipAddress: req.ip
