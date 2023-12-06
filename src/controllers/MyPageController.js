@@ -8,7 +8,7 @@ class MyPageController extends Controller {
     super.locals(req, res, callback)
   }
 
-  get (req, res) {
+  get (req, res, next) {
     logger.info({
       type: 'PageView',
       pageRoute: this.options.route,
@@ -16,7 +16,7 @@ class MyPageController extends Controller {
       sessionId: req.sessionID,
       ipAddress: req.ip
     })
-    super.get(req, res)
+    super.get(req, res, next)
   }
 }
 
