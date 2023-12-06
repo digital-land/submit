@@ -3,7 +3,7 @@ import multer from 'multer'
 import axios from 'axios'
 import { readFile } from 'fs/promises'
 import { lookup } from 'mime-types'
-import MyController from './MyController.js'
+import PageController from './pageController.js'
 import config from '../../config/index.js'
 
 import { severityLevels } from '../utils/utils.js'
@@ -13,7 +13,7 @@ const upload = multer({ dest: 'uploads/' })
 
 const apiRoute = config.api.url + config.api.validationEndpoint
 
-class UploadController extends MyController {
+class UploadController extends PageController {
   middlewareSetup () {
     super.middlewareSetup()
     this.use('/upload', upload.single('datafile'))
@@ -27,7 +27,9 @@ class UploadController extends MyController {
           fileName: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
-          organisation: 'local-authority-eng:CAT' // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
+          organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
+          sessionId: req.sessionID,
+          ipAddress: req.ip
         })
         this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length
         req.body.datafile = req.file
@@ -39,11 +41,13 @@ class UploadController extends MyController {
     super.post(req, res, next)
   }
 
-  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation }) {
+  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress }) {
     const formData = new FormData()
     formData.append('dataset', dataset)
     formData.append('collection', dataSubject)
     formData.append('organisation', organisation)
+    formData.append('sessionId', sessionId)
+    formData.append('ipAddress', ipAddress)
 
     const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
 
