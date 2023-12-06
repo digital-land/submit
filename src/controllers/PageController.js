@@ -2,7 +2,7 @@ import hmpoFormWizard from 'hmpo-form-wizard'
 import logger from '../utils/logger.js'
 const { Controller } = hmpoFormWizard
 
-class MyPageController extends Controller {
+class PageController extends Controller {
   locals (req, res, callback) {
     req.form.options.lastPage = req.journeyModel.get('lastVisited')
     super.locals(req, res, callback)
@@ -20,4 +20,4 @@ class MyPageController extends Controller {
   }
 }
 
-export default MyPageController
+export default PageController

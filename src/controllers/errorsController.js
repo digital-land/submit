@@ -1,10 +1,10 @@
 'use strict'
 
-import MyPageController from './MyPageController.js'
+import PageController from './PageController.js'
 
 import { severityLevels, dataSubjects } from '../utils/utils.js'
 
-class ErrorsController extends MyPageController {
+class ErrorsController extends PageController {
   get (req, res, next) {
     const validationResult = req.sessionModel.get('validationResult')
 

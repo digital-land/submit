@@ -1,12 +1,12 @@
 'use strict'
 
-import MyPageController from './MyPageController.js'
+import PageController from './PageController.js'
 
 // ToDo: we shouldn't hardcode these values here, should we get them from the API
 //  maybe take from specification
 import { dataSubjects } from '../utils/utils.js'
 
-class DatasetController extends MyPageController {
+class DatasetController extends PageController {
   get (req, res, next) {
     // const dataset = req.sessionModel.get('data-subject')
     // const options = datasetOptions[dataset]

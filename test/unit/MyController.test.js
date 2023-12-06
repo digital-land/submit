@@ -1,10 +1,10 @@
-import MyPageController from '../../src/controllers/MyPageController.js'
+import PageController from '../../src/controllers/PageController.js'
 
 import { describe, it, vi, expect } from 'vitest'
 
 import logger from '../../src/utils/logger.js'
 
-describe('MyPageController', () => {
+describe('PageController', () => {
   const loggerInfoMock = vi.fn()
 
   vi.mock('../utils/logger.js', () => {
@@ -21,7 +21,7 @@ describe('MyPageController', () => {
       sessionID: '123',
       ip: '1234'
     }
-    const pageController = new MyPageController({
+    const pageController = new PageController({
       route: '/dataset'
     })
     // pageController.super.get = vi.fn();
