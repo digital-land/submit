@@ -1,4 +1,4 @@
-import PageController from '../../controllers/PageController.js'
+import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadController from '../../controllers/uploadController.js'
 import errorsController from '../../controllers/errorsController.js'
