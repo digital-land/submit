@@ -1,6 +1,6 @@
 port: 5000
 api: {
     url: https://publish-api.development.digital-land.info,
-    port: 8082,
+    port: 5000,
     validationEndpoint: /api/dataset/validate/file/request
 }
