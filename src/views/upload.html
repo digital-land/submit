@@ -8,7 +8,7 @@
 
 {% set pageName = 'Upload data' %}
 
-{% set errorMessage = 'Please select a file' %}
+{% set errorMessage = 'Select a file' %}
 
 
 {% if 'validationResult' in errors %}
@@ -28,7 +28,7 @@
     <div class="govuk-grid-column-two-thirds">
       {% if datasetError %}
         {{ govukErrorSummary({
-          titleText: "There is a problem",
+          titleText: "There’s a problem",
           errorList: [
             {
               text: errorMessage,

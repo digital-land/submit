@@ -6,7 +6,7 @@
 
 {% set pageName = 'Dataset' %}
 
-{% set errorMessage = 'Please select a dataset' %}
+{% set errorMessage = 'Select a dataset' %}
 
 
 {% if 'dataset' in errors %}
@@ -26,7 +26,7 @@
   <div class="govuk-grid-column-two-thirds">
     {% if datasetError %}
       {{ govukErrorSummary({
-        titleText: "There is a problem",
+        titleText: "There’s a problem",
         errorList: [
           {
             text: errorMessage,

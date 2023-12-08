@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test'
 //   const expectedErrors = [
 //     {
 //       fieldName: 'input#data-subject.govuk-radios__input',
-//       expectedErrorMessage: 'Please select a data subject'
+//       expectedErrorMessage: 'Select a data subject'
 //     }
 //   ]
 
@@ -30,7 +30,7 @@ test('when the user clicks continue on the dataset page without entering a datas
   const expectedErrors = [
     {
       fieldName: 'input#dataset.govuk-radios__input',
-      expectedErrorMessage: 'Please select a dataset'
+      expectedErrorMessage: 'Select a dataset'
     }
   ]
 
@@ -56,7 +56,7 @@ test('when the user clicks continue on the file upload page without selecting a 
   const expectedErrors = [
     {
       fieldName: 'input#datafile.govuk-file-upload',
-      expectedErrorMessage: 'Please select a file'
+      expectedErrorMessage: 'Select a file'
     }
   ]
 
@@ -69,7 +69,7 @@ const testErrorMessage = async (page, errors) => {
 
     const errorLink = await page.getByRole('link', { name: expectedErrorMessage })
     const fieldError = await page.getByText(`Error: ${expectedErrorMessage}`)
-    const errorSummary = await page.getByText('There is a problem')
+    const errorSummary = await page.getByText('There’s a problem')
 
     expect(await errorSummary.isVisible(), 'Page should show the error summary').toBeTruthy()
     expect(await errorLink.isVisible(), 'Page should show an error summary that is a link to the problem field').toBeTruthy()
