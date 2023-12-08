@@ -26,7 +26,8 @@ export default {
     ...baseSettings,
     controller: datasetController,
     fields: ['dataset'],
-    next: 'upload'
+    next: 'upload',
+    backLink: './'
   },
   '/upload': {
     ...baseSettings,
@@ -35,16 +36,19 @@ export default {
     next: [
       { fn: 'hasErrors', next: 'errors' },
       'no-errors'
-    ]
+    ],
+    backLink: './dataset'
   },
   '/errors': {
     ...baseSettings,
     controller: errorsController,
-    next: 'no-errors'
+    next: 'no-errors',
+    backLink: './upload'
   },
   '/no-errors': {
     ...baseSettings,
-    next: 'confirmation'
+    next: 'confirmation',
+    backLink: './upload'
   },
   // '/email-address': {
   //   ...baseSettings,

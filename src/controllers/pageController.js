@@ -4,7 +4,7 @@ const { Controller } = hmpoFormWizard
 
 class PageController extends Controller {
   locals (req, res, callback) {
-    req.form.options.lastPage = req.journeyModel.get('lastVisited')
+    req.form.options.lastPage = this.options.backLink ? this.options.backLink : undefined
     super.locals(req, res, callback)
   }
 
