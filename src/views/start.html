@@ -25,12 +25,13 @@
   - follows the [data specification](https://www.planning.data.gov.uk/guidance/specifications/)
   - is a CSV, GeoJSON, GML or GeoPackage file
 
-  <form method="POST">
-    {{ govukButton({
-      text: "Start now",
-      isStartButton: true
-    }) }}
-  </form>
+  
+  {{ govukButton({
+    text: "Start now",
+    href: "/dataset",
+    isStartButton: true
+  }) }}
+  
 
 {% endset %}
 
