@@ -66,7 +66,7 @@ test('Enter form information and upload a file with errors and without errors', 
 
   await page.waitForURL('**/no-errors')
   expect(await page.title()).toBe('No errors - Publish planning and housing data for England')
-  
+
   await page.getByRole('button', { name: 'Continue' }).click()
 
   // await page.waitForURL('**/email-address')
