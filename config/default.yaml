@@ -4,3 +4,7 @@ api: {
     port: 8082,
     validationEndpoint: /api/dataset/validate/file/request
 }
+maintenance: {
+    serviceUnavailable: true,
+    upTime: "9am on Monday 19 November 2024"
+}
