@@ -69,6 +69,15 @@ nunjucksEnv.addFilter('toErrorList', toErrorList)
 // body parser
 app.use(bodyParser.urlencoded({ extended: true }))
 
+// 503 page (for when the service is unavailable)
+app.use((req, res, next) => {
+  if (config.serviceUnavailable) {
+    res.status(503).render('errorPages/503', { upTime: '9am on Monday 19 November 2024' })
+  } else {
+    next()
+  }
+})
+
 app.use('/', formWizard)
 
 // error handler
@@ -94,7 +103,7 @@ app.use((err, req, res, next) => {
   // show error page
   err.status = err.status || 500
   err.template = err.template || 'error'
-  res.status(err.status).render(err.template, { err })
+  res.status(err.status).render('errorPages/500', { err })
 })
 
 app.get('/health', (req, res) => {
@@ -110,7 +119,7 @@ app.use((req, res, next) => {
     endpoint: req.originalUrl,
     message: `${req.method} request made to ${req.originalUrl} but the file/endpoint was not found`
   })
-  res.status(404).render('file-not-found')
+  res.status(404).render('errorPages/404')
 })
 
 // listen for incomming requests
