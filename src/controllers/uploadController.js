@@ -62,6 +62,8 @@ class UploadController extends PageController {
   static validateFileType ({ originalname }) {
     const allowedFiletypes = [
       'csv',
+      'xls',
+      'xlsx',
       'json',
       'geojson',
       'gml',
