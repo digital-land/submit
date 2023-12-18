@@ -59,16 +59,16 @@ class UploadController extends PageController {
   }
 
   // this function is a validation function that is called by the form wizard
-  static validateFileType ({originalname}) {
+  static validateFileType ({ originalname }) {
     const allowedFiletypes = [
       'csv',
       'json',
       'geojson',
       'gml',
       'gpkg'
-    ];
+    ]
     // check file type
-    let fileType = originalname.split('.').pop()
+    const fileType = originalname.split('.').pop()
     if (!allowedFiletypes.includes(fileType)) {
       return false
     }

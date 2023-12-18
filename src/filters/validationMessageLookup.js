@@ -18,7 +18,7 @@ const validationMessages = {
   },
   validationResult: {
     required: 'Unable to contact the API'
-  },
+  }
 }
 
 function validationMessageLookup (field, type) {
