@@ -32,7 +32,7 @@ export default {
   '/upload': {
     ...baseSettings,
     controller: uploadController,
-    fields: ['validationResult', 'datafile'],
+    fields: ['datafile', 'validationResult'],
     next: [
       { fn: 'hasErrors', next: 'errors' },
       'no-errors'

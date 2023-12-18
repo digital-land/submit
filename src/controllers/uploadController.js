@@ -21,6 +21,7 @@ class UploadController extends PageController {
 
   async post (req, res, next) {
     if (req.file !== undefined) {
+      req.body.datafile = req.file
       try {
         const jsonResult = await this.validateFile({
           filePath: req.file.path,
@@ -32,7 +33,6 @@ class UploadController extends PageController {
           ipAddress: req.ip
         })
         this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length
-        req.body.datafile = req.file
         req.body.validationResult = jsonResult
       } catch (error) {
         logger.error({ type: 'Upload', message: 'Error uploading file', error })
@@ -56,6 +56,23 @@ class UploadController extends PageController {
     const result = await axios.post(apiRoute, formData)
 
     return result.data
+  }
+
+  // this function is a validation function that is called by the form wizard
+  static validateFileType ({originalname}) {
+    const allowedFiletypes = [
+      'csv',
+      'json',
+      'geojson',
+      'gml',
+      'gpkg'
+    ];
+    // check file type
+    let fileType = originalname.split('.').pop()
+    if (!allowedFiletypes.includes(fileType)) {
+      return false
+    }
+    return true
   }
 
   hasErrors () {

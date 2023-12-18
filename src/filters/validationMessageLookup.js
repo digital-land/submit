@@ -11,7 +11,14 @@ const validationMessages = {
   },
   lpa: {
     required: 'Enter the name of your local planning authority'
-  }
+  },
+  datafile: {
+    required: 'Select a file',
+    fileType: 'The selected file must be a CSV, GeoJSON, GML or GeoPackage file'
+  },
+  validationResult: {
+    required: 'Unable to contact the API'
+  },
 }
 
 function validationMessageLookup (field, type) {

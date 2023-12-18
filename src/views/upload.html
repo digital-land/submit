@@ -8,15 +8,16 @@
 
 {% set pageName = 'Upload data' %}
 
-{% set errorMessage = 'Select a file' %}
-
-
-{% if 'validationResult' in errors %}
-  {% set datasetError = true %}
+{% if 'datafile' in errors %}
+  {% set error = true %}
+  {% set errorMessage = 'datafile' | validationMessageLookup(errors['datafile'].type) %}
+{% elif 'validationResult' in errors %}
+  {% set error = true %}
+  {% set errorMessage = 'validationResult' | validationMessageLookup(errors['validationResult'].type) %}
 {% endif %}
 
 {% block pageTitle %}
-  {% if datasetError %}
+  {% if error %}
     Error: {{super()}}
   {% else %}
     {{super()}}
@@ -26,7 +27,7 @@
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {% if datasetError %}
+      {% if error %}
         {{ govukErrorSummary({
           titleText: "There’s a problem",
           errorList: [
@@ -52,7 +53,7 @@
           },
           errorMessage: {
             text: errorMessage 
-          } if datasetError else undefined
+          } if error else undefined
         }) }}
         {{ govukButton({
           text: "Continue"

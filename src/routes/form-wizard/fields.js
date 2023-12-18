@@ -1,4 +1,5 @@
 import { validate } from 'email-validator'
+import UploadController from '../../controllers/uploadController.js'
 
 export default {
   'data-subject': {
@@ -10,7 +11,10 @@ export default {
     invalidates: ['datafile', 'validationResult']
   },
   datafile: {
-    validate: 'required',
+    validate: [
+      'required',
+      { type: 'fileType', fn: UploadController.validateFileType }
+    ],
     invalidates: ['validationResult']
   },
   validationResult: {
