@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 
 test('Enter form information', async ({ page }) => {
   await page.goto('/')
@@ -11,10 +11,13 @@ test('Enter form information', async ({ page }) => {
 
   await page.waitForURL('**/dataset')
 
+  expect(await page.title()).toBe('Dataset - Publish planning and housing data for England')
+
   await page.getByLabel('Conservation area dataset').check()
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/upload')
+  expect(await page.title()).toBe('Upload data - Publish planning and housing data for England')
 
   const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByText('Upload data').click()
@@ -48,6 +51,8 @@ test('Enter form information and upload a file with errors and without errors', 
 
   await page.waitForURL('**/errors')
 
+  expect(await page.title()).toBe('There’s a problem - Publish planning and housing data for England')
+
   await page.getByRole('button', { name: 'Upload a new version' }).click()
 
   await page.waitForURL('**/upload')
@@ -60,6 +65,8 @@ test('Enter form information and upload a file with errors and without errors', 
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/no-errors')
+  expect(await page.title()).toBe('Your data has been checked and can be published - Publish planning and housing data for England')
+
   await page.getByRole('button', { name: 'Continue' }).click()
 
   // await page.waitForURL('**/email-address')

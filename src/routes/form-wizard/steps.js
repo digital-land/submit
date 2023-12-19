@@ -15,7 +15,8 @@ export default {
     entryPoint: true,
     resetJourney: true,
     next: 'dataset',
-    template: '../views/start.html'
+    template: '../views/start.html',
+    noPost: true
   },
   // '/data-subject': {
   //   ...baseSettings,
@@ -26,25 +27,29 @@ export default {
     ...baseSettings,
     controller: datasetController,
     fields: ['dataset'],
-    next: 'upload'
+    next: 'upload',
+    backLink: './'
   },
   '/upload': {
     ...baseSettings,
     controller: uploadController,
-    fields: ['validationResult', 'datafile'],
+    fields: ['datafile', 'validationResult'],
     next: [
       { fn: 'hasErrors', next: 'errors' },
       'no-errors'
-    ]
+    ],
+    backLink: './dataset'
   },
   '/errors': {
     ...baseSettings,
     controller: errorsController,
-    next: 'no-errors'
+    next: 'no-errors',
+    backLink: './upload'
   },
   '/no-errors': {
     ...baseSettings,
-    next: 'confirmation'
+    next: 'confirmation',
+    backLink: './upload'
   },
   // '/email-address': {
   //   ...baseSettings,

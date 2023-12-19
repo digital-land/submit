@@ -25,11 +25,13 @@
   - follows the [data specification](https://www.planning.data.gov.uk/guidance/specifications/)
   - is a CSV, GeoJSON, GML or GeoPackage file
 
-  <form method="POST">
-    {{ govukButton({
-      text: "Start now"
-    }) }}
-  </form>
+  
+  {{ govukButton({
+    text: "Start now",
+    href: "/dataset",
+    isStartButton: true
+  }) }}
+  
 
 {% endset %}
 
@@ -43,7 +45,7 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {{content | govukMarkdown | safe}}
+      {{content | govukMarkdown(headingsStartWith="l") | safe}}
     </div>
     <div class="govuk-grid-column-one-third">
       {{ xGovukRelatedNavigation({

@@ -10,7 +10,7 @@
 
 {% set pageName = 'Data subject' %}
 
-{% set errorMessage = 'Please select a data subject' %}
+{% set errorMessage = 'Select a data subject' %}
 
 {% if 'data-subject' in errors %}
   {% set dataSubjectError = true %}
@@ -29,7 +29,7 @@
     <div class="govuk-grid-column-two-thirds">
       {% if dataSubjectError %}
         {{ govukErrorSummary({
-          titleText: "There is a problem",
+          titleText: "There’s a problem",
           errorList: [
             {
               text: errorMessage,
