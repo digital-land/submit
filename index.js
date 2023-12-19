@@ -71,7 +71,8 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 // 503 page (for when the service is unavailable)
 app.use((req, res, next) => {
-  if (config.maintenance.serviceUnavailable) {
+  const serviceDown = config.maintenance.serviceUnavailable || false;
+  if (serviceDown) {
     res.status(503).render('errorPages/503', { upTime: config.maintenance.upTime })
   } else {
     next()
