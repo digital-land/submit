@@ -59,10 +59,10 @@ class ErrorsController extends PageController {
             },
             value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])]
           }
-          let key = issue.field + '_' + issue['issue-type']
-          if(issueCounts[key]){
-            issueCounts[key].count += 1;
-          }else{
+          const key = issue.field + '_' + issue['issue-type']
+          if (issueCounts[key]) {
+            issueCounts[key].count += 1
+          } else {
             issueCounts[key] = {
               count: 1,
               type: issue['issue-type'],
