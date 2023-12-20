@@ -17,9 +17,14 @@
     ]
   },
   "column-field-log": [
-    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "WKT", "field": "geometry"},
-    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "details", "field": "name"},
-    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "ogc_fid", "field": "reference"}
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Geometry", "field": "geometry"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Name", "field": "name"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Point", "field": "point"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Start date", "field": "start-date"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "End date", "field": "end-date"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Document URL", "field": "document-URL"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Legislation", "field": "legislation"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Notes", "field": "notes"}
   ],
   "missing-columns": [
     "reference"
