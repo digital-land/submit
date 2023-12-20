@@ -33,51 +33,46 @@ describe('ErrorsController', () => {
     const expectedFormValues = {
       options: {
         columnNames: [
-          'Reference',
-          'Name',
           'Geometry',
-          'Start date',
-          'Legislation',
-          'Notes',
+          'Name',
           'Point',
+          'Start date',
           'End date',
-          'Document URL'
+          'Document URL',
+          'Legislation',
+          'Notes'
         ],
         rows: [
           {
-            'Document URL': {
+            'document-URL': {
               issue: false,
               value: 'https://www.camden.gov.uk/camden-square-conservation-area-appraisal-and-management-strategy'
             },
-            'End date': {
+            'end-date': {
               issue: false,
               value: ''
             },
-            Geometry: {
+            geometry: {
               issue: false,
               value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
             },
-            Legislation: {
+            legislation: {
               issue: false,
               value: ''
             },
-            Name: {
+            name: {
               issue: false,
               value: 'Camden Square'
             },
-            Notes: {
+            notes: {
               issue: false,
               value: ''
             },
-            Point: {
+            point: {
               issue: false,
               value: 'POINT (-0.130484959448 51.544845663239)'
             },
-            Reference: {
-              issue: false,
-              value: 'CA6'
-            },
-            'Start date': {
+            'start-date': {
               issue: {
                 type: 'invalid-value',
                 description: 'invalid-value'
@@ -88,7 +83,10 @@ describe('ErrorsController', () => {
         ],
         issueCounts: {
           'Start date': 1
-        }
+        },
+        missingColumns: [
+          'reference'
+        ]
       }
     }
 
