@@ -15,7 +15,7 @@ class ErrorsController extends PageController {
     req.form.options.rows = rows
     req.form.options.issueCounts = issueCounts
     req.form.options.missingColumns = validationResult['missing-columns']
-    req.form.options.columnNames = validationResult['column-field-log'].map(columnField => columnField.column)
+    req.form.options.columnNames = rows.length > 0 ? Object.keys(rows[0]) : []
 
     const dataSetValue = req.sessionModel.get('dataset')
 
@@ -53,12 +53,13 @@ class ErrorsController extends PageController {
         }
 
         if (entryNumber in aggregatedIssues) {
-          aggregatedIssues[entryNumber][issue.field] = {
+          const columnName = this.lookupMappedColumnNameFromOriginal(issue.field, apiResponseData['column-field-log'])
+          aggregatedIssues[entryNumber][columnName] = {
             issue: {
               type: issue['issue-type'],
               description: issue.description
             },
-            value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])]
+            value: rowValues[issue.field]
           }
           issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
         }
