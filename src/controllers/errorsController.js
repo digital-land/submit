@@ -14,7 +14,8 @@ class ErrorsController extends PageController {
 
     req.form.options.rows = rows
     req.form.options.issueCounts = issueCounts
-    req.form.options.columnNames = Object.keys(rows[0])
+    req.form.options.missingColumns = validationResult['missing-columns']
+    req.form.options.columnNames = validationResult['column-field-log'].map(columnField => columnField.column)
 
     const dataSetValue = req.sessionModel.get('dataset')
 

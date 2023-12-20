@@ -20,47 +20,52 @@
         {% for issue, count in options.issueCounts %}
           <li>{{count}} issue, relating to {{issue}}</li>
         {% endfor %}
+        {% for column in options.missingColumns %}
+          <li>Missing required column {{column}}</li>
+        {% endfor %}
       </ul>
   </div>
 </div>
 
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <h2 class="govuk-heading-m">
-      Check your errors
-    </h2>
-    <div class="app-scrollable-container">
-      <table class="govuk-table">
-        <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            {% for column in options.columnNames %}
-              <th scope="col" class="govuk-table__header">{{column}}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-          {% for row in options.rows %}
+{% if options.rows|length > 0 %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h2 class="govuk-heading-m">
+        Check your errors
+      </h2>
+      <div class="app-scrollable-container">
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              {% for columnName, column in row %}
-              <td class="govuk-table__cell app-wrap">
-                  {% if column.issue %}
-                    {{ govukInsetText({
-                      classes: "app-inset-text---error",
-                      html: '<p class="app-inset-text__value">'+column.value+'</p> <p class="app-inset-text__error">'+column.issue.description +'</p>'
-                    }) }}
-                  {% else %}
-                    {{column.value}}
-                  {% endif %}
-                </td>
+              {% for column in options.columnNames %}
+                <th scope="col" class="govuk-table__header">{{column}}</th>
               {% endfor %}
             </tr>
-          {% endfor %}
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for row in options.rows %}
+              <tr class="govuk-table__row">
+                {% for columnName, column in row %}
+                <td class="govuk-table__cell app-wrap">
+                    {% if column.issue %}
+                      {{ govukInsetText({
+                        classes: "app-inset-text---error",
+                        html: '<p class="app-inset-text__value">'+column.value+'</p> <p class="app-inset-text__error">'+column.issue.description +'</p>'
+                      }) }}
+                    {% else %}
+                      {{column.value}}
+                    {% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
 
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
+{% endif %}
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">

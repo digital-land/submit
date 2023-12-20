@@ -32,7 +32,7 @@ class UploadController extends PageController {
           sessionId: req.sessionID,
           ipAddress: req.ip
         })
-        this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length
+        this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['missing-columns'].length
         req.body.validationResult = jsonResult
       } catch (error) {
         logger.error({ type: 'Upload', message: 'Error uploading file', error })
