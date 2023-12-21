@@ -22,8 +22,9 @@ class UploadController extends PageController {
   async post (req, res, next) {
     if (req.file !== undefined) {
       req.body.datafile = req.file
+      let jsonResult = {}
       try {
-        const jsonResult = await this.validateFile({
+        jsonResult = await this.validateFile({
           filePath: req.file.path,
           fileName: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
@@ -32,11 +33,11 @@ class UploadController extends PageController {
           sessionId: req.sessionID,
           ipAddress: req.ip
         })
-        this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length
-        req.body.validationResult = jsonResult
       } catch (error) {
         logger.error({ type: 'Upload', message: 'Error uploading file', error })
       }
+      this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
+      req.body.validationResult = jsonResult
     }
     super.post(req, res, next)
   }

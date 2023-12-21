@@ -24,10 +24,11 @@ app.post(config.api.validationEndpoint, (req, res) => {
 
   if (filename !== 'conservation-area-errors.csv') {
     _toSend['issue-log'] = []
+    _toSend['missing-columns'] = []
   }
   res.json(_toSend)
 })
 
 app.listen(config.api.port, () => {
-  console.log('listening on port 8082')
+  console.log('listening on port ' + config.api.port)
 })

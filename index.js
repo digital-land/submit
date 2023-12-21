@@ -92,6 +92,8 @@ app.use((err, req, res, next) => {
     error: err
   })
 
+  err.template = err.template || 'errorPages/500'
+
   // handle session expired
   if (err.code === 'SESSION_TIMEOUT') {
     err.template = 'session-expired'
@@ -104,8 +106,7 @@ app.use((err, req, res, next) => {
 
   // show error page
   err.status = err.status || 500
-  err.template = err.template || 'error'
-  res.status(err.status).render('errorPages/500', { err })
+  res.status(err.status).render(err.template, { err })
 })
 
 app.get('/health', (req, res) => {
