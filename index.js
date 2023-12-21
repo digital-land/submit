@@ -56,7 +56,8 @@ const nunjucksEnv = nunjucks.configure([
 })
 
 const globalValues = {
-  serviceName: 'Publish planning and housing data for England'
+  serviceName: config.serviceName,
+  feedbackLink: config.feedbackLink,
 }
 
 Object.keys(globalValues).forEach((key) => {
