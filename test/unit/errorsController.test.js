@@ -33,14 +33,14 @@ describe('ErrorsController', () => {
     const expectedFormValues = {
       options: {
         columnNames: [
-          'Geometry',
-          'Name',
-          'Point',
-          'Start date',
-          'End date',
-          'Document URL',
-          'Legislation',
-          'Notes'
+          'name',
+          'geometry',
+          'start-date',
+          'legislation',
+          'notes',
+          'point',
+          'end-date',
+          'document-URL'
         ],
         rows: [
           {
