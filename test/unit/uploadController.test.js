@@ -40,7 +40,7 @@ describe('UploadController', () => {
     await uploadController.post(req, res, next)
 
     expect(req.body.validationResult).toEqual(mockApiValue)
-    expect(uploadController.errorCount).toEqual(mockApiValue['issue-log'].filter(issue => issue.severity === 'error').length)
+    expect(uploadController.errorCount).toEqual(mockApiValue['issue-log'].filter(issue => issue.severity === 'error').length + mockApiValue['column-field-log'].filter(column => column.missing).length)
   })
 
   it('validateFile correctly calls the API', async () => {

@@ -33,51 +33,46 @@ describe('ErrorsController', () => {
     const expectedFormValues = {
       options: {
         columnNames: [
-          'Reference',
-          'Name',
-          'Geometry',
-          'Start date',
-          'Legislation',
-          'Notes',
-          'Point',
-          'End date',
-          'Document URL'
+          'name',
+          'geometry',
+          'start-date',
+          'legislation',
+          'notes',
+          'point',
+          'end-date',
+          'document-URL'
         ],
         rows: [
           {
-            'Document URL': {
+            'document-URL': {
               issue: false,
               value: 'https://www.camden.gov.uk/camden-square-conservation-area-appraisal-and-management-strategy'
             },
-            'End date': {
+            'end-date': {
               issue: false,
               value: ''
             },
-            Geometry: {
+            geometry: {
               issue: false,
               value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
             },
-            Legislation: {
+            legislation: {
               issue: false,
               value: ''
             },
-            Name: {
+            name: {
               issue: false,
               value: 'Camden Square'
             },
-            Notes: {
+            notes: {
               issue: false,
               value: ''
             },
-            Point: {
+            point: {
               issue: false,
               value: 'POINT (-0.130484959448 51.544845663239)'
             },
-            Reference: {
-              issue: false,
-              value: 'CA6'
-            },
-            'Start date': {
+            'start-date': {
               issue: {
                 type: 'invalid-value',
                 description: 'invalid-value'
@@ -85,6 +80,9 @@ describe('ErrorsController', () => {
               value: '40/04/1980'
             }
           }
+        ],
+        missingColumns: [
+          'reference'
         ],
         issueCounts: {
           'Start date_invalid-value': {
@@ -98,5 +96,66 @@ describe('ErrorsController', () => {
     }
 
     expect(req.form).toEqual(expectedFormValues)
+  })
+
+  describe('getAggregatedErrors', () => {
+    it('returns the correct values', () => {
+      const expectedAggregatedIssues = {
+        1: {
+          'document-URL': {
+            issue: false,
+            value: 'https://www.camden.gov.uk/camden-square-conservation-area-appraisal-and-management-strategy'
+          },
+          'end-date': {
+            issue: false,
+            value: ''
+          },
+          geometry: {
+            issue: false,
+            value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
+          },
+          legislation: {
+            issue: false,
+            value: ''
+          },
+          name: {
+            issue: false,
+            value: 'Camden Square'
+          },
+          notes: {
+            issue: false,
+            value: ''
+          },
+          point: {
+            issue: false,
+            value: 'POINT (-0.130484959448 51.544845663239)'
+          },
+          'start-date': {
+            issue: {
+              type: 'invalid-value',
+              description: 'invalid-value'
+            },
+            value: '40/04/1980'
+          }
+        }
+      }
+      const expectedIssueCounts = {
+        'Start date_invalid-value': {
+          count: 1,
+          description: 'invalid-value',
+          type: 'invalid-value',
+          field: 'Start date'
+        }
+      }
+      const expectedMissingColumns = [
+        'reference'
+      ]
+
+      const { aggregatedIssues, issueCounts, missingColumns } = errorsController.getAggregatedErrors(mockApiValue)
+
+      expect(aggregatedIssues).toEqual(expectedAggregatedIssues)
+      expect(issueCounts).toEqual(expectedIssueCounts)
+      expect(missingColumns).toEqual(expectedMissingColumns)
+    })
   })
 })
