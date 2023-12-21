@@ -87,7 +87,12 @@ describe('ErrorsController', () => {
           }
         ],
         issueCounts: {
-          'Start date': 1
+          'Start date_invalid-value': {
+            count: 1,
+            description: 'invalid-value',
+            type: 'invalid-value',
+            field: 'Start date'
+          }
         }
       }
     }
