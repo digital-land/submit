@@ -17,8 +17,15 @@
       </h1>
 
       <ul class="govuk-list govuk-list--bullet">
-        {% for issue, count in options.issueCounts %}
-          <li>{{count}} issue, relating to {{issue}}</li>
+        {% for key, issue in options.issueCounts %}
+
+          {% if issue.count > 1 %}
+            {% set issueString = 'issues' %}
+          {% else %}
+            {% set issueString = 'issue' %}
+          {% endif %}
+
+          <li>{{issue.count}} {{issue.type}} {{issueString}}, relating to column {{issue.field}}</li>
         {% endfor %}
         {% for column in options.missingColumns %}
           <li>Missing required column {{column}}</li>
