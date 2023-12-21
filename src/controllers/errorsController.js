@@ -59,7 +59,17 @@ class ErrorsController extends PageController {
             },
             value: rowValues[this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])]
           }
-          issueCounts[issue.field] = issueCounts[issue.field] ? issueCounts[issue.field] + 1 : 1
+          const key = issue.field + '_' + issue['issue-type']
+          if (issueCounts[key]) {
+            issueCounts[key].count += 1
+          } else {
+            issueCounts[key] = {
+              count: 1,
+              type: issue['issue-type'],
+              description: issue.description,
+              field: issue.field
+            }
+          }
         }
       }
     })
