@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . .
 
-RUN npm run scss
+RUN npm run build
 
 ENV PORT=5000
 

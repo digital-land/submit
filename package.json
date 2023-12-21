@@ -9,6 +9,7 @@
     "start": "node index.js",
     "start:watch": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
     "mock:api": "node ./test/mock-api/index.js",
+    "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
     "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets",
     "test": "npm run test:unit && npm run test:integration && npm run test:contract && npm run test:acceptance",
