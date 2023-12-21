@@ -8,13 +8,13 @@ class ErrorsController extends PageController {
   get (req, res, next) {
     const validationResult = req.sessionModel.get('validationResult')
 
-    const { aggregatedIssues, issueCounts } = this.getAggregatedErrors(validationResult)
+    const { aggregatedIssues, issueCounts, missingColumns } = this.getAggregatedErrors(validationResult)
 
     const rows = Object.values(aggregatedIssues)
 
     req.form.options.rows = rows
     req.form.options.issueCounts = issueCounts
-    req.form.options.missingColumns = validationResult['missing-columns']
+    req.form.options.missingColumns = missingColumns
     req.form.options.columnNames = rows.length > 0 ? Object.keys(rows[0]) : []
 
     const dataSetValue = req.sessionModel.get('dataset')
@@ -66,7 +66,14 @@ class ErrorsController extends PageController {
       }
     })
 
-    return { aggregatedIssues, issueCounts }
+    const missingColumns = []
+    apiResponseData['column-field-log'].forEach(columnField => {
+      if(columnField.missing){
+        missingColumns.push(columnField.field)
+      }
+    });
+
+    return { aggregatedIssues, issueCounts, missingColumns }
   }
 
   lookupMappedColumnNameFromOriginal (originalColumnName, columnFieldLogs) {
