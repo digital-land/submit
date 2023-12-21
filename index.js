@@ -57,7 +57,7 @@ const nunjucksEnv = nunjucks.configure([
 
 const globalValues = {
   serviceName: config.serviceName,
-  feedbackLink: config.feedbackLink,
+  feedbackLink: config.feedbackLink
 }
 
 Object.keys(globalValues).forEach((key) => {
