@@ -68,10 +68,10 @@ class ErrorsController extends PageController {
 
     const missingColumns = []
     apiResponseData['column-field-log'].forEach(columnField => {
-      if(columnField.missing){
+      if (columnField.missing) {
         missingColumns.push(columnField.field)
       }
-    });
+    })
 
     return { aggregatedIssues, issueCounts, missingColumns }
   }
