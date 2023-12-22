@@ -33,15 +33,15 @@ class UploadController extends PageController {
           sessionId: req.sessionID,
           ipAddress: req.ip
         })
-        if(jsonResult){
-          try{
+        if (jsonResult) {
+          try {
             this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
-            req.body.validationResult = jsonResult;
-          }catch (error) {
-            logger.error({type: 'Upload', message: 'error parsing api response error count', error})
+            req.body.validationResult = jsonResult
+          } catch (error) {
+            logger.error({ type: 'Upload', message: 'error parsing api response error count', error })
           }
         } else {
-          logger.error({type: 'filetype', message: 'invalid file type uploaded'})
+          logger.error({ type: 'filetype', message: 'invalid file type uploaded' })
         }
       } catch (error) {
         logger.error({ type: 'Upload', message: 'Error uploading file', error })
@@ -51,11 +51,10 @@ class UploadController extends PageController {
   }
 
   async validateFile ({ filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress }) {
-
     const validFileType = UploadController.validateFileType({ originalname: fileName })
 
-    if(!validFileType){
-      return false;
+    if (!validFileType) {
+      return false
     }
 
     const formData = new FormData()
