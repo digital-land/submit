@@ -1,5 +1,6 @@
 import hmpoFormWizard from 'hmpo-form-wizard'
 import logger from '../utils/logger.js'
+import hash from '../utils/hasher.js'
 const { Controller } = hmpoFormWizard
 
 class PageController extends Controller {
@@ -8,13 +9,13 @@ class PageController extends Controller {
     super.locals(req, res, callback)
   }
 
-  get (req, res, next) {
+  async get (req, res, next) {
     logger.info({
       type: 'PageView',
       pageRoute: this.options.route,
       message: `page view occurred for page: ${req.originalUrl}`,
-      sessionId: req.sessionID,
-      ipAddress: req.ip
+      sessionId: await hash(req.sessionID),
+      ipAddress: await hash(req.ip)
     })
     super.get(req, res, next)
   }

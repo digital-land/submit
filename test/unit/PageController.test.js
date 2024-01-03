@@ -4,6 +4,8 @@ import { describe, it, vi, expect } from 'vitest'
 
 import logger from '../../src/utils/logger.js'
 
+import hash from '../../src/utils/hasher.js'
+
 describe('PageController', () => {
   const loggerInfoMock = vi.fn()
 
@@ -15,7 +17,7 @@ describe('PageController', () => {
 
   const loggerInfoSpy = vi.spyOn(logger, 'info')
 
-  it('Correctly creates a log when the page is viewed', () => {
+  it('Correctly creates a log when the page is viewed', async () => {
     const req = {
       originalUrl: '/dataset',
       sessionID: '123',
@@ -25,7 +27,7 @@ describe('PageController', () => {
       route: '/dataset'
     })
     // pageController.super.get = vi.fn();
-    pageController.get(req, {}, vi.fn())
+    await pageController.get(req, {}, vi.fn())
     expect(loggerInfoSpy).toHaveBeenCalledOnce()
 
     const callArgs = loggerInfoSpy.mock.calls[0][0]
@@ -33,8 +35,8 @@ describe('PageController', () => {
     expect(callArgs.type).toEqual('PageView')
     expect(callArgs.pageRoute).toEqual('/dataset')
     expect(callArgs.message).toEqual('page view occurred for page: /dataset')
-    expect(callArgs.sessionId).toEqual('123')
-    expect(callArgs.ipAddress).toEqual('1234')
+    expect(callArgs.sessionId).toEqual(await hash('123'))
+    expect(callArgs.ipAddress).toEqual(await hash('1234'))
     expect(callArgs.level).toEqual('info')
     expect(callArgs.service).toEqual('lpa-data-validation-frontend')
   })

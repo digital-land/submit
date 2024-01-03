@@ -11,20 +11,21 @@ import xGovFilters from '@x-govuk/govuk-prototype-filters'
 import formWizard from './src/routes/form-wizard/index.js'
 import validationMessageLookup from './src/filters/validationMessageLookup.js'
 import toErrorList from './src/filters/toErrorList.js'
+import hash from './src/utils/hasher.js'
 
 const { govukMarkdown } = xGovFilters
 
 const app = express()
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   // log the request
   logger.info({
     type: 'Request',
     method: req.method,
     endpoint: req.originalUrl,
     message: `${req.method} request made to ${req.originalUrl}`,
-    sessionId: req.sessionID,
-    ipAddress: req.ip
+    sessionId: await hash(req.sessionID),
+    ipAddress: await hash(req.ip)
   })
   next()
 })
