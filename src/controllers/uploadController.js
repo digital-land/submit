@@ -8,6 +8,7 @@ import config from '../../config/index.js'
 
 import { severityLevels } from '../utils/utils.js'
 import logger from '../utils/logger.js'
+import hash from '../utils/hasher.js'
 
 const upload = multer({ dest: 'uploads/' })
 
@@ -30,8 +31,8 @@ class UploadController extends PageController {
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
           organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
-          sessionId: req.sessionID,
-          ipAddress: req.ip
+          sessionId: await hash(req.sessionID),
+          ipAddress: await hash(req.ip)
         })
         if (jsonResult) {
           try {
