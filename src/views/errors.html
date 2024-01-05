@@ -4,7 +4,7 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 
-{% set pageName = 'There’s a problem' %}
+{% set pageName = 'Your data has errors' %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -13,7 +13,7 @@
         {{options.dataset}}
       </span>
       <h1 class="govuk-heading-l">
-        Your data has errors
+        {{pageName}}
       </h1>
 
       <ul class="govuk-list govuk-list--bullet">
