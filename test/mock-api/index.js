@@ -24,7 +24,7 @@ app.post(config.api.validationEndpoint, (req, res) => {
 
   if (filename !== 'conservation-area-errors.csv') {
     _toSend['issue-log'] = []
-    _toSend['missing-columns'] = []
+    _toSend['column-field-log'] = []
   }
   res.json(_toSend)
 })

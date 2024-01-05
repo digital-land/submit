@@ -8,6 +8,7 @@ import config from '../../config/index.js'
 
 import { severityLevels } from '../utils/utils.js'
 import logger from '../utils/logger.js'
+import hash from '../utils/hasher.js'
 
 const upload = multer({ dest: 'uploads/' })
 
@@ -30,19 +31,33 @@ class UploadController extends PageController {
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
           organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
-          sessionId: req.sessionID,
-          ipAddress: req.ip
+          sessionId: await hash(req.sessionID),
+          ipAddress: await hash(req.ip)
         })
+        if (jsonResult) {
+          try {
+            this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
+            req.body.validationResult = jsonResult
+          } catch (error) {
+            logger.error({ type: 'Upload', message: 'error parsing api response error count', error })
+          }
+        } else {
+          logger.error({ type: 'filetype', message: 'invalid file type uploaded' })
+        }
       } catch (error) {
         logger.error({ type: 'Upload', message: 'Error uploading file', error })
       }
-      this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
-      req.body.validationResult = jsonResult
     }
     super.post(req, res, next)
   }
 
   async validateFile ({ filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress }) {
+    const validFileType = UploadController.validateFileType({ originalname: fileName })
+
+    if (!validFileType) {
+      return false
+    }
+
     const formData = new FormData()
     formData.append('dataset', dataset)
     formData.append('collection', dataSubject)
