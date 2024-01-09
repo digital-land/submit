@@ -29,3 +29,8 @@ test.describe('without a valid session, the user can not access the later pages'
     await checkSessionExpired(page, '/upload')
   })
 })
+
+// the accessibility page loads ok
+test('/accessibility loads ok', async ({ page }) => {
+  await checkRouteResponse(page, '/accessibility', 200)
+})

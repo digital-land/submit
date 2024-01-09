@@ -12,6 +12,7 @@ import formWizard from './src/routes/form-wizard/index.js'
 import validationMessageLookup from './src/filters/validationMessageLookup.js'
 import toErrorList from './src/filters/toErrorList.js'
 import hash from './src/utils/hasher.js'
+import accessibility from './src/routes/accessibility.js'
 
 const { govukMarkdown } = xGovFilters
 
@@ -81,7 +82,12 @@ app.use((req, res, next) => {
   }
 })
 
+// routing
 app.use('/', formWizard)
+
+app.use('/accessibility', accessibility)
+
+
 
 // error handler
 app.use((err, req, res, next) => {
