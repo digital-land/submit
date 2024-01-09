@@ -3,12 +3,9 @@ import nunjucks from 'nunjucks'
 
 const router = express.Router()
 
-
-
 router.get('/', (req, res) => {
-    const accessibilityPage = nunjucks.render('accessibility.html', {});
-    res.send(accessibilityPage);
+  const accessibilityPage = nunjucks.render('accessibility.html', {})
+  res.send(accessibilityPage)
 })
-
 
 export default router

@@ -87,8 +87,6 @@ app.use('/', formWizard)
 
 app.use('/accessibility', accessibility)
 
-
-
 // error handler
 app.use((err, req, res, next) => {
   logger.info({
