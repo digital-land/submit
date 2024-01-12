@@ -102,6 +102,10 @@ class UploadController extends PageController {
     return result.data
   }
 
+  static resultIsValid (validationResult) {
+    return validationResult ? !validationResult.error : false;
+  }
+
   // this function is a validation function that is called by the form wizard
   static validateFileType ({ originalname }) {
     const allowedFiletypes = [
