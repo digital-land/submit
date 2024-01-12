@@ -52,20 +52,20 @@ class UploadController extends PageController {
         }
       } catch (error) {
         if (error.code === 'ECONNREFUSED') {
-          this.validationError('apiError', 'Unable to reach the api', error, req);
+          this.validationError('apiError', 'Unable to reach the api', error, req)
         } else {
           switch (error.response.status) {
             case 400:
-              this.validationError('apiError', 'Bad request sent to the api', error, req);
-              break;
+              this.validationError('apiError', 'Bad request sent to the api', error, req)
+              break
             case 404:
-              this.validationError('apiError', 'Validation endpoint not found', error, req);
-              break;
+              this.validationError('apiError', 'Validation endpoint not found', error, req)
+              break
             case 500:
-              this.validationError('apiError', 'Internal Server Error', error, req);
-              break;
+              this.validationError('apiError', 'Internal Server Error', error, req)
+              break
             default:
-              this.validationError('apiError', 'Error uploading file', error, req);
+              this.validationError('apiError', 'Error uploading file', error, req)
           }
         }
       }
@@ -75,7 +75,7 @@ class UploadController extends PageController {
 
   validationError (type, message, errorObject, req) {
     logger.error({ type, message, errorObject })
-    req.body.validationResult = {error: true, message, errorObject}
+    req.body.validationResult = { error: true, message, errorObject }
     this.validationErrorMessage = message
   }
 
