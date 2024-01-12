@@ -103,7 +103,7 @@ class UploadController extends PageController {
   }
 
   static resultIsValid (validationResult) {
-    return validationResult ? !validationResult.error : false;
+    return validationResult ? !validationResult.error : false
   }
 
   // this function is a validation function that is called by the form wizard
