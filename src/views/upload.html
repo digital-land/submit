@@ -13,7 +13,13 @@
   {% set errorMessage = 'datafile' | validationMessageLookup(errors['datafile'].type) %}
 {% elif 'validationResult' in errors %}
   {% set error = true %}
-  {% set errorMessage = 'validationResult' | validationMessageLookup(errors['validationResult'].type) %}
+
+  {% if errors['validationResult'].type == 'validationError' %}
+    {{ options.validationError | dump}}
+    {% set errorMessage = options.validationError %}
+  {% else %}
+    {% set errorMessage = 'validationResult' | validationMessageLookup(errors['validationResult'].type) %}
+  {% endif %}
 {% endif %}
 
 {% block pageTitle %}

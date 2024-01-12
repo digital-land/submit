@@ -18,7 +18,10 @@ export default {
     invalidates: ['validationResult']
   },
   validationResult: {
-    validate: 'required'
+    validate: [
+      'required',
+      { type: 'validationError', fn: UploadController.resultIsValid }
+    ]
   },
   'email-address': {
     validate: [
