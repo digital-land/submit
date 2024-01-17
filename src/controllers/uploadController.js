@@ -75,7 +75,7 @@ class UploadController extends PageController {
         }
       }
     }
-    
+
     // delete the file from the uploads folder
     unlink(req.file.path)
 
@@ -89,7 +89,6 @@ class UploadController extends PageController {
   }
 
   async validateFile (datafile) {
-    
     if (
       !UploadController.extensionIsValid(datafile) ||
       !UploadController.sizeIsValid(datafile) ||
