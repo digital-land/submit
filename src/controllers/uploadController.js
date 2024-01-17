@@ -1,7 +1,7 @@
 'use strict'
 import multer from 'multer'
 import axios from 'axios'
-import { readFile } from 'fs/promises'
+import { readFile, unlink } from 'fs/promises'
 import { lookup } from 'mime-types'
 import PageController from './pageController.js'
 import config from '../../config/index.js'
@@ -34,6 +34,7 @@ class UploadController extends PageController {
         jsonResult = await this.validateFile({
           filePath: req.file.path,
           fileName: req.file.originalname,
+          originalname: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
           organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
@@ -74,6 +75,10 @@ class UploadController extends PageController {
         }
       }
     }
+    
+    // delete the file from the uploads folder
+    unlink(req.file.path)
+
     super.post(req, res, next)
   }
 
@@ -84,10 +89,7 @@ class UploadController extends PageController {
   }
 
   async validateFile (datafile) {
-    const { filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress } = datafile
-
-    datafile.originalname = datafile.originalname || fileName
-
+    
     if (
       !UploadController.extensionIsValid(datafile) ||
       !UploadController.sizeIsValid(datafile) ||
@@ -97,6 +99,8 @@ class UploadController extends PageController {
     ) {
       return false
     }
+
+    const { filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress } = datafile
 
     const formData = new FormData()
     formData.append('dataset', dataset)
