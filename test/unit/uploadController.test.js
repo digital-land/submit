@@ -4,10 +4,11 @@ import mockApiValue from '../testData/API_RUN_PIPELINE_RESPONSE.json'
 
 import UploadController from '../../src/controllers/uploadController.js'
 
+import fs from 'fs/promises'
+
 describe('UploadController', () => {
   let uploadController
   const validateFileMock = vi.fn().mockReturnValue(mockApiValue)
-  const unlinkMock = vi.fn()
 
   beforeEach(() => {
     const options = {
@@ -25,7 +26,7 @@ describe('UploadController', () => {
       return {
         default: {
           readFile: vi.fn(),
-          unlink: unlinkMock
+          unlink: vi.fn()
         }
       }
     })
@@ -51,7 +52,7 @@ describe('UploadController', () => {
 
     expect(req.body.validationResult).toEqual(mockApiValue)
     expect(uploadController.errorCount).toEqual(mockApiValue['issue-log'].filter(issue => issue.severity === 'error').length + mockApiValue['column-field-log'].filter(column => column.missing).length)
-    expect(unlinkMock).toHaveBeenCalledWith(req.file.path)
+    expect(fs.unlink).toHaveBeenCalledWith(req.file.path)
   })
 
   it('validateFile correctly calls the API', async () => {
