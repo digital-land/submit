@@ -165,6 +165,35 @@ class UploadController extends PageController {
     return true
   }
 
+  static fileMimeTypeIsValid (datafile) {
+    const allowedMimeTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/json', 'application/vnd.geo+json', 'application/gml+xml', 'application/gpkg']
+    if (!allowedMimeTypes.includes(datafile.mimetype)) {
+      return false
+    }
+    return true
+  }
+
+  static fileMimeTypeMatchesExtension (datafile) {
+    const parts = datafile.originalname.split('.')
+    const extension = parts[parts.length - 1]
+
+    const mimeTypes = {
+      csv: 'text/csv',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      json: 'application/json',
+      geojson: 'application/vnd.geo+json',
+      gml: 'application/gml+xml',
+      gpkg: 'application/gpkg'
+    }
+
+    if (mimeTypes[extension] !== datafile.mimetype) {
+      return false
+    }
+
+    return true
+  }
+
   hasErrors () {
     return this.errorCount > 0
   }

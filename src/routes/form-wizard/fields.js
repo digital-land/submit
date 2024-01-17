@@ -17,7 +17,9 @@ export default {
       { type: 'fileSize', fn: UploadController.sizeIsValid },
       { type: 'fileNameTooLong', fn: UploadController.fileNameIsntTooLong },
       { type: 'fileNameInvalidCharacters', fn: UploadController.fileNameIsValid },
-      { type: 'fileNameDoubleExtension', fn: UploadController.fileNameDoesntContainDoubleExtension }
+      { type: 'fileNameDoubleExtension', fn: UploadController.fileNameDoesntContainDoubleExtension },
+      { type: 'mimeType', fn: UploadController.fileMimeTypeIsValid },
+      { type: 'mimeTypeMalformed', fn: UploadController.fileMimeTypeMatchesExtension }
     ],
     invalidates: ['validationResult']
   },
