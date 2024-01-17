@@ -1,7 +1,7 @@
 'use strict'
 import multer from 'multer'
 import axios from 'axios'
-import { readFile, unlink } from 'fs/promises'
+import fs from 'fs/promises'
 import { lookup } from 'mime-types'
 import PageController from './pageController.js'
 import config from '../../config/index.js'
@@ -77,7 +77,7 @@ class UploadController extends PageController {
     }
 
     // delete the file from the uploads folder
-    unlink(req.file.path)
+    fs.unlink(req.file.path)
 
     super.post(req, res, next)
   }
@@ -108,7 +108,7 @@ class UploadController extends PageController {
     formData.append('sessionId', sessionId)
     formData.append('ipAddress', ipAddress)
 
-    const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
+    const file = new Blob([await fs.readFile(filePath)], { type: lookup(filePath) })
 
     formData.append('upload_file', file, fileName)
 
