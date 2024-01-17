@@ -41,11 +41,15 @@ class UploadController extends PageController {
           ipAddress: await hash(req.ip)
         })
         if (jsonResult) {
-          try {
-            this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
-            req.body.validationResult = jsonResult
-          } catch (error) {
-            this.validationError('apiError', 'Error parsing api response error count', error, req)
+          if (jsonResult.error) {
+            this.validationError('apiError', jsonResult.message, {}, req)
+          } else {
+            try {
+              this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
+              req.body.validationResult = jsonResult
+            } catch (error) {
+              this.validationError('apiError', 'Error parsing api response error count', error, req)
+            }
           }
         } else {
           this.validationError('apiError', 'Nothing returned from the api', null, req)
@@ -79,10 +83,18 @@ class UploadController extends PageController {
     this.validationErrorMessage = message
   }
 
-  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress }) {
-    const validFileType = UploadController.validateFileType({ originalname: fileName })
+  async validateFile (datafile) {
+    const { filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress } = datafile
 
-    if (!validFileType) {
+    datafile.originalname = datafile.originalname || fileName
+
+    if (
+      !UploadController.extensionIsValid(datafile) ||
+      !UploadController.sizeIsValid(datafile) ||
+      !UploadController.fileNameIsntTooLong(datafile) ||
+      !UploadController.fileNameIsValid(datafile) ||
+      !UploadController.fileNameDoesntContainDoubleExtension(datafile)
+    ) {
       return false
     }
 
@@ -106,20 +118,48 @@ class UploadController extends PageController {
     return validationResult ? !validationResult.error : false
   }
 
-  // this function is a validation function that is called by the form wizard
-  static validateFileType ({ originalname }) {
-    const allowedFiletypes = [
-      'csv',
-      'xls',
-      'xlsx',
-      'json',
-      'geojson',
-      'gml',
-      'gpkg'
-    ]
-    // check file type
-    const fileType = originalname.split('.').pop()
-    if (!allowedFiletypes.includes(fileType)) {
+  static extensionIsValid (datafile) {
+    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg']
+
+    const parts = datafile.originalname.split('.')
+
+    const extension = parts[parts.length - 1]
+    if (!allowedExtensions.includes(extension)) {
+      return false
+    }
+
+    return true
+  }
+
+  static sizeIsValid (datafile) {
+    const maxSize = 10 * 1024 * 1024 // 10MB
+
+    if (datafile.size > maxSize) {
+      return false
+    }
+
+    return true
+  }
+
+  static fileNameIsntTooLong (datafile) {
+    const maxSize = 255 // Maximum filename size
+    if (datafile.originalname.length > maxSize) {
+      return false
+    }
+    return true
+  }
+
+  static fileNameIsValid (datafile) {
+    const invalidCharacters = /[<>:"/\\|?*]/
+    if (invalidCharacters.test(datafile.originalname)) {
+      return false
+    }
+    return true
+  }
+
+  static fileNameDoesntContainDoubleExtension (datafile) {
+    const parts = datafile.originalname.split('.')
+    if (parts.length > 2) {
       return false
     }
     return true

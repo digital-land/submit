@@ -13,7 +13,11 @@ export default {
   datafile: {
     validate: [
       'required',
-      { type: 'fileType', fn: UploadController.validateFileType }
+      { type: 'fileType', fn: UploadController.extensionIsValid },
+      { type: 'fileSize', fn: UploadController.sizeIsValid },
+      { type: 'fileNameTooLong', fn: UploadController.fileNameIsntTooLong },
+      { type: 'fileNameInvalidCharacters', fn: UploadController.fileNameIsValid },
+      { type: 'fileNameDoubleExtension', fn: UploadController.fileNameDoesntContainDoubleExtension }
     ],
     invalidates: ['validationResult']
   },
