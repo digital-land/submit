@@ -77,8 +77,7 @@ class UploadController extends PageController {
     }
 
     // delete the file from the uploads folder
-    if(req.file && req.file.path)
-      fs.unlink(req.file.path)
+    if (req.file && req.file.path) { fs.unlink(req.file.path) }
 
     super.post(req, res, next)
   }
