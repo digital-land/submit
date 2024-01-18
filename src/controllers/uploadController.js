@@ -1,7 +1,7 @@
 'use strict'
 import multer from 'multer'
 import axios from 'axios'
-import { readFile } from 'fs/promises'
+import fs from 'fs/promises'
 import { lookup } from 'mime-types'
 import PageController from './pageController.js'
 import config from '../../config/index.js'
@@ -34,6 +34,7 @@ class UploadController extends PageController {
         jsonResult = await this.validateFile({
           filePath: req.file.path,
           fileName: req.file.originalname,
+          originalname: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
           organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
@@ -41,11 +42,15 @@ class UploadController extends PageController {
           ipAddress: await hash(req.ip)
         })
         if (jsonResult) {
-          try {
-            this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
-            req.body.validationResult = jsonResult
-          } catch (error) {
-            this.validationError('apiError', 'Error parsing api response error count', error, req)
+          if (jsonResult.error) {
+            this.validationError('apiError', jsonResult.message, {}, req)
+          } else {
+            try {
+              this.errorCount = jsonResult['issue-log'].filter(issue => issue.severity === severityLevels.error).length + jsonResult['column-field-log'].filter(log => log.missing).length
+              req.body.validationResult = jsonResult
+            } catch (error) {
+              this.validationError('apiError', 'Error parsing api response error count', error, req)
+            }
           }
         } else {
           this.validationError('apiError', 'Nothing returned from the api', null, req)
@@ -70,6 +75,10 @@ class UploadController extends PageController {
         }
       }
     }
+
+    // delete the file from the uploads folder
+    if (req.file && req.file.path) { fs.unlink(req.file.path) }
+
     super.post(req, res, next)
   }
 
@@ -79,12 +88,18 @@ class UploadController extends PageController {
     this.validationErrorMessage = message
   }
 
-  async validateFile ({ filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress }) {
-    const validFileType = UploadController.validateFileType({ originalname: fileName })
-
-    if (!validFileType) {
+  async validateFile (datafile) {
+    if (
+      !UploadController.extensionIsValid(datafile) ||
+      !UploadController.sizeIsValid(datafile) ||
+      !UploadController.fileNameIsntTooLong(datafile) ||
+      !UploadController.fileNameIsValid(datafile) ||
+      !UploadController.fileNameDoesntContainDoubleExtension(datafile)
+    ) {
       return false
     }
+
+    const { filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress } = datafile
 
     const formData = new FormData()
     formData.append('dataset', dataset)
@@ -93,7 +108,7 @@ class UploadController extends PageController {
     formData.append('sessionId', sessionId)
     formData.append('ipAddress', ipAddress)
 
-    const file = new Blob([await readFile(filePath)], { type: lookup(filePath) })
+    const file = new Blob([await fs.readFile(filePath)], { type: lookup(filePath) })
 
     formData.append('upload_file', file, fileName)
 
@@ -106,22 +121,79 @@ class UploadController extends PageController {
     return validationResult ? !validationResult.error : false
   }
 
-  // this function is a validation function that is called by the form wizard
-  static validateFileType ({ originalname }) {
-    const allowedFiletypes = [
-      'csv',
-      'xls',
-      'xlsx',
-      'json',
-      'geojson',
-      'gml',
-      'gpkg'
-    ]
-    // check file type
-    const fileType = originalname.split('.').pop()
-    if (!allowedFiletypes.includes(fileType)) {
+  static extensionIsValid (datafile) {
+    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg']
+
+    const parts = datafile.originalname.split('.')
+
+    const extension = parts[parts.length - 1]
+    if (!allowedExtensions.includes(extension)) {
       return false
     }
+
+    return true
+  }
+
+  static sizeIsValid (datafile) {
+    const maxSize = 10 * 1024 * 1024 // 10MB
+
+    if (datafile.size > maxSize) {
+      return false
+    }
+
+    return true
+  }
+
+  static fileNameIsntTooLong (datafile) {
+    const maxSize = 255 // Maximum filename size
+    if (datafile.originalname.length > maxSize) {
+      return false
+    }
+    return true
+  }
+
+  static fileNameIsValid (datafile) {
+    const invalidCharacters = /[<>:"/\\|?*]/
+    if (invalidCharacters.test(datafile.originalname)) {
+      return false
+    }
+    return true
+  }
+
+  static fileNameDoesntContainDoubleExtension (datafile) {
+    const parts = datafile.originalname.split('.')
+    if (parts.length > 2) {
+      return false
+    }
+    return true
+  }
+
+  static fileMimeTypeIsValid (datafile) {
+    const allowedMimeTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/json', 'application/vnd.geo+json', 'application/gml+xml', 'application/gpkg']
+    if (!allowedMimeTypes.includes(datafile.mimetype)) {
+      return false
+    }
+    return true
+  }
+
+  static fileMimeTypeMatchesExtension (datafile) {
+    const parts = datafile.originalname.split('.')
+    const extension = parts[parts.length - 1]
+
+    const mimeTypes = {
+      csv: 'text/csv',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      json: 'application/json',
+      geojson: 'application/vnd.geo+json',
+      gml: 'application/gml+xml',
+      gpkg: 'application/gpkg'
+    }
+
+    if (mimeTypes[extension] !== datafile.mimetype) {
+      return false
+    }
+
     return true
   }
 

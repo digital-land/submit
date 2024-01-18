@@ -14,7 +14,13 @@ const validationMessages = {
   },
   datafile: {
     required: 'Select a file',
-    fileType: 'The selected file must be a CSV, GeoJSON, GML or GeoPackage file'
+    fileType: 'The selected file must be a CSV, GeoJSON, GML or GeoPackage file',
+    fileSize: 'The selected file must be smaller than 10MB',
+    fileNameTooLong: 'The selected file name must be less than 100 characters',
+    fileNameInvalidCharacters: 'The selected file name must not contain any of the following characters: / \\ : * ? " < > |',
+    fileNameDoubleExtension: 'The selected file name must not contain two file extensions',
+    mimeType: 'The selected file must be a CSV, GeoJSON, GML or GeoPackage file',
+    mimeTypeMalformed: 'The selected file has a malformed mime type'
   },
   validationResult: {
     required: 'Unable to contact the API'
