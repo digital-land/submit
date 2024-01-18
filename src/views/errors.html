@@ -57,7 +57,7 @@
                     {% if column.issue %}
                       {{ govukInsetText({
                         classes: "app-inset-text---error",
-                        html: '<p class="app-inset-text__value">'+column.value+'</p> <p class="app-inset-text__error">'+column.issue.description +'</p>'
+                        html: '<p class="app-inset-text__value">'+column.value | striptags +'</p> <p class="app-inset-text__error">'+column.issue.description +'</p>'
                       }) }}
                     {% else %}
                       {{column.value}}
