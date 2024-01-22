@@ -26,5 +26,11 @@
     {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Legislation", "field": "legislation"},
     {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Notes", "field": "notes"},
     {"field": "reference", "missing": true}
+  ],
+  "error-summary": [
+    "1 documentation URL must be a real URL",
+    "19 geometries must be in Well-Known Text (WKT) format",
+    "3 start dates must be a real date",
+    "Reference column missing"
   ]
 }

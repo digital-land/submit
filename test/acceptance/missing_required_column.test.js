@@ -23,5 +23,5 @@ test('when the user uploads a file with a missing required column, the page corr
 
   expect(await page.title()).toBe('Your data has errors - Publish planning and housing data for England')
 
-  expect(await page.textContent('.govuk-list')).toContain('Missing required column reference')
+  expect(await page.textContent('.govuk-list')).toContain('Reference column missing')
 })

@@ -8,13 +8,12 @@ class ErrorsController extends PageController {
   get (req, res, next) {
     const validationResult = req.sessionModel.get('validationResult')
 
-    const { aggregatedIssues, issueCounts, missingColumns } = this.getAggregatedErrors(validationResult)
+    const { aggregatedIssues } = this.getAggregatedErrors(validationResult)
 
     const rows = Object.values(aggregatedIssues)
 
     req.form.options.rows = rows
-    req.form.options.issueCounts = issueCounts
-    req.form.options.missingColumns = missingColumns
+    req.form.options.errorSummary = validationResult['error-summary']
     req.form.options.columnNames = rows.length > 0 ? Object.keys(rows[0]) : []
 
     const dataSetValue = req.sessionModel.get('dataset')
@@ -34,7 +33,6 @@ class ErrorsController extends PageController {
 
   getAggregatedErrors (apiResponseData) {
     const aggregatedIssues = {}
-    const issueCounts = {}
 
     apiResponseData['issue-log'].forEach(issue => {
       if (issue.severity === severityLevels.error) {
@@ -61,29 +59,11 @@ class ErrorsController extends PageController {
             },
             value: rowValues[issue.field]
           }
-          const key = issue.field + '_' + issue['issue-type']
-          if (issueCounts[key]) {
-            issueCounts[key].count += 1
-          } else {
-            issueCounts[key] = {
-              count: 1,
-              type: issue['issue-type'],
-              description: issue.description,
-              field: issue.field
-            }
-          }
         }
       }
     })
 
-    const missingColumns = []
-    apiResponseData['column-field-log'].forEach(columnField => {
-      if (columnField.missing) {
-        missingColumns.push(columnField.field)
-      }
-    })
-
-    return { aggregatedIssues, issueCounts, missingColumns }
+    return { aggregatedIssues }
   }
 
   lookupMappedColumnNameFromOriginal (originalColumnName, columnFieldLogs) {

@@ -81,17 +81,12 @@ describe('ErrorsController', () => {
             }
           }
         ],
-        missingColumns: [
-          'reference'
-        ],
-        issueCounts: {
-          'Start date_invalid-value': {
-            count: 1,
-            description: 'invalid-value',
-            type: 'invalid-value',
-            field: 'Start date'
-          }
-        }
+        errorSummary: [
+          '1 documentation URL must be a real URL',
+          '19 geometries must be in Well-Known Text (WKT) format',
+          '3 start dates must be a real date',
+          'Reference column missing'
+        ]
       }
     }
 
@@ -139,23 +134,10 @@ describe('ErrorsController', () => {
           }
         }
       }
-      const expectedIssueCounts = {
-        'Start date_invalid-value': {
-          count: 1,
-          description: 'invalid-value',
-          type: 'invalid-value',
-          field: 'Start date'
-        }
-      }
-      const expectedMissingColumns = [
-        'reference'
-      ]
 
-      const { aggregatedIssues, issueCounts, missingColumns } = errorsController.getAggregatedErrors(mockApiValue)
+      const { aggregatedIssues } = errorsController.getAggregatedErrors(mockApiValue)
 
       expect(aggregatedIssues).toEqual(expectedAggregatedIssues)
-      expect(issueCounts).toEqual(expectedIssueCounts)
-      expect(missingColumns).toEqual(expectedMissingColumns)
     })
   })
 })
