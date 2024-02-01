@@ -37,7 +37,7 @@ class UploadController extends PageController {
           originalname: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
-          organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
+          // organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
           sessionId: await hash(req.sessionID),
           ipAddress: await hash(req.ip)
         })
