@@ -32,7 +32,7 @@ class DatasetController extends PageController {
         break
       }
     }
-    req.body['data-subject'] =  dataSubject
+    req.body['data-subject'] = dataSubject
     super.post(req, res, next)
   }
 }
