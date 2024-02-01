@@ -42,12 +42,12 @@ export const dataSubjects = {
       {
         value: 'tree-preservation-order',
         text: 'Tree preservation order dataset',
-        available: true
+        available: false
       },
       {
         value: 'tree-preservation-zone',
         text: 'Tree preservation zone dataset',
-        available: false
+        available: true
       },
       {
         value: 'tree',
@@ -62,12 +62,12 @@ export const dataSubjects = {
       {
         value: 'listed-building',
         text: 'Listed building',
-        available: true
+        available: false
       },
       {
         value: 'listed-building-outline',
         text: 'Listed building outline',
-        available: false
+        available: true
       },
       {
         value: 'listed-building-grade',
