@@ -32,7 +32,8 @@ class DatasetController extends PageController {
         break
       }
     }
-    req.sessionModel.set('data-subject', dataSubject)
+    req.body['data-subject'] =  dataSubject
+    super.post(req, res, next)
   }
 }
 
