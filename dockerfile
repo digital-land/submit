@@ -1,7 +1,7 @@
 # Stage 1: Build
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 
-RUN npm install -g npm
+RUN npm install -g npm@10.3.0
 
 COPY package.json .
 
@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
