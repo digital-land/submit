@@ -6,7 +6,7 @@ export const severityLevels = {
 }
 
 export const dataSubjects = {
-  'Article 4': {
+  'article-4-direction': {
     available: true,
     dataSets: [
       {
@@ -15,13 +15,13 @@ export const dataSubjects = {
         available: true
       },
       {
-        value: 'article-4-direction area',
+        value: 'article-4-direction-area',
         text: 'Article 4 direction area dataset',
         available: false
       }
     ]
   },
-  'Conservation area': {
+  'conservation-area': {
     available: true,
     dataSets: [
       {
@@ -36,8 +36,8 @@ export const dataSubjects = {
       }
     ]
   },
-  'Tree preservation order': {
-    available: false,
+  'tree-preservation-order': {
+    available: true,
     dataSets: [
       {
         value: 'tree-preservation-order',
@@ -47,7 +47,7 @@ export const dataSubjects = {
       {
         value: 'tree-preservation-zone',
         text: 'Tree preservation zone dataset',
-        available: false
+        available: true
       },
       {
         value: 'tree',
@@ -56,8 +56,24 @@ export const dataSubjects = {
       }
     ]
   },
-  'Listed building': {
-    available: false,
-    dataSets: []
+  'listed-building': {
+    available: true,
+    dataSets: [
+      {
+        value: 'listed-building',
+        text: 'Listed building',
+        available: false
+      },
+      {
+        value: 'listed-building-outline',
+        text: 'Listed building outline',
+        available: true
+      },
+      {
+        value: 'listed-building-grade',
+        text: 'Listed building grade',
+        available: false
+      }
+    ]
   }
 }

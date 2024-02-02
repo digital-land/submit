@@ -26,7 +26,7 @@ export default {
   '/dataset': {
     ...baseSettings,
     controller: datasetController,
-    fields: ['dataset'],
+    fields: ['dataset', 'data-subject'],
     next: 'upload',
     backLink: './'
   },

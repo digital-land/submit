@@ -11,16 +11,29 @@ class DatasetController extends PageController {
     // const dataset = req.sessionModel.get('data-subject')
     // const options = datasetOptions[dataset]
 
-    const options = [dataSubjects['Article 4'].dataSets[0], dataSubjects['Conservation area'].dataSets[0]]
+    // the options should be all the datasets that are available
 
-    if (options) {
-      this.availableDatasets = options.filter(option => option.available)
-      req.form.options.datasetItems = options
-      super.get(req, res, next)
-    } else {
-      // skip to next step of form wizard
-      this.successHandler(req, res, next)
+    const availableDataSubjects = Object.values(dataSubjects).filter(dataSubject => dataSubject.available)
+    const dataSets = Object.values(availableDataSubjects).map(dataSubject => dataSubject.dataSets).flat()
+    const availableDatasets = dataSets.filter(dataSet => dataSet.available)
+
+    req.form.options.datasetItems = availableDatasets
+    super.get(req, res, next)
+  }
+
+  // we shouldn't need this here but as we dont currently set the datasubject, we need to do so here
+  post (req, res, next) {
+    const dataset = req.body.dataset
+    // set the data-subject based on the dataset selected
+    let dataSubject = ''
+    for (const [key, value] of Object.entries(dataSubjects)) {
+      if (value.dataSets.find(dataSet => dataSet.value === dataset)) {
+        dataSubject = key
+        break
+      }
     }
+    req.body['data-subject'] = dataSubject
+    super.post(req, res, next)
   }
 }
 
