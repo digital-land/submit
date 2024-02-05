@@ -32,9 +32,9 @@ class UploadController extends PageController {
       let jsonResult = {}
       try {
         jsonResult = await this.validateFile({
+          ...req.file,
           filePath: req.file.path,
           fileName: req.file.originalname,
-          originalname: req.file.originalname,
           dataset: req.sessionModel.get('dataset'),
           dataSubject: req.sessionModel.get('data-subject'),
           // organisation: 'local-authority-eng:CAT', // ToDo: this needs to be dynamic, not collected in the prototype, should it be?
@@ -94,7 +94,9 @@ class UploadController extends PageController {
       !UploadController.sizeIsValid(datafile) ||
       !UploadController.fileNameIsntTooLong(datafile) ||
       !UploadController.fileNameIsValid(datafile) ||
-      !UploadController.fileNameDoesntContainDoubleExtension(datafile)
+      !UploadController.fileNameDoesntContainDoubleExtension(datafile) || 
+      !UploadController.fileMimeTypeIsValid(datafile) ||
+      !UploadController.fileMimeTypeMatchesExtension(datafile)
     ) {
       return false
     }
@@ -169,7 +171,16 @@ class UploadController extends PageController {
   }
 
   static fileMimeTypeIsValid (datafile) {
-    const allowedMimeTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/json', 'application/vnd.geo+json', 'application/gml+xml', 'application/gpkg']
+    const allowedMimeTypes = [
+      'text/csv', 
+      'application/vnd.ms-excel', 
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+      'application/json', 
+      'application/vnd.geo+json', 
+      'application/gml+xml', 
+      'application/gpkg',
+      'application/octet-stream' // This is a catch all for when the mime type is not recognised
+    ]
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
     }
