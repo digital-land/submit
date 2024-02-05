@@ -94,7 +94,7 @@ class UploadController extends PageController {
       !UploadController.sizeIsValid(datafile) ||
       !UploadController.fileNameIsntTooLong(datafile) ||
       !UploadController.fileNameIsValid(datafile) ||
-      !UploadController.fileNameDoesntContainDoubleExtension(datafile) || 
+      !UploadController.fileNameDoesntContainDoubleExtension(datafile) ||
       !UploadController.fileMimeTypeIsValid(datafile) ||
       !UploadController.fileMimeTypeMatchesExtension(datafile)
     ) {
@@ -172,12 +172,12 @@ class UploadController extends PageController {
 
   static fileMimeTypeIsValid (datafile) {
     const allowedMimeTypes = [
-      'text/csv', 
-      'application/vnd.ms-excel', 
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
-      'application/json', 
-      'application/vnd.geo+json', 
-      'application/gml+xml', 
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/json',
+      'application/vnd.geo+json',
+      'application/gml+xml',
       'application/gpkg',
       'application/octet-stream' // This is a catch all for when the mime type is not recognised
     ]
