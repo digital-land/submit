@@ -74,7 +74,7 @@ describe('UploadController', () => {
       dataset: 'test',
       dataSubject: 'test',
       organization: 'local-authority-eng:CAT',
-      mimetype: 'text/csv',
+      mimetype: 'text/csv'
     }
 
     const result = await uploadController.validateFile(params)
