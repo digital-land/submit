@@ -195,8 +195,8 @@ class UploadController extends PageController {
     const parts = datafile.originalname.split('.')
     const extension = parts[parts.length - 1]
 
-    if(datafile.mimetype === 'application/octet-stream'){
-      return true;
+    if (datafile.mimetype === 'application/octet-stream') {
+      return true
     }
 
     const mimeTypes = {
@@ -207,7 +207,7 @@ class UploadController extends PageController {
       geojson: 'application/vnd.geo+json',
       gml: 'application/gml+xml',
       gpkg: 'application/gpkg',
-      sqlite: 'application/geopackage+sqlite3',
+      sqlite: 'application/geopackage+sqlite3'
     }
 
     if (mimeTypes[extension] !== datafile.mimetype) {
