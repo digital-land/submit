@@ -179,6 +179,7 @@ class UploadController extends PageController {
       'application/vnd.geo+json',
       'application/gml+xml',
       'application/gpkg',
+      'application/geopackage+sqlite3',
       'application/octet-stream' // This is a catch all for when the mime type is not recognised
     ]
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
