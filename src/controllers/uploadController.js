@@ -59,6 +59,8 @@ class UploadController extends PageController {
         logger.error('Error uploading file', error)
         if (error.code === 'ECONNREFUSED') {
           this.validationError('apiError', 'Unable to reach the api', error, req)
+        } else if (error.code === 'ECONNABORTED') {
+          this.validationError('apiError', 'Gateway Timeout', error, req)
         } else {
           switch (error.response.status) {
             case 400:
@@ -118,7 +120,7 @@ class UploadController extends PageController {
 
     formData.append('upload_file', file, fileName)
 
-    const result = await axios.post(apiRoute, formData)
+    const result = await axios.post(apiRoute, formData, { timeout: config.api.requestTimeout});
 
     return result.data
   }
