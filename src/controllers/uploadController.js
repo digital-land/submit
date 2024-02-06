@@ -130,7 +130,7 @@ class UploadController extends PageController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg']
+    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3']
 
     const parts = datafile.originalname.split('.')
 
