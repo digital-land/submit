@@ -56,6 +56,7 @@ class UploadController extends PageController {
           this.validationError('apiError', 'Nothing returned from the api', null, req)
         }
       } catch (error) {
+        logger.error('Error uploading file', error)
         if (error.code === 'ECONNREFUSED') {
           this.validationError('apiError', 'Unable to reach the api', error, req)
         } else {
