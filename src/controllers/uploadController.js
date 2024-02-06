@@ -120,7 +120,7 @@ class UploadController extends PageController {
 
     formData.append('upload_file', file, fileName)
 
-    const result = await axios.post(apiRoute, formData, { timeout: config.api.requestTimeout});
+    const result = await axios.post(apiRoute, formData, { timeout: config.api.requestTimeout })
 
     return result.data
   }
