@@ -66,7 +66,6 @@ test('when the user clicks continue on the file upload page without selecting a 
   // await page.getByLabel('Conservation area').check()
   // await page.getByRole('button', { name: 'Continue' }).click()
 
-  
   await page.getByLabel('File Upload').check()
   await page.getByRole('button', { name: 'Continue' }).click()
 
