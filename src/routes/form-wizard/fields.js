@@ -5,15 +5,15 @@ import UploadController from '../../controllers/uploadController.js'
 export default {
   'data-subject': {
     validate: 'required',
-    invalidates: ['datafile', 'dataset', 'validationResult', 'upload-method']
+    invalidates: ['dataset', 'validationResult', 'upload-method']
   },
   dataset: {
     validate: 'required',
-    invalidates: ['datafile', 'validationResult', 'upload-method']
+    invalidates: ['validationResult', 'upload-method']
   },
   'upload-method': {
     validate: 'required',
-    invalidates: ['datafile', 'validationResult']
+    invalidates: ['validationResult']
   },
   datafile: {
     validate: [
@@ -25,6 +25,14 @@ export default {
       { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
       { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
       { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
+    ],
+    invalidates: ['validationResult']
+  },
+  url: {
+    validate: [
+      'required',
+      { type: 'url', fn: UploadController.urlIsValid },
+      { type: 'urlLength', fn: UploadController.urlIsNotTooLong }
     ],
     invalidates: ['validationResult']
   },
