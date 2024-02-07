@@ -1,0 +1,43 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+
+{% extends "layouts/main.html" %}
+
+{% set pageName = 'How do you want to provide your data?' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form novalidate method="post">
+
+        {{ govukRadios({
+          name: "upload-method",
+          fieldset: {
+            legend: {
+              text: pageName,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--l"
+            }
+          },
+          value: data.check.uploadMethod,
+          items: [
+            {
+              value: "file",
+              text: "File upload"
+            },
+            {
+              value: "url",
+              text: "URL"
+            }
+          ]
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <p class="govuk-!-padding-top-4 govuk-!-padding-bottom-4"><a style="color: #fff" href="/no-errors">No errors</a></p>
+      </form>
+    </div>
+  </div>
+{% endblock %}

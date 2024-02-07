@@ -1,6 +1,7 @@
 import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
-import uploadController from '../../controllers/uploadController.js'
+import uploadFileController from '../../controllers/uploadFileController.js'
+import uploadUrlController from '../../controllers/uploadUrlController.js'
 import errorsController from '../../controllers/errorsController.js'
 
 const baseSettings = {
@@ -27,18 +28,31 @@ export default {
     ...baseSettings,
     controller: datasetController,
     fields: ['dataset', 'data-subject'],
-    next: 'upload',
+    next: 'upload-method',
     backLink: './'
+  },
+  '/upload-method': {
+    ...baseSettings,
+    fields: ['upload-method'],
+    next: [
+      { field: 'upload-method', op: '===', value: 'url', next: 'url' },
+      'upload'
+    ],
+    backLink: './dataset'
+  },
+  '/url': {
+    ...baseSettings,
+    controller: uploadUrlController,
+    fields: ['url'],
+    next: 'upload',
+    backLink: './upload-method'
   },
   '/upload': {
     ...baseSettings,
-    controller: uploadController,
+    controller: uploadFileController,
     fields: ['datafile', 'validationResult'],
-    next: [
-      { fn: 'hasErrors', next: 'errors' },
-      'no-errors'
-    ],
-    backLink: './dataset'
+    next: 'errors',
+    backLink: './upload-method'
   },
   '/errors': {
     ...baseSettings,
