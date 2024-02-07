@@ -21,6 +21,10 @@ test.describe('without a valid session, the user can not access the later pages'
   //   await checkSessionExpired(page, '/data-subject')
   // })
 
+  test('/howDoYouWantToProvideYourData', async ({ page }) => {
+    await checkSessionExpired(page, '/dataset')
+  })
+
   test('/dataset', async ({ page }) => {
     await checkSessionExpired(page, '/dataset')
   })

@@ -15,6 +15,23 @@ import { test, expect } from '@playwright/test'
 //   await testErrorMessage(page, expectedErrors)
 // })
 
+test('when the user clicks continue on the how do you want to provide your data page without selecting a method, the page correctly indicates there\'s an error', async ({ page }) => {
+  await page.goto('/')
+  // start page
+  await page.getByRole('button', { name: 'Start now' }).click()
+
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  const expectedErrors = [
+    {
+      fieldName: 'input#howDoYouWantToProvideData.govuk-radios__input',
+      expectedErrorMessage: 'Select a method'
+    }
+  ]
+
+  await testErrorMessage(page, expectedErrors)
+})
+
 test('when the user clicks continue on the dataset page without entering a dataset, the page correctly indicates there\'s an error', async ({ page }) => {
   await page.goto('/')
   // start page
@@ -23,6 +40,9 @@ test('when the user clicks continue on the dataset page without entering a datas
   // // data subject page
   // await page.getByLabel('Conservation area').check()
   // await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.getByLabel('File Upload').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
 
   // dataset page
   await page.getByRole('button', { name: 'Continue' }).click()
@@ -45,6 +65,10 @@ test('when the user clicks continue on the file upload page without selecting a 
   // // data subject page
   // await page.getByLabel('Conservation area').check()
   // await page.getByRole('button', { name: 'Continue' }).click()
+
+  
+  await page.getByLabel('File Upload').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
 
   // dataset page
   await page.getByLabel('Conservation area dataset').check()
