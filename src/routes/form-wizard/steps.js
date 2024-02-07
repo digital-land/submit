@@ -58,12 +58,12 @@ export default {
     ...baseSettings,
     controller: errorsController,
     next: 'no-errors',
-    backLink: './upload'
+    backLink: './upload-method'
   },
   '/no-errors': {
     ...baseSettings,
     next: 'confirmation',
-    backLink: './upload'
+    backLink: './upload-method'
   },
   // '/email-address': {
   //   ...baseSettings,
