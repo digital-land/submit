@@ -12,12 +12,12 @@ export const dataSubjects = {
       {
         value: 'article-4-direction',
         text: 'Article 4 direction dataset',
-        available: true
+        available: false
       },
       {
         value: 'article-4-direction-area',
         text: 'Article 4 direction area dataset',
-        available: false
+        available: true
       }
     ]
   },

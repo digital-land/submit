@@ -56,8 +56,11 @@ class UploadController extends PageController {
           this.validationError('apiError', 'Nothing returned from the api', null, req)
         }
       } catch (error) {
+        logger.error('Error uploading file', error)
         if (error.code === 'ECONNREFUSED') {
           this.validationError('apiError', 'Unable to reach the api', error, req)
+        } else if (error.code === 'ECONNABORTED') {
+          this.validationError('apiError', 'Gateway Timeout', error, req)
         } else {
           switch (error.response.status) {
             case 400:
@@ -68,6 +71,9 @@ class UploadController extends PageController {
               break
             case 500:
               this.validationError('apiError', 'Internal Server Error', error, req)
+              break
+            case 504:
+              this.validationError('apiError', 'Gateway Timeout', error, req)
               break
             default:
               this.validationError('apiError', 'Error uploading file', error, req)
@@ -114,7 +120,7 @@ class UploadController extends PageController {
 
     formData.append('upload_file', file, fileName)
 
-    const result = await axios.post(apiRoute, formData)
+    const result = await axios.post(apiRoute, formData, { timeout: config.api.requestTimeout })
 
     return result.data
   }
@@ -124,7 +130,7 @@ class UploadController extends PageController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg']
+    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3']
 
     const parts = datafile.originalname.split('.')
 
@@ -192,6 +198,10 @@ class UploadController extends PageController {
     const parts = datafile.originalname.split('.')
     const extension = parts[parts.length - 1]
 
+    if (datafile.mimetype === 'application/octet-stream') {
+      return true
+    }
+
     const mimeTypes = {
       csv: 'text/csv',
       xls: 'application/vnd.ms-excel',
@@ -199,7 +209,8 @@ class UploadController extends PageController {
       json: 'application/json',
       geojson: 'application/vnd.geo+json',
       gml: 'application/gml+xml',
-      gpkg: 'application/gpkg'
+      gpkg: 'application/gpkg',
+      sqlite: 'application/geopackage+sqlite3'
     }
 
     if (mimeTypes[extension] !== datafile.mimetype) {

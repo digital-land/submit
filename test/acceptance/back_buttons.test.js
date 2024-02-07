@@ -13,7 +13,7 @@ test.describe('Back buttons work as expected without js for', () => {
   test('upload page', async ({ page, baseURL }) => {
     await page.goto('/')
     await page.click('text=Start now')
-    await page.getByLabel('Article 4 direction dataset').check()
+    await page.getByLabel('Article 4 direction area dataset').check()
     await page.getByRole('button', { name: 'Continue' }).click()
     await page.getByRole('link', { name: 'Back', exact: true }).click()
     expect(page.url()).toBe(baseURL + '/dataset')
