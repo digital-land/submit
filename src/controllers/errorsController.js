@@ -37,8 +37,20 @@ class ErrorsController extends PageController {
     apiResponseData['issue-log'].forEach(issue => {
       if (issue.severity === severityLevels.error) {
         const entryNumber = issue['entry-number']
-
         const rowValues = apiResponseData['converted-csv'][issue['line-number'] - 2]
+
+        // remove any keys from row values where a mapping exists to this column
+        Object.keys(rowValues).forEach(originalColumnName => {
+          // if a mapping exists to this column name, remove it from the row values
+          const mappingToThisColumn = apiResponseData['column-field-log'].find(columnField => columnField.field === originalColumnName)
+          if (mappingToThisColumn) {
+            const mappingExistsInRowValues = Object.keys(rowValues).includes(mappingToThisColumn.column)
+            if (mappingExistsInRowValues) {
+              delete rowValues[originalColumnName]
+            }
+          }
+        })
+
         if (!(entryNumber in aggregatedIssues)) {
           aggregatedIssues[entryNumber] = Object.keys(rowValues).reduce((acc, originalColumnName) => {
             const mappedColumnName = this.lookupMappedColumnNameFromOriginal(originalColumnName, apiResponseData['column-field-log'])
@@ -51,13 +63,14 @@ class ErrorsController extends PageController {
         }
 
         if (entryNumber in aggregatedIssues) {
-          const columnName = this.lookupMappedColumnNameFromOriginal(issue.field, apiResponseData['column-field-log'])
-          aggregatedIssues[entryNumber][columnName] = {
+          const columnName = this.lookupOriginalColumnNameFromMapped(issue.field, apiResponseData['column-field-log'])
+
+          aggregatedIssues[entryNumber][issue.field] = {
             issue: {
               type: issue['issue-type'],
               description: issue.description
             },
-            value: rowValues[issue.field]
+            value: rowValues[columnName]
           }
         }
       }
