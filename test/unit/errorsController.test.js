@@ -141,7 +141,7 @@ describe('ErrorsController', () => {
     })
 
     it('returns the correct values when a mapped column and a column with the same name exist', () => {
-      const mockApiValueModified = {...mockApiValue}
+      const mockApiValueModified = { ...mockApiValue }
 
       mockApiValueModified['converted-csv'][0]['start-date'] = 'this should be discarded as another column maps to start-date'
 
