@@ -54,14 +54,11 @@ class UploadController extends PageController {
 
   handleApiError (error, req) {
     logger.error('Error uploading file', error)
-    if (error.code === 'ECONNREFUSED') {
-      this.validationError('apiError', 'Unable to reach the api', error, req)
-    } else if (error.code === 'ECONNABORTED') {
-      this.validationError('apiError', 'Gateway Timeout', error, req)
-    } else {
+
+    if (error.code === 'ERR_BAD_REQUEST') {
       switch (error.response.status) {
         case 400:
-          this.validationError('apiError', 'Bad request sent to the api', error, req)
+          this.validationError('apiError', error.response.data.detail.errMsg, error, req)
           break
         case 404:
           this.validationError('apiError', 'Validation endpoint not found', error, req)
@@ -75,6 +72,12 @@ class UploadController extends PageController {
         default:
           this.validationError('apiError', 'Error uploading file', error, req)
       }
+    } if (error.code === 'ECONNREFUSED') { // this indicates the api is down
+      this.validationError('apiError', 'Unable to reach the api', error, req)
+    } else if (error.code === 'ECONNABORTED') { // this indicates the api is down
+      this.validationError('apiError', 'Gateway Timeout', error, req)
+    } else {
+      this.validationError('apiError', 'Error uploading file', error, req)
     }
   }
 
