@@ -22,6 +22,11 @@ const validationMessages = {
     mimeType: 'The selected file must be a CSV, GeoJSON, GML or GeoPackage file',
     mimeTypeMalformed: 'The selected file has a malformed mime type'
   },
+  url: {
+    required: 'Enter a URL',
+    format: 'Enter a valid URL',
+    length: 'The URL must be less than 2048 characters'
+  },
   validationResult: {
     required: 'Unable to contact the API'
   }

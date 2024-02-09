@@ -1,21 +1,25 @@
 import UploadController from './uploadController.js'
-import URL from 'url'
+import { URL } from 'url'
 import axios from 'axios'
 import config from '../../config/index.js'
 
 class UploadUrlController extends UploadController {
   async post (req, res, next) {
     this.resetValidationErrorMessage()
-    try {
-      const apiValidationResult = await this.apiValidateUrl(req.body.url, {
-        dataset: req.sessionModel.get('dataset'),
-        dataSubject: req.sessionModel.get('data-subject'),
-        sessionId: req.session.id,
-        ipAddress: req.ip
-      })
-      this.handleValidationResult(apiValidationResult, req)
-    } catch (error) {
-      this.handleApiError(error, req)
+    if(!UploadUrlController.localUrlValidation(req.body.url)) {
+      this.validationError('format', '', null, req)
+    }else{
+      try {
+        const apiValidationResult = await this.apiValidateUrl(req.body.url, {
+          dataset: req.sessionModel.get('dataset'),
+          dataSubject: req.sessionModel.get('data-subject'),
+          sessionId: req.session.id,
+          ipAddress: req.ip
+        })
+        this.handleValidationResult(apiValidationResult, req)
+      } catch (error) {
+        this.handleApiError(error, req)
+      }
     }
     super.post(req, res, next)
   }

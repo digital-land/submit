@@ -12,6 +12,7 @@
 
 {% if 'url' in errors %}
   {% set error = true %}
+  {% set errorMessage = 'url' | validationMessageLookup(errors['url'].type) %}
 {% endif %}
 
 {% block pageTitle %}
@@ -39,8 +40,8 @@
       <form novalidate method="post">
 
         {{ govukInput({
-          id: "check[url]",
-          name: "check[url]",
+          id: "url",
+          name: "url",
           label: {
             text: pageName,
             isPageHeading: true,

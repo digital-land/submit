@@ -1,6 +1,7 @@
 import { validate } from 'email-validator'
 import UploadFileController from '../../controllers/uploadFileController.js'
 import UploadController from '../../controllers/uploadController.js'
+import UploadUrlController from '../../controllers/uploadUrlController.js'
 
 export default {
   'data-subject': {
@@ -31,8 +32,8 @@ export default {
   url: {
     validate: [
       'required',
-      { type: 'url', fn: UploadController.urlIsValid },
-      { type: 'urlLength', fn: UploadController.urlIsNotTooLong }
+      { type: 'format', fn: UploadUrlController.urlIsValid },
+      { type: 'length', fn: UploadUrlController.urlIsNotTooLong }
     ],
     invalidates: ['validationResult']
   },

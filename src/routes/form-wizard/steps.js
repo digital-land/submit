@@ -43,7 +43,7 @@ export default {
   '/url': {
     ...baseSettings,
     controller: uploadUrlController,
-    fields: ['url'],
+    fields: ['url', 'validationResult'],
     next: 'upload',
     backLink: './upload-method'
   },
