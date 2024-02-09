@@ -6,9 +6,9 @@ import config from '../../config/index.js'
 class UploadUrlController extends UploadController {
   async post (req, res, next) {
     this.resetValidationErrorMessage()
-    if(!UploadUrlController.localUrlValidation(req.body.url)) {
+    if (!UploadUrlController.localUrlValidation(req.body.url)) {
       this.validationError('format', '', null, req)
-    }else{
+    } else {
       try {
         const apiValidationResult = await this.apiValidateUrl(req.body.url, {
           dataset: req.sessionModel.get('dataset'),
