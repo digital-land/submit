@@ -2,12 +2,40 @@
 
 {% from 'govuk/components/button/macro.njk' import govukButton %}
 {% from 'govuk/components/input/macro.njk' import govukInput %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
 
 {% set pageName = 'URL' %}
+
+{% set errorMessage = 'There\'s something wrong with your URL' %}
+
+{% if 'url' in errors %}
+  {% set error = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if error %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#dataset"
+            }
+          ]
+        }) }}
+      {% endif %}
       <form novalidate method="post">
 
         {{ govukInput({
@@ -18,7 +46,10 @@
             isPageHeading: true,
             classes: 'govuk-label--l'
           },
-          value: data.check.url
+          value: data.check.url,
+          errorMessage: {
+            text: errorMessage 
+          } if error else undefined
         }) }}
         {{ govukButton({
           text: "Continue"
