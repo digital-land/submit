@@ -74,7 +74,7 @@ class UploadController extends PageController {
         default:
           this.validationError('apiError', 'Error uploading file', error, req)
       }
-    } if (error.code === 'ECONNREFUSED') { // this indicates the api is down
+    } else if (error.code === 'ECONNREFUSED') { // this indicates the api is down
       this.validationError('apiError', 'Unable to reach the api', error, req)
     } else if (error.code === 'ECONNABORTED') { // this indicates the api is down
       this.validationError('apiError', 'Gateway Timeout', error, req)
