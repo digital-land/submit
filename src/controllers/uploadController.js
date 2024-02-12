@@ -5,8 +5,11 @@ import config from '../../config/index.js'
 import { severityLevels } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 
+const apiEndpoint = process.env.NODE_ENV === 'test' ? config.api.localUrl : config.api.url
+
 class UploadController extends PageController {
-  apiRoute = config.api.url + config.api.validationEndpoint
+  
+  apiRoute = apiEndpoint + config.api.validationEndpoint
 
   async get (req, res, next) {
     req.form.options.validationError = this.validationErrorMessage
