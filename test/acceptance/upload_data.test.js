@@ -16,6 +16,11 @@ test('Enter form information', async ({ page }) => {
   await page.getByLabel('Conservation area dataset').check()
   await page.getByRole('button', { name: 'Continue' }).click()
 
+  await page.waitForURL('**/upload-method')
+
+  await page.getByLabel('File Upload').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
   await page.waitForURL('**/upload')
   expect(await page.title()).toBe('Upload data - Publish planning and housing data for England')
 
@@ -38,6 +43,10 @@ test('Enter form information and upload a file with errors and without errors', 
   await page.waitForURL('**/dataset')
 
   await page.getByLabel('Conservation area dataset').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/upload-method')
+  await page.getByLabel('File Upload').check()
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/upload')
@@ -89,6 +98,40 @@ test('Enter form information and upload a file with errors and without errors', 
   // expect(await page.getByText('Bob Marley').isVisible(), 'supplied name not on check page').toBeTruthy()
   // expect(await page.getByText('My Fake LPA').isVisible(), 'supplied email not on check page').toBeTruthy()
   // await page.getByRole('button', { name: 'Send data' }).click()
+
+  await page.waitForURL('**/confirmation')
+})
+
+test('Enter form information and specify a URL without errors', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start now' }).click()
+
+  // await page.waitForURL('**/data-subject')
+
+  // await page.getByLabel('Conservation area').check()
+  // await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/dataset')
+
+  await page.getByLabel('Conservation area dataset').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/upload-method')
+
+  await page.getByLabel('URL').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/url')
+
+  await page.getByLabel('URL').click()
+  await page.getByLabel('URL').fill('https://example.com/conservation-area.csv')
+
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/no-errors')
+  expect(await page.title()).toBe('Your data has been checked and can be published - Publish planning and housing data for England')
+
+  await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/confirmation')
 })

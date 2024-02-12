@@ -10,6 +10,10 @@ test('when the user uploads a file with a missing required column, the page corr
   await page.getByLabel('Conservation area dataset').check()
   await page.getByRole('button', { name: 'Continue' }).click()
 
+  await page.waitForURL('**/upload-method')
+  await page.getByLabel('File Upload').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
   await page.waitForURL('**/upload')
 
   const fileChooserPromise = page.waitForEvent('filechooser')

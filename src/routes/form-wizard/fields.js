@@ -1,25 +1,39 @@
 import { validate } from 'email-validator'
+import UploadFileController from '../../controllers/uploadFileController.js'
 import UploadController from '../../controllers/uploadController.js'
+import UploadUrlController from '../../controllers/uploadUrlController.js'
 
 export default {
   'data-subject': {
     validate: 'required',
-    invalidates: ['datafile', 'dataset', 'validationResult']
+    invalidates: ['dataset', 'validationResult', 'upload-method']
   },
   dataset: {
     validate: 'required',
-    invalidates: ['datafile', 'validationResult']
+    invalidates: ['validationResult', 'upload-method']
+  },
+  'upload-method': {
+    validate: 'required',
+    invalidates: ['validationResult']
   },
   datafile: {
     validate: [
       'required',
-      { type: 'fileType', fn: UploadController.extensionIsValid },
-      { type: 'fileSize', fn: UploadController.sizeIsValid },
-      { type: 'fileNameTooLong', fn: UploadController.fileNameIsntTooLong },
-      { type: 'fileNameInvalidCharacters', fn: UploadController.fileNameIsValid },
-      { type: 'fileNameDoubleExtension', fn: UploadController.fileNameDoesntContainDoubleExtension },
-      { type: 'mimeType', fn: UploadController.fileMimeTypeIsValid },
-      { type: 'mimeTypeMalformed', fn: UploadController.fileMimeTypeMatchesExtension }
+      { type: 'fileType', fn: UploadFileController.extensionIsValid },
+      { type: 'fileSize', fn: UploadFileController.sizeIsValid },
+      { type: 'fileNameTooLong', fn: UploadFileController.fileNameIsntTooLong },
+      { type: 'fileNameInvalidCharacters', fn: UploadFileController.fileNameIsValid },
+      { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
+      { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
+      { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
+    ],
+    invalidates: ['validationResult']
+  },
+  url: {
+    validate: [
+      'required',
+      { type: 'format', fn: UploadUrlController.urlIsValid },
+      { type: 'length', fn: UploadUrlController.urlIsNotTooLong }
     ],
     invalidates: ['validationResult']
   },

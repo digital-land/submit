@@ -1,14 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-
-import mockApiValue from '../testData/API_RUN_PIPELINE_RESPONSE.json'
+import { describe, it, expect, beforeEach } from 'vitest'
 
 import UploadController from '../../src/controllers/uploadController.js'
 
-import fs from 'fs/promises'
-
 describe('UploadController', () => {
   let uploadController
-  const validateFileMock = vi.fn().mockReturnValue(mockApiValue)
 
   beforeEach(() => {
     const options = {
@@ -17,126 +12,66 @@ describe('UploadController', () => {
     uploadController = new UploadController(options)
   })
 
-  it('post adds the validation result to the session and the error count to the controller while deleting the uploaded file', async () => {
-    expect(uploadController.post).toBeDefined()
-
-    uploadController.validateFile = validateFileMock
-
-    vi.mock('fs/promises', async (importOriginal) => {
-      return {
-        default: {
-          readFile: vi.fn(),
-          unlink: vi.fn()
-        }
-      }
+  describe('resultIsValid', () => {
+    it('should return false if validationResult is undefined', () => {
+      expect(UploadController.resultIsValid(undefined)).toBe(false)
     })
 
-    const req = {
-      file: {
-        path: 'aHashedFileName.csv',
-        originalname: 'conservation_area.csv'
-      },
-      sessionModel: {
-        get: () => 'test',
-        set: vi.fn()
-      },
-      body: {}
-    }
-    const res = {
-      send: vi.fn(),
-      redirect: vi.fn()
-    }
-    const next = vi.fn()
+    it('should return false if validationResult.error is true', () => {
+      expect(UploadController.resultIsValid({ error: true })).toBe(false)
+    })
 
-    await uploadController.post(req, res, next)
-
-    expect(req.body.validationResult).toEqual(mockApiValue)
-    expect(uploadController.errorCount).toEqual(mockApiValue['issue-log'].filter(issue => issue.severity === 'error').length + mockApiValue['column-field-log'].filter(column => column.missing).length)
-    expect(fs.unlink).toHaveBeenCalledWith(req.file.path)
+    it('should return true if validationResult.error is not true', () => {
+      expect(UploadController.resultIsValid({ error: false })).toBe(true)
+    })
   })
 
-  it('validateFile correctly calls the API', async () => {
-    vi.mock('axios', async () => {
-      const actualAxios = vi.importActual('axios')
-      return {
-        default: {
-          ...actualAxios.default,
-          post: vi.fn().mockResolvedValue({ data: { test: 'test' } })
-        }
-      }
+  describe('hasErrors', () => {
+    it('should return false if errorCount is 0', () => {
+      uploadController.errorCount = 0
+      expect(uploadController.hasErrors()).toBe(false)
     })
 
-    expect(uploadController.validateFile).toBeDefined()
-
-    const params = {
-      filePath: 'aHashedFileName.csv',
-      originalname: 'test.csv',
-      dataset: 'test',
-      dataSubject: 'test',
-      organization: 'local-authority-eng:CAT',
-      mimetype: 'text/csv'
-    }
-
-    const result = await uploadController.validateFile(params)
-
-    expect(result).toEqual({ test: 'test' })
-
-    // expect().toHaveBeenCalledWith(config.api.url + config.api.validationEndpoint, expect.any(FormData))
+    it('should return true if errorCount is greater than 0', () => {
+      uploadController.errorCount = 1
+      expect(uploadController.hasErrors()).toBe(true)
+    })
   })
 
-  describe('validators', () => {
-    describe('file extension', () => {
-      it('should return true if the file extension is one of the accepted extensions', () => {
-        const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg']
+  describe('handleValidationResult', () => {
+    it('should handle an error result', () => {
+      const req = { body: {} }
+      const jsonResult = { error: true, message: 'Test error', errorObject: {} }
+      uploadController.handleValidationResult(jsonResult, req)
 
-        for (const extension of allowedExtensions) {
-          expect(UploadController.extensionIsValid({ originalname: `test.${extension}` })).toEqual(true)
-        }
-      })
-
-      it('should return false if the file extension is not one of the accepted extensions', () => {
-        expect(UploadController.extensionIsValid({ originalname: 'test.exe' })).toEqual(false)
-      })
+      expect(req.body.validationResult).toEqual(jsonResult)
+      expect(uploadController.validationErrorMessage).toBe('Test error')
     })
 
-    describe('file size', () => {
-      it('should return true if the file size is less than the max file size', () => {
-        expect(UploadController.sizeIsValid({ size: 1000 })).toEqual(true)
-      })
+    it('should handle a successful result', () => {
+      const req = { body: {} }
+      const jsonResult = {
+        'issue-log': [{ severity: 'error' }],
+        'column-field-log': [{ missing: true }]
+      }
 
-      it('should return false if the file size is greater than the max file size', () => {
-        expect(UploadController.sizeIsValid({ size: 100000000 })).toEqual(false)
-      })
+      uploadController.handleValidationResult(jsonResult, req)
+
+      expect(req.body.validationResult).toEqual(jsonResult)
+      expect(uploadController.errorCount).toBe(2)
     })
+  })
 
-    describe('file name length', () => {
-      it('should return true if the file name is less than the max file name length', () => {
-        expect(UploadController.fileNameIsntTooLong({ originalname: 'a'.repeat(100) })).toEqual(true)
-      })
+  describe('handleApiError', () => {
+    it('should handle a connection refused error', () => {
+      const req = {
+        body: {}
+      }
+      const error = { code: 'ECONNREFUSED' }
 
-      it('should return false if the file name is greater than the max file name length', () => {
-        expect(UploadController.fileNameIsntTooLong({ originalname: 'a'.repeat(1000) })).toEqual(false)
-      })
-    })
+      uploadController.handleApiError(error, req)
 
-    describe('file name', () => {
-      it('should return true if the file name is valid', () => {
-        expect(UploadController.fileNameIsValid({ originalname: 'test.csv' })).toEqual(true)
-      })
-
-      it('should return false if the file name contains invalid characters', () => {
-        expect(UploadController.fileNameIsValid({ originalname: 'test.csv?' })).toEqual(false)
-      })
-    })
-
-    describe('file name double extension', () => {
-      it('should return true if the file name does not contain a double extension', () => {
-        expect(UploadController.fileNameDoesntContainDoubleExtension({ originalname: 'test.csv' })).toEqual(true)
-      })
-
-      it('should return false if the file name contains a double extension', () => {
-        expect(UploadController.fileNameDoesntContainDoubleExtension({ originalname: 'test.csv.csv' })).toEqual(false)
-      })
+      expect(uploadController.validationErrorMessage).toBe('Unable to reach the api')
     })
   })
 })

@@ -1,6 +1,7 @@
 import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
-import uploadController from '../../controllers/uploadController.js'
+import uploadFileController from '../../controllers/uploadFileController.js'
+import uploadUrlController from '../../controllers/uploadUrlController.js'
 import errorsController from '../../controllers/errorsController.js'
 
 const baseSettings = {
@@ -27,29 +28,48 @@ export default {
     ...baseSettings,
     controller: datasetController,
     fields: ['dataset', 'data-subject'],
-    next: 'upload',
+    next: 'upload-method',
     backLink: './'
+  },
+  '/upload-method': {
+    ...baseSettings,
+    fields: ['upload-method'],
+    next: [
+      { field: 'upload-method', op: '===', value: 'url', next: 'url' },
+      'upload'
+    ],
+    backLink: './dataset'
+  },
+  '/url': {
+    ...baseSettings,
+    controller: uploadUrlController,
+    fields: ['url', 'validationResult'],
+    next: [
+      { fn: 'hasErrors', next: 'errors' },
+      'no-errors'
+    ],
+    backLink: './upload-method'
   },
   '/upload': {
     ...baseSettings,
-    controller: uploadController,
+    controller: uploadFileController,
     fields: ['datafile', 'validationResult'],
     next: [
       { fn: 'hasErrors', next: 'errors' },
       'no-errors'
     ],
-    backLink: './dataset'
+    backLink: './upload-method'
   },
   '/errors': {
     ...baseSettings,
     controller: errorsController,
     next: 'no-errors',
-    backLink: './upload'
+    backLink: './upload-method'
   },
   '/no-errors': {
     ...baseSettings,
     next: 'confirmation',
-    backLink: './upload'
+    backLink: './upload-method'
   },
   // '/email-address': {
   //   ...baseSettings,

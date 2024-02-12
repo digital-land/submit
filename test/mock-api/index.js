@@ -18,7 +18,11 @@ const app = express()
 app.use(config.api.validationEndpoint, upload.single('upload_file'))
 
 app.post(config.api.validationEndpoint, (req, res) => {
-  const filename = req.file.originalname
+  let filename = 'unassigned'
+
+  if (req.file && req.file.originalname) {
+    filename = req.file.originalname
+  }
 
   const _toSend = { ...APIResponse }
 
@@ -26,6 +30,12 @@ app.post(config.api.validationEndpoint, (req, res) => {
     _toSend['issue-log'] = []
     _toSend['column-field-log'] = []
   }
+
+  if (req.body.upload_url === 'https://example.com/conservation-area.csv') {
+    _toSend['issue-log'] = []
+    _toSend['column-field-log'] = []
+  }
+
   res.json(_toSend)
 })
 

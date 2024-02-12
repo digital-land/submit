@@ -1,16 +1,18 @@
 {% extends "layouts/main.html" %}
 
-{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
-{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/input/macro.njk' import govukInput %}
 {% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 
-{% set pageName = 'Upload data' %}
+{% set pageName = 'URL' %}
 
-{% if 'datafile' in errors %}
+{% set errorMessage = 'There\'s something wrong with your URL' %}
+
+{% if 'url' in errors %}
   {% set error = true %}
-  {% set errorMessage = 'datafile' | validationMessageLookup(errors['datafile'].type) %}
+  {% set errorMessage = 'url' | validationMessageLookup(errors['url'].type) %}
 {% elif 'validationResult' in errors %}
   {% set error = true %}
 
@@ -38,24 +40,22 @@
           errorList: [
             {
               text: errorMessage,
-              href: "#datafile"
+              href: "#url"
             }
           ]
         }) }}
       {% endif %}
-      <form novalidate method="post" enctype="multipart/form-data">
+      <form novalidate method="post">
 
-        {{ govukFileUpload({
-          id: "datafile",
-          name: "datafile",
+        {{ govukInput({
+          id: "url",
+          name: "url",
           label: {
             text: pageName,
             isPageHeading: true,
             classes: 'govuk-label--l'
           },
-          hint: {
-            text: "You can upload a CSV, GeoJSON, GML or Geopackage file"
-          },
+          value: data.check.url,
           errorMessage: {
             text: errorMessage 
           } if error else undefined
@@ -63,6 +63,8 @@
         {{ govukButton({
           text: "Continue"
         }) }}
+
+        <p class="govuk-!-padding-top-4 govuk-!-padding-bottom-4"><a style="color: #fff" href="/no-errors">No errors</a></p>
       </form>
     </div>
   </div>
