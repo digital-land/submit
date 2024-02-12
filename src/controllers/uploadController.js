@@ -12,7 +12,8 @@ import hash from '../utils/hasher.js'
 
 const upload = multer({ dest: 'uploads/' })
 
-const apiRoute = config.api.url + config.api.validationEndpoint
+const apiEndpoint = process.env.NODE_ENV === 'test' ? config.api.localUrl : config.api.url
+const apiRoute = apiEndpoint + config.api.validationEndpoint
 
 class UploadController extends PageController {
   middlewareSetup () {
