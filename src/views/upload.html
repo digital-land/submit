@@ -15,7 +15,6 @@
   {% set error = true %}
 
   {% if errors['validationResult'].type == 'validationError' %}
-    {{ options.validationError | dump}}
     {% set errorMessage = options.validationError %}
   {% else %}
     {% set errorMessage = 'validationResult' | validationMessageLookup(errors['validationResult'].type) %}
