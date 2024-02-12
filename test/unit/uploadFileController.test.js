@@ -13,7 +13,6 @@ describe('UploadFileController', () => {
 
   beforeEach(() => {
 
-
   })
 
   it('post adds the validation result to the session and the error count to the controller while deleting the uploaded file', async () => {
@@ -23,7 +22,7 @@ describe('UploadFileController', () => {
     UploadFileController.localValidateFile = localValidateFileMock
     uploadFileController = new UploadFileController(options)
     uploadFileController.apiValidateFile = apiValidateFileMock
-    
+
     expect(uploadFileController.post).toBeDefined()
 
     vi.mock('fs/promises', async (importOriginal) => {
@@ -46,7 +45,7 @@ describe('UploadFileController', () => {
       },
       body: {},
       session: {
-        id: 'sessionId',
+        id: 'sessionId'
       },
       ip: 'fakeIp'
     }
