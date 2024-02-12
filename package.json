@@ -18,7 +18,7 @@
     "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
     "test:acceptance": "playwright test",
     "test:acceptance:ui": "playwright test --ui",
-    "test:acceptance:codegen": "playwright codegen http://localhost:3000",
+    "test:acceptance:codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
