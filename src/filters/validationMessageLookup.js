@@ -33,9 +33,6 @@ const validationMessages = {
 }
 
 function validationMessageLookup (field, type) {
-  if (type === 'apiError') {
-    return
-  }
   if (!validationMessages[field] || !validationMessages[field][type]) {
     throw new Error('No validation message found for field ' + field + ' and type ' + type)
   }
