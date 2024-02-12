@@ -13,6 +13,14 @@
 {% if 'url' in errors %}
   {% set error = true %}
   {% set errorMessage = 'url' | validationMessageLookup(errors['url'].type) %}
+{% elif 'validationResult' in errors %}
+  {% set error = true %}
+
+  {% if errors['validationResult'].type == 'validationError' %}
+    {% set errorMessage = options.validationError %}
+  {% else %}
+    {% set errorMessage = 'validationResult' | validationMessageLookup(errors['validationResult'].type) %}
+  {% endif %}
 {% endif %}
 
 {% block pageTitle %}
