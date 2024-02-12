@@ -19,13 +19,16 @@ test('when the user clicks continue on the how do you want to provide your data 
   await page.goto('/')
   // start page
   await page.getByRole('button', { name: 'Start now' }).click()
-
+  // dataset page
+  await page.getByLabel('Conservation area dataset').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  // upload-method page
   await page.getByRole('button', { name: 'Continue' }).click()
 
   const expectedErrors = [
     {
-      fieldName: 'input#howDoYouWantToProvideData.govuk-radios__input',
-      expectedErrorMessage: 'Select a method'
+      fieldName: 'input#upload-method.govuk-radios__input',
+      expectedErrorMessage: 'Select how you want to provide your data'
     }
   ]
 
@@ -36,13 +39,6 @@ test('when the user clicks continue on the dataset page without entering a datas
   await page.goto('/')
   // start page
   await page.getByRole('button', { name: 'Start now' }).click()
-
-  // // data subject page
-  // await page.getByLabel('Conservation area').check()
-  // await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
 
   // dataset page
   await page.getByRole('button', { name: 'Continue' }).click()
@@ -66,11 +62,12 @@ test('when the user clicks continue on the file upload page without selecting a 
   // await page.getByLabel('Conservation area').check()
   // await page.getByRole('button', { name: 'Continue' }).click()
 
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
-
   // dataset page
   await page.getByLabel('Conservation area dataset').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/upload-method')
+  await page.getByLabel('File Upload').check()
   await page.getByRole('button', { name: 'Continue' }).click()
 
   // file upload page

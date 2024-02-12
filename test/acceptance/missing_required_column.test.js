@@ -5,13 +5,13 @@ test('when the user uploads a file with a missing required column, the page corr
   await page.goto('/')
   await page.getByRole('button', { name: 'Start now' }).click()
 
-  await page.waitForURL('**/howDoYouWantToProvideData')
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
-
   await page.waitForURL('**/dataset')
 
   await page.getByLabel('Conservation area dataset').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.waitForURL('**/upload-method')
+  await page.getByLabel('File Upload').check()
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/upload')
