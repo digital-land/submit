@@ -44,14 +44,20 @@ export default {
     ...baseSettings,
     controller: uploadUrlController,
     fields: ['url', 'validationResult'],
-    next: 'upload',
+    next: [
+      { fn: 'hasErrors', next: 'errors' },
+      'no-errors'
+    ],
     backLink: './upload-method'
   },
   '/upload': {
     ...baseSettings,
     controller: uploadFileController,
     fields: ['datafile', 'validationResult'],
-    next: 'errors',
+    next: [
+      { fn: 'hasErrors', next: 'errors' },
+      'no-errors'
+    ],
     backLink: './upload-method'
   },
   '/errors': {
