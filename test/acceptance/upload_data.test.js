@@ -135,3 +135,21 @@ test('Enter form information and specify a URL without errors', async ({ page })
 
   await page.waitForURL('**/confirmation')
 })
+
+test('test', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start now' }).click();
+
+  await page.getByLabel('Conservation area dataset').check();
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  await page.getByLabel('URL').check();
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  await page.getByLabel('URL').click();
+  await page.getByLabel('URL').fill('https://example.com/conservation-area-errors.csv');
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  await page.getByRole('button', { name: 'Upload a new version' }).click();
+  await page.waitForURL('**/upload-method')
+});
