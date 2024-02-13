@@ -37,14 +37,14 @@ class ErrorsController extends PageController {
     apiResponseData['issue-log'].forEach(issue => {
       if (issue.severity === severityLevels.error) {
         const entryNumber = issue['entry-number']
-        const rowValues = apiResponseData['converted-csv'][issue['line-number'] - 2]
+        const rowValues = { ...apiResponseData['converted-csv'][issue['line-number'] - 2] }
 
         // remove any keys from row values where a mapping exists to this column
         Object.keys(rowValues).forEach(originalColumnName => {
           // if a mapping exists to this column name, remove it from the row values
           const mappingToThisColumn = apiResponseData['column-field-log'].find(columnField => columnField.field === originalColumnName)
           if (mappingToThisColumn) {
-            const mappingExistsInRowValues = Object.keys(rowValues).includes(mappingToThisColumn.column)
+            const mappingExistsInRowValues = mappingToThisColumn.field !== mappingToThisColumn.column && Object.keys(rowValues).includes(mappingToThisColumn.column)
             if (mappingExistsInRowValues) {
               delete rowValues[originalColumnName]
             }
