@@ -7,9 +7,9 @@ import axios from 'axios'
 import fs from 'fs/promises'
 import { lookup } from 'mime-types'
 import config from '../../config/index.js'
+import logger from '../utils/logger.js'
 
 const upload = multer({ dest: 'uploads/' })
-import logger from '../utils/logger.js'
 
 class UploadFileController extends UploadController {
   middlewareSetup () {
@@ -23,7 +23,7 @@ class UploadFileController extends UploadController {
       req.body.datafile = req.file
 
       // log the file name, type and size as an object
-      logger.info('file uploaded:', { name: req.file.originalname, type: req.file.mimetype, size: req.file.size })      
+      logger.info('file uploaded:', { name: req.file.originalname, type: req.file.mimetype, size: req.file.size })
 
       const localValidationResult = UploadFileController.localValidateFile({
         ...req.file,
