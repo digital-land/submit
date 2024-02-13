@@ -64,6 +64,10 @@ test('Enter form information and upload a file with errors and without errors', 
 
   await page.getByRole('button', { name: 'Upload a new version' }).click()
 
+  await page.waitForURL('**/upload-method')
+  await page.getByLabel('File Upload').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
   await page.waitForURL('**/upload')
 
   fileChooserPromise = page.waitForEvent('filechooser')
