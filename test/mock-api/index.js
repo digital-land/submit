@@ -26,7 +26,7 @@ app.post(config.api.validationEndpoint, (req, res) => {
 
   const _toSend = { ...APIResponse }
 
-  if (filename !== 'conservation-area-errors.csv') {
+  if (filename !== 'conservation-area-errors.csv' && filename !== 'unassigned') {
     _toSend['issue-log'] = []
     _toSend['column-field-log'] = []
   }

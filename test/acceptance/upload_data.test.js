@@ -64,6 +64,10 @@ test('Enter form information and upload a file with errors and without errors', 
 
   await page.getByRole('button', { name: 'Upload a new version' }).click()
 
+  await page.waitForURL('**/upload-method')
+  await page.getByLabel('File Upload').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
   await page.waitForURL('**/upload')
 
   fileChooserPromise = page.waitForEvent('filechooser')
@@ -134,4 +138,22 @@ test('Enter form information and specify a URL without errors', async ({ page })
   await page.getByRole('button', { name: 'Continue' }).click()
 
   await page.waitForURL('**/confirmation')
+})
+
+test('test', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start now' }).click()
+
+  await page.getByLabel('Conservation area dataset').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.getByLabel('URL').check()
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.getByLabel('URL').click()
+  await page.getByLabel('URL').fill('https://example.com/conservation-area-errors.csv')
+  await page.getByRole('button', { name: 'Continue' }).click()
+
+  await page.getByRole('button', { name: 'Upload a new version' }).click()
+  await page.waitForURL('**/upload-method')
 })
