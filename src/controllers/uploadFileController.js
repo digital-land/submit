@@ -9,6 +9,7 @@ import { lookup } from 'mime-types'
 import config from '../../config/index.js'
 
 const upload = multer({ dest: 'uploads/' })
+import logger from '../utils/logger.js'
 
 class UploadFileController extends UploadController {
   middlewareSetup () {
@@ -20,6 +21,9 @@ class UploadFileController extends UploadController {
     this.resetValidationErrorMessage()
     if (req.file !== undefined) {
       req.body.datafile = req.file
+
+      // log the file name, type and size as an object
+      logger.info('file uploaded:', { name: req.file.originalname, type: req.file.mimetype, size: req.file.size })      
 
       const localValidationResult = UploadFileController.localValidateFile({
         ...req.file,
