@@ -1,8 +1,8 @@
 import BasePage from './BasePage'
 
-class UploadFilePOM extends BasePage {
+export default class UploadFilePOM extends BasePage {
   constructor (page) {
-    super(page, '/upload-file')
+    super(page, '/upload')
   }
 
   async uploadFile (filePath) {
@@ -11,11 +11,4 @@ class UploadFilePOM extends BasePage {
     const fileChooser = await fileChooserPromise
     await fileChooser.setFiles(filePath)
   }
-
-  async uploadFileAndContinue (filePath) {
-    await this.uploadFile(filePath)
-    await this.clickContinue()
-  }
 }
-
-module.exports = UploadFilePOM

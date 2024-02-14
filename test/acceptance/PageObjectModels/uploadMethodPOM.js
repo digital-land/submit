@@ -1,9 +1,9 @@
 import BasePage from './BasePage'
 
-class UploadMethodPOM extends BasePage {
+export default class UploadMethodPOM extends BasePage {
   static uploadMethods = {
-    File: '',
-    URL: ''
+    File: 'File Upload',
+    URL: 'URL'
   }
 
   constructor (page) {
@@ -13,11 +13,4 @@ class UploadMethodPOM extends BasePage {
   async selectUploadMethod (method) {
     return await this.page.getByLabel(method).check()
   }
-
-  async selectUploadMethodAndContinue (method) {
-    await this.selectUploadMethod(method)
-    await this.clickContinue()
-  }
 }
-
-module.exports = UploadMethodPOM

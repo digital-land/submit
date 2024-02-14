@@ -1,7 +1,7 @@
 import BasePage from './BasePage'
 
-class DatasetPOM extends BasePage {
-  static dataSets = {
+export default class DatasetPOM extends BasePage {
+  static datasets = {
     Article_4_direction_area_dataset: 'Article 4 direction area dataset',
     Conservation_area_dataset: 'Conservation area dataset',
     Tree_Preservation_zone: 'Tree preservation zone dataset',
@@ -12,14 +12,7 @@ class DatasetPOM extends BasePage {
     super(page, '/dataset')
   }
 
-  async selectDataSet (dataSet) {
+  async selectDataset (dataSet) {
     return await this.page.getByLabel(dataSet).check()
   }
-
-  async selectDataSetAndContinue (dataSet) {
-    await this.selectDataSet(dataSet)
-    await this.clickContinue()
-  }
 }
-
-module.exports = DatasetPOM
