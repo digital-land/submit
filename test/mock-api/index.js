@@ -31,7 +31,7 @@ app.post(config.api.validationEndpoint, (req, res) => {
     _toSend['column-field-log'] = []
   }
 
-  if (req.body.upload_url === 'https://example.com/conservation-area.csv') {
+  if (req.body.upload_url === 'https://example.com/conservation-area-ok.csv') {
     _toSend['issue-log'] = []
     _toSend['column-field-log'] = []
   }
