@@ -12,15 +12,11 @@ const checkSessionExpired = async (page, route) => {
   await expect(sessionExpiredText !== undefined).toBeTruthy()
 }
 
-test('/ loads ok', async ({ page }) => {
+test('start page loads ok', async ({ page }) => {
   await checkRouteResponse(page, '/', 200)
 })
 
 test.describe('without a valid session, the user can not access the later pages', () => {
-  // test('/data-subject', async ({ page }) => {
-  //   await checkSessionExpired(page, '/data-subject')
-  // })
-
   test('/upload-method', async ({ page }) => {
     await checkSessionExpired(page, '/upload-method')
   })
@@ -35,6 +31,18 @@ test.describe('without a valid session, the user can not access the later pages'
 
   test('/url', async ({ page }) => {
     await checkSessionExpired(page, '/url')
+  })
+
+  test('/no-errors', async ({ page }) => {
+    await checkSessionExpired(page, '/no-errors')
+  })
+
+  test('/errors', async ({ page }) => {
+    await checkSessionExpired(page, '/errors')
+  })
+
+  test('/confirmation', async ({ page }) => {
+    await checkSessionExpired(page, '/confirmation')
   })
 })
 
