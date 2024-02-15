@@ -1,0 +1,6 @@
+api: {
+    url: http://localhost:8082,
+    port: 8082,
+    validationEndpoint: /api/dataset/validate/file/request,
+    requestTimeout: 50000
+}

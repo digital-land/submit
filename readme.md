@@ -27,3 +27,11 @@ This is the frontend for the LPA Data Validator application. It is a nodeJS expr
     ```
     npm run start
     ```
+- run the application, using a local api
+    ```
+    npm run start:local
+    ```
+- run the application, using a local api in watch mode
+    ```
+    npm run start:local:watch
+    ```

@@ -1,7 +1,6 @@
 port: 5000
 api: {
     url: https://publish-api.planning.data.gov.uk,
-    localUrl: http://localhost:8082,
     port: 8082,
     validationEndpoint: /api/dataset/validate/file/request,
     requestTimeout: 50000
