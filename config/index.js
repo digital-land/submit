@@ -5,11 +5,13 @@ const config = new HmpoConfig()
 // add default config
 config.addFile('./config/default.yaml')
 
+const environment = process.env.NODE_ENV || process.env.ENVIRONMENT || 'production'
+
 // add environment specific config
 try {
-  config.addFile('./config/' + process.env.NODE_ENV + '.yaml')
+  config.addFile('./config/' + environment + '.yaml')
 } catch (err) {
-  console.error('No environment specific config file found for ' + process.env.NODE_ENV + '.yaml')
+  console.error('No environment specific config file found for ' + environment + '.yaml')
 }
 
 export default config.toJSON()
