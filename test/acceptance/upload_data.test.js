@@ -1,159 +1,136 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
+import StartPOM from './PageObjectModels/startPOM'
+import DatasetPOM from './PageObjectModels/datasetPOM'
+import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
+import UploadFilePOM from './PageObjectModels/uploadFilePOM'
+import UploadURLPOM from './PageObjectModels/uploadURLPOM'
+import ErrorsPOM from './PageObjectModels/errorsPOM'
+import NoErrorsPOM from './PageObjectModels/noErrorsPOM'
+import ConfirmationPOM from './PageObjectModels/confirmationPOM'
 
 test('Enter form information', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Start now' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadFilePOM = new UploadFilePOM(page)
+  const noErrorsPOM = new NoErrorsPOM(page)
+  const confirmationPOM = new ConfirmationPOM(page)
 
-  // await page.waitForURL('**/data-subject')
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
-  // await page.getByLabel('Conservation area').check()
-  // await page.getByRole('button', { name: 'Continue' }).click()
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
 
-  await page.waitForURL('**/dataset')
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
+  await uploadMethodPOM.clickContinue()
 
-  expect(await page.title()).toBe('Dataset - Publish planning and housing data for England')
+  await uploadFilePOM.uploadFile('test/testData/conservation-area-ok.csv')
+  await uploadFilePOM.clickContinue()
 
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await noErrorsPOM.waitForPage()
+  await noErrorsPOM.clickContinue()
 
-  await page.waitForURL('**/upload-method')
-
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/upload')
-  expect(await page.title()).toBe('Upload data - Publish planning and housing data for England')
-
-  const fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByText('Upload data').click()
-  const fileChooser = await fileChooserPromise
-  await fileChooser.setFiles('test/testData/conservation-area-errors.csv')
+  await confirmationPOM.waitForPage()
 })
 
 // currently skipping this test as im not sure how to go about providing the pipeline runner api
 test('Enter form information and upload a file with errors and without errors', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Start now' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadFilePOM = new UploadFilePOM(page)
+  const errorsPOM = new ErrorsPOM(page)
+  const noErrorsPOM = new NoErrorsPOM(page)
+  const confirmationPOM = new ConfirmationPOM(page)
 
-  // await page.waitForURL('**/data-subject')
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
-  // await page.getByLabel('Conservation area').check()
-  // await page.getByRole('button', { name: 'Continue' }).click()
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
 
-  await page.waitForURL('**/dataset')
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
+  await uploadMethodPOM.clickContinue()
 
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await uploadFilePOM.uploadFile('test/testData/conservation-area-errors.csv')
+  await uploadFilePOM.clickContinue()
 
-  await page.waitForURL('**/upload-method')
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await errorsPOM.waitForPage()
+  await errorsPOM.clickUploadNewVersion()
 
-  await page.waitForURL('**/upload')
+  await uploadMethodPOM.waitForPage()
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
+  await uploadMethodPOM.clickContinue()
 
-  let fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByText('Upload data').click()
-  let fileChooser = await fileChooserPromise
-  await fileChooser.setFiles('test/testData/conservation-area-errors.csv')
+  await uploadFilePOM.uploadFile('test/testData/conservation-area-ok.csv')
+  await uploadFilePOM.clickContinue()
 
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await noErrorsPOM.waitForPage()
+  await noErrorsPOM.clickContinue()
 
-  await page.waitForURL('**/errors')
-
-  expect(await page.title()).toBe('Your data has errors - Publish planning and housing data for England')
-
-  await page.getByRole('button', { name: 'Upload a new version' }).click()
-
-  await page.waitForURL('**/upload-method')
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/upload')
-
-  fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByText('Upload data').click()
-  fileChooser = await fileChooserPromise
-  await fileChooser.setFiles('test/testData/conservation-area-ok.csv')
-
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/no-errors')
-  expect(await page.title()).toBe('Your data has been checked and can be published - Publish planning and housing data for England')
-
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  // await page.waitForURL('**/email-address')
-  // await page.getByLabel('Your email address').fill('dataOfficer@fakeLPA.com')
-  // await page.getByRole('button', { name: 'Continue' }).click()
-
-  // await page.waitForURL('**/name')
-  // await page.getByLabel('First name').fill('Bob')
-  // await page.getByLabel('Last name').fill('Marley')
-  // await page.getByRole('button', { name: 'Continue' }).click()
-
-  // await page.waitForURL('**/lpa')
-  // await page.getByLabel('Local planning authority').fill('My Fake LPA')
-  // await page.getByRole('button', { name: 'Continue' }).click()
-
-  // await page.waitForURL('**/check')
-  // expect(await page.getByText('Conservation area', { exact: true }).isVisible(), 'supplied data subject not on check page').toBeTruthy()
-  // expect(await page.getByText('conservation-area', { exact: true }).isVisible(), 'supplied dataset not on check page').toBeTruthy()
-  // expect(await page.getByText('dataOfficer@fakeLPA.com').isVisible(), 'supplied email not on check page').toBeTruthy()
-  // expect(await page.getByText('Bob Marley').isVisible(), 'supplied name not on check page').toBeTruthy()
-  // expect(await page.getByText('My Fake LPA').isVisible(), 'supplied email not on check page').toBeTruthy()
-  // await page.getByRole('button', { name: 'Send data' }).click()
-
-  await page.waitForURL('**/confirmation')
+  await confirmationPOM.waitForPage()
 })
 
 test('Enter form information and specify a URL without errors', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Start now' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadURLPOM = new UploadURLPOM(page)
+  const noErrorsPOM = new NoErrorsPOM(page)
+  const confirmationPOM = new ConfirmationPOM(page)
 
-  // await page.waitForURL('**/data-subject')
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
-  // await page.getByLabel('Conservation area').check()
-  // await page.getByRole('button', { name: 'Continue' }).click()
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
 
-  await page.waitForURL('**/dataset')
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+  await uploadMethodPOM.clickContinue()
 
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await uploadURLPOM.enterURL('https://example.com/conservation-area-ok.csv')
+  await uploadURLPOM.clickContinue()
 
-  await page.waitForURL('**/upload-method')
+  await noErrorsPOM.waitForPage()
+  await noErrorsPOM.clickContinue()
 
-  await page.getByLabel('URL').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/url')
-
-  await page.getByLabel('URL').click()
-  await page.getByLabel('URL').fill('https://example.com/conservation-area.csv')
-
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/no-errors')
-  expect(await page.title()).toBe('Your data has been checked and can be published - Publish planning and housing data for England')
-
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/confirmation')
+  await confirmationPOM.waitForPage()
 })
 
-test('test', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Start now' }).click()
+test('Enter form information and specify a URL with errors then without errors', async ({ page }) => {
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadURLPOM = new UploadURLPOM(page)
+  const errorsPOM = new ErrorsPOM(page)
+  const noErrorsPOM = new NoErrorsPOM(page)
+  const confirmationPOM = new ConfirmationPOM(page)
 
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
-  await page.getByLabel('URL').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
 
-  await page.getByLabel('URL').click()
-  await page.getByLabel('URL').fill('https://example.com/conservation-area-errors.csv')
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+  await uploadMethodPOM.clickContinue()
 
-  await page.getByRole('button', { name: 'Upload a new version' }).click()
-  await page.waitForURL('**/upload-method')
+  await uploadURLPOM.enterURL('https://example.com/conservation-area-errors.csv')
+  await uploadURLPOM.clickContinue()
+
+  await errorsPOM.waitForPage()
+  await errorsPOM.clickUploadNewVersion()
+
+  await uploadMethodPOM.waitForPage()
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+  await uploadMethodPOM.clickContinue()
+
+  await uploadURLPOM.enterURL('https://example.com/conservation-area-ok.csv')
+  await uploadURLPOM.clickContinue()
+
+  await noErrorsPOM.waitForPage()
+  await noErrorsPOM.clickContinue()
+
+  await confirmationPOM.waitForPage()
 })
