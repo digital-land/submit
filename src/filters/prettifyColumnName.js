@@ -4,7 +4,6 @@ const prettifyColumnName = (columnName) => {
 
   // Capitalize the first letter of the first word and make 'url' uppercase
   const title = words.map((word, index) => {
-    console.log(`word: ${word}, word.toLowerCase(): ${word.toLowerCase()}`)
     if (word.toLowerCase() === 'url') {
       return word.toUpperCase()
     } else if (index === 0) {
