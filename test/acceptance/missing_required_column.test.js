@@ -1,31 +1,30 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
+import StartPOM from './PageObjectModels/startPOM'
+import DatasetPOM from './PageObjectModels/datasetPOM'
+import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
+import UploadFilePOM from './PageObjectModels/uploadFilePOM'
+import ErrorsPOM from './PageObjectModels/errorsPOM'
 
 // a playwright test that uploads a file with a missing required column, and checks that the correct error message is displayed
 test('when the user uploads a file with a missing required column, the page correctly indicates there\'s an error', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', { name: 'Start now' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadFilePOM = new UploadFilePOM(page)
+  const errorsPOM = new ErrorsPOM(page)
 
-  await page.waitForURL('**/dataset')
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
 
-  await page.waitForURL('**/upload-method')
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
+  await uploadMethodPOM.clickContinue()
 
-  await page.waitForURL('**/upload')
+  await uploadFilePOM.uploadFile('test/testData/conservation-area-errors.csv')
+  await uploadFilePOM.clickContinue()
 
-  const fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByText('Upload data').click()
-  const fileChooser = await fileChooserPromise
-  await fileChooser.setFiles('test/testData/conservation-area-errors.csv')
-
-  await page.getByRole('button', { name: 'Continue' }).click()
-
-  await page.waitForURL('**/errors')
-
-  expect(await page.title()).toBe('Your data has errors - Publish planning and housing data for England')
-
-  expect(await page.textContent('.govuk-list')).toContain('Reference column missing')
+  await errorsPOM.waitForPage()
+  await errorsPOM.expectErrorSummaryToContain(['Reference column missing'])
 })

@@ -1,61 +1,102 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
+import StartPOM from './PageObjectModels/startPOM'
+import DatasetPOM from './PageObjectModels/datasetPOM'
+import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
+import UploadFilePOM from './PageObjectModels/uploadFilePOM'
+import UploadURLPOM from './PageObjectModels/uploadURLPOM'
 
 test.use({ javaScriptEnabled: false })
 
 test.describe('Back buttons work as expected without js for', () => {
   test('data set page', async ({ page, baseURL }) => {
-    await page.goto('/')
-    await page.click('text=Start now')
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/')
+    const startPOM = new StartPOM(page)
+    const datasetPOM = new DatasetPOM(page)
+
+    await startPOM.navigateHere()
+    await startPOM.clickStartNow()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.goBack()
+
+    await startPOM.waitForPage()
   })
 
   test('upload method page', async ({ page, baseURL }) => {
-    await page.goto('/')
-    await page.click('text=Start now')
-    await page.getByLabel('Article 4 direction area dataset').check()
-    await page.getByRole('button', { name: 'Continue' }).click()
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/dataset')
+    const startPOM = new StartPOM(page)
+    const datasetPOM = new DatasetPOM(page)
+    const uploadMethodPOM = new UploadMethodPOM(page)
+
+    await startPOM.navigateHere()
+    await startPOM.clickStartNow()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.selectDataset(DatasetPOM.datasets.Article_4_direction_area_dataset)
+    await datasetPOM.clickContinue()
+
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.goBack()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.goBack()
+
+    await startPOM.waitForPage()
   })
 
   test('upload file page', async ({ page, baseURL }) => {
-    await page.goto('/')
-    await page.click('text=Start now')
+    const startPOM = new StartPOM(page)
+    const datasetPOM = new DatasetPOM(page)
+    const uploadMethodPOM = new UploadMethodPOM(page)
+    const uploadFilePOM = new UploadFilePOM(page)
 
-    await page.getByLabel('Article 4 direction area dataset').check()
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await startPOM.navigateHere()
+    await startPOM.clickStartNow()
 
-    await page.getByLabel('File Upload').check()
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await datasetPOM.waitForPage()
+    await datasetPOM.selectDataset(DatasetPOM.datasets.Article_4_direction_area_dataset)
+    await datasetPOM.clickContinue()
 
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/upload-method')
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
+    await uploadMethodPOM.clickContinue()
 
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/dataset')
+    await uploadFilePOM.waitForPage()
+    await uploadFilePOM.goBack()
 
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/')
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.goBack()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.goBack()
+
+    await startPOM.waitForPage()
   })
 
   test('upload url page', async ({ page, baseURL }) => {
-    await page.goto('/')
-    await page.click('text=Start now')
+    const startPOM = new StartPOM(page)
+    const datasetPOM = new DatasetPOM(page)
+    const uploadMethodPOM = new UploadMethodPOM(page)
+    const uploadURLPOM = new UploadURLPOM(page)
 
-    await page.getByLabel('Article 4 direction area dataset').check()
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await startPOM.navigateHere()
+    await startPOM.clickStartNow()
 
-    await page.getByLabel('URL').check()
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await datasetPOM.waitForPage()
+    await datasetPOM.selectDataset(DatasetPOM.datasets.Article_4_direction_area_dataset)
+    await datasetPOM.clickContinue()
 
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/upload-method')
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+    await uploadMethodPOM.clickContinue()
 
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/dataset')
+    await uploadURLPOM.waitForPage()
+    await uploadURLPOM.goBack()
 
-    await page.getByRole('link', { name: 'Back', exact: true }).click()
-    expect(page.url()).toBe(baseURL + '/')
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.goBack()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.goBack()
+
+    await startPOM.waitForPage()
   })
 })

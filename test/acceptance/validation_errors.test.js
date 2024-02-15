@@ -1,92 +1,91 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
+import StartPOM from './PageObjectModels/startPOM'
+import DatasetPOM from './PageObjectModels/datasetPOM'
+import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
+import UploadFilePOM from './PageObjectModels/uploadFilePOM'
+import UploadURLPOM from './PageObjectModels/uploadURLPOM'
+import ErrorsPOM from './PageObjectModels/errorsPOM'
 
 test('when the user clicks continue on the dataset page without entering a dataset, the page correctly indicates there\'s an error', async ({ page }) => {
-  await page.goto('/')
-  // start page
-  await page.getByRole('button', { name: 'Start now' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
 
-  // dataset page
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
+  await datasetPOM.clickContinue()
   const expectedErrors = [
     {
       fieldName: 'input#dataset.govuk-radios__input',
       expectedErrorMessage: 'Select a dataset'
     }
   ]
-
-  await testErrorMessage(page, expectedErrors)
+  await datasetPOM.expectErrorMessages(expectedErrors)
 })
 
 test('when the user clicks continue on the how do you want to provide your data page without selecting a method, the page correctly indicates there\'s an error', async ({ page }) => {
-  await page.goto('/')
-  // start page
-  await page.getByRole('button', { name: 'Start now' }).click()
-  // dataset page
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
-  // upload-method page
-  await page.getByRole('button', { name: 'Continue' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
 
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
+
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
+
+  await uploadMethodPOM.clickContinue()
   const expectedErrors = [
     {
       fieldName: 'input#upload-method.govuk-radios__input',
       expectedErrorMessage: 'Select how you want to provide your data'
     }
   ]
-
-  await testErrorMessage(page, expectedErrors)
+  await uploadMethodPOM.expectErrorMessages(expectedErrors)
 })
 
 test('when the user clicks continue on the file upload page without selecting a file, the page correctly indicates there\'s an error', async ({ page }) => {
-  await page.goto('/')
-  // start page
-  await page.getByRole('button', { name: 'Start now' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadFilePOM = new UploadFilePOM(page)
 
-  // // data subject page
-  // await page.getByLabel('Conservation area').check()
-  // await page.getByRole('button', { name: 'Continue' }).click()
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
-  // dataset page
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
 
-  await page.waitForURL('**/upload-method')
-  await page.getByLabel('File Upload').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
+  await uploadMethodPOM.clickContinue()
 
-  // file upload page
-  await page.getByRole('button', { name: 'Continue' }).click()
-
+  await uploadFilePOM.clickContinue()
   const expectedErrors = [
     {
       fieldName: 'input#datafile.govuk-file-upload',
       expectedErrorMessage: 'Select a file'
     }
   ]
-
-  await testErrorMessage(page, expectedErrors)
+  await uploadFilePOM.expectErrorMessages(expectedErrors)
 })
 
 test('when the user clicks continue on the url page without entering a url, the page correctly indicates there\'s an error', async ({ page }) => {
-  await page.goto('/')
-  // start page
-  await page.getByRole('button', { name: 'Start now' }).click()
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadURLPOM = new UploadURLPOM(page)
+  const errorsPOM = new ErrorsPOM(page)
 
-  // // data subject page
-  // await page.getByLabel('Conservation area').check()
-  // await page.getByRole('button', { name: 'Continue' }).click()
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
 
-  // dataset page
-  await page.getByLabel('Conservation area dataset').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
 
-  await page.waitForURL('**/upload-method')
-  await page.getByLabel('URL').check()
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+  await uploadMethodPOM.clickContinue()
 
-  // url page
-  await page.getByRole('button', { name: 'Continue' }).click()
+  await uploadURLPOM.clickContinue()
 
   const expectedErrors = [
     {
@@ -95,24 +94,5 @@ test('when the user clicks continue on the url page without entering a url, the 
     }
   ]
 
-  await testErrorMessage(page, expectedErrors)
+  await errorsPOM.expectErrorMessages(expectedErrors)
 })
-
-const testErrorMessage = async (page, errors) => {
-  for (const { fieldName, expectedErrorMessage } of errors) {
-    await page.waitForSelector(fieldName)
-
-    const errorLink = await page.getByRole('link', { name: expectedErrorMessage })
-    const fieldError = await page.getByText(`Error: ${expectedErrorMessage}`)
-    const errorSummary = await page.getByText('There’s a problem')
-
-    expect(await errorSummary.isVisible(), 'Page should show the error summary').toBeTruthy()
-    expect(await errorLink.isVisible(), 'Page should show an error summary that is a link to the problem field').toBeTruthy()
-    expect(await fieldError.isVisible(), 'Page should show the error message next to the problem field').toBeTruthy()
-    await errorLink.click()
-    const problemFieldIsFocused = await page.$eval(fieldName, (el) => el === document.activeElement)
-    expect(problemFieldIsFocused, 'The focus should be on the problem field').toBeTruthy()
-  }
-
-  expect(await page.title(), 'Page title should indicate there\'s an error').toMatch(/Error: .*/)
-}
