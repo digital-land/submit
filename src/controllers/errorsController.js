@@ -68,7 +68,7 @@ class ErrorsController extends PageController {
           aggregatedIssues[entryNumber][issue.field] = {
             issue: {
               type: issue['issue-type'],
-              description: issue.description
+              description: issue.message
             },
             value: rowValues[columnName]
           }
