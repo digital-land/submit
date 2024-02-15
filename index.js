@@ -7,14 +7,10 @@ import session from 'express-session'
 import nunjucks from 'nunjucks'
 import bodyParser from 'body-parser'
 import config from './config/index.js'
-import xGovFilters from '@x-govuk/govuk-prototype-filters'
 import formWizard from './src/routes/form-wizard/index.js'
-import validationMessageLookup from './src/filters/validationMessageLookup.js'
-import toErrorList from './src/filters/toErrorList.js'
 import hash from './src/utils/hasher.js'
 import accessibility from './src/routes/accessibility.js'
-
-const { govukMarkdown } = xGovFilters
+import addFilters from './src/filters/filters.js'
 
 const app = express()
 
@@ -65,9 +61,7 @@ const globalValues = {
 Object.keys(globalValues).forEach((key) => {
   nunjucksEnv.addGlobal(key, globalValues[key])
 })
-nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
-nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
-nunjucksEnv.addFilter('toErrorList', toErrorList)
+addFilters(nunjucksEnv)
 
 // body parser
 app.use(bodyParser.urlencoded({ extended: true }))
