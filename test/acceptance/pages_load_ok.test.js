@@ -25,6 +25,10 @@ test.describe('without a valid session, the user can not access the later pages'
     await checkSessionExpired(page, '/dataset')
   })
 
+  test('/geometry-type', async ({ page }) => {
+    await checkSessionExpired(page, '/geometry-type')
+  })
+
   test('/upload', async ({ page }) => {
     await checkSessionExpired(page, '/upload')
   })

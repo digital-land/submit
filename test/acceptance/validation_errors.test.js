@@ -1,6 +1,7 @@
 import { test } from '@playwright/test'
 import StartPOM from './PageObjectModels/startPOM'
 import DatasetPOM from './PageObjectModels/datasetPOM'
+import GeometryTypePOM from './PageObjectModels/GeometryTypePOM'
 import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
 import UploadFilePOM from './PageObjectModels/uploadFilePOM'
 import UploadURLPOM from './PageObjectModels/uploadURLPOM'
@@ -21,6 +22,27 @@ test('when the user clicks continue on the dataset page without entering a datas
     }
   ]
   await datasetPOM.expectErrorMessages(expectedErrors)
+})
+
+test('when the user clicks continue on the geometry-type page without entering a geometry type, the page correctly indicates there\'s an error', async ({ page }) => {
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const geometryTypePOM = new GeometryTypePOM(page)
+
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
+
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Tree)
+  await datasetPOM.clickContinue()
+
+  await geometryTypePOM.clickContinue()
+  const expectedErrors = [
+    {
+      fieldName: 'input#geometry-type.govuk-radios__input',
+      expectedErrorMessage: 'Select a geometry type'
+    }
+  ]
+  await geometryTypePOM.expectErrorMessages(expectedErrors)
 })
 
 test('when the user clicks continue on the how do you want to provide your data page without selecting a method, the page correctly indicates there\'s an error', async ({ page }) => {
