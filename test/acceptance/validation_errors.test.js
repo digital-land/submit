@@ -1,7 +1,7 @@
 import { test } from '@playwright/test'
 import StartPOM from './PageObjectModels/startPOM'
 import DatasetPOM from './PageObjectModels/datasetPOM'
-import GeometryTypePOM from './PageObjectModels/GeometryTypePOM'
+import GeometryTypePOM from './PageObjectModels/geometryTypePOM'
 import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
 import UploadFilePOM from './PageObjectModels/uploadFilePOM'
 import UploadURLPOM from './PageObjectModels/uploadURLPOM'
@@ -38,7 +38,7 @@ test('when the user clicks continue on the geometry-type page without entering a
   await geometryTypePOM.clickContinue()
   const expectedErrors = [
     {
-      fieldName: 'input#geometry-type.govuk-radios__input',
+      fieldName: 'input#geom-type.govuk-radios__input',
       expectedErrorMessage: 'Select a geometry type'
     }
   ]

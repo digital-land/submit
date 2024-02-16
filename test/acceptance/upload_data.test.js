@@ -2,7 +2,7 @@ import { test } from '@playwright/test'
 import StartPOM from './PageObjectModels/startPOM'
 import DatasetPOM from './PageObjectModels/datasetPOM'
 import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
-import GeometryTypePOM from './PageObjectModels/GeometryTypePOM'
+import GeometryTypePOM from './PageObjectModels/geometryTypePOM'
 import UploadFilePOM from './PageObjectModels/uploadFilePOM'
 import UploadURLPOM from './PageObjectModels/uploadURLPOM'
 import ErrorsPOM from './PageObjectModels/errorsPOM'
@@ -153,7 +153,7 @@ test('enter form information for dataset tree, forcing you to select the geometr
   await datasetPOM.clickContinue()
 
   await geometryTypePOM.waitForPage()
-  await geometryTypePOM.selectGeometryType(GeometryTypePOM.geometryTypes.Point)
+  await geometryTypePOM.selectGeometryType(GeometryTypePOM.geometryTypes.point)
   await geometryTypePOM.clickContinue()
 
   await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
@@ -167,6 +167,7 @@ test('enter form information for dataset tree, forcing you to select the geometr
 
   await uploadMethodPOM.waitForPage()
   await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.File)
+  await uploadMethodPOM.clickContinue()
 
   await uploadFilePOM.uploadFile('test/testData/tree-ok.csv')
   await uploadFilePOM.clickContinue()

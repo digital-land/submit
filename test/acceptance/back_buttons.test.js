@@ -31,7 +31,8 @@ test.describe('Back buttons work as expected without js for', () => {
     await startPOM.clickStartNow()
 
     await datasetPOM.waitForPage()
-    await datasetPOM.selectUploadMethod(DatasetPOM.datasets.Tree)
+    await datasetPOM.selectDataset(DatasetPOM.datasets.Tree)
+    await datasetPOM.clickContinue()
 
     await geometryTypePOM.waitForPage()
     await geometryTypePOM.goBack()
@@ -77,7 +78,7 @@ test.describe('Back buttons work as expected without js for', () => {
     await datasetPOM.clickContinue()
 
     await geometryTypePOM.waitForPage()
-    await geometryTypePOM.selectUploadMethod(GeometryTypePOM.geometryTypes.Point)
+    await geometryTypePOM.selectGeometryType(GeometryTypePOM.geometryTypes.point)
     await geometryTypePOM.clickContinue()
 
     await uploadMethodPOM.waitForPage()
