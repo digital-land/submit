@@ -39,7 +39,7 @@ test('when the user clicks continue on the geometry-type page without entering a
   const expectedErrors = [
     {
       fieldName: 'input#geom-type.govuk-radios__input',
-      expectedErrorMessage: 'Select a geometry type'
+      expectedErrorMessage: 'Select if your geometry data given as points or polygons'
     }
   ]
   await geometryTypePOM.expectErrorMessages(expectedErrors)
