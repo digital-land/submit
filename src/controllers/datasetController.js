@@ -37,7 +37,6 @@ class DatasetController extends PageController {
   }
 
   requiresGeometryTypeToBeSelected (req) {
-
     const dataset = req.body.dataset
 
     if (!dataset) {
