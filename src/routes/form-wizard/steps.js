@@ -28,8 +28,17 @@ export default {
     ...baseSettings,
     controller: datasetController,
     fields: ['dataset', 'data-subject'],
-    next: 'upload-method',
+    next: [
+      { field: 'dataset', fn: 'requiresGeometryTypeToBeSelected', next: 'geometry-type'},
+      'upload-method',
+    ],
     backLink: './'
+  },
+  '/geometry-type': {
+    ...baseSettings,
+    fields: ['geom-type'],
+    next: 'upload-method',
+    backLink: './dataset'
   },
   '/upload-method': {
     ...baseSettings,

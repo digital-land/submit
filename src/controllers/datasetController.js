@@ -35,6 +35,19 @@ class DatasetController extends PageController {
     req.body['data-subject'] = dataSubject
     super.post(req, res, next)
   }
+
+  requiresGeometryTypeToBeSelected (req) {
+
+    const dataset = req.body.dataset
+
+    if (!dataset) {
+      return false
+    }
+
+    const dataSubject = Object.values(dataSubjects).find(dataSubject => dataSubject.dataSets.find(dataSet => dataSet.value === dataset))
+    const dataSet = dataSubject.dataSets.find(dataSet => dataSet.value === dataset)
+    return dataSet.requiresGeometryTypeSelection || false
+  }
 }
 
 export default DatasetController
