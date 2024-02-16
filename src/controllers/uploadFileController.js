@@ -38,10 +38,7 @@ class UploadFileController extends UploadController {
             ...req.file,
             filePath: req.file.path,
             fileName: req.file.originalname,
-            dataset: req.sessionModel.get('dataset'),
-            dataSubject: req.sessionModel.get('data-subject'),
-            sessionId: req.session.id,
-            ipAddress: req.ip
+            ...this.getBaseFormData(req)
           })
           this.handleValidationResult(apiValidationResult, req)
         } catch (error) {

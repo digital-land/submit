@@ -91,6 +91,15 @@ class UploadController extends PageController {
 
     return formData
   }
+
+  getBaseFormData (req) {
+    return {
+      dataset: req.sessionModel.get('dataset'),
+      dataSubject: req.sessionModel.get('data-subject'),
+      sessionId: req.session.id,
+      ipAddress: req.ip
+    }
+  }
 }
 
 export default UploadController
