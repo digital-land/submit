@@ -15,6 +15,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 
 {% block head %}
   <link rel="stylesheet" href="/public/stylesheets/index.css">
+  <!-- TODO: Consider upgrading to AWS Javascript SDK v3 -->
 {% endblock %}
 
 {% block header %}
@@ -64,4 +65,9 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
     html: footerHtml
   }
   }) }}
+{% endblock %}
+
+{% block bodyEnd %}
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1561.0.min.js"></script>
+  <script src="/public/javascript/browser.js"></script>
 {% endblock %}

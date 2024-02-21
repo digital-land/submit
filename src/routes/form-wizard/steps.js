@@ -1,8 +1,10 @@
 import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadFileController from '../../controllers/uploadFileController.js'
+import s3FileUploadController from '../../controllers/s3FileUploadController.js'
 import uploadUrlController from '../../controllers/uploadUrlController.js'
 import errorsController from '../../controllers/errorsController.js'
+import resultController from '../../controllers/resultController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -52,10 +54,12 @@ export default {
   },
   '/upload': {
     ...baseSettings,
-    controller: uploadFileController,
-    fields: ['datafile', 'validationResult'],
+    controller: s3FileUploadController,
+    fields: ['original_filename', 'uploaded_filename'],
+    // fields: ['datafile', 'validationResult'],
     next: [
-      { fn: 'hasErrors', next: 'errors' },
+      // { fn: 'hasErrors', next: 'errors' },
+      // 'no-errors'
       'no-errors'
     ],
     backLink: './upload-method'
@@ -68,6 +72,7 @@ export default {
   },
   '/no-errors': {
     ...baseSettings,
+    controller: resultController,
     next: 'confirmation',
     backLink: './upload-method'
   },

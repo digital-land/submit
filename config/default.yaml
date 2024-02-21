@@ -1,4 +1,4 @@
-port: 5000
+port: 8010
 api: {
     url: https://publish-api.planning.data.gov.uk,
     port: 8082,
@@ -11,3 +11,12 @@ maintenance: {
 }
 serviceName: 'Publish planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
+aws: {
+    region: "eu-west-2",
+    uploadBucket: "dluhc-data-platform-request-files-local"
+}
+requestApi: {
+    baseUrl: http://localhost:8000,
+    requestsEndpoint: /requests,
+    requestTimeout: 2000
+}

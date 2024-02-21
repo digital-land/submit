@@ -4,12 +4,20 @@ import config from '../../config/index.js'
 
 import { severityLevels } from '../utils/utils.js'
 import logger from '../utils/logger.js'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { randomUUID } from 'crypto'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 class UploadController extends PageController {
   apiRoute = config.api.url + config.api.validationEndpoint
 
   async get (req, res, next) {
     req.form.options.validationError = this.validationErrorMessage
+    const region = config.aws.region
+    const bucket = config.aws.uploadBucket
+    const key = randomUUID()
+    res.locals.uploadKey = key
+    res.locals.presignedUrl = await this.createPresignedUrlWithClient({ region, bucket, key })
     super.get(req, res, next)
   }
 
@@ -91,6 +99,12 @@ class UploadController extends PageController {
 
     return formData
   }
+
+  createPresignedUrlWithClient = ({ region, bucket, key }) => {
+    const command = new PutObjectCommand({ Bucket: bucket, Key: key });
+    return getSignedUrl(new S3Client(/*{s3ForcePathStyle: true}*/), command, { expiresIn: 3600 });
+  }
+
 }
 
 export default UploadController

@@ -138,3 +138,6 @@ public/*
 .vscode/launch.json
 
 uploads/*
+
+# Jetbrains IDEs
+.idea

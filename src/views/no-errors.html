@@ -1,34 +1,81 @@
 {% extends "layouts/main.html" %}
 
 {% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
-{% set pageName = 'Your data has been checked and can be published' %}
+{% set pageName = 'Data check result' %}
+
+{% block head %}
+  {{ super() }}
+  <meta http-equiv="refresh" content="3">
+{% endblock %}
 
 {% block content %}
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-l">
-        {% if data.check.dataset %}
-          {{data.check.dataset}}
+        {% if request.status == 'COMPLETE' %}
+          The result of your check is available
         {% else %}
-          {{data.check.dataSubject}}
+          The result of your check will be available here shortly
         {% endif %}
       </span>
-      <h1 class="govuk-heading-l">
-        {{pageName}}
-      </h1>
+    <h1 class="govuk-heading-l">
+      {{pageName}}
+    </h1>
   </div>
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <form method="post">
-        {{ govukButton({
-          text: "Continue"
-        }) }}
-      </form>
+  <div class="govuk-grid-column-two-thirds">
 
-    </div>
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Reference"
+          },
+          value: {
+            text: request.id
+          }
+        },
+        {
+        key: {
+        text: "Datafile name"
+        },
+        value: {
+        text: request.data.uploaded_file.original_filename
+        }
+        },
+        {
+        key: {
+        text: "Status"
+        },
+        value: {
+        text: request.status
+        }
+        },
+        {
+        key: {
+        text: "Created"
+        },
+        value: {
+        text: request.created | date
+        }
+        },
+        {
+        key: {
+        text: "Updated"
+        },
+        value: {
+        text: request.modified | date
+        }
+        }
+      ]
+    }) }}
+
   </div>
+</div>
+
 {% endblock %}

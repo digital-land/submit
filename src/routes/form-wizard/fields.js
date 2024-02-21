@@ -12,6 +12,12 @@ export default {
     validate: 'required',
     invalidates: ['validationResult', 'upload-method']
   },
+  'original_filename': {
+    validate: 'required'
+  },
+  'uploaded_filename': {
+    validate: 'required'
+  },
   'upload-method': {
     validate: 'required',
     invalidates: ['validationResult']
