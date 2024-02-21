@@ -9,7 +9,7 @@ class PageController extends Controller {
   }
 
   async get (req, res, next) {
-    logPageView(this.options.route, req.sessionID)
+    await logPageView(this.options.route, req.sessionID, req.ip)
     super.get(req, res, next)
   }
 }
