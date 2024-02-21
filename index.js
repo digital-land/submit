@@ -21,7 +21,8 @@ app.use(async (req, res, next) => {
     method: req.method,
     endpoint: req.originalUrl,
     message: `${req.method} request made to ${req.originalUrl}`,
-    sessionId: await hash(req.sessionID)
+    sessionId: await hash(req.sessionID),
+    ipAddress: await hash(req.ip)
   })
   next()
 })
