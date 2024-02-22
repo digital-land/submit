@@ -101,10 +101,9 @@ class UploadController extends PageController {
   }
 
   createPresignedUrlWithClient = ({ region, bucket, key }) => {
-    const command = new PutObjectCommand({ Bucket: bucket, Key: key });
-    return getSignedUrl(new S3Client(/*{s3ForcePathStyle: true}*/), command, { expiresIn: 3600 });
+    const command = new PutObjectCommand({ Bucket: bucket, Key: key })
+    return getSignedUrl(new S3Client(/* {s3ForcePathStyle: true} */), command, { expiresIn: 3600 })
   }
-
 }
 
 export default UploadController

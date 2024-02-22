@@ -1,6 +1,6 @@
 import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
-import uploadFileController from '../../controllers/uploadFileController.js'
+// import uploadFileController from '../../controllers/uploadFileController.js'
 import s3FileUploadController from '../../controllers/s3FileUploadController.js'
 import uploadUrlController from '../../controllers/uploadUrlController.js'
 import errorsController from '../../controllers/errorsController.js'
@@ -60,7 +60,7 @@ export default {
     next: [
       // { fn: 'hasErrors', next: 'errors' },
       // 'no-errors'
-      'no-errors'
+      'result'
     ],
     backLink: './upload-method'
   },
@@ -70,11 +70,10 @@ export default {
     next: 'no-errors',
     backLink: './upload-method'
   },
-  '/no-errors': {
+  '/result': {
     ...baseSettings,
     controller: resultController,
-    next: 'confirmation',
-    backLink: './upload-method'
+    noPost: true
   },
   // '/email-address': {
   //   ...baseSettings,

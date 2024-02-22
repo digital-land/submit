@@ -9,14 +9,14 @@ const { govukMarkdown } = xGovFilters
 // Define a custom default date format. Any valid format works.
 // The date format defaults to "YYYY"
 // http://momentjs.com/docs/#/displaying/format/
-nunjucksDate.setDefaultFormat("D MMMM YYYY [at] h:mm:ss a");
+nunjucksDate.setDefaultFormat('D MMMM YYYY [at] h:mm:ss a')
 
 const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
   nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
   nunjucksEnv.addFilter('toErrorList', toErrorList)
   nunjucksEnv.addFilter('prettifyColumnName', prettifyColumnName)
-  nunjucksEnv.addFilter("date", nunjucksDate);
+  nunjucksEnv.addFilter('date', nunjucksDate)
 }
 
 export default addFilters
