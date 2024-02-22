@@ -23,7 +23,7 @@ class UploadFileController extends UploadController {
       req.body.datafile = req.file
 
       // log the file name, type and size as an object
-      logger.info('file uploaded:', { name: req.file.originalname, type: req.file.mimetype, size: req.file.size })
+      logger.info('file uploaded:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
 
       const localValidationResult = UploadFileController.localValidateFile({
         ...req.file,
