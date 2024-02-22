@@ -63,7 +63,6 @@ export default {
   '/errors': {
     ...baseSettings,
     controller: errorsController,
-    next: 'no-errors',
     backLink: './upload-method'
   },
   '/no-errors': {
