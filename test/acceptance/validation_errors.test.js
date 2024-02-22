@@ -38,7 +38,7 @@ test('when the user clicks continue on the geometry-type page without entering a
   await geometryTypePOM.clickContinue()
   const expectedErrors = [
     {
-      fieldName: 'input#geom-type.govuk-radios__input',
+      fieldName: 'input#geomType.govuk-radios__input',
       expectedErrorMessage: 'Select if your geometry data given as points or polygons'
     }
   ]

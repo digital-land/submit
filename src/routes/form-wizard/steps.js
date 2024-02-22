@@ -36,7 +36,7 @@ export default {
   },
   '/geometry-type': {
     ...baseSettings,
-    fields: ['geom-type'],
+    fields: ['geomType'],
     next: 'upload-method',
     backLink: './dataset'
   },

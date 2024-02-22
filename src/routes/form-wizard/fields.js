@@ -6,13 +6,13 @@ import UploadUrlController from '../../controllers/uploadUrlController.js'
 export default {
   'data-subject': {
     validate: 'required',
-    invalidates: ['dataset', 'validationResult', 'upload-method', 'geom-type']
+    invalidates: ['dataset', 'validationResult', 'upload-method', 'geomType']
   },
   dataset: {
     validate: 'required',
-    invalidates: ['validationResult', 'upload-method', 'geom-type']
+    invalidates: ['validationResult', 'upload-method', 'geomType']
   },
-  'geom-type': {
+  geomType: {
     validate: 'required',
     invalidates: ['validationResult']
   },

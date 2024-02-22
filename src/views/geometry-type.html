@@ -9,7 +9,7 @@
 
 {% set errorMessage = 'Select if your geometry data given as points or polygons' %}
 
-{% if 'geom-type' in errors %}
+{% if 'geomType' in errors %}
   {% set error = true %}
 {% endif %}
 
@@ -30,7 +30,7 @@
           errorList: [
             {
               text: errorMessage,
-              href: "#geom-type"
+              href: "#geomType"
             }
           ]
         }) }}
@@ -38,7 +38,7 @@
       <form novalidate method="post">
 
         {{ govukRadios({
-          name: "geom-type",
+          name: "geomType",
           fieldset: {
             legend: {
               text: pageName,
