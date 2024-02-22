@@ -10,17 +10,6 @@ class S3UploadFileController extends UploadController {
 
   async post (req, res, next) {
     logger.info(`Got S3 file upload with original filename ${req.body.original_filename} and uploaded filename ${req.body.uploaded_filename}`)
-    // TODO: Call request-api here passing original_filename and uploaded_filename
-    /**
-     * Example request body:
-     * {
-     *     "user_email": "chris.cundill@tpximpact.com",
-     *     "uploaded_file": {
-     *         "original_filename": "bogdan-farca-CEx86maLUSc-unsplash.jpg",
-     *         "uploaded_filename": "B1E16917-449C-4FC5-96D1-EE4255A79FB1.jpg"
-     *     }
-     * }
-     */
     const request = await this.createRequest({
       user_email: 'chris.cundill@tpximpact.com',
       uploaded_file: {
