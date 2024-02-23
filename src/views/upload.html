@@ -46,7 +46,6 @@
       <form id="upload-form" novalidate method="post" enctype="application/x-www-form-urlencoded" data-upload-url="{{presignedUrl}}" action="/upload" >
 
         <input type="hidden" id="original-filename" name="original_filename" />
-        <input type="hidden" id="uploaded-key" name="uploaded_filename" value="{{uploadKey}}" />
 
         {{ govukFileUpload({
           id: "datafile",
@@ -69,4 +68,10 @@
       </form>
     </div>
   </div>
+{% endblock %}
+
+{% block bodyEnd %}
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1561.0.min.js"></script>
+  <script src="/public/javascript/browser.js"></script>
 {% endblock %}

@@ -9,12 +9,12 @@ class S3UploadFileController extends UploadController {
   url = config.requestApi.baseUrl + config.requestApi.requestsEndpoint
 
   async post (req, res, next) {
-    logger.info(`Got S3 file upload with original filename ${req.body.original_filename} and uploaded filename ${req.body.uploaded_filename}`)
+    logger.info(`Got S3 file upload with original filename ${req.body.original_filename}`)
     const request = await this.createRequest({
       user_email: 'chris.cundill@tpximpact.com',
       uploaded_file: {
         original_filename: req.body.original_filename,
-        uploaded_filename: req.body.uploaded_filename
+        uploaded_filename: req.sessionModel.get("upload_object_key")
       }
     })
     logger.info(`Created request id ${request.id}`)

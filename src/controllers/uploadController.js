@@ -13,11 +13,10 @@ class UploadController extends PageController {
 
   async get (req, res, next) {
     req.form.options.validationError = this.validationErrorMessage
-    const region = config.aws.region
     const bucket = config.aws.uploadBucket
     const key = randomUUID()
-    res.locals.uploadKey = key
-    res.locals.presignedUrl = await this.createPresignedUrlWithClient({ region, bucket, key })
+    res.locals.presignedUrl = await this.createPresignedUrlWithClient({ bucket, key })
+    req.sessionModel.set("upload_object_key", key)
     super.get(req, res, next)
   }
 
@@ -100,9 +99,10 @@ class UploadController extends PageController {
     return formData
   }
 
-  createPresignedUrlWithClient = ({ region, bucket, key }) => {
+  createPresignedUrlWithClient = ({ bucket, key }) => {
     const command = new PutObjectCommand({ Bucket: bucket, Key: key })
-    return getSignedUrl(new S3Client(/* {s3ForcePathStyle: true} */), command, { expiresIn: 3600 })
+    const s3Client = new S3Client( { forcePathStyle: true } )
+    return getSignedUrl(s3Client, command, { expiresIn: 3600 })
   }
 }
 
