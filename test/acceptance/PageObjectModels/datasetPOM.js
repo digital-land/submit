@@ -5,7 +5,8 @@ export default class DatasetPOM extends BasePage {
     Article_4_direction_area_dataset: 'Article 4 direction area dataset',
     Conservation_area_dataset: 'Conservation area dataset',
     Tree_Preservation_zone: 'Tree preservation zone dataset',
-    Listed_building_outline: 'Listed building outline dataset'
+    Listed_building_outline: 'Listed building outline dataset',
+    Tree: 'Tree dataset'
   }
 
   constructor (page) {

@@ -10,12 +10,7 @@ class UploadUrlController extends UploadController {
       this.validationError('format', '', null, req)
     } else {
       try {
-        const apiValidationResult = await this.apiValidateUrl(req.body.url, {
-          dataset: req.sessionModel.get('dataset'),
-          dataSubject: req.sessionModel.get('data-subject'),
-          sessionId: req.session.id,
-          ipAddress: req.ip
-        })
+        const apiValidationResult = await this.apiValidateUrl(req.body.url, this.getBaseFormData(req))
         this.handleValidationResult(apiValidationResult, req)
       } catch (error) {
         this.handleApiError(error, req)
@@ -24,8 +19,8 @@ class UploadUrlController extends UploadController {
     super.post(req, res, next)
   }
 
-  async apiValidateUrl (url, { dataset, dataSubject, organisation, sessionId, ipAddress }) {
-    const formData = this.constructBaseFormData({ dataset, dataSubject, organisation, sessionId, ipAddress })
+  async apiValidateUrl (url, { dataset, dataSubject, geomType, organisation, sessionId, ipAddress }) {
+    const formData = this.constructBaseFormData({ dataset, dataSubject, geomType, organisation, sessionId, ipAddress })
     formData.append('upload_url', url)
 
     const result = await axios.post(this.apiRoute, formData, { timeout: config.api.requestTimeout })
