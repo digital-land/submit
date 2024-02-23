@@ -68,6 +68,7 @@ describe('UploadFileController', () => {
       fileName: req.file.originalname,
       dataset: 'test',
       dataSubject: 'test',
+      geomType: 'test',
       ipAddress: 'fakeIp',
       sessionId: 'sessionId'
     })
