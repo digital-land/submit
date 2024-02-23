@@ -55,7 +55,7 @@ export default {
   '/upload': {
     ...baseSettings,
     controller: s3FileUploadController,
-    fields: ['original_filename' ],
+    fields: ['original_filename'],
     // fields: ['datafile', 'validationResult'],
     next: [
       // { fn: 'hasErrors', next: 'errors' },

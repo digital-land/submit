@@ -14,7 +14,7 @@ class S3UploadFileController extends UploadController {
       user_email: 'chris.cundill@tpximpact.com',
       uploaded_file: {
         original_filename: req.body.original_filename,
-        uploaded_filename: req.sessionModel.get("upload_object_key")
+        uploaded_filename: req.sessionModel.get('upload_object_key')
       }
     })
     logger.info(`Created request id ${request.id}`)

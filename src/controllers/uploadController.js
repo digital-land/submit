@@ -16,7 +16,7 @@ class UploadController extends PageController {
     const bucket = config.aws.uploadBucket
     const key = randomUUID()
     res.locals.presignedUrl = await this.createPresignedUrlWithClient({ bucket, key })
-    req.sessionModel.set("upload_object_key", key)
+    req.sessionModel.set('upload_object_key', key)
     super.get(req, res, next)
   }
 
@@ -101,7 +101,7 @@ class UploadController extends PageController {
 
   createPresignedUrlWithClient = ({ bucket, key }) => {
     const command = new PutObjectCommand({ Bucket: bucket, Key: key })
-    const s3Client = new S3Client( { forcePathStyle: true } )
+    const s3Client = new S3Client({ forcePathStyle: true })
     return getSignedUrl(s3Client, command, { expiresIn: 3600 })
   }
 }
