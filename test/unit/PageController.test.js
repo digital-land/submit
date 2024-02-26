@@ -36,7 +36,7 @@ describe('PageController', () => {
     expect(callArgs.pageRoute).toEqual('/dataset')
     expect(callArgs.message).toEqual('page view occurred for page: /dataset')
     expect(callArgs.sessionId).toEqual(await hash('123'))
-    expect(callArgs.ipAddress).toEqual(await hash('1234'))
+    expect(callArgs.ipAddress).toBeUndefined()
     expect(callArgs.level).toEqual('info')
     expect(callArgs.service).toEqual('lpa-data-validation-frontend')
   })
