@@ -1,7 +1,7 @@
 import logger from '../utils/logger.js'
 import hash from '../utils/hasher.js'
 
-const logPageView = async (route, sessionID, ipAddress) => {
+const logPageView = async (route, sessionID) => {
   logger.info({
     type: 'PageView',
     pageRoute: route,

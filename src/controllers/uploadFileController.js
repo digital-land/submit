@@ -64,9 +64,9 @@ class UploadFileController extends UploadController {
   }
 
   async apiValidateFile (datafile) {
-    const { filePath, fileName, dataset, dataSubject, organisation, sessionId, ipAddress } = datafile
+    const { filePath, fileName, dataset, dataSubject, organisation, sessionId } = datafile
 
-    const formData = this.constructBaseFormData({ dataset, dataSubject, organisation, sessionId, ipAddress })
+    const formData = this.constructBaseFormData({ dataset, dataSubject, organisation, sessionId })
     const file = new Blob([await fs.readFile(filePath)], { type: lookup(filePath) })
     formData.append('upload_file', file, fileName)
 

@@ -81,13 +81,12 @@ class UploadController extends PageController {
     }
   }
 
-  constructBaseFormData ({ dataset, dataSubject, geomType, organisation, sessionId, ipAddress }) {
+  constructBaseFormData ({ dataset, dataSubject, geomType, organisation, sessionId }) {
     const formData = new FormData()
     formData.append('dataset', dataset)
     formData.append('collection', dataSubject)
     formData.append('organisation', organisation)
     formData.append('sessionId', sessionId)
-    formData.append('ipAddress', ipAddress)
 
     if (geomType) { formData.append('geom_type', geomType) }
 
@@ -99,8 +98,7 @@ class UploadController extends PageController {
       dataset: req.sessionModel.get('dataset'),
       dataSubject: req.sessionModel.get('data-subject'),
       geomType: req.sessionModel.get('geomType'),
-      sessionId: req.session.id,
-      ipAddress: req.ip
+      sessionId: req.session.id
     }
   }
 }
