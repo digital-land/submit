@@ -8,8 +8,8 @@ const logPageView = (route, sessionID) => {
       pageRoute: route,
       message: `page view occurred for page: ${route}`,
       sessionId: hashedSessionID
-    });
-  });
+    })
+  })
 }
 
 export { logPageView }
