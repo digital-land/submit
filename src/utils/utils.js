@@ -12,7 +12,7 @@ export const dataSubjects = {
       {
         value: 'article-4-direction',
         text: 'Article 4 direction dataset',
-        available: false
+        available: true
       },
       {
         value: 'article-4-direction-area',
@@ -32,7 +32,7 @@ export const dataSubjects = {
       {
         value: 'conservation-area-document',
         text: 'Conservation area document dataset',
-        available: false
+        available: true
       }
     ]
   },
@@ -42,7 +42,7 @@ export const dataSubjects = {
       {
         value: 'tree-preservation-order',
         text: 'Tree preservation order dataset',
-        available: false
+        available: true
       },
       {
         value: 'tree-preservation-zone',
