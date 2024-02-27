@@ -8,8 +8,8 @@ class PageController extends Controller {
     super.locals(req, res, callback)
   }
 
-  async get (req, res, next) {
-    await logPageView(this.options.route, req.sessionID, req.ip)
+  get (req, res, next) {
+    logPageView(this.options.route, req.sessionID, req.ip)
     super.get(req, res, next)
   }
 }
