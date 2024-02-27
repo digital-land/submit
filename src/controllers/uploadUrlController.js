@@ -19,8 +19,8 @@ class UploadUrlController extends UploadController {
     super.post(req, res, next)
   }
 
-  async apiValidateUrl (url, { dataset, dataSubject, geomType, organisation, sessionId, ipAddress }) {
-    const formData = this.constructBaseFormData({ dataset, dataSubject, geomType, organisation, sessionId, ipAddress })
+  async apiValidateUrl (url, { dataset, dataSubject, geomType, organisation, sessionId }) {
+    const formData = this.constructBaseFormData({ dataset, dataSubject, geomType, organisation, sessionId })
     formData.append('upload_url', url)
 
     const result = await axios.post(this.apiRoute, formData, { timeout: config.api.requestTimeout })

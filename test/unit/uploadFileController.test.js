@@ -69,7 +69,6 @@ describe('UploadFileController', () => {
       dataset: 'test',
       dataSubject: 'test',
       geomType: 'test',
-      ipAddress: 'fakeIp',
       sessionId: 'sessionId'
     })
     expect(req.body.validationResult).toEqual(mockApiValue)
