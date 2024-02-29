@@ -8,9 +8,9 @@ import logger from '../utils/logger.js'
 class UploadController extends PageController {
   apiRoute = config.api.url + config.api.validationEndpoint
 
-  get (req, res, next) {
+  locals (req, res, next) {
     req.form.options.validationError = this.validationErrorMessage
-    super.get(req, res, next)
+    super.locals(req, res, next)
   }
 
   async post (req, res, next) {

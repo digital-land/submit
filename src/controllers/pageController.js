@@ -3,9 +3,9 @@ import { logPageView } from '../utils/logging.js'
 const { Controller } = hmpoFormWizard
 
 class PageController extends Controller {
-  locals (req, res, callback) {
+  configure (req, res, callback) {
     req.form.options.lastPage = this.options.backLink ? this.options.backLink : undefined
-    super.locals(req, res, callback)
+    super.configure(req, res, callback)
   }
 
   get (req, res, next) {

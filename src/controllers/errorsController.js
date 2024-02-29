@@ -5,7 +5,7 @@ import PageController from './pageController.js'
 import { severityLevels, dataSubjects } from '../utils/utils.js'
 
 class ErrorsController extends PageController {
-  get (req, res, next) {
+  locals (req, res, next) {
     const validationResult = req.sessionModel.get('validationResult')
 
     const { aggregatedIssues } = this.getAggregatedErrors(validationResult)
@@ -27,8 +27,7 @@ class ErrorsController extends PageController {
         }
       }
     }
-
-    super.get(req, res, next)
+    super.locals(req, res, next)
   }
 
   getAggregatedErrors (apiResponseData) {
