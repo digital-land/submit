@@ -3,6 +3,7 @@ import datasetController from '../../controllers/datasetController.js'
 import uploadFileController from '../../controllers/uploadFileController.js'
 import uploadUrlController from '../../controllers/uploadUrlController.js'
 import errorsController from '../../controllers/errorsController.js'
+import NoErrorsController from '../../controllers/noErrorsController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -12,7 +13,6 @@ const baseSettings = {
 
 export default {
   '/': {
-    controller: PageController,
     entryPoint: true,
     resetJourney: true,
     next: 'dataset',
@@ -76,6 +76,7 @@ export default {
   },
   '/no-errors': {
     ...baseSettings,
+    controller: NoErrorsController,
     next: 'confirmation',
     backLink: './upload-method'
   },
