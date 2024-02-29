@@ -6,6 +6,7 @@ import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
 import UploadFilePOM from './PageObjectModels/uploadFilePOM'
 import UploadURLPOM from './PageObjectModels/uploadURLPOM'
 import ErrorsPOM from './PageObjectModels/errorsPOM'
+import NoErrorsPOM from './PageObjectModels/noErrorsPOM'
 
 test('when the user clicks continue on the dataset page without entering a dataset, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
@@ -117,4 +118,33 @@ test('when the user clicks continue on the url page without entering a url, the 
   ]
 
   await errorsPOM.expectErrorMessages(expectedErrors)
+})
+
+test('when the user clicks continue on the no errors page, without saying their data looks ok, the page correctly indicates there\'s an error', async ({ page }) => {
+  const startPOM = new StartPOM(page)
+  const datasetPOM = new DatasetPOM(page)
+  const uploadMethodPOM = new UploadMethodPOM(page)
+  const uploadURLPOM = new UploadURLPOM(page)
+  const noErrorsPOM = new NoErrorsPOM(page)
+
+  await startPOM.navigateHere()
+  await startPOM.clickStartNow()
+
+  await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+  await datasetPOM.clickContinue()
+
+  await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+  await uploadMethodPOM.clickContinue()
+
+  await uploadURLPOM.enterURL('https://example.com/conservation-area-ok.csv')
+  await uploadURLPOM.clickContinue()
+
+  await noErrorsPOM.clickContinue()
+  const expectedErrors = [
+    {
+      fieldName: 'input#data-correct.govuk-radios__input',
+      expectedErrorMessage: 'Select if your data looks ok'
+    }
+  ]
+  await noErrorsPOM.expectErrorMessages(expectedErrors)
 })

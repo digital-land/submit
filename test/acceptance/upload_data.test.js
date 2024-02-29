@@ -131,6 +131,7 @@ test('Enter form information and specify a URL with errors then without errors',
   await uploadURLPOM.clickContinue()
 
   await noErrorsPOM.waitForPage()
+  await noErrorsPOM.selectDataCorrect(NoErrorsPOM.dataCorrectResponses.yes)
   await noErrorsPOM.clickContinue()
 
   await confirmationPOM.waitForPage()
@@ -173,6 +174,7 @@ test('enter form information for dataset tree, forcing you to select the geometr
   await uploadFilePOM.clickContinue()
 
   await noErrorsPOM.waitForPage()
+  await noErrorsPOM.selectDataCorrect(NoErrorsPOM.dataCorrectResponses.yes)
   await noErrorsPOM.clickContinue()
 
   await confirmationPOM.waitForPage()
