@@ -41,7 +41,7 @@ class Map {
           layout: {},
           paint: {
             'fill-color': color,
-            'fill-opacity': 0.8
+            'fill-opacity': 0.4
           }
         })
 
