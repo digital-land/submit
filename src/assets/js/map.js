@@ -31,6 +31,7 @@ class Map {
 
       const color = '#008'
       const lineColor = '#000000'
+      const opacity = 0.4
 
       // Add a layer to the map based on the geometry type
       if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
@@ -41,7 +42,7 @@ class Map {
           layout: {},
           paint: {
             'fill-color': color,
-            'fill-opacity': 0.4
+            'fill-opacity': opacity
           }
         })
 
@@ -62,7 +63,8 @@ class Map {
           source: name,
           paint: {
             'circle-radius': 10,
-            'circle-color': color
+            'circle-color': color,
+            'circle-opacity': opacity
           }
         })
       }
@@ -73,7 +75,7 @@ class Map {
   }
 
   setMapViewToBoundingBox () {
-    this.map.fitBounds(this.bbox, { padding: 20 })
+    this.map.fitBounds(this.bbox, { padding: 20, duration: 0 })
   }
 
   moveMapToLocation (location) {
@@ -120,6 +122,7 @@ const createMapFromServerContext = () => {
 
   // if any of the required properties are missing, return null
   if (!containerId || !rows || !geometryKey) {
+    console.log('Missing required properties (containerId, rows, geometryKey) on window.serverContext', window.serverContext)
     return null
   }
 
