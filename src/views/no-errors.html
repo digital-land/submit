@@ -11,43 +11,47 @@
         {{pageName}}
       </h1>
       <p>{{options.buttonText}}</p>
+    </div>
   </div>
-</div>
 
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-full">
-    <p>{{options.rows.length}} rows can be published.</p>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <p>{{options.rows.length}} rows can be published.</p>
 
-    <div class="app-scrollable-container" s>
-      <table class="govuk-table">
-        <thead class="govuk-table__head">
-          <tr class="govuk-table__row">
-            {% for header in options.headers %}
-              <th scope="col" class="govuk-table__header">{{header}}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody class="govuk-table__body">
-          {% for row in options.rows %}
+      <div class="app-scrollable-container" s>
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
             <tr class="govuk-table__row">
               {% for header in options.headers %}
-                <td class="govuk-table__cell app-wrap">
-                    {% if row[header] %}
-                      {{row[header]}}
-                    {% endif %}
-                </td>
+                <th scope="col" class="govuk-table__header">{{header}}</th>
               {% endfor %}
             </tr>
-          {% endfor %}
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for row in options.rows %}
+              <tr class="govuk-table__row">
+                {% for header in options.headers %}
+                  <td class="govuk-table__cell app-wrap">
+                      {% if row[header] %}
+                        {{row[header]}}
+                      {% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
 
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Here’s your data on a map:</p>
+      <div id="map" class="app-map"></div>
+
+
     </div>
-
   </div>
-</div>
 
-<div class="govuk-grid-row">
+  <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <form method="post">
         {{ govukButton({
@@ -58,3 +62,17 @@
     </div>
   </div>
 {% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+  <script>
+    window.serverContext = {
+      containerId: 'map', 
+      rows: {{ options.rows | dump | safe }}, 
+      geometryKey: '{{options.geometryKey}}'
+    }
+  </script>
+  <script src="/public/js/map.bundle.js"></script>
+{% endblock %}
+```
