@@ -29,7 +29,7 @@ class Map {
         data: geometry
       })
 
-      const color = '#FFD700'
+      const color = '#008'
       const lineColor = '#000000'
 
       // Add a layer to the map based on the geometry type
