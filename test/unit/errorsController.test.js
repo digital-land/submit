@@ -28,7 +28,7 @@ describe('ErrorsController', () => {
     const res = {}
     const next = vi.fn()
 
-    await errorsController.get(req, res, next)
+    await errorsController.locals(req, res, next)
 
     const expectedFormValues = {
       options: {
