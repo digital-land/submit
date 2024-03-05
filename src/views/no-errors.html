@@ -1,8 +1,25 @@
 {% extends "layouts/main.html" %}
 
 {% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 {% set pageName = 'Check your data before you continue' %}
+
+{% set errorMessage = 'Select a response' %}
+
+{% if 'dataLooksCorrect' in errors %}
+  {% set dataLooksCorrectError = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if dataLooksCorrectError %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -55,12 +72,47 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if dataLooksCorrectError %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#dataLooksCorrect"
+            }
+          ]
+        }) }}
+      {% endif %}
       <form method="post">
+        {{ govukRadios({
+            idPrefix: "dataLooksCorrect",
+            name: "dataLooksCorrect",
+            fieldset: {
+              legend: {
+                text: "Is your data correct?",
+                isPageHeading: false,
+                classes: "govuk-fieldset__legend--m"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes"
+              },
+              {
+                value: "no",
+                text: "No, I need to fix it"
+              }
+            ],
+            errorMessage: {
+              text: errorMessage 
+            } if dataLooksCorrectError else undefined
+          }) 
+        }}
         {{ govukButton({
           text: "Continue"
         }) }}
       </form>
-
     </div>
   </div>
 {% endblock %}

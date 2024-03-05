@@ -77,7 +77,11 @@ export default {
   '/no-errors': {
     ...baseSettings,
     controller: NoErrorsController,
-    next: 'confirmation',
+    fields: ['dataLooksCorrect'],
+    next: [
+      { field: 'dataLooksCorrect', op: '===', value: 'yes', next: 'confirmation' },
+      'upload-method'
+    ],
     backLink: './upload-method'
   },
   // '/email-address': {
