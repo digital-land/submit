@@ -87,7 +87,9 @@ app.use((err, req, res, next) => {
     method: req.method,
     endpoint: req.originalUrl,
     message: `${req.method} request made to ${req.originalUrl} but an error occurred`,
-    error: err
+    error: JSON.stringify(err),
+    errorMessage: err.message,
+    errorStack: err.stack
   })
 
   err.template = err.template || 'errorPages/500'
