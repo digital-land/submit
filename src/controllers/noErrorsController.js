@@ -13,9 +13,9 @@ class NoErrorsController extends PageController {
 
     const geomType = req.sessionModel.get('geomType')
     let geometryKey
-    if (geomType === 'point') {
+    if (geomType === 'point' && validationResult['column-field-log'].find(column => column.field === 'point')) {
       geometryKey = validationResult['column-field-log'].find(column => column.field === 'point').column
-    } else {
+    } else if (validationResult['column-field-log'].find(column => column.field === 'geometry')) {
       geometryKey = validationResult['column-field-log'].find(column => column.field === 'geometry').column
     }
 

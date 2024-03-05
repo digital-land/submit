@@ -44,8 +44,10 @@
         </table>
       </div>
 
-      <p>Here’s your data on a map:</p>
-      <div id="map" class="app-map"></div>
+      {% if options.geometryKey %}
+        <p>Here’s your data on a map:</p>
+        <div id="map" class="app-map"></div>
+      {% endif %}
 
 
     </div>
@@ -65,14 +67,16 @@
 
 {% block scripts %}
   {{ super() }}
-  <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
-  <script>
-    window.serverContext = {
-      containerId: 'map', 
-      rows: {{ options.rows | dump | safe }}, 
-      geometryKey: '{{options.geometryKey}}'
-    }
-  </script>
-  <script src="/public/js/map.bundle.js"></script>
+  {% if options.geometryKey %}
+    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+    <script>
+      window.serverContext = {
+        containerId: 'map', 
+        rows: {{ options.rows | dump | safe }}, 
+        geometryKey: '{{options.geometryKey}}'
+      }
+    </script>
+    <script src="/public/js/map.bundle.js"></script>
+  {% endif %}
 {% endblock %}
 ```
