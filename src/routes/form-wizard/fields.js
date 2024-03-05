@@ -62,7 +62,7 @@ export default {
   lpa: {
     validate: 'required'
   },
-  'dataLooksCorrect': {
+  dataLooksCorrect: {
     validate: 'required'
   }
 }
