@@ -142,7 +142,7 @@ test('when the user clicks continue on the no errors page, without saying their 
   await noErrorsPOM.clickContinue()
   const expectedErrors = [
     {
-      fieldName: 'input#data-correct.govuk-radios__input',
+      fieldName: 'input#dataLooksCorrect.govuk-radios__input',
       expectedErrorMessage: 'Select if your data looks ok'
     }
   ]
