@@ -38,6 +38,6 @@ export default class noErrorsPOM extends BasePage {
   }
 
   async waitForMapToLoad () {
-    await this.page.waitForFunction(() => map && map.map && map.map.loaded()) // eslint-disable-line no-undef
+    await this.page.waitForFunction(() => window.map && window.map.map && window.map.map.loaded()) // eslint-disable-line no-undef
   }
 }
