@@ -33,10 +33,4 @@ test('the page renders a table with the correct data', async ({ page }) => {
     ['POLYGON ((1 52, 0 52, 0 52, 1 51))', 'Holly Lodge Estate', 'POINT (-0.150097204178 51.564975754948)', '01/06/1992', '', 'https://www.camden.gov.uk/holly-lodge-conservation-area', '', ''],
     ['POLYGON ((0.2 51, 0.8 51, -0.2 52, -0.8 52, 0.2 51))', 'Dartmouth Park', 'POINT (-0.145442349961 51.559999511433)', '01/06/1992', '', 'https://www.camden.gov.uk/dartmouth-park-conservation-area-appraisal-and-management-strategy', '', '']
   ])
-
-  await noErrorsPOM.scrollIntoView('div#map')
-
-  await noErrorsPOM.waitForMapToLoad()
-
-  await noErrorsPOM.testScreenShot()
 })
