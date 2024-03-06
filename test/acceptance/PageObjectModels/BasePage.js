@@ -50,17 +50,7 @@ export default class BasePage {
     return await locator.scrollIntoViewIfNeeded()
   }
 
-  async testScreenShot (retry = 3, delay = 1000) {
-    try {
-      this.page.waitForTimeout(delay)
-      return await expect(this.page).toHaveScreenshot()
-    } catch (e) {
-      if (retry > 0) {
-        retry--
-        return await this.testScreenShot(retry, delay)
-      } else {
-        throw e
-      }
-    }
+  async testScreenShot () {
+    return await expect(this.page).toHaveScreenshot()
   }
 }

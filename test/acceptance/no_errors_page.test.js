@@ -35,7 +35,8 @@ test('the page renders a table with the correct data', async ({ page }) => {
   ])
 
   await noErrorsPOM.scrollIntoView('div#map')
-  // wait for 1 second
-  await page.waitForTimeout(1000)
+
+  await noErrorsPOM.waitForMapToLoad()
+
   await noErrorsPOM.testScreenShot()
 })
