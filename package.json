@@ -7,11 +7,13 @@
   "scripts": {
     "prepare": "husky install",
     "start": "node index.js",
-    "start:watch": "concurrently \"nodemon .index.js\" \"npm run scss:watch\"",
+    "start:watch": "concurrently \"nodemon --exec 'npm run build && npm run start'\" \"npm run scss:watch\"",
     "start:local": "NODE_ENV=test node index.js",
-    "start:local:watch": "NODE_ENV=test  \"nodemon .index.js\" \"npm run scss:watch\"",
+    "start:local:watch": "NODE_ENV=test npm run start:watch",
     "mock:api": "node ./test/mock-api/index.js",
-    "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable",
+    "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable && npm run build-webpack",
+    "build-webpack": "webpack",
+    "serve-webpack": "webpack serve",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
     "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets",
     "test": "npm run test:unit && npm run test:acceptance",
@@ -37,7 +39,10 @@
     "husky": "^8.0.0",
     "nodemon": "^3.0.1",
     "standard": "^17.1.0",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.2"
   },
   "dependencies": {
     "@x-govuk/govuk-prototype-components": "^2.0.3",
@@ -49,15 +54,18 @@
     "hmpo-config": "^3.0.0",
     "hmpo-form-wizard": "^13.0.0",
     "hmpo-i18n": "^6.0.1",
+    "maplibre-gl": "^4.1.0",
     "multer": "^1.4.5-lts.1",
     "nunjucks": "^3.2.4",
     "sass": "^1.69.4",
+    "wellknown": "^0.5.0",
     "winston": "^3.11.0"
   },
   "nodemonConfig": {
     "ignore": [
       "**/test/**",
-      "**/docs/**"
+      "**/docs/**",
+      "**/public/**"
     ],
     "ext": "html js css"
   }

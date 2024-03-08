@@ -65,3 +65,10 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
   }
   }) }}
 {% endblock %}
+
+{% block bodyEnd %}
+  {{ super()}}
+  {%block scripts %}
+    {{ super() }}
+  {% endblock %}
+{% endblock %}

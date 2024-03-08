@@ -44,4 +44,13 @@ export default class BasePage {
 
     expect(await this.page.title(), 'Page title should indicate there\'s an error').toMatch(/Error: .*/)
   }
+
+  async scrollIntoView (selector) {
+    const locator = await this.page.locator(selector)
+    return await locator.scrollIntoViewIfNeeded()
+  }
+
+  async testScreenShot () {
+    return await expect(this.page).toHaveScreenshot()
+  }
 }

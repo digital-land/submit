@@ -7,18 +7,14 @@ import PageController from './pageController.js'
 import { dataSubjects } from '../utils/utils.js'
 
 class DatasetController extends PageController {
-  get (req, res, next) {
-    // const dataset = req.sessionModel.get('data-subject')
-    // const options = datasetOptions[dataset]
-
-    // the options should be all the datasets that are available
-
+  locals (req, res, next) {
     const availableDataSubjects = Object.values(dataSubjects).filter(dataSubject => dataSubject.available)
     const dataSets = Object.values(availableDataSubjects).map(dataSubject => dataSubject.dataSets).flat()
     const availableDatasets = dataSets.filter(dataSet => dataSet.available)
 
     req.form.options.datasetItems = availableDatasets
-    super.get(req, res, next)
+
+    super.locals(req, res, next)
   }
 
   // we shouldn't need this here but as we dont currently set the datasubject, we need to do so here

@@ -5,6 +5,8 @@ import GeometryTypePOM from './PageObjectModels/geometryTypePOM'
 import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
 import UploadFilePOM from './PageObjectModels/uploadFilePOM'
 import UploadURLPOM from './PageObjectModels/uploadURLPOM'
+import ErrorsPOM from './PageObjectModels/errorsPOM'
+import NoErrorsPOM from './PageObjectModels/noErrorsPOM'
 
 test.use({ javaScriptEnabled: false })
 
@@ -139,6 +141,74 @@ test.describe('Back buttons work as expected without js for', () => {
 
     await uploadURLPOM.waitForPage()
     await uploadURLPOM.goBack()
+
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.goBack()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.goBack()
+
+    await startPOM.waitForPage()
+  })
+
+  test('errors page', async ({ page, baseURL }) => {
+    const startPOM = new StartPOM(page)
+    const datasetPOM = new DatasetPOM(page)
+    const uploadMethodPOM = new UploadMethodPOM(page)
+    const uploadURLPOM = new UploadURLPOM(page)
+    const errorsPOM = new ErrorsPOM(page)
+
+    await startPOM.navigateHere()
+    await startPOM.clickStartNow()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+    await datasetPOM.clickContinue()
+
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+    await uploadMethodPOM.clickContinue()
+
+    await uploadURLPOM.waitForPage()
+    await uploadURLPOM.enterURL('https://example.com/conservation-area-errors.csv')
+    await uploadURLPOM.clickContinue()
+
+    await errorsPOM.waitForPage()
+    await errorsPOM.goBack()
+
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.goBack()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.goBack()
+
+    await startPOM.waitForPage()
+  })
+
+  test('no errors page', async ({ page, baseURL }) => {
+    const startPOM = new StartPOM(page)
+    const datasetPOM = new DatasetPOM(page)
+    const uploadMethodPOM = new UploadMethodPOM(page)
+    const uploadURLPOM = new UploadURLPOM(page)
+    const noErrorsPOM = new NoErrorsPOM(page)
+
+    await startPOM.navigateHere()
+    await startPOM.clickStartNow()
+
+    await datasetPOM.waitForPage()
+    await datasetPOM.selectDataset(DatasetPOM.datasets.Conservation_area_dataset)
+    await datasetPOM.clickContinue()
+
+    await uploadMethodPOM.waitForPage()
+    await uploadMethodPOM.selectUploadMethod(UploadMethodPOM.uploadMethods.URL)
+    await uploadMethodPOM.clickContinue()
+
+    await uploadURLPOM.waitForPage()
+    await uploadURLPOM.enterURL('https://example.com/conservation-area-ok.csv')
+    await uploadURLPOM.clickContinue()
+
+    await noErrorsPOM.waitForPage()
+    await noErrorsPOM.goBack()
 
     await uploadMethodPOM.waitForPage()
     await uploadMethodPOM.goBack()

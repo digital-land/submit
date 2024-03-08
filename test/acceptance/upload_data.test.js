@@ -30,6 +30,7 @@ test('Enter form information', async ({ page }) => {
   await uploadFilePOM.clickContinue()
 
   await noErrorsPOM.waitForPage()
+  await noErrorsPOM.selectDataCorrect(NoErrorsPOM.dataCorrectResponses.yes)
   await noErrorsPOM.clickContinue()
 
   await confirmationPOM.waitForPage()
@@ -68,6 +69,7 @@ test('Enter form information and upload a file with errors and without errors', 
   await uploadFilePOM.clickContinue()
 
   await noErrorsPOM.waitForPage()
+  await noErrorsPOM.selectDataCorrect(NoErrorsPOM.dataCorrectResponses.yes)
   await noErrorsPOM.clickContinue()
 
   await confirmationPOM.waitForPage()
@@ -94,6 +96,7 @@ test('Enter form information and specify a URL without errors', async ({ page })
   await uploadURLPOM.clickContinue()
 
   await noErrorsPOM.waitForPage()
+  await noErrorsPOM.selectDataCorrect(NoErrorsPOM.dataCorrectResponses.yes)
   await noErrorsPOM.clickContinue()
 
   await confirmationPOM.waitForPage()
@@ -131,6 +134,7 @@ test('Enter form information and specify a URL with errors then without errors',
   await uploadURLPOM.clickContinue()
 
   await noErrorsPOM.waitForPage()
+  await noErrorsPOM.selectDataCorrect(NoErrorsPOM.dataCorrectResponses.yes)
   await noErrorsPOM.clickContinue()
 
   await confirmationPOM.waitForPage()
@@ -173,6 +177,7 @@ test('enter form information for dataset tree, forcing you to select the geometr
   await uploadFilePOM.clickContinue()
 
   await noErrorsPOM.waitForPage()
+  await noErrorsPOM.selectDataCorrect(NoErrorsPOM.dataCorrectResponses.yes)
   await noErrorsPOM.clickContinue()
 
   await confirmationPOM.waitForPage()

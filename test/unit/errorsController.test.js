@@ -28,7 +28,7 @@ describe('ErrorsController', () => {
     const res = {}
     const next = vi.fn()
 
-    await errorsController.get(req, res, next)
+    await errorsController.locals(req, res, next)
 
     const expectedFormValues = {
       options: {
@@ -54,7 +54,7 @@ describe('ErrorsController', () => {
             },
             geometry: {
               issue: false,
-              value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
+              value: 'POLYGON ((0 51, -1 51, -1 52, 0 51))'
             },
             legislation: {
               issue: false,
@@ -107,7 +107,7 @@ describe('ErrorsController', () => {
           },
           geometry: {
             issue: false,
-            value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
+            value: 'POLYGON ((0 51, -1 51, -1 52, 0 51))'
           },
           legislation: {
             issue: false,
@@ -157,7 +157,7 @@ describe('ErrorsController', () => {
           },
           geometry: {
             issue: false,
-            value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
+            value: 'POLYGON ((0 51, -1 51, -1 52, 0 51))'
           },
           legislation: {
             issue: false,

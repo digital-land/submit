@@ -2,6 +2,8 @@
 // this script runs a mock server that mimics the pipeline runner api
 // it doesn't perform any validations but instead looks at the filename to determine if it should return errors or not
 
+// this really needs removing and instead we should be using wiremock
+
 import express from 'express'
 
 import config from '../../config/index.js'
@@ -28,12 +30,12 @@ app.post(config.api.validationEndpoint, (req, res) => {
 
   if (filename.slice(-10) !== 'errors.csv' && filename !== 'unassigned') {
     _toSend['issue-log'] = []
-    _toSend['column-field-log'] = []
+    _toSend['column-field-log'] = _toSend['column-field-log'].filter(column => !column.missing)
   }
 
   if (req.body.upload_url === 'https://example.com/conservation-area-ok.csv') {
     _toSend['issue-log'] = []
-    _toSend['column-field-log'] = []
+    _toSend['column-field-log'] = _toSend['column-field-log'].filter(column => !column.missing)
   }
 
   res.json(_toSend)
