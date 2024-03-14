@@ -8,6 +8,7 @@ import fs from 'fs/promises'
 import { lookup } from 'mime-types'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
+import publishRequestApi from '../utils/publishRequestAPI.js'
 
 const upload = multer({ dest: 'uploads/' })
 
@@ -18,39 +19,39 @@ class UploadFileController extends UploadController {
   }
 
   async post (req, res, next) {
+    super.post(req, res, next)
     this.resetValidationErrorMessage()
-    if (req.file !== undefined) {
-      req.body.datafile = req.file
 
-      // log the file name, type and size as an object
-      logger.info('file uploaded:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
-
-      const localValidationResult = UploadFileController.localValidateFile({
-        ...req.file,
-        filePath: req.file.path,
-        fileName: req.file.originalname
-      })
-      if (!localValidationResult) {
-        this.validationError('localValidationError', '', null, req)
-      } else {
-        try {
-          const apiValidationResult = await this.apiValidateFile({
-            ...req.file,
-            filePath: req.file.path,
-            fileName: req.file.originalname,
-            ...this.getBaseFormData(req)
-          })
-          this.handleValidationResult(apiValidationResult, req)
-        } catch (error) {
-          this.handleApiError(error, req)
-        }
-      }
+    if (req.file === undefined) {
+      return
     }
+
+    // log the file name, type and size as an object
+    logger.info('file uploaded:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
+
+    const localValidationResult = UploadFileController.localValidateFile({
+      ...req.file,
+      filePath: req.file.path,
+      fileName: req.file.originalname
+    })
+
+    if (!localValidationResult) {
+      this.validationError('localValidationError', '', null, req)
+      return
+    }
+
+    // get the signed url from the api. pass in the file size if we want to get multiple signed urls
+    const signedURL = await UploadFileController.apiGetSignedURL(req.file.size)
+
+    const objectKey = await UploadFileController.uploadFileToS3(req.file, signedURL)
 
     // delete the file from the uploads folder
     if (req.file && req.file.path) { fs.unlink(req.file.path) }
 
-    super.post(req, res, next)
+    const id = await publishRequestApi.postRequest({ ...this.getBaseFormData(req), objectKey })
+
+    // redirect to /status/:id page
+    res.redirect(`/status/${id}`)
   }
 
   static localValidateFile (datafile) {
@@ -61,6 +62,25 @@ class UploadFileController extends UploadController {
             UploadFileController.fileNameDoesntContainDoubleExtension(datafile) &&
             UploadFileController.fileMimeTypeIsValid(datafile) &&
             UploadFileController.fileMimeTypeMatchesExtension(datafile)
+  }
+
+  static async apiGetSignedURL (fileSize) {
+    // const response = await axios.post(config.api.signedURLRoute, { fileSize }, { timeout: config.api.requestTimeout })
+    return 'fakeURL'
+  }
+
+  static async uploadFileToS3 (datafile, signedURL) {
+    // // Upload the file to S3
+    // const fileStream = fs.createReadStream(req.file.path);
+    // const uploadResponse = await axios.put(signedURL, fileStream, {
+    //   headers: {
+    //     'Content-Type': req.file.mimetype,
+    //   },
+    // });
+
+    // return uploadResponse.data.key; // Assuming the response contains the object key
+
+    return 'fakeObjectKey'
   }
 
   async apiValidateFile (datafile) {

@@ -2,8 +2,6 @@ import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadFileController from '../../controllers/uploadFileController.js'
 import uploadUrlController from '../../controllers/uploadUrlController.js'
-import errorsController from '../../controllers/errorsController.js'
-import NoErrorsController from '../../controllers/noErrorsController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -62,49 +60,6 @@ export default {
   '/upload': {
     ...baseSettings,
     controller: uploadFileController,
-    fields: ['datafile', 'validationResult'],
-    next: [
-      { fn: 'hasErrors', next: 'errors' },
-      'no-errors'
-    ],
     backLink: './upload-method'
-  },
-  '/errors': {
-    ...baseSettings,
-    controller: errorsController,
-    backLink: './upload-method'
-  },
-  '/no-errors': {
-    ...baseSettings,
-    controller: NoErrorsController,
-    fields: ['dataLooksCorrect'],
-    next: [
-      { field: 'dataLooksCorrect', op: '===', value: 'yes', next: 'confirmation' },
-      'upload-method'
-    ],
-    backLink: './upload-method'
-  },
-  // '/email-address': {
-  //   ...baseSettings,
-  //   fields: ['email-address'],
-  //   next: 'name'
-  // },
-  // '/name': {
-  //   ...baseSettings,
-  //   fields: ['first-name', 'last-name'],
-  //   next: 'lpa'
-  // },
-  // '/lpa': {
-  //   ...baseSettings,
-  //   fields: ['lpa'],
-  //   next: 'check'
-  // },
-  // '/check': {
-  //   ...baseSettings,
-  //   next: 'confirmation'
-  // },
-  '/confirmation': {
-    ...baseSettings,
-    noPost: true
   }
 }
