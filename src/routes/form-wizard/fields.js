@@ -1,4 +1,3 @@
-import { validate } from 'email-validator'
 import UploadFileController from '../../controllers/uploadFileController.js'
 import UploadController from '../../controllers/uploadController.js'
 import UploadUrlController from '../../controllers/uploadUrlController.js'
@@ -46,21 +45,6 @@ export default {
       'required',
       { type: 'validationError', fn: UploadController.resultIsValid }
     ]
-  },
-  'email-address': {
-    validate: [
-      'required',
-      { type: 'format', fn: email => validate(email) }
-    ]
-  },
-  'first-name': {
-    validate: 'required'
-  },
-  'last-name': {
-    validate: 'required'
-  },
-  lpa: {
-    validate: 'required'
   },
   dataLooksCorrect: {
     validate: 'required'

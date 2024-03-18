@@ -2,6 +2,8 @@ import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadFileController from '../../controllers/uploadFileController.js'
 import uploadUrlController from '../../controllers/uploadUrlController.js'
+import statusController from '../../controllers/statusController.js'
+import resultsController from '../../controllers/resultsController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -60,6 +62,30 @@ export default {
   '/upload': {
     ...baseSettings,
     controller: uploadFileController,
-    backLink: './upload-method'
+    fields: ['request_id'],
+    next: (req, res) => `status/${req.sessionModel.get('request_id')}`
+  },
+  '/status/:id': {
+    ...baseSettings,
+    template: 'status',
+    controller: statusController,
+    checkJourney: false,
+    entryPoint: true,
+    next: (req, res) => `/results/${req.params.id}`
+  },
+  '/results/:id': {
+    ...baseSettings,
+    template: undefined, // as we will dynamically set the template in the controller
+    controller: resultsController,
+    checkJourney: false,
+    entryPoint: true,
+    forwardQuery: true,
+    next: [
+      { fn: 'noErrors', next: 'confirmation' }
+    ]
+  },
+  '/confirmation': {
+    ...baseSettings,
+    noPost: true
   }
 }

@@ -19,7 +19,6 @@ class UploadFileController extends UploadController {
   }
 
   async post (req, res, next) {
-    super.post(req, res, next)
     this.resetValidationErrorMessage()
 
     if (req.file === undefined) {
@@ -50,8 +49,8 @@ class UploadFileController extends UploadController {
 
     const id = await publishRequestApi.postRequest({ ...this.getBaseFormData(req), objectKey })
 
-    // redirect to /status/:id page
-    res.redirect(`/status/${id}`)
+    req.body.request_id = id
+    super.post(req, res, next)
   }
 
   static localValidateFile (datafile) {

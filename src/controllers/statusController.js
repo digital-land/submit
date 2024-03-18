@@ -1,13 +1,11 @@
-import { PageController } from './pageController.js'
+import PageController from './pageController.js'
 import publishRequestApi from '../utils/publishRequestAPI.js'
-import nunjucks from 'nunjucks'
 
 class StatusController extends PageController {
-  async get (req, res, next) {
-    super.get(req, res, next)
+  async locals (req, res, next) {
     const result = await publishRequestApi.getRequestData(req.params.id)
-    const template = nunjucks.render('status', { data: result.data })
-    res.send(template)
+    req.form.options.data = result
+    super.locals(req, res, next)
   }
 }
 
