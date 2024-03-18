@@ -1,0 +1,113 @@
+{
+  "id": "6v1rdpqtjtr8",
+  "type": "check_file",
+  "status": "COMPLETE",
+  "created": "2024-03-18 11:12:58+0000",
+  "modified": "2024-03-18 11:12:58+0000",
+  "params": {
+    "type": "check_file",
+    "collection": "article_4_direction",
+    "dataset": "article_4_direction_area",
+    "original_filename": "article_4_direction_area.geojson",
+    "uploaded_filename": "B1E16917-449C-4FC5-96D1-EE4255A79FB1"
+  },
+  "response": {
+    "data": {
+      "column-field-log": [
+        {
+          "entry-date": "2023-10-03T10:13:45Z",
+          "dataset": "conservation-area",
+          "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a",
+          "column": "WKT",
+          "field": "geometry"
+        },
+        {
+          "entry-date": "2023-10-03T10:13:45Z",
+          "dataset": "conservation-area",
+          "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a",
+          "column": "details",
+          "field": "name"
+        },
+        {
+          "entry-date": "2023-10-03T10:13:45Z",
+          "dataset": "conservation-area",
+          "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a",
+          "column": "ogc_fid",
+          "field": "reference"
+        }
+      ],
+      "error-summary": []
+    },
+    "details": [
+      {
+        "line-number": 1,
+        "converted-row": {
+          "Reference": "CA6",
+          "Name": "Camden Square",
+          "Geometry": "POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))",
+          "Start date": "01/04/1980",
+          "Legislation": "",
+          "Notes": "",
+          "Point": "POINT (-0.130484959448 51.544845663239)",
+          "End date": "",
+          "Document URL": "https://www.camden.gov.uk/camden-square-conservation-area-appraisal-and-management-strategy"
+        },
+        "issue-log-row": {
+          "dataset": "conservation-area",
+          "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a",
+          "line-number": "2",
+          "entry-number": "1",
+          "field": "geometry",
+          "issue-type": "OSGB",
+          "value": ""
+        }
+      },
+      {
+        "line_number": 1,
+        "converted-row": {
+          "Reference": "CA20",
+          "Name": "Holly Lodge Estate",
+          "Geometry": "POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))",
+          "Start date": "01/06/1992",
+          "Legislation": "",
+          "Notes": "",
+          "Point": "POINT (-0.150097204178 51.564975754948)",
+          "End date": "",
+          "Document URL": "https://www.camden.gov.uk/holly-lodge-conservation-area"
+        },
+        "issue-log-row": {
+          "dataset": "conservation-area",
+          "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a",
+          "line-number": "2",
+          "entry-number": "1",
+          "field": "organisation",
+          "issue-type": "default-value",
+          "value": "local-authority-eng:MAL"
+        }
+      },
+      {
+        "line_number": 1,
+        "converted-row": {
+          "Reference": "CA9",
+          "Name": "Dartmouth Park",
+          "Geometry": "POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))",
+          "Start date": "01/06/1992",
+          "Legislation": "",
+          "Notes": "",
+          "Point": "POINT (-0.145442349961 51.559999511433)",
+          "End date": "",
+          "Document URL": "https://www.camden.gov.uk/dartmouth-park-conservation-area-appraisal-and-management-strategy"
+        },
+        "issue-log-row": {
+          "dataset": "conservation-area",
+          "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a",
+          "line-number": "2",
+          "entry-number": "1",
+          "field": "entry-date",
+          "issue-type": "default-value",
+          "value": "2020-09-14"
+        }
+      }
+    ]
+  }
+}
