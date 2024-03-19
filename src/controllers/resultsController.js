@@ -21,9 +21,10 @@ class ResultsController extends PageController {
     }
     if (!this.result.isComplete()) {
       res.redirect(`/status/${req.params.id}`)
+      return
     }
 
-    res.form.options.result = this.result
+    req.form.options.result = this.result
 
     super.locals(req, res, next)
   }
