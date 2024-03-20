@@ -10,7 +10,7 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds" aria-live="assertive">
-      {% if params.fileStatus == "COMPLETE" %}
+      {% if options.data.status == "COMPLETE" %}
         {{ fileCheckedContent() }}
       {% else %}
         {{ checkingFileContent() }}
@@ -18,14 +18,13 @@
     </div>
 
     <div class="govuk-grid-column-two-thirds">
-      <p>
+      <form method="post">
         {{ govukButton({
-          text: "Continue",
-          href: "/confirmation",
-          classes: "js-hidden" if params.fileStatus != "COMPLETE" else  "",
-          id: "js-async-continue-button"
+          text: "Check status" if options.data.status != "COMPLETE" else  "Continue",
+          classes: "js-hidden" if options.data.status != "COMPLETE" else  "",
+          id: "js-async-check-status-button"
         }) }}
-      </p>
+      </form>
     </div>
   </div>
 
@@ -35,6 +34,7 @@
   {{ super() }}
   <script>
     window.serverContext = {
+      pollingEndpoint: "{{ params.pollingEndpoint }}",
       requestId: "{{ params.requestId }}",
     }
   </script>
