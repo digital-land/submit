@@ -5,4 +5,6 @@
 
 import hideElementsWithJsHidden from './js-hidden.js'
 
-hideElementsWithJsHidden()
+window.addEventListener('load', () => {
+  hideElementsWithJsHidden()
+})

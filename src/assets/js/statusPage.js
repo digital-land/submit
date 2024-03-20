@@ -1,5 +1,4 @@
 // poll the server for the status of the job
-import config from './config'
 
 class StatusPage {
   constructor () {
@@ -14,7 +13,7 @@ class StatusPage {
   }
 
   beginPolling (statusEndpoint, requestId) {
-    const requestEndpoint = `${config.api.requestEndpoint}/${requestId}`
+    const requestEndpoint = `${statusEndpoint}/${requestId}`
     const interval = setInterval(() => {
       fetch(requestEndpoint)
         .then(res => res.json())
@@ -34,7 +33,7 @@ class StatusPage {
   }
 }
 
-window.onload = () => {
+window.addEventListener('load', () => {
   const statusPage = new StatusPage()
-  statusPage.beginPolling(config.api.statusEndpoint, window.serverContext.requestId)
-}
+  statusPage.beginPolling(window.serverContext.pollingEndpoint, window.serverContext.requestId)
+})
