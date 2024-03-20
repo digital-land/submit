@@ -80,12 +80,14 @@ export default {
     checkJourney: false,
     entryPoint: true,
     forwardQuery: true,
+    fields: ['dataLooksCorrect'],
     next: [
       { fn: 'noErrors', next: 'confirmation' }
     ]
   },
   '/confirmation': {
     ...baseSettings,
-    noPost: true
+    noPost: true,
+    checkJourney: false  // ToDo: it would be useful here if we make sure they have selected if their results are ok from the previous step
   }
 }
