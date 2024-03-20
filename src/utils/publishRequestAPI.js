@@ -24,7 +24,7 @@ const publishRequestApi = {
     const result = {
       id: 1,
       type: 'check_url',
-      status: 'COMPLETE',
+      status: 'PROCESSING',
       created: '2024-03-13T16:50:59.472751Z',
       modified: '2024-03-13T16:50:59.472751Z',
       params: {
