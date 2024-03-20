@@ -1,0 +1,37 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "./checkingFileMacro.html" import checkingFileContent %}
+{% from "./fileCheckedMacro.html" import fileCheckedContent %}
+
+{% extends "layouts/main.html" %}
+
+{% set pageName = 'Status' %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds" aria-live="assertive">
+      {% if params.fileStatus == "COMPLETE" %}
+        {{ fileCheckedContent() }}
+      {% else %}
+        {{ checkingFileContent() }}
+      {% endif %}
+    </div>
+
+    <div class="govuk-grid-column-two-thirds">
+      <p>
+        {{ govukButton({
+          text: "Continue",
+          href: "/confirmation",
+          classes: "js-hidden" if params.fileStatus != "COMPLETE" else  "",
+          id: "js-async-continue-button"
+        }) }}
+      </p>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="/public/js/statusPage.bundle.js"></script>
+{% endblock %}
