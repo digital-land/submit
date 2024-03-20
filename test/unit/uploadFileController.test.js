@@ -10,6 +10,7 @@ describe('UploadFileController', () => {
   let uploadFileController
   const apiValidateFileMock = vi.fn().mockReturnValue(mockApiValue)
   const localValidateFileMock = vi.fn().mockReturnValue(true)
+  const constructBaseFormDataMock = vi.fn().mockReturnValue({ append: vi.fn() })
 
   beforeEach(() => {
 
@@ -82,6 +83,7 @@ describe('UploadFileController', () => {
     }
     UploadFileController.localValidateFile = localValidateFileMock
     uploadFileController = new UploadFileController(options)
+    uploadFileController.constructBaseFormData = constructBaseFormDataMock
     // uploadFileController.apiValidateFile = apiValidateFileMock
 
     vi.mock('axios', async () => {
@@ -102,12 +104,19 @@ describe('UploadFileController', () => {
       dataset: 'test',
       dataSubject: 'test',
       organization: 'local-authority-eng:CAT',
-      mimetype: 'text/csv'
+      mimetype: 'text/csv',
+      geomType: 'point',
+      sessionId: 'sessionId'
     }
 
     const result = await uploadFileController.apiValidateFile(params)
 
     expect(result).toEqual({ test: 'test' })
+    expect(constructBaseFormDataMock.mock.calls[0][0].geomType).toEqual('point')
+    expect(constructBaseFormDataMock.mock.calls[0][0].sessionId).toEqual('sessionId')
+    expect(constructBaseFormDataMock.mock.calls[0][0].dataset).toEqual('test')
+    expect(constructBaseFormDataMock.mock.calls[0][0].dataSubject).toEqual('test')
+    
 
     // expect().toHaveBeenCalledWith(config.api.url + config.api.validationEndpoint, expect.any(FormData))
   })
