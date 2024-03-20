@@ -116,7 +116,6 @@ describe('UploadFileController', () => {
     expect(constructBaseFormDataMock.mock.calls[0][0].sessionId).toEqual('sessionId')
     expect(constructBaseFormDataMock.mock.calls[0][0].dataset).toEqual('test')
     expect(constructBaseFormDataMock.mock.calls[0][0].dataSubject).toEqual('test')
-    
 
     // expect().toHaveBeenCalledWith(config.api.url + config.api.validationEndpoint, expect.any(FormData))
   })
