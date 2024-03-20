@@ -67,7 +67,7 @@ export default {
   },
   '/status/:id': {
     ...baseSettings,
-    template: 'status',
+    template: 'statusPage/status',
     controller: statusController,
     checkJourney: false,
     entryPoint: true,
