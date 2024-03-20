@@ -1,4 +1,5 @@
 // poll the server for the status of the job
+import config from './config'
 
 class StatusPage {
   constructor () {
@@ -12,9 +13,10 @@ class StatusPage {
     fileChecked: 'File Checked'
   }
 
-  beginPolling () {
+  beginPolling (statusEndpoint, requestId) {
+    const requestEndpoint = `${config.api.requestEndpoint}/${requestId}`
     const interval = setInterval(() => {
-      fetch('/api/status')
+      fetch(requestEndpoint)
         .then(res => res.json())
         .then(data => {
           if (data.status === 'COMPLETE') {
@@ -32,4 +34,7 @@ class StatusPage {
   }
 }
 
-export default StatusPage
+window.onload = () => {
+  const statusPage = new StatusPage()
+  statusPage.beginPolling(config.api.statusEndpoint, window.serverContext.requestId)
+}

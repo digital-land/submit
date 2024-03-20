@@ -33,5 +33,10 @@
 
 {% block scripts %}
   {{ super() }}
+  <script>
+    window.serverContext = {
+      requestId: "{{ params.requestId }}",
+    }
+  </script>
   <script src="/public/js/statusPage.bundle.js"></script>
 {% endblock %}
