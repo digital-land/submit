@@ -10,8 +10,10 @@ class UploadUrlController extends UploadController {
       this.validationError('format', '', null, req)
     } else {
       try {
-        const apiValidationResult = await this.apiValidateUrl(req.body.url, this.getBaseFormData(req))
-        this.handleValidationResult(apiValidationResult, req)
+        const id = await this.publishRequestApi.postRequest({ ...this.getBaseFormData(req), url: req.body.url })
+
+        req.body.request_id = id
+        super.post(req, res, next)
       } catch (error) {
         this.handleApiError(error, req)
       }

@@ -39,15 +39,12 @@ class UploadFileController extends UploadController {
       return
     }
 
-    // get the signed url from the api. pass in the file size if we want to get multiple signed urls
-    const signedURL = await UploadFileController.apiGetSignedURL(req.file.size)
-
-    const objectKey = await UploadFileController.uploadFileToS3(req.file, signedURL)
+    const uploadedFilename = await UploadFileController.uploadFileToS3(req.file)
 
     // delete the file from the uploads folder
     if (req.file && req.file.path) { fs.unlink(req.file.path) }
 
-    const id = await publishRequestApi.postRequest({ ...this.getBaseFormData(req), objectKey })
+    const id = await publishRequestApi.postRequest({ ...this.getBaseFormData(req), originalFilename: req.file.name, uploadedFilename })
 
     req.body.request_id = id
     super.post(req, res, next)

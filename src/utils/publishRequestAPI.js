@@ -3,20 +3,44 @@ import config from '../../config/index.js'
 const publishRequestApi = {
   apiEndpoint: config.publishRequestApi,
 
-  postRequest: async (formData) => {
-    // try {
-    //   // send the object key
-    //   const response = await this.apiValidateFile({
-    //     objectKey: objectKey,
-    //     ...this.getBaseFormData(req)
-    //   })
+  postFileRequest: async (formData) => {
+    const { uploadedFilename, originalFilename, dataset, collection, geomType } = formData
 
-    //   return response.id // assuming the response contains the id
+    return await this._postRequest({
+      dataset,
+      collection,
+      geom_type: geomType,
+      uploaded_filename: uploadedFilename,
+      original_filename: originalFilename,
+      type: 'check_file'
+    })
+  },
 
-    // } catch (error) {
-    //   this.handleApiError(error, req)
-    // }
-    return 1
+  postUrlRequest: async (formData) => {
+    const { url, dataset, collection, geomType } = formData
+
+    return await this._postRequest({
+      dataset,
+      collection,
+      geom_type: geomType,
+      url,
+      type: 'check_url'
+    })
+  },
+
+  _postRequest: async (formData) => {
+    const response = await fetch(this.apiEndpoint, {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    return data.id // assuming the response contains the id
   },
 
   getRequestData: async (resultId) => {
@@ -24,7 +48,7 @@ const publishRequestApi = {
     const result = {
       id: 1,
       type: 'check_url',
-      status: 'PROCESSING',
+      status: 'COMPLETE',
       created: '2024-03-13T16:50:59.472751Z',
       modified: '2024-03-13T16:50:59.472751Z',
       params: {
