@@ -9,5 +9,9 @@ maintenance: {
     serviceUnavailable: false,
     upTime: "9am on Monday 19 November 2024"
 }
+aws: {
+    region: eu-west-2,
+    bucket: ''
+}
 serviceName: 'Publish planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'

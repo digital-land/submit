@@ -2,6 +2,8 @@
 
 import UploadController from './uploadController.js'
 
+import AWS from 'aws-sdk'
+import { v4 as uuidv4 } from 'uuid'
 import multer from 'multer'
 import axios from 'axios'
 import fs from 'fs/promises'
@@ -9,6 +11,8 @@ import { lookup } from 'mime-types'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import publishRequestApi from '../utils/publishRequestAPI.js'
+
+AWS.config.update({ region: config.aws.region })
 
 const upload = multer({ dest: 'uploads/' })
 
@@ -60,23 +64,27 @@ class UploadFileController extends UploadController {
             UploadFileController.fileMimeTypeMatchesExtension(datafile)
   }
 
-  static async apiGetSignedURL (fileSize) {
-    // const response = await axios.post(config.api.signedURLRoute, { fileSize }, { timeout: config.api.requestTimeout })
-    return 'fakeURL'
-  }
-
+  /*
+    This function should upload a file to s3, saving the file with a UUID as the filename. then return the UUID
+  */
   static async uploadFileToS3 (datafile, signedURL) {
-    // // Upload the file to S3
-    // const fileStream = fs.createReadStream(req.file.path);
-    // const uploadResponse = await axios.put(signedURL, fileStream, {
-    //   headers: {
-    //     'Content-Type': req.file.mimetype,
-    //   },
-    // });
+    const s3 = new AWS.S3()
+    const fileStream = fs.createReadStream(datafile)
+    const uuid = uuidv4()
 
-    // return uploadResponse.data.key; // Assuming the response contains the object key
+    const params = {
+      Bucket: config.aws.bucket, // replace 'your-bucket-name' with your actual bucket name
+      Key: uuid,
+      Body: fileStream
+    }
 
-    return 'fakeObjectKey'
+    try {
+      await s3.upload(params).promise()
+      return uuid
+    } catch (error) {
+      console.log('Error uploading file: ', error)
+      throw error
+    }
   }
 
   async apiValidateFile (datafile) {
