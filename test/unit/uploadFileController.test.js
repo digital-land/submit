@@ -2,11 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import UploadFileController from '../../src/controllers/uploadFileController.js'
 
-import { promises as fs } from 'fs'
+import publishRequestApi from '../../src/utils/publishRequestAPI.js'
 
 describe('UploadFileController', () => {
   let uploadFileController
-  const localValidateFileMock = vi.fn().mockReturnValue(true)
 
   beforeEach(() => {
     vi.mock('fs', async () => {
@@ -34,55 +33,148 @@ describe('UploadFileController', () => {
       }
     })
 
+    vi.spyOn(publishRequestApi, 'postFileRequest')
+
+    vi.mock('../../src/utils/publishRequestAPI.js', () => ({
+      postFileRequest: vi.fn().mockResolvedValue('requestId')
+    }))
+
     global.fetch = vi.fn().mockImplementation(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ id: '1234' })
       })
     )
+
+    uploadFileController = new UploadFileController({
+      route: '/upload'
+    })
   })
 
-  it('post adds the validation result to the session and the error count to the controller while deleting the uploaded file', async () => {
-    const options = {
-      route: '/upload'
-    }
-    UploadFileController.localValidateFile = localValidateFileMock
-    uploadFileController = new UploadFileController(options)
+  describe('post', () => {
+    it('should not proceed if req.file is undefined', async () => {
+      const req = {
+        file: undefined
+      }
+      const res = {}
+      const next = vi.fn()
 
-    expect(uploadFileController.post).toBeDefined()
+      await uploadFileController.post(req, res, next)
 
-    const req = {
-      file: {
-        path: 'aHashedFileName.csv',
-        originalname: 'conservation_area.csv'
-      },
-      sessionModel: {
-        get: () => 'test',
-        set: vi.fn()
-      },
-      body: {},
-      session: {
-        id: 'sessionId'
-      },
-      ip: 'fakeIp'
-    }
-    const res = {
-      send: vi.fn(),
-      redirect: vi.fn()
-    }
-    const next = vi.fn()
-
-    await uploadFileController.post(req, res, next)
-
-    expect(localValidateFileMock).toHaveBeenCalledWith({
-      ...req.file,
-      filePath: req.file.path,
-      fileName: req.file.originalname
+      expect(next).not.toHaveBeenCalled()
     })
 
-    // expect the request_id to be set
-    expect(req.body.request_id).toEqual('1234')
-    expect(fs.unlink).toHaveBeenCalledWith(req.file.path)
+    it('should validate the file locally', async () => {
+      const req = {
+        file: {
+          path: 'aHashedFileName.csv',
+          originalname: 'conservation_area.csv',
+          mimetype: 'text/csv',
+          size: 1234
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      UploadFileController.localValidateFile = vi.fn().mockReturnValue(true)
+      UploadFileController.uploadFileToS3 = vi.fn().mockResolvedValue('uploadedFilename')
+
+      await uploadFileController.post(req, res, next)
+
+      expect(UploadFileController.localValidateFile).toHaveBeenCalledWith({
+        ...req.file,
+        filePath: req.file.path,
+        fileName: req.file.originalname
+      })
+    })
+
+    it('should upload the file to S3', async () => {
+      const req = {
+        file: {
+          path: 'aHashedFileName.csv',
+          originalname: 'conservation_area.csv',
+          mimetype: 'text/csv',
+          size: 1234
+        },
+        sessionModel: {
+          get: () => 'test',
+          set: vi.fn()
+        },
+        body: {},
+        session: {
+          id: 'sessionId'
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      UploadFileController.localValidateFile = vi.fn().mockReturnValue(true)
+      UploadFileController.uploadFileToS3 = vi.fn().mockResolvedValue('uploadedFilename')
+
+      await uploadFileController.post(req, res, next)
+
+      expect(UploadFileController.uploadFileToS3).toHaveBeenCalledWith(req.file)
+    })
+
+    it('should post the file request', async () => {
+      const req = {
+        file: {
+          path: 'aHashedFileName.csv',
+          originalname: 'conservation_area.csv',
+          mimetype: 'text/csv',
+          size: 1234
+        },
+        sessionModel: {
+          get: () => 'test',
+          set: vi.fn()
+        },
+        body: {},
+        session: {
+          id: 'sessionId'
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      UploadFileController.localValidateFile = vi.fn().mockReturnValue(true)
+      UploadFileController.uploadFileToS3 = vi.fn().mockResolvedValue('uploadedFilename')
+
+      await uploadFileController.post(req, res, next)
+
+      expect(publishRequestApi.postFileRequest).toHaveBeenCalledWith({
+        ...uploadFileController.getBaseFormData(req),
+        originalFilename: req.file.name,
+        uploadedFilename: 'uploadedFilename'
+      })
+    })
+
+    it('should set the request_id in the body', async () => {
+      const req = {
+        file: {
+          path: 'aHashedFileName.csv',
+          originalname: 'conservation_area.csv',
+          mimetype: 'text/csv',
+          size: 1234
+        },
+        sessionModel: {
+          get: () => 'test',
+          set: vi.fn()
+        },
+        body: {},
+        session: {
+          id: 'sessionId'
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      UploadFileController.localValidateFile = vi.fn().mockReturnValue(true)
+      UploadFileController.uploadFileToS3 = vi.fn().mockResolvedValue('uploadedFilename')
+
+      await uploadFileController.post(req, res, next)
+
+      expect(req.body.request_id).toEqual('1234')
+    })
   })
 
   describe('validators', () => {
