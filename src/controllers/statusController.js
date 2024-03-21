@@ -2,10 +2,22 @@ import PageController from './pageController.js'
 import publishRequestApi from '../utils/publishRequestAPI.js'
 
 class StatusController extends PageController {
-  async locals (req, res, next) {
-    const result = await publishRequestApi.getRequestData(req.params.id)
-    req.form.options.data = result
-    super.locals(req, res, next)
+  async configure (req, res, next) {
+    this.result = await publishRequestApi.getRequestData(req.params.id)
+
+    if (this.result.response && this.result.response.error) {
+      switch (this.result.response.error.code) {
+        case 404:
+          req.form.options.template = '404'
+          break
+        default:
+          req.form.options.template = '500'
+          break
+      }
+    }
+
+    req.form.options.data = this.result
+    super.configure(req, res, next)
   }
 }
 

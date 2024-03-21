@@ -5,7 +5,16 @@ class ResultsController extends PageController {
   async configure (req, res, next) {
     this.result = await publishRequestApi.getRequestData(req.params.id)
 
-    if (this.result.hasErrors()) {
+    if (this.result.response && this.result.response.error) {
+      switch (this.result.response.error.code) {
+        case 404:
+          req.form.options.template = '404'
+          break
+        default:
+          req.form.options.template = '500'
+          break
+      }
+    } else if (this.result.hasErrors()) {
       req.form.options.template = 'errors'
     } else {
       req.form.options.template = 'no-errors'
@@ -15,10 +24,6 @@ class ResultsController extends PageController {
   }
 
   async locals (req, res, next) {
-    // ToDo: handle the case where the result is not found
-    if (this.result === undefined) {
-      res.redirect('/error')
-    }
     if (!this.result.isComplete()) {
       res.redirect(`/status/${req.params.id}`)
       return
