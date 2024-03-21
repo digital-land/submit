@@ -5,9 +5,7 @@ import UploadController from './uploadController.js'
 import AWS from 'aws-sdk'
 import { v4 as uuidv4 } from 'uuid'
 import multer from 'multer'
-import axios from 'axios'
-import fs from 'fs/promises'
-import { lookup } from 'mime-types'
+import { promises as fs, createReadStream } from 'fs'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import publishRequestApi from '../utils/publishRequestAPI.js'
@@ -48,7 +46,7 @@ class UploadFileController extends UploadController {
     // delete the file from the uploads folder
     if (req.file && req.file.path) { fs.unlink(req.file.path) }
 
-    const id = await publishRequestApi.postRequest({ ...this.getBaseFormData(req), originalFilename: req.file.name, uploadedFilename })
+    const id = await publishRequestApi.postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.name, uploadedFilename })
 
     req.body.request_id = id
     super.post(req, res, next)
@@ -69,7 +67,7 @@ class UploadFileController extends UploadController {
   */
   static async uploadFileToS3 (datafile, signedURL) {
     const s3 = new AWS.S3()
-    const fileStream = fs.createReadStream(datafile)
+    const fileStream = createReadStream(datafile)
     const uuid = uuidv4()
 
     const params = {
@@ -85,18 +83,6 @@ class UploadFileController extends UploadController {
       console.log('Error uploading file: ', error)
       throw error
     }
-  }
-
-  async apiValidateFile (datafile) {
-    const { filePath, fileName, dataset, dataSubject, organisation, sessionId, geomType } = datafile
-
-    const formData = this.constructBaseFormData({ dataset, dataSubject, organisation, sessionId, geomType })
-    const file = new Blob([await fs.readFile(filePath)], { type: lookup(filePath) })
-    formData.append('upload_file', file, fileName)
-
-    const result = await axios.post(this.apiRoute, formData, { timeout: config.api.requestTimeout })
-
-    return result.data
   }
 
   static extensionIsValid (datafile) {

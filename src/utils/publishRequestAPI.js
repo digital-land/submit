@@ -6,7 +6,7 @@ const publishRequestApi = {
   postFileRequest: async (formData) => {
     const { uploadedFilename, originalFilename, dataset, collection, geomType } = formData
 
-    return await this._postRequest({
+    return await publishRequestApi.postRequest({
       dataset,
       collection,
       geom_type: geomType,
@@ -28,7 +28,7 @@ const publishRequestApi = {
     })
   },
 
-  _postRequest: async (formData) => {
+  postRequest: async (formData) => {
     const response = await fetch(this.apiEndpoint, {
       method: 'POST',
       body: formData

@@ -1,19 +1,45 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import mockApiValue from '../testData/API_RUN_PIPELINE_RESPONSE.json'
-
 import UploadFileController from '../../src/controllers/uploadFileController.js'
 
-import fs from 'fs/promises'
+import { promises as fs } from 'fs'
 
 describe('UploadFileController', () => {
   let uploadFileController
-  const apiValidateFileMock = vi.fn().mockReturnValue(mockApiValue)
   const localValidateFileMock = vi.fn().mockReturnValue(true)
-  const constructBaseFormDataMock = vi.fn().mockReturnValue({ append: vi.fn() })
 
   beforeEach(() => {
+    vi.mock('fs', async () => {
+      return {
+        promises: {
+          readFile: vi.fn(),
+          unlink: vi.fn()
+        },
+        createReadStream: vi.fn()
+      }
+    })
 
+    vi.mock('aws-sdk', () => {
+      return {
+        default: {
+          S3: vi.fn().mockReturnValue({
+            upload: vi.fn().mockReturnValue({
+              promise: vi.fn()
+            })
+          }),
+          config: {
+            update: vi.fn()
+          }
+        }
+      }
+    })
+
+    global.fetch = vi.fn().mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ id: '1234' })
+      })
+    )
   })
 
   it('post adds the validation result to the session and the error count to the controller while deleting the uploaded file', async () => {
@@ -22,18 +48,8 @@ describe('UploadFileController', () => {
     }
     UploadFileController.localValidateFile = localValidateFileMock
     uploadFileController = new UploadFileController(options)
-    uploadFileController.apiValidateFile = apiValidateFileMock
 
     expect(uploadFileController.post).toBeDefined()
-
-    vi.mock('fs/promises', async (importOriginal) => {
-      return {
-        default: {
-          readFile: vi.fn(),
-          unlink: vi.fn()
-        }
-      }
-    })
 
     const req = {
       file: {
@@ -63,61 +79,10 @@ describe('UploadFileController', () => {
       filePath: req.file.path,
       fileName: req.file.originalname
     })
-    expect(apiValidateFileMock).toHaveBeenCalledWith({
-      ...req.file,
-      filePath: req.file.path,
-      fileName: req.file.originalname,
-      dataset: 'test',
-      dataSubject: 'test',
-      geomType: 'test',
-      sessionId: 'sessionId'
-    })
-    expect(req.body.validationResult).toEqual(mockApiValue)
-    expect(uploadFileController.errorCount).toEqual(mockApiValue['issue-log'].filter(issue => issue.severity === 'error').length + mockApiValue['column-field-log'].filter(column => column.missing).length)
+
+    // expect the request_id to be set
+    expect(req.body.request_id).toEqual('1234')
     expect(fs.unlink).toHaveBeenCalledWith(req.file.path)
-  })
-
-  it('apiValidateFile correctly calls the API', async () => {
-    const options = {
-      route: '/upload'
-    }
-    UploadFileController.localValidateFile = localValidateFileMock
-    uploadFileController = new UploadFileController(options)
-    uploadFileController.constructBaseFormData = constructBaseFormDataMock
-    // uploadFileController.apiValidateFile = apiValidateFileMock
-
-    vi.mock('axios', async () => {
-      const actualAxios = vi.importActual('axios')
-      return {
-        default: {
-          ...actualAxios.default,
-          post: vi.fn().mockResolvedValue({ data: { test: 'test' } })
-        }
-      }
-    })
-
-    expect(uploadFileController.apiValidateFile).toBeDefined()
-
-    const params = {
-      filePath: 'aHashedFileName.csv',
-      originalname: 'test.csv',
-      dataset: 'test',
-      dataSubject: 'test',
-      organization: 'local-authority-eng:CAT',
-      mimetype: 'text/csv',
-      geomType: 'point',
-      sessionId: 'sessionId'
-    }
-
-    const result = await uploadFileController.apiValidateFile(params)
-
-    expect(result).toEqual({ test: 'test' })
-    expect(constructBaseFormDataMock.mock.calls[0][0].geomType).toEqual('point')
-    expect(constructBaseFormDataMock.mock.calls[0][0].sessionId).toEqual('sessionId')
-    expect(constructBaseFormDataMock.mock.calls[0][0].dataset).toEqual('test')
-    expect(constructBaseFormDataMock.mock.calls[0][0].dataSubject).toEqual('test')
-
-    // expect().toHaveBeenCalledWith(config.api.url + config.api.validationEndpoint, expect.any(FormData))
   })
 
   describe('validators', () => {
