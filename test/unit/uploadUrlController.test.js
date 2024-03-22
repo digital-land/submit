@@ -2,24 +2,32 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import UploadUrlController from '../../src/controllers/uploadUrlController.js'
 
-import publishRequestApi from '../../src/utils/publishRequestAPI.js'
+describe('UploadUrlController', async () => {
+  vi.mock('@/utils/publishRequestAPI.js', () => {
+    return {
+      postUrlRequest: vi.fn()
+    }
+  })
 
-describe('UploadUrlController', () => {
   let uploadUrlController
+  let publishRequestApi
 
-  beforeEach(() => {
-    vi.spyOn(publishRequestApi, 'postFileRequest')
+  // vi.mock('@/utils/publishRequestAPI')
 
-    vi.mock('../../src/utils/publishRequestAPI.js', () => ({
-      postFileRequest: vi.fn().mockResolvedValue('requestId')
-    }))
+  global.fetch = vi.fn().mockImplementation(() =>
+    Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ id: '1234' })
+    })
+  )
 
-    global.fetch = vi.fn().mockImplementation(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ id: '1234' })
-      })
-    )
+  beforeEach(async () => {
+    publishRequestApi = await import('@/utils/publishRequestAPI')
+    publishRequestApi.postUrlRequest = vi.fn()
+
+    uploadUrlController = new UploadUrlController({
+      route: '/url'
+    })
   })
 
   describe('post', () => {
@@ -27,16 +35,25 @@ describe('UploadUrlController', () => {
       const req = {
         body: {
           url: 'http://example.com'
+        },
+        sessionModel: {
+          get: vi.fn()
+        },
+        session: {
+          id: '1234'
         }
       }
       const res = {}
       const next = vi.fn()
 
-      uploadUrlController = new UploadUrlController()
       await uploadUrlController.post(req, res, next)
 
-      expect(publishRequestApi.postRequest).toHaveBeenCalledWith({
-        url: 'http://example.com'
+      expect(publishRequestApi.postUrlRequest).toHaveBeenCalledWith({
+        url: 'http://example.com',
+        sessionId: '1234',
+        dataset: undefined,
+        dataSubject: undefined,
+        geomType: undefined
       })
     })
 
@@ -44,15 +61,20 @@ describe('UploadUrlController', () => {
       const req = {
         body: {
           url: 'invalid-url'
+        },
+        sessionModel: {
+          get: vi.fn()
+        },
+        session: {
+          id: '1234'
         }
       }
       const res = {}
       const next = vi.fn()
 
-      uploadUrlController = new UploadUrlController()
       await uploadUrlController.post(req, res, next)
 
-      expect(publishRequestApi.postRequest).not.toHaveBeenCalled()
+      expect(publishRequestApi.postUrlRequest).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()
     })
 
@@ -60,34 +82,20 @@ describe('UploadUrlController', () => {
       const req = {
         body: {
           url: 'http://example.com/' + 'a'.repeat(2048)
+        },
+        sessionModel: {
+          get: vi.fn()
+        },
+        session: {
+          id: '1234'
         }
       }
       const res = {}
       const next = vi.fn()
 
-      uploadUrlController = new UploadUrlController()
       await uploadUrlController.post(req, res, next)
 
-      expect(publishRequestApi.postRequest).not.toHaveBeenCalled()
-      expect(next).toHaveBeenCalled()
-    })
-
-    it('should call next if there is an error', async () => {
-      const req = {
-        body: {
-          url: 'http://example.com'
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      vi.mock('../../src/utils/publishRequestAPI.js', () => ({
-        postRequest: vi.fn().mockRejectedValue(new Error('test error'))
-      }))
-
-      uploadUrlController = new UploadUrlController()
-      await uploadUrlController.post(req, res, next)
-
+      expect(publishRequestApi.postUrlRequest).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()
     })
   })

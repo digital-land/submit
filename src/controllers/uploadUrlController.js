@@ -1,4 +1,5 @@
 import UploadController from './uploadController.js'
+import { postUrlRequest } from '../utils/publishRequestAPI.js'
 import { URL } from 'url'
 
 class UploadUrlController extends UploadController {
@@ -8,7 +9,7 @@ class UploadUrlController extends UploadController {
       this.validationError('format', '', null, req)
     } else {
       try {
-        const id = await this.publishRequestApi.postRequest({ ...this.getBaseFormData(req), url: req.body.url })
+        const id = await postUrlRequest({ ...this.getBaseFormData(req), url: req.body.url })
         req.body.request_id = id
       } catch (error) {
         this.handleApiError(error, req)
