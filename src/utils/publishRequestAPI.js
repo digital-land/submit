@@ -41,43 +41,18 @@ const postRequest = async (formData) => {
 }
 
 export const getRequestData = async (resultId) => {
-  // const result = await fetch(`${config.publishRequestApi}/results/${resultId}`);
-  const result = {
-    id: 1,
-    type: 'check_url',
-    status: 'COMPLETE',
-    created: '2024-03-13T16:50:59.472751Z',
-    modified: '2024-03-13T16:50:59.472751Z',
-    params: {
-      type: 'check_url',
-      collection: 'article_4_direction',
-      dataset: 'article_4_direction_area',
-      url: 'https://services3.arcgis.com/lCzPKKaGs7lhrnrV/ArcGIS/rest/services/Planning_Portal_Article_4_Direction_081223/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson'
-    },
-    response: {
-      data: {
-        'column-field-log': [],
-        'error-summary': []
-      },
-      details: [
-        {
-          'line-number': 1,
-          'converted-row': {},
-          'issue-log-row': {}
-        }
-      ]
-    }
-  }
-  return new RequestData(result)
+  const result = await fetch(`${config.publishRequestApi}/results/${resultId}`)
+  const resultJson = await result.json()
+  return new RequestData(resultJson)
 }
 
-class RequestData {
+export class RequestData {
   constructor (data) {
     Object.assign(this, data)
   }
 
   hasErrors () {
-    return this.response.data['error-summary'].length > 0
+    return this.data['error-summary'].length > 0
   }
 
   isComplete () {
