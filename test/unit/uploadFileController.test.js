@@ -37,7 +37,6 @@ describe('UploadFileController', () => {
     publishRequestApi = await import('@/utils/publishRequestAPI')
     publishRequestApi.postFileRequest = vi.fn().mockResolvedValue('1234')
 
-
     global.fetch = vi.fn().mockImplementation(() =>
       Promise.resolve({
         ok: true,
