@@ -8,13 +8,6 @@ describe('UploadUrlController', async () => {
   let uploadUrlController
   let publishRequestApi
 
-  global.fetch = vi.fn().mockImplementation(() =>
-    Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({ id: '1234' })
-    })
-  )
-
   beforeEach(async () => {
     publishRequestApi = await import('@/utils/publishRequestAPI')
     publishRequestApi.postUrlRequest = vi.fn()
