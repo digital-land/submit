@@ -17,24 +17,22 @@ describe('StatusController', () => {
 
   describe('configure', () => {
     it('configure should make a request and attach the result of that request to the req.form.options object', async () => {
-
-  
-      const req = { 
+      const req = {
         params: { id: 'test_id' },
         form: {
           options: {
-  
+
           }
         }
       }
       const res = { render: vi.fn(), redirect: vi.fn() }
       const next = vi.fn()
-  
+
       const mockResult = { response: { test: 'test' } }
       publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
-  
+
       await statusController.configure(req, res, next)
-  
+
       expect(publishRequestApi.getRequestData).toHaveBeenCalledWith(req.params.id)
       expect(req.form.options.data).toEqual(mockResult)
     })
