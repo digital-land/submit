@@ -16,7 +16,7 @@
     "serve-webpack": "webpack serve",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
     "scss:watch": "sass --quiet-deps --load-path=./ --watch src/assets/scss:public/stylesheets",
-    "test": "npm run test:unit && npm run test:integration && run test:acceptance",
+    "test": "npm run test:unit && npm run test:integration && npm run test:acceptance",
     "test:unit": "vitest run test/unit",
     "test:watch": "vitest test/unit test/integration test/contract",
     "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
