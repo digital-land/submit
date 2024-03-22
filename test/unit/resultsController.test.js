@@ -3,7 +3,7 @@ import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 describe('ResultsController', () => {
   vi.mock('@/utils/publishRequestAPI.js')
-  
+
   let publishRequestApi
   let resultsController
 
@@ -22,7 +22,6 @@ describe('ResultsController', () => {
 
   describe('configure', () => {
     it('should add the result to the controller class', async () => {
-
       const mockResult = { hasErrors: () => false }
       publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
