@@ -3,16 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import UploadUrlController from '../../src/controllers/uploadUrlController.js'
 
 describe('UploadUrlController', async () => {
-  vi.mock('@/utils/publishRequestAPI.js', () => {
-    return {
-      postUrlRequest: vi.fn()
-    }
-  })
+  vi.mock('@/utils/publishRequestAPI.js')
 
   let uploadUrlController
   let publishRequestApi
-
-  // vi.mock('@/utils/publishRequestAPI')
 
   global.fetch = vi.fn().mockImplementation(() =>
     Promise.resolve({

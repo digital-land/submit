@@ -8,7 +8,7 @@ import multer from 'multer'
 import { promises as fs, createReadStream } from 'fs'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
-import publishRequestApi from '../utils/publishRequestAPI.js'
+import { postFileRequest } from '../utils/publishRequestAPI.js'
 
 AWS.config.update({ region: config.aws.region })
 
@@ -46,7 +46,7 @@ class UploadFileController extends UploadController {
     // delete the file from the uploads folder
     if (req.file && req.file.path) { fs.unlink(req.file.path) }
 
-    const id = await publishRequestApi.postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.name, uploadedFilename })
+    const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.name, uploadedFilename })
 
     req.body.request_id = id
     super.post(req, res, next)

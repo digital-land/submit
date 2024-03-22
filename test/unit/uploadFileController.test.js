@@ -2,42 +2,41 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import UploadFileController from '../../src/controllers/uploadFileController.js'
 
-import publishRequestApi from '../../src/utils/publishRequestAPI.js'
-
 describe('UploadFileController', () => {
   let uploadFileController
+  let publishRequestApi
 
-  beforeEach(() => {
-    vi.mock('fs', async () => {
-      return {
-        promises: {
-          readFile: vi.fn(),
-          unlink: vi.fn()
-        },
-        createReadStream: vi.fn()
-      }
-    })
+  vi.mock('@/utils/publishRequestAPI.js')
 
-    vi.mock('aws-sdk', () => {
-      return {
-        default: {
-          S3: vi.fn().mockReturnValue({
-            upload: vi.fn().mockReturnValue({
-              promise: vi.fn()
-            })
-          }),
-          config: {
-            update: vi.fn()
-          }
+  vi.mock('fs', async () => {
+    return {
+      promises: {
+        readFile: vi.fn(),
+        unlink: vi.fn()
+      },
+      createReadStream: vi.fn()
+    }
+  })
+
+  vi.mock('aws-sdk', async () => {
+    return {
+      default: {
+        S3: vi.fn().mockReturnValue({
+          upload: vi.fn().mockReturnValue({
+            promise: vi.fn()
+          })
+        }),
+        config: {
+          update: vi.fn()
         }
       }
-    })
+    }
+  })
 
-    vi.spyOn(publishRequestApi, 'postFileRequest')
+  beforeEach(async () => {
+    publishRequestApi = await import('@/utils/publishRequestAPI')
+    publishRequestApi.postFileRequest = vi.fn().mockResolvedValue('1234')
 
-    vi.mock('../../src/utils/publishRequestAPI.js', () => ({
-      postFileRequest: vi.fn().mockResolvedValue('requestId')
-    }))
 
     global.fetch = vi.fn().mockImplementation(() =>
       Promise.resolve({
@@ -71,7 +70,14 @@ describe('UploadFileController', () => {
           originalname: 'conservation_area.csv',
           mimetype: 'text/csv',
           size: 1234
-        }
+        },
+        sessionModel: {
+          get: vi.fn()
+        },
+        session: {
+          id: '1234'
+        },
+        body: {}
       }
       const res = {}
       const next = vi.fn()
