@@ -4,7 +4,7 @@
         "urlPathPattern": "/requests/([a-zA-Z1-9]*)"
     },
     "response": {
-        "status": 202,
+        "status": 404,
         "headers": {
             "Content-Type": "application/json"
         },
