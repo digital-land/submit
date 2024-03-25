@@ -35,40 +35,6 @@ describe('StatusController', () => {
 
       expect(publishRequestApi.getRequestData).toHaveBeenCalledWith(req.params.id)
     })
-
-    it('should set template to 404 when the response is an error with code 404', async () => {
-      const req = {
-        params: { id: 'testId' },
-        form: { options: {} }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      publishRequestApi.getRequestData = vi.fn().mockImplementation(() => {
-        throw new Error('Request not found')
-      })
-
-      await statusController.configure(req, res, next)
-
-      expect(req.form.options.template).toBe('404')
-    })
-
-    it('should set template to 500 when the response is an error with any code but 404', async () => {
-      const req = {
-        params: { id: 'testId' },
-        form: { options: {} }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      publishRequestApi.getRequestData = vi.fn().mockImplementation(() => {
-        throw new Error('Unexpected error')
-      })
-
-      await statusController.configure(req, res, next)
-
-      expect(req.form.options.template).toBe('500')
-    })
   })
 
   describe('locals', () => {

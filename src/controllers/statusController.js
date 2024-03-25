@@ -1,20 +1,20 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../utils/publishRequestAPI.js'
 
+const finishedProcessingStatuses = [
+  'COMPLETE',
+  'FAILED'
+]
+
 class StatusController extends PageController {
   async configure (req, res, next) {
-    try {
-      this.result = await getRequestData(req.params.id)
-      req.form.options.template = this.result.hasErrors() ? 'errors' : 'no-errors'
-    } catch (error) {
-      req.form.options.template = error.message === 'Request not found' ? '404' : '500'
-    }
-
+    this.result = await getRequestData(req.params.id)
     super.configure(req, res, next)
   }
 
   async locals (req, res, next) {
     req.form.options.data = this.result
+    req.form.options.processingComplete = finishedProcessingStatuses.includes(this.result.status)
     super.locals(req, res, next)
   }
 }

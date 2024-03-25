@@ -6,22 +6,30 @@
 
 {% set pageName = 'Status' %}
 
+
+{% if options.processingComplete %}
+  {% set pageContent = fileCheckedContent() %}
+  {% set buttonText = "Check status" %}
+  {% set buttonClasses = "" %}
+{% else %}
+  {% set pageContent = checkingFileContent() %}
+  {% set buttonText = "Continue" %}
+  {% set buttonClasses = "js-hidden" %}
+{% endif %}
+
 {% block content %}
+{{'isComplete: ' + options.processingComplete}}
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds" aria-live="assertive">
-      {% if options.data.status == "COMPLETE" %}
-        {{ fileCheckedContent() }}
-      {% else %}
-        {{ checkingFileContent() }}
-      {% endif %}
+      {{ pageContent }}
     </div>
 
     <div class="govuk-grid-column-two-thirds">
       <form method="post">
         {{ govukButton({
-          text: "Check status" if options.data.status != "COMPLETE" else  "Continue",
-          classes: "js-hidden" if options.data.status != "COMPLETE" else  "",
+          text: buttonText,
+          classes: buttonClasses,
           id: "js-async-check-status-button"
         }) }}
       </form>
@@ -37,6 +45,11 @@
       pollingEndpoint: "{{ params.pollingEndpoint }}",
       requestId: "{{ params.requestId }}",
     }
+  </script>
+  <script>
+    window.addEventListener('load', () => {
+      throw new Error('This is a test error')
+    })
   </script>
   <script src="/public/js/statusPage.bundle.js"></script>
 {% endblock %}

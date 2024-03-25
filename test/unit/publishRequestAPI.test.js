@@ -44,7 +44,9 @@ describe('publishRequestApi', () => {
     const mockFetchResponse = {
       id: 'testId',
       data: {
-        'error-summary': []
+        response: {
+          'error-summary': []
+        }
       },
       status: 'COMPLETE'
     }

@@ -61,7 +61,7 @@ export class RequestData {
   }
 
   hasErrors () {
-    return this.data['error-summary'].length > 0
+    return this.data.response['error-summary'].length > 0
   }
 
   isComplete () {
