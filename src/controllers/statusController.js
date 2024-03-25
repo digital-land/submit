@@ -3,21 +3,19 @@ import { getRequestData } from '../utils/publishRequestAPI.js'
 
 class StatusController extends PageController {
   async configure (req, res, next) {
-    this.result = await getRequestData(req.params.id)
-
-    if (this.result.response && this.result.response.error) {
-      switch (this.result.response.error.code) {
-        case 404:
-          req.form.options.template = '404'
-          break
-        default:
-          req.form.options.template = '500'
-          break
-      }
+    try {
+      this.result = await getRequestData(req.params.id);
+      req.form.options.template = this.result.hasErrors() ? 'errors' : 'no-errors';
+    } catch (error) {
+      req.form.options.template = error.message === 'Request not found' ? '404' : '500';
     }
 
-    req.form.options.data = this.result
     super.configure(req, res, next)
+  }
+
+  async locals (req, res, next) {
+    req.form.options.data = this.result
+    super.locals(req, res, next)
   }
 }
 

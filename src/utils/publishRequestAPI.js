@@ -42,6 +42,15 @@ const postRequest = async (formData) => {
 
 export const getRequestData = async (resultId) => {
   const result = await fetch(`${config.publishRequestApi.url}/${config.publishRequestApi.requestsEndpoint}/${resultId}`)
+  
+  if (!result.ok) {
+    if (result.status === 404) {
+      throw new Error('Request not found')
+    } else {
+      throw new Error('Unexpected error')
+    }
+  }
+  
   const resultJson = await result.json()
   return new RequestData(resultJson)
 }
