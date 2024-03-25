@@ -9,7 +9,9 @@ describe('UploadFileController', () => {
   vi.mock('@/utils/publishRequestAPI.js')
 
   vi.mock('fs', async () => {
+    const actual = await vi.importActual('fs')
     return {
+      ...actual,
       promises: {
         readFile: vi.fn(),
         unlink: vi.fn()

@@ -30,8 +30,9 @@ describe('ResultsController', () => {
     })
 
     it("should set the template to the 404 template if the result wasn't found", async () => {
-      const mockResult = { response: { error: { code: 404 } } }
-      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      publishRequestApi.getRequestData = vi.fn().mockImplementation(() => {
+        throw new Error('Request not found')
+      })
 
       await resultsController.configure(req, {}, () => {})
       expect(req.form.options.template).toBe('404')
