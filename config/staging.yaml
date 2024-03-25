@@ -1,6 +1,3 @@
-api: {
-    url: https://publish-api.staging.digital-land.info,
-    port: 8082,
-    validationEndpoint: /api/dataset/validate/file/request,
-    requestTimeout: 50000
+publishRequestApi: {
+    url: https://publish-api.staging.digital-land.info
 }
