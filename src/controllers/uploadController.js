@@ -6,7 +6,7 @@ import { severityLevels } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 
 class UploadController extends PageController {
-  apiRoute = config.api.url + config.api.validationEndpoint
+  apiRoute = config.publishRequestApi.url + config.publishRequestApi.requestsEndpoint
 
   locals (req, res, next) {
     req.form.options.validationError = this.validationErrorMessage

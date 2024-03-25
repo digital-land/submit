@@ -41,7 +41,7 @@ const postRequest = async (formData) => {
 }
 
 export const getRequestData = async (resultId) => {
-  const result = await fetch(`${config.publishRequestApi}/results/${resultId}`)
+  const result = await fetch(`${config.publishRequestApi.url}/${config.publishRequestApi.requestsEndpoint}/${resultId}`)
   const resultJson = await result.json()
   return new RequestData(resultJson)
 }
