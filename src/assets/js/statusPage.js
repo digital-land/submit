@@ -1,7 +1,8 @@
 // poll the server for the status of the job
 
-class StatusPage {
+export default class StatusPage {
   constructor () {
+    console.log('StatusPage constructor')
     this.interval = null
     this.heading = document.querySelector('.js-async-processing-heading')
     this.continueButton = document.querySelector('.js-async-continue-button')
@@ -13,6 +14,7 @@ class StatusPage {
   }
 
   beginPolling (statusEndpoint, requestId) {
+    // ToDo: we should have a check here that if the polling fails so many times, we update the page
     const requestEndpoint = `${statusEndpoint}/${requestId}`
     const interval = setInterval(() => {
       fetch(requestEndpoint)
