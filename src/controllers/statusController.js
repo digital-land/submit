@@ -1,10 +1,6 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../utils/publishRequestAPI.js'
-
-const finishedProcessingStatuses = [
-  'COMPLETE',
-  'FAILED'
-]
+import { finishedProcessingStatuses } from '../utils/utils.js'
 
 class StatusController extends PageController {
   async configure (req, res, next) {

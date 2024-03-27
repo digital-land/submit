@@ -1,8 +1,9 @@
 // poll the server for the status of the job
 
+import { finishedProcessingStatuses } from "../../utils/utils"
+
 export default class StatusPage {
   constructor () {
-    console.log('StatusPage constructor')
     this.interval = null
     this.heading = document.querySelector('.js-async-processing-heading')
     this.continueButton = document.querySelector('.js-async-continue-button')
@@ -20,7 +21,8 @@ export default class StatusPage {
       fetch(requestEndpoint)
         .then(res => res.json())
         .then(data => {
-          if (data.status === 'COMPLETE') {
+          // ToDo: handle other status' here
+          if (finishedProcessingStatuses.includes(data.status)) {
             this.updatePage()
             clearInterval(interval)
           }
