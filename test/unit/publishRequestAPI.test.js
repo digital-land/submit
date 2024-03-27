@@ -1,4 +1,5 @@
-import { postFileRequest, postUrlRequest, getRequestData, RequestData } from '../../src/utils/publishRequestAPI.js'
+import { postFileRequest, postUrlRequest, getRequestData } from '../../src/utils/publishRequestAPI.js'
+import RequestData from '../../src/models/requestData.js'
 import { test, describe, expect, beforeEach, vi } from 'vitest'
 
 describe('publishRequestApi', () => {
@@ -43,8 +44,8 @@ describe('publishRequestApi', () => {
 
     const mockFetchResponse = {
       id: 'testId',
-      data: {
-        response: {
+      response: {
+        data: {
           'error-summary': []
         }
       },

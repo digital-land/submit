@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest'
+import RequestData from '../../src/models/requestData.js'
 
 import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
+
+import errorResponse from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -17,71 +20,20 @@ addFilters(nunjucksEnv)
 
 describe('errors page', () => {
   it('renders the correct number of errors', () => {
+    const requestData = new RequestData(errorResponse)
+
     const params = {
       options: {
-        rows: [
-          {
-            'Document URL': {
-              value: 'https://www.camden.gov.uk/holly-lodge-conservation-area'
-            },
-            'End date': {
-              value: ''
-            },
-            Geometry: {
-              issue: {
-                type: 'fake error',
-                description: 'fake error'
-              },
-              value: 'POLYGON ((-0.125888391245 51.54316508186, -0.125891457623 51.543177267548, -0.125903428774 51.54322160042))'
-            },
-            Legislation: {
-              value: ''
-            },
-            Name: {
-              value: 'Holly Lodge Estate'
-            },
-            Notes: {
-              value: ''
-            },
-            Point: {
-              value: 'POINT (-0.150097204178 51.564975754948)'
-            },
-            Reference: {
-              value: 'CA20'
-            },
-            'Start date': {
-              value: '01/06/1992'
-            },
-            'entry-date': {
-              issue: {
-                type: 'default-value',
-                description: 'default-value'
-              },
-              value: undefined
-            },
-            geometry: {
-              issue: {
-                type: 'OSGB',
-                description: 'OSGB'
-              },
-              value: undefined
-            },
-            organisation: {
-              issue: {
-                type: 'default-value',
-                description: 'default-value'
-              },
-              value: undefined
-            }
-          }
-        ],
-        errorSummary: [
-          '1 documentation URL must be a real URL',
-          '19 geometries must be in Well-Known Text (WKT) format'
-        ],
-        dataset: 'Dataset test'
+        requestParams: requestData.getParams(),
+        errorSummary: requestData.getErrorSummary(),
+        rows: requestData.getRows(),
+        geometryKey: requestData.getGeometryKey(),
+        columns: requestData.getColumns(),
+        fields: requestData.getFields(),
+        verboseRows: requestData.getRowsWithVerboseColumns()
       }
     }
+
     const html = nunjucks.render('errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
 
     expect(html).toContain('<li> 1 documentation URL must be a real URL </li>')
