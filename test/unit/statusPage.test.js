@@ -45,4 +45,39 @@ describe('StatusPage', () => {
     expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
     expect(statusPage.continueButton.style.display).toBe('block')
   })
+
+  it('should begin polling and update the page when the status is FAILED', async () => {
+    const mockResponse = { status: 'FAILED' }
+    global.fetch.mockResolvedValueOnce({
+      json: () => Promise.resolve(mockResponse)
+    })
+    statusPage.beginPolling('http://test.com', '123')
+    await vi.advanceTimersByTimeAsync(1000)
+    await Promise.resolve() // wait for promises to resolve
+    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
+    expect(statusPage.continueButton.style.display).toBe('block')
+  })
+
+  it('should continue polling if status is not COMPLETE or FAILED, then finally update the page once the status is COMPLETE', async () => {
+    const mockResponse = { status: 'PROCESSING' }
+    global.fetch.mockResolvedValue({
+      json: () => Promise.resolve(mockResponse)
+    })
+    statusPage.beginPolling('http://test.com', '123')
+    await vi.advanceTimersByTimeAsync(1000)
+    await Promise.resolve() // wait for promises to resolve
+    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.checkingFile)
+    expect(statusPage.continueButton.style.display).toBe('none')
+    await vi.advanceTimersByTimeAsync(1000)
+    await Promise.resolve()
+    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.checkingFile)
+    expect(statusPage.continueButton.style.display).toBe('none')
+    global.fetch.mockResolvedValueOnce({
+      json: () => Promise.resolve({ status: 'COMPLETE' })
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+    await Promise.resolve()
+    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
+    expect(statusPage.continueButton.style.display).toBe('block')
+  })
 })

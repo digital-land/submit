@@ -1,6 +1,6 @@
 // poll the server for the status of the job
 
-import { finishedProcessingStatuses } from "../../utils/utils"
+import { finishedProcessingStatuses } from '../../utils/utils'
 
 export default class StatusPage {
   constructor () {
@@ -10,7 +10,7 @@ export default class StatusPage {
   }
 
   headingTexts = {
-    checkingFile: 'Checking file',
+    checkingFile: 'Checking File',
     fileChecked: 'File Checked'
   }
 
