@@ -92,12 +92,7 @@ app.use((err, req, res, next) => {
     errorStack: err.stack
   })
 
-  err.template = err.template || 'errorPages/500'
-
-  // handle session expired
-  if (err.code === 'SESSION_TIMEOUT') {
-    err.template = 'session-expired'
-  }
+  err.template = err.template || (err.status && `errorPages/${err.status}`) || 'errorPages/500'
 
   // handle errors with automatic redirects
   if (err.redirect) {

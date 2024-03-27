@@ -46,9 +46,9 @@ export const getRequestData = async (resultId) => {
 
   if (!result.ok) {
     if (result.status === 404) {
-      throw new Error('Request not found')
+      throw new Error('Request not found', { message: 'Request not found', status: result.status })
     } else {
-      throw new Error('Unexpected error')
+      throw new Error('Unexpected error', { message: 'Unexpected error', status: result.status })
     }
   }
 

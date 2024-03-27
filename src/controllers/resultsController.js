@@ -6,11 +6,11 @@ class ResultsController extends PageController {
     try {
       this.result = await getRequestData(req.params.id)
       req.form.options.template = this.result.hasErrors() ? 'errors' : 'no-errors'
+      super.configure(req, res, next)
     } catch (error) {
-      req.form.options.template = error.message === 'Request not found' ? '404' : '500'
+      next(error, req, res, next)
     }
 
-    super.configure(req, res, next)
   }
 
   async locals (req, res, next) {
