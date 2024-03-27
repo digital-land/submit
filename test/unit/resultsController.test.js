@@ -29,21 +29,24 @@ describe('ResultsController', () => {
       expect(resultsController.result).toBeDefined()
     })
 
-    it("should set the template to the 404 template if the result wasn't found", async () => {
+    it("should call next with a 404 error if the result wasn't found", async () => {
       publishRequestApi.getRequestData = vi.fn().mockImplementation(() => {
-        throw new Error('Request not found')
+        throw new Error('Request not found', { message: 'Request not found', status: 404 })
       })
 
-      await resultsController.configure(req, {}, () => {})
-      expect(req.form.options.template).toBe('404')
+      const nextMock = vi.fn()
+      await resultsController.configure(req, {}, nextMock)
+      expect(nextMock).toHaveBeenCalledWith(new Error('Request not found', { message: 'Request not found', status: 404 }), req, {}, nextMock)
     })
 
-    it('should set the template to the generic error template in the result processing errored', async () => {
-      const mockResult = { response: { error: { code: 500 } } }
-      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+    it('should call next with a 500 error if the result processing errored', async () => {
+      publishRequestApi.getRequestData = vi.fn().mockImplementation(() => {
+        throw new Error('Unexpected error', { message: 'Unexpected error', status: 500 })
+      })
 
-      await resultsController.configure(req, {}, () => {})
-      expect(req.form.options.template).toBe('500')
+      const nextMock = vi.fn()
+      await resultsController.configure(req, {}, nextMock)
+      expect(nextMock).toHaveBeenCalledWith(new Error('Unexpected error', { message: 'Unexpected error', status: 500 }), req, {}, nextMock)
     })
 
     it('should set the template to the errors template if the result has errors', async () => {
