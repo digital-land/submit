@@ -20,7 +20,7 @@ class Map {
       const name = `geometry-${index}`
 
       // Convert the coordinates string to a GeoJSON object
-      const geometry = parse(row[geometryKey])
+      const geometry = parse(row['converted-row'][geometryKey])
       // store geometries for use in calculating the bbox later
       geometries.push(geometry)
       // add the source

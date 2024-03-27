@@ -19,7 +19,13 @@ class ResultsController extends PageController {
       return
     }
 
-    req.form.options.result = this.result
+    req.form.options.requestParams = this.result.getParams()
+    req.form.options.errorSummary = this.result.getErrorSummary()
+    req.form.options.rows = this.result.getRows()
+    req.form.options.geometryKey = this.result.getGeometryKey()
+    req.form.options.columns = this.result.getColumns()
+    req.form.options.fields = this.result.getFields()
+    req.form.options.verboseRows = this.result.getRowsWithVerboseColumns()
 
     super.locals(req, res, next)
   }

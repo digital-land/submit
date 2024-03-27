@@ -10,7 +10,7 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-l">
-        {{options.dataset}}
+        {{options.requestParams.dataset}}
       </span>
       <h1 class="govuk-heading-l">
         {{pageName}}
@@ -36,16 +36,18 @@
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              {% for column in options.columnNames %}
+              {% for column in options.columns %}
                 <th scope="col" class="govuk-table__header">{{column}}</th>
               {% endfor %}
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for row in options.rows %}
+            {% for row in options.verboseRows %}
               <tr class="govuk-table__row">
-                {% for columnName, column in row %}
-                <td class="govuk-table__cell app-wrap">
+                {% for column in options.columns %}
+                  {% set columnData = row['converted-row'][column] %}
+
+                  <td class="govuk-table__cell app-wrap">
                     {% if column.issue %}
                       {{ govukInsetText({
                         classes: "app-inset-text---error",
