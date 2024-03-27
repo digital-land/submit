@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 describe('StatusPage', () => {
+  let StatusPage
   let statusPage
   let mockHeading
   let mockButton
@@ -25,8 +26,8 @@ describe('StatusPage', () => {
         }
       })
     }
-    const StatusPage = await import('@/assets/js/statusPage.js')
-    statusPage = new StatusPage.default() // eslint-disable-line new-cap
+    StatusPage = (await import('@/assets/js/statusPage.js')).default
+    statusPage = new StatusPage() // eslint-disable-line new-cap
   })
 
   it('should initialize correctly', () => {
@@ -77,6 +78,23 @@ describe('StatusPage', () => {
     })
     await vi.advanceTimersByTimeAsync(1000)
     await Promise.resolve()
+    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
+    expect(statusPage.continueButton.style.display).toBe('block')
+  })
+
+  it('should stop polling after the maxPollAttempts is reached', async () => {
+    const mockResponse = { status: 'PROCESSING' }
+    global.fetch.mockResolvedValue({
+      json: () => Promise.resolve(mockResponse)
+    })
+
+    statusPage = new StatusPage(100, 5)
+
+    statusPage.beginPolling('http://test.com', '123')
+    for (let i = 0; i < 6; i++) {
+      await vi.advanceTimersByTimeAsync(100)
+      await Promise.resolve()
+    }
     expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
     expect(statusPage.continueButton.style.display).toBe('block')
   })
