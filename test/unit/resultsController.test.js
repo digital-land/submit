@@ -65,17 +65,42 @@ describe('ResultsController', () => {
 
   describe('locals', () => {
     it('should redirect to the status page if the result is not complete', async () => {
-      resultsController.result = { isComplete: () => false }
+      resultsController.result = {
+        isComplete: () => false,
+        getParams: () => ({ id: 'testId' }),
+        getErrorSummary: () => ({}),
+        getRows: () => ({}),
+        getGeometryKey: () => 'point',
+        getColumns: () => ({}),
+        getRowsWithVerboseColumns: () => ({}),
+        getFields: () => ({})
+      }
       const res = { redirect: vi.fn() }
       await resultsController.locals(req, res, () => {})
       expect(res.redirect).toHaveBeenCalledWith(`/status/${req.params.id}`)
     })
 
     it('should set the result to the form options if the result is complete', async () => {
-      resultsController.result = { isComplete: () => true }
+      resultsController.result = {
+        isComplete: () => true,
+        getParams: () => ('params'),
+        getErrorSummary: () => (['error summary']),
+        getRows: () => (['rows']),
+        getGeometryKey: () => 'point',
+        getColumns: () => (['columns']),
+        getRowsWithVerboseColumns: () => (['verbose-columns']),
+        getFields: () => (['fields'])
+      }
       const res = { redirect: vi.fn() }
       await resultsController.locals(req, res, () => {})
-      expect(req.form.options.result).toBe(resultsController.result)
+
+      expect(req.form.options.requestParams).toBe('params')
+      expect(req.form.options.errorSummary).toStrictEqual(['error summary'])
+      expect(req.form.options.rows).toStrictEqual(['rows'])
+      expect(req.form.options.geometryKey).toStrictEqual('point')
+      expect(req.form.options.columns).toStrictEqual(['columns'])
+      expect(req.form.options.fields).toStrictEqual(['fields'])
+      expect(req.form.options.verboseRows).toStrictEqual(['verbose-columns'])
     })
   })
 
