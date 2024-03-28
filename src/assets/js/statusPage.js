@@ -3,7 +3,11 @@
 import { finishedProcessingStatuses } from '../../utils/utils'
 
 export default class StatusPage {
-  constructor () {
+  constructor (pollingInterval, maxPollAttempts) {
+    this.pollingInterval = pollingInterval || 1000
+    this.maxPollAttempts = maxPollAttempts || 30
+    this.pollAttempts = 0
+
     this.interval = null
     this.heading = document.querySelector('.js-async-processing-heading')
     this.continueButton = document.querySelector('.js-async-continue-button')
@@ -15,19 +19,26 @@ export default class StatusPage {
   }
 
   beginPolling (statusEndpoint, requestId) {
-    // ToDo: we should have a check here that if the polling fails so many times, we update the page
+    this.pollAttempts = 0
     const requestEndpoint = `${statusEndpoint}/${requestId}`
+
     const interval = setInterval(() => {
       fetch(requestEndpoint)
         .then(res => res.json())
         .then(data => {
-          // ToDo: handle other status' here
+        // ToDo: handle other status' here
           if (finishedProcessingStatuses.includes(data.status)) {
             this.updatePage()
             clearInterval(interval)
           }
         })
-    }, 1000)
+
+      this.pollAttempts++
+      if (window.pollAttempts > this.maxPollAttempts) {
+        this.updatePage()
+        clearInterval(interval)
+      }
+    }, this.pollingInterval)
   }
 
   updatePage () {
