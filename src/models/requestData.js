@@ -103,6 +103,6 @@ export default class RequestData {
 
   getGeometries () {
     const geometryKey = this.getGeometryKey()
-    return this.response.details.map(row => row.converted_row[geometryKey])
+    return this.response.details.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
   }
 }
