@@ -122,7 +122,7 @@ const createMapFromServerContext = () => {
 
   // if any of the required properties are missing, return null
   if (!containerId || !geometries) {
-    console.log('Missing required properties (containerId, rows, geometryKey) on window.serverContext', window.serverContext)
+    console.log('Missing required properties (containerId, geometries) on window.serverContext', window.serverContext)
     return null
   }
 
