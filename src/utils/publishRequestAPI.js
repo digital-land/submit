@@ -46,12 +46,18 @@ export const getRequestData = async (resultId) => {
 
   if (!result.ok) {
     if (result.status === 404) {
-      throw new Error('Request not found', { message: 'Request not found', status: result.status })
+      throwCustomError('Request not found', { message: 'Request not found', status: result.status })
     } else {
-      throw new Error('Unexpected error', { message: 'Unexpected error', status: result.status })
+      throwCustomError('Unexpected error', { message: 'Unexpected error', status: result.status })
     }
   }
 
   const resultJson = await result.json()
   return new RequestData(resultJson)
+}
+
+const throwCustomError = (message, params) => {
+  const error = new Error(message)
+  Object.assign(error, params)
+  throw error
 }
