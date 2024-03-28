@@ -23,7 +23,11 @@ class ResultsController extends PageController {
     req.form.options.columns = this.result.getColumns()
     req.form.options.fields = this.result.getFields()
     req.form.options.verboseRows = this.result.getRowsWithVerboseColumns()
-    req.form.options.geometries = this.result.getGeometries()
+
+    const geometries = this.result.getGeometries()
+    if (geometries.length > 0) {
+      req.form.options.geometries = geometries
+    }
 
     super.locals(req, res, next)
   }
