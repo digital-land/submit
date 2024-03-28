@@ -46,12 +46,12 @@
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for row in options.rows %}
+            {% for row in options.verboseRows %}
               <tr class="govuk-table__row">
-                {% for field in options.fields %}
+                {% for column in options.columns %}
                   <td class="govuk-table__cell app-wrap">
-                      {% if row['converted-row'][field] %}
-                        {{row['converted-row'][field]}}
+                      {% if row.columns[column].value %}
+                        {{row.columns[column].value}}
                       {% endif %}
                   </td>
                 {% endfor %}
@@ -125,8 +125,7 @@
     <script>
       window.serverContext = {
         containerId: 'map', 
-        rows: {{ options.rows | dump | safe }}, 
-        geometryKey: '{{options.geometryKey}}'
+        rows: {{ options.geometries | dump | safe }},
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>

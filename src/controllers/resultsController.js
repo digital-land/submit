@@ -10,7 +10,6 @@ class ResultsController extends PageController {
     } catch (error) {
       next(error, req, res, next)
     }
-
   }
 
   async locals (req, res, next) {
@@ -21,11 +20,10 @@ class ResultsController extends PageController {
 
     req.form.options.requestParams = this.result.getParams()
     req.form.options.errorSummary = this.result.getErrorSummary()
-    req.form.options.rows = this.result.getRows()
-    req.form.options.geometryKey = this.result.getGeometryKey()
     req.form.options.columns = this.result.getColumns()
     req.form.options.fields = this.result.getFields()
     req.form.options.verboseRows = this.result.getRowsWithVerboseColumns()
+    req.form.options.geometries = this.result.getGeometries()
 
     super.locals(req, res, next)
   }

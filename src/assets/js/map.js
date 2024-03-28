@@ -2,7 +2,7 @@ import parse from 'wellknown'
 import maplibregl from 'maplibre-gl'
 
 class Map {
-  constructor (containerId, rows, geometryKey) {
+  constructor (containerId, geometries) {
     this.map = new maplibregl.Map({
       container: containerId,
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
@@ -10,17 +10,17 @@ class Map {
     })
 
     this.map.on('load', () => {
-      this.addDataToMap(rows, geometryKey)
+      this.addDataToMap(geometries)
     })
   }
 
-  addDataToMap (rows, geometryKey) {
+  addDataToMap (geometriesWkt) {
     const geometries = []
-    rows.forEach((row, index) => {
+    geometriesWkt.forEach((geometryWkt, index) => {
       const name = `geometry-${index}`
 
       // Convert the coordinates string to a GeoJSON object
-      const geometry = parse(row['converted-row'][geometryKey])
+      const geometry = parse(geometryWkt)
       // store geometries for use in calculating the bbox later
       geometries.push(geometry)
       // add the source
@@ -118,15 +118,15 @@ class Map {
 }
 
 const createMapFromServerContext = () => {
-  const { containerId, rows, geometryKey } = window.serverContext
+  const { containerId, geometries } = window.serverContext
 
   // if any of the required properties are missing, return null
-  if (!containerId || !rows || !geometryKey) {
+  if (!containerId || !geometries) {
     console.log('Missing required properties (containerId, rows, geometryKey) on window.serverContext', window.serverContext)
     return null
   }
 
-  return new Map(containerId, rows, geometryKey)
+  return new Map(containerId, geometries)
 }
 
 const newMap = createMapFromServerContext()

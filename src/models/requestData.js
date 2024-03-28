@@ -4,7 +4,7 @@ export default class RequestData {
   }
 
   hasErrors () {
-    return this.response.data['error-summary'].length > 0
+    return this.response.data.error_summary.length > 0
   }
 
   isComplete () {
@@ -16,11 +16,11 @@ export default class RequestData {
   }
 
   getColumnFieldLog () {
-    return this.response.data['column-field-log']
+    return this.response.data.column_field_log
   }
 
   getGeometryKey () {
-    const geometryType = this.params.geom_type
+    const geometryType = this.request.geom_type
     const columnFieldLog = this.getColumnFieldLog()
 
     let geometryKey
@@ -43,11 +43,11 @@ export default class RequestData {
   }
 
   getParams () {
-    return this.params
+    return this.request
   }
 
   getErrorSummary () {
-    return this.response.data['error-summary']
+    return this.response.data.error_summary
   }
 
   // this method will return verbose information on the columns for each row,
@@ -56,38 +56,53 @@ export default class RequestData {
   // - field name and column name
   getRowsWithVerboseColumns () {
     const getVerboseColumns = (row) => {
-      Object.fromEntries(
-        Object.entries(row['converted-row']).map(([key, value]) => {
-          const columnFieldLog = row['column-field-log']
-          const issueLogRow = row['issue-log-row']
+      const columnFieldLog = this.response.data.column_field_log
+      // for each key value in converted row, return a new key value pair with the key staying the same and the value being an object
+      const valuesASArray = Object.entries(row.converted_row)
+      const verboseValuesAsArray = valuesASArray.map(([key, value]) => {
+        const issueLogRow = row.issue_logs
 
-          if (!columnFieldLog || !issueLogRow) {
-            throw new Error('Invalid row data, missing column-field-log or issue-log-row')
+        if (!columnFieldLog || !issueLogRow) {
+          throw new Error('Invalid row data, missing column_field_log or issue_logs')
+        }
+
+        const columnField = columnFieldLog.find(column => column.column === key)
+        let field
+        let error
+        if (!columnField) {
+          field = key
+          // throw new Error(`No column field found for key: ${key} in the column_field_log`)
+        } else {
+          field = columnField.field
+          if (columnField.missing) {
+            error = 'missing value'
           }
+        }
 
-          const columnField = columnFieldLog.find(column => column.column === key)
-          if (!columnField) {
-            throw new Error(`No column field found for key: ${key} in the column-field-log`)
-          }
+        error = issueLogRow.find(error => error.field === field)
 
-          const field = columnField.field
-          const error = issueLogRow.find(error => error.field === field)
-
-          return [key, {
-            value,
-            column: key,
-            field,
-            error
-          }]
-        })
-      )
+        return [key, {
+          value,
+          column: key,
+          field,
+          error
+        }]
+      })
+      const verboseValues = Object.fromEntries(verboseValuesAsArray)
+      return verboseValues
     }
 
     return this.response.details.map(row => {
       return {
-        lineNumber: row['line-number'],
+        entryNumber: row.entry_number,
+        hasErrors: row.issue_logs.length > 0,
         columns: getVerboseColumns(row)
       }
     })
+  }
+
+  getGeometries () {
+    const geometryKey = this.getGeometryKey()
+    return this.response.details.map(row => row.converted_row[geometryKey])
   }
 }

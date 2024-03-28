@@ -4,10 +4,10 @@ import { finishedProcessingStatuses } from '../utils/utils.js'
 
 class StatusController extends PageController {
   async configure (req, res, next) {
-    try{
+    try {
       this.result = await getRequestData(req.params.id)
       super.configure(req, res, next)
-    }catch(error){
+    } catch (error) {
       next(error, req, res, next)
     }
   }

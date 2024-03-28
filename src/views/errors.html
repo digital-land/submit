@@ -43,22 +43,24 @@
           </thead>
           <tbody class="govuk-table__body">
             {% for row in options.verboseRows %}
-              <tr class="govuk-table__row">
-                {% for column in options.columns %}
-                  {% set columnData = row['converted-row'][column] %}
+              {% if row.hasErrors %}
+                <tr class="govuk-table__row">
+                  {% for column in options.columns %}
+                    {% set columnData = row.columns[column] %}
 
-                  <td class="govuk-table__cell app-wrap">
-                    {% if column.issue %}
-                      {{ govukInsetText({
-                        classes: "app-inset-text---error",
-                        html: '<p class="app-inset-text__value">'+column.value | striptags +'</p> <p class="app-inset-text__error">'+column.issue.description | prettifyColumnName +'</p>'
-                      }) }}
-                    {% else %}
-                      {{column.value}}
-                    {% endif %}
-                  </td>
-                {% endfor %}
-              </tr>
+                    <td class="govuk-table__cell app-wrap">
+                      {% if columnData.error %}
+                        {{ govukInsetText({
+                          classes: "app-inset-text---error",
+                          html: '<p class="app-inset-text__value">'+columnData.value | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | prettifyColumnName +'</p>'
+                        }) }}
+                      {% else %}
+                        {{columnData.value}}
+                      {% endif %}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endif %}
             {% endfor %}
 
           </tbody>
