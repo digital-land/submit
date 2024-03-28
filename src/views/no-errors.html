@@ -62,7 +62,7 @@
         </table>
       </div>
 
-      {% if options.geometryKey %}
+      {% if options.geometries %}
         <p>Here’s your data on a map:</p>
         <div id="map" class="app-map"></div>
       {% endif %}
@@ -120,12 +120,12 @@
 
 {% block scripts %}
   {{ super() }}
-  {% if options.geometryKey %}
+  {% if options.geometries %}
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
         containerId: 'map', 
-        rows: {{ options.geometries | dump | safe }},
+        geometries: {{ options.geometries | dump | safe }},
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>
