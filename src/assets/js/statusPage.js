@@ -34,7 +34,7 @@ export default class StatusPage {
         })
 
       this.pollAttempts++
-      if (window.pollAttempts > this.maxPollAttempts) {
+      if (this.pollAttempts > this.maxPollAttempts) {
         this.updatePage()
         clearInterval(interval)
       }

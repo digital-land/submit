@@ -46,7 +46,7 @@ describe('publishRequestApi', () => {
       id: 'testId',
       response: {
         data: {
-          'error-summary': []
+          'error_summary': []
         }
       },
       status: 'COMPLETE'

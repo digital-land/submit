@@ -88,8 +88,7 @@ describe('ResultsController', () => {
         isComplete: () => true,
         getParams: () => ('params'),
         getErrorSummary: () => (['error summary']),
-        getRows: () => (['rows']),
-        getGeometryKey: () => 'point',
+        getGeometries: () => ['geometries'],
         getColumns: () => (['columns']),
         getRowsWithVerboseColumns: () => (['verbose-columns']),
         getFields: () => (['fields'])
@@ -99,11 +98,10 @@ describe('ResultsController', () => {
 
       expect(req.form.options.requestParams).toBe('params')
       expect(req.form.options.errorSummary).toStrictEqual(['error summary'])
-      expect(req.form.options.rows).toStrictEqual(['rows'])
-      expect(req.form.options.geometryKey).toStrictEqual('point')
       expect(req.form.options.columns).toStrictEqual(['columns'])
       expect(req.form.options.fields).toStrictEqual(['fields'])
       expect(req.form.options.verboseRows).toStrictEqual(['verbose-columns'])
+      expect(req.form.options.geometries).toStrictEqual(['geometries'])
     })
   })
 
