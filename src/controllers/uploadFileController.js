@@ -23,23 +23,26 @@ class UploadFileController extends UploadController {
   async post (req, res, next) {
     this.resetValidationErrorMessage()
 
-    if (req.file === undefined) {
+    let dataFileForLocalValidation = null
+
+    if (req.file) {
+      dataFileForLocalValidation = {
+        ...req.file,
+        filePath: req.file.path,
+        fileName: req.file.originalname
+      }
+    }
+
+    const localValidationResult = UploadFileController.localValidateFile(dataFileForLocalValidation)
+
+    if (!localValidationResult) {
+      this.validationError('localValidationError', '', null, req)
+      super.post(req, res, next)
       return
     }
 
     // log the file name, type and size as an object
     logger.info('file uploaded:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
-
-    const localValidationResult = UploadFileController.localValidateFile({
-      ...req.file,
-      filePath: req.file.path,
-      fileName: req.file.originalname
-    })
-
-    if (!localValidationResult) {
-      this.validationError('localValidationError', '', null, req)
-      return
-    }
 
     const uploadedFilename = await UploadFileController.uploadFileToS3(req.file)
 
@@ -53,7 +56,8 @@ class UploadFileController extends UploadController {
   }
 
   static localValidateFile (datafile) {
-    return UploadFileController.extensionIsValid(datafile) &&
+    return UploadFileController.notUndefined(datafile) &&
+            UploadFileController.extensionIsValid(datafile) &&
             UploadFileController.sizeIsValid(datafile) &&
             UploadFileController.fileNameIsntTooLong(datafile) &&
             UploadFileController.fileNameIsValid(datafile) &&
@@ -83,6 +87,10 @@ class UploadFileController extends UploadController {
       console.log('Error uploading file: ', error)
       throw error
     }
+  }
+
+  static notUndefined (datafile) {
+    return datafile !== undefined && datafile !== null && datafile !== ''
   }
 
   static extensionIsValid (datafile) {

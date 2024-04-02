@@ -1,5 +1,4 @@
 import UploadFileController from '../../controllers/uploadFileController.js'
-import UploadController from '../../controllers/uploadController.js'
 import UploadUrlController from '../../controllers/uploadUrlController.js'
 
 export default {
@@ -21,7 +20,7 @@ export default {
   },
   datafile: {
     validate: [
-      'required',
+      { type: 'required', fn: UploadFileController.notUndefined },
       { type: 'fileType', fn: UploadFileController.extensionIsValid },
       { type: 'fileSize', fn: UploadFileController.sizeIsValid },
       { type: 'fileNameTooLong', fn: UploadFileController.fileNameIsntTooLong },
@@ -39,12 +38,6 @@ export default {
       { type: 'length', fn: UploadUrlController.urlIsNotTooLong }
     ],
     invalidates: ['validationResult']
-  },
-  validationResult: {
-    validate: [
-      'required',
-      { type: 'validationError', fn: UploadController.resultIsValid }
-    ]
   },
   dataLooksCorrect: {
     validate: 'required'

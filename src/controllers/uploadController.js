@@ -23,7 +23,6 @@ class UploadController extends PageController {
 
   validationError (type, message, errorObject, req) {
     logger.error({ type, message, errorObject })
-    req.body.validationResult = { error: true, message, errorObject }
     this.validationErrorMessage = message
   }
 
