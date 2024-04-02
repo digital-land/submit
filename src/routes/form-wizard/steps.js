@@ -63,7 +63,8 @@ export default {
     ...baseSettings,
     controller: uploadFileController,
     fields: ['request_id'],
-    next: (req, res) => `status/${req.sessionModel.get('request_id')}`
+    next: (req, res) => `status/${req.sessionModel.get('request_id')}`,
+    backLink: './upload-method'
   },
   '/status/:id': {
     ...baseSettings,
