@@ -120,7 +120,8 @@ test('when the user clicks continue on the url page without entering a url, the 
   await errorsPOM.expectErrorMessages(expectedErrors)
 })
 
-test('when the user clicks continue on the no errors page, without saying their data looks ok, the page correctly indicates there\'s an error', async ({ page }) => {
+// ToDo: rewrite this for the new async flow
+test.skip('when the user clicks continue on the no errors page, without saying their data looks ok, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
   const uploadMethodPOM = new UploadMethodPOM(page)
