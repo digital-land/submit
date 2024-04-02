@@ -91,7 +91,8 @@ describe('ResultsController', () => {
         getGeometries: () => ['geometries'],
         getColumns: () => (['columns']),
         getRowsWithVerboseColumns: () => (['verbose-columns']),
-        getFields: () => (['fields'])
+        getFields: () => (['fields']),
+        getFieldMappings: () => ({ fields: 'geometries' })
       }
       const res = { redirect: vi.fn() }
       await resultsController.locals(req, res, () => {})
