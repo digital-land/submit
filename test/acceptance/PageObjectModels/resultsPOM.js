@@ -7,7 +7,7 @@ import NoErrorsPOM from './noErrorsPOM'
 import ErrorsPOM from './errorsPOM'
 import BasePage from './BasePage'
 
-class resultsPOM extends BasePage {
+export default class resultsPOM extends BasePage {
   constructor (page) {
     super(page, '/results')
     Object.assign(this, new ErrorsPOM())
@@ -22,5 +22,3 @@ class resultsPOM extends BasePage {
     expect(await this.page.locator('h1').innerText()).toEqual('No errors')
   }
 }
-
-module.exports = resultsPOM
