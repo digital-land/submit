@@ -22,6 +22,7 @@ class ResultsController extends PageController {
     req.form.options.errorSummary = this.result.getErrorSummary()
     req.form.options.columns = this.result.getColumns()
     req.form.options.fields = this.result.getFields()
+    req.form.options.mappings = this.result.getFieldMappings()
     req.form.options.verboseRows = this.result.getRowsWithVerboseColumns()
 
     const geometries = this.result.getGeometries()

@@ -26,7 +26,7 @@
   </div>
 </div>
 
-{% if options.rows|length > 0 %}
+{% if options.verboseRows|length > 0 %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h2 class="govuk-heading-m">
@@ -36,8 +36,12 @@
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              {% for column in options.columns %}
-                <th scope="col" class="govuk-table__header">{{column}}</th>
+              {% for field in options.fields %}
+                {% if options.mappings[field] and options.mappings[field] != field %}
+                  <th scope="col" class="govuk-table__header">{{field}} <span style="color: #999999;"> - ({{options.mappings[field]}})</span></th>
+                {% else %}
+                  <th scope="col" class="govuk-table__header">{{field}}</th>
+                {% endif %}
               {% endfor %}
             </tr>
           </thead>
@@ -45,8 +49,8 @@
             {% for row in options.verboseRows %}
               {% if row.hasErrors %}
                 <tr class="govuk-table__row">
-                  {% for column in options.columns %}
-                    {% set columnData = row.columns[column] %}
+                  {% for field in options.fields %}
+                    {% set columnData = row.columns[field] %}
 
                     <td class="govuk-table__cell app-wrap">
                       {% if columnData.error %}
@@ -71,12 +75,12 @@
 {% endif %}
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      {{ govukButton({
-        text: "Upload a new version",
-        href: "/upload-method"
-      }) }}
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukButton({
+      text: "Upload a new version",
+      href: "/upload-method"
+    }) }}
 
-    </div>
   </div>
+</div>
 {% endblock %}
