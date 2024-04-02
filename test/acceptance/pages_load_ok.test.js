@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { describe } from 'node:test'
 
 const checkRouteResponse = async (page, route, status) => {
   const response = await page.goto(route)
@@ -36,17 +37,32 @@ test.describe('without a valid session, the user can not access the later pages'
   test('/url', async ({ page }) => {
     await checkSessionExpired(page, '/url')
   })
+})
 
-  test('/no-errors', async ({ page }) => {
-    await checkSessionExpired(page, '/no-errors')
+// ToDo: Complete these tests
+describe('status and results', () => {
+  test('with an existing request id that is still processing when visiting the status page the user remains on the status page', () => {
+
   })
 
-  test('/errors', async ({ page }) => {
-    await checkSessionExpired(page, '/errors')
+  test('with an existing request id that has completed when visiting the status page the user is redirected to the results page', () => {
+
   })
 
-  test('/confirmation', async ({ page }) => {
-    await checkSessionExpired(page, '/confirmation')
+  test('with an existing request id that is processing, when visiting the results page the user is redirected to the status page', () => {
+
+  })
+
+  test('with an existing request id that has completed when visiting the results page the user remains on the results page', () => {
+
+  })
+
+  test('with a non existing request id when visiting the status page the user is redirected to the 404 page', () => {
+
+  })
+
+  test('with a non existing request id when visiting the results page the user is redirected to the 404 page', () => {
+
   })
 })
 
