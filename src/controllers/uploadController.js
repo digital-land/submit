@@ -95,7 +95,7 @@ class UploadController extends PageController {
   getBaseFormData (req) {
     return {
       dataset: req.sessionModel.get('dataset'),
-      dataSubject: req.sessionModel.get('data-subject'),
+      collection: req.sessionModel.get('data-subject'),
       geomType: req.sessionModel.get('geomType'),
       sessionId: req.session.id
     }

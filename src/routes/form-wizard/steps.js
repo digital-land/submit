@@ -53,10 +53,7 @@ export default {
     ...baseSettings,
     controller: uploadUrlController,
     fields: ['url', 'request_id'],
-    next: [
-      { fn: 'hasErrors', next: 'errors' },
-      'no-errors'
-    ],
+    next: (req, res) => `status/${req.sessionModel.get('request_id')}`,
     backLink: './upload-method'
   },
   '/upload': {

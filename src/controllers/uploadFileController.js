@@ -10,7 +10,11 @@ import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import { postFileRequest } from '../utils/publishRequestAPI.js'
 
-AWS.config.update({ region: config.aws.region })
+AWS.config.update({ 
+  region: config.aws.region,
+  endpoint: config.aws.endpoint,
+  "s3ForcePathStyle": true
+})
 
 const upload = multer({ dest: 'uploads/' })
 
@@ -49,9 +53,10 @@ class UploadFileController extends UploadController {
     // delete the file from the uploads folder
     if (req.file && req.file.path) { fs.unlink(req.file.path) }
 
-    const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.name, uploadedFilename })
+    const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
 
     req.body.request_id = id
+    req.body.datafile = req.file
     super.post(req, res, next)
   }
 
@@ -71,7 +76,7 @@ class UploadFileController extends UploadController {
   */
   static async uploadFileToS3 (datafile, signedURL) {
     const s3 = new AWS.S3()
-    const fileStream = createReadStream(datafile)
+    const fileStream = createReadStream(datafile.path)
     const uuid = uuidv4()
 
     const params = {

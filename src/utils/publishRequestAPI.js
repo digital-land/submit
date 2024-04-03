@@ -1,5 +1,8 @@
+import axios from 'axios';
 import config from '../../config/index.js'
 import RequestData from '../models/requestData.js'
+
+const requestsEndpoint = `${config.publishRequestApi.url}/${config.publishRequestApi.requestsEndpoint}`
 
 export const postFileRequest = async (formData) => {
   const { uploadedFilename, originalFilename, dataset, collection, geomType } = formData
@@ -26,19 +29,15 @@ export const postUrlRequest = async (formData) => {
   })
 }
 
+
 const postRequest = async (formData) => {
-  const response = await fetch(config.publishRequestApi, {
-    method: 'POST',
-    body: formData
-  })
+  try {
+    const response = await axios.post(requestsEndpoint, { params: formData} );
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`)
+    return response.data.id; // assuming the response contains the id
+  } catch (error) {
+    throw new Error(`HTTP error! status: ${error.response.status}`);
   }
-
-  const data = await response.json()
-
-  return data.id // assuming the response contains the id
 }
 
 export const getRequestData = async (resultId) => {
