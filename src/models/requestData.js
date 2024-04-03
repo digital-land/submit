@@ -3,12 +3,27 @@ export default class RequestData {
     Object.assign(this, data)
   }
 
+  isFailed () {
+    return this.status === 'FAILED'
+  }
+
+  getError () {
+    return this.response.error
+  }
+
   hasErrors () {
+    if (this.response.data == null) {
+      return true
+    }
+    if (this.response.data.error_summary == null) {
+      return true
+    }
     return this.response.data.error_summary.length > 0
   }
 
   isComplete () {
-    return this.status === 'COMPLETE'
+    const finishedProcessingStatuses = ['COMPLETE', 'FAILED']
+    return finishedProcessingStatuses.includes(this.status)
   }
 
   getRows () {
@@ -131,6 +146,9 @@ export default class RequestData {
 
   getGeometries () {
     const geometryKey = this.getGeometryKey()
-    return this.response.details.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
+    const geometries = this.response.details.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
+    if (geometries.length === 0) {
+      return null
+    }
   }
 }
