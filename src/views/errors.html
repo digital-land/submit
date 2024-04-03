@@ -51,7 +51,6 @@
                 <tr class="govuk-table__row">
                   {% for field in options.fields %}
                     {% set columnData = row.columns[field] %}
-
                     <td class="govuk-table__cell app-wrap">
                       {% if columnData.error %}
                         {{ govukInsetText({
