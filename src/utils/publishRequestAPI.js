@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from 'axios'
 import config from '../../config/index.js'
 import RequestData from '../models/requestData.js'
 
@@ -29,14 +29,13 @@ export const postUrlRequest = async (formData) => {
   })
 }
 
-
 const postRequest = async (formData) => {
   try {
-    const response = await axios.post(requestsEndpoint, { params: formData} );
+    const response = await axios.post(requestsEndpoint, { params: formData })
 
-    return response.data.id; // assuming the response contains the id
+    return response.data.id // assuming the response contains the id
   } catch (error) {
-    throw new Error(`HTTP error! status: ${error.response.status}`);
+    throw new Error(`HTTP error! status: ${error.response.status}`)
   }
 }
 

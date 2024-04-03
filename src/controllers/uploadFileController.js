@@ -10,10 +10,10 @@ import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import { postFileRequest } from '../utils/publishRequestAPI.js'
 
-AWS.config.update({ 
+AWS.config.update({
   region: config.aws.region,
   endpoint: config.aws.endpoint,
-  "s3ForcePathStyle": true
+  s3ForcePathStyle: true
 })
 
 const upload = multer({ dest: 'uploads/' })
