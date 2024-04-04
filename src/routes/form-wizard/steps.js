@@ -81,7 +81,7 @@ export default {
     fields: ['dataLooksCorrect'],
     next: [
       { field: 'dataLooksCorrect', op: '===', value: 'yes', next: 'confirmation' },
-      '/upload-method',
+      '/'
     ]
   },
   '/confirmation': {
