@@ -28,7 +28,7 @@
         {{ govukButton({
           text: buttonText,
           classes: buttonClasses,
-          id: "js-async-check-status-button"
+          id: "js-async-continue-button"
         }) }}
       </form>
     </div>
@@ -40,8 +40,7 @@
   {{ super() }}
   <script>
     window.serverContext = {
-      pollingEndpoint: "{{ params.pollingEndpoint }}",
-      requestId: "{{ params.requestId }}",
+      pollingEndpoint: "{{ options.pollingEndpoint }}"
     }
   </script>
   <script>
