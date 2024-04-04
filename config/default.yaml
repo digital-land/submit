@@ -11,7 +11,8 @@ maintenance: {
 }
 aws: {
     region: eu-west-2,
-    bucket: ''
+    bucket: '',
+    s3ForcePathStyle: false,
 }
 serviceName: 'Publish planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'

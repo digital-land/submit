@@ -4,5 +4,6 @@ publishRequestApi: {
 aws: {
     region: eu-west-2,
     bucket: 'dluhc-data-platform-request-files-local',
-    endpoint: 'http://localhost:4566'
+    endpoint: 'http://localhost:4566',
+    s3ForcePathStyle: true,
 }

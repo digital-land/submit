@@ -13,7 +13,7 @@ import { postFileRequest } from '../utils/publishRequestAPI.js'
 AWS.config.update({
   region: config.aws.region,
   endpoint: config.aws.endpoint,
-  s3ForcePathStyle: true
+  s3ForcePathStyle: config.aws.s3ForcePathStyle || false
 })
 
 const upload = multer({ dest: 'uploads/' })
