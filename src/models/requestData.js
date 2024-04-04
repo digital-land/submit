@@ -35,6 +35,10 @@ export default class RequestData {
   }
 
   getGeometryKey () {
+    if (!this.request || !this.request.geom_type) {
+      return null
+    }
+
     const geometryType = this.request.geom_type
     const columnFieldLog = this.getColumnFieldLog()
 
