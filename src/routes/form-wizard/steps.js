@@ -80,7 +80,8 @@ export default {
     forwardQuery: true,
     fields: ['dataLooksCorrect'],
     next: [
-      { fn: 'noErrors', next: 'confirmation' }
+      { field: 'dataLooksCorrect', op: '===', value: 'yes', next: 'confirmation' },
+      '/upload-method',
     ]
   },
   '/confirmation': {
