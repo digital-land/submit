@@ -15,6 +15,7 @@ class StatusController extends PageController {
   async locals (req, res, next) {
     req.form.options.data = this.result
     req.form.options.processingComplete = finishedProcessingStatuses.includes(this.result.status)
+    req.form.options.pollingEndpoint = `/api/status/${this.result.id}`
     super.locals(req, res, next)
   }
 }
