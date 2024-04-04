@@ -51,9 +51,14 @@ class UploadFileController extends UploadController {
     const uploadedFilename = await UploadFileController.uploadFileToS3(req.file)
 
     // delete the file from the uploads folder
+    console.log('Deleting file from local storage')
     if (req.file && req.file.path) { fs.unlink(req.file.path) }
+    console.log('File deleted from local storage')
 
+    console.log('Posting file request')
     const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
+    console.log('File request posted')
+
 
     req.body.request_id = id
     req.body.datafile = req.file
@@ -86,7 +91,9 @@ class UploadFileController extends UploadController {
     }
 
     try {
+      console.log('Uploading file to S3')
       await s3.upload(params).promise()
+      console.log('File uploaded to S3')
       return uuid
     } catch (error) {
       console.log('Error uploading file: ', error)

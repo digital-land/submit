@@ -33,6 +33,7 @@ const postRequest = async (formData) => {
   try {
     const response = await axios.post(requestsEndpoint, { params: formData })
 
+    console.log('Response:', response)
     return response.data.id // assuming the response contains the id
   } catch (error) {
     throw new Error(`HTTP error! status: ${error.response.status}`)
