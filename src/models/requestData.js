@@ -44,18 +44,17 @@ export default class RequestData {
   }
 
   getGeometryKey () {
-    
     if (!this.params) {
       return null
     }
 
     const geometryType = this.params.geom_type
     const columnFieldLog = this.getColumnFieldLog()
-    
-    if(!columnFieldLog) {
+
+    if (!columnFieldLog) {
       return null
     }
-    
+
     let geometryKey
 
     if (geometryType === 'point' && columnFieldLog.find(column => column.field === 'point')) {
