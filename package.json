@@ -11,6 +11,7 @@
     "start:test": "NODE_ENV=test node index.js",
     "start:local": "NODE_ENV=local node index.js",
     "start:wiremock": "docker-compose up -d --force-recreate --build && NODE_ENV=wiremock node index.js",
+    "start:development": "NODE_ENV=development node index.js",
     "start:local:watch": "NODE_ENV=test npm run start:watch",
     "mock:api": "node ./test/mock-api/index.js",
     "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable && npm run build-webpack",

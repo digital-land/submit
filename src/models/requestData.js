@@ -12,6 +12,9 @@ export default class RequestData {
   }
 
   hasErrors () {
+    if (this.response == null) {
+      return true
+    }
     if (this.response.data == null) {
       return true
     }
@@ -27,10 +30,16 @@ export default class RequestData {
   }
 
   getRows () {
+    if (!this.response || !this.response.details) {
+      return []
+    }
     return this.response.details
   }
 
   getColumnFieldLog () {
+    if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
+      return []
+    }
     return this.response.data['column-field-log']
   }
 
@@ -54,6 +63,9 @@ export default class RequestData {
   }
 
   getColumns (includeNonMapped = true) {
+    if (!this.getRows().length) {
+      return []
+    }
     return [...new Set(this.getRows().map(row => row.converted_row).flatMap(row => Object.keys(row)))]
   }
 
@@ -85,6 +97,9 @@ export default class RequestData {
   }
 
   getErrorSummary () {
+    if(!this.response || !this.response.data || !this.response.data['error-summary']){
+      return []
+    }
     return this.response.data['error-summary']
   }
 
@@ -138,6 +153,10 @@ export default class RequestData {
         // Return the accumulator
         return acc
       }, {})
+    }
+
+    if(!this.response || !this.response.details){
+      return []
     }
 
     // Map over the details in the response and return an array of rows with verbose columns
