@@ -97,7 +97,7 @@ export default class RequestData {
   }
 
   getErrorSummary () {
-    if(!this.response || !this.response.data || !this.response.data['error-summary']){
+    if (!this.response || !this.response.data || !this.response.data['error-summary']) {
       return []
     }
     return this.response.data['error-summary']
@@ -155,7 +155,7 @@ export default class RequestData {
       }, {})
     }
 
-    if(!this.response || !this.response.details){
+    if (!this.response || !this.response.details) {
       return []
     }
 
