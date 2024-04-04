@@ -44,11 +44,11 @@ export default class RequestData {
   }
 
   getGeometryKey () {
-    if (!this.request || !this.request.geom_type) {
+    if (!this.params || !this.params.geom_type) {
       return null
     }
 
-    const geometryType = this.request.geom_type
+    const geometryType = this.params.geom_type
     const columnFieldLog = this.getColumnFieldLog()
 
     let geometryKey
@@ -93,7 +93,7 @@ export default class RequestData {
   }
 
   getParams () {
-    return this.request
+    return this.params
   }
 
   getErrorSummary () {
