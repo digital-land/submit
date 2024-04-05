@@ -21,7 +21,7 @@ export default class StatusPage {
   }
 
   messageTexts = {
-    pleaseWait: 'Please wait',
+    pleaseWait: 'Please wait'
   }
 
   buttonTexts = {
@@ -34,23 +34,23 @@ export default class StatusPage {
 
     setTimeout(() => {
       const interval = setInterval(() => {
-      fetch(statusEndpoint)
-        .then(res => res.json())
-        .then(data => {
-        console.log('polled request and got a status of: ' + data.status)
-        // ToDo: handle other status' here
-        if (finishedProcessingStatuses.includes(data.status)) {
-          this.updatePageToComplete()
+        fetch(statusEndpoint)
+          .then(res => res.json())
+          .then(data => {
+            console.log('polled request and got a status of: ' + data.status)
+            // ToDo: handle other status' here
+            if (finishedProcessingStatuses.includes(data.status)) {
+              this.updatePageToComplete()
+              clearInterval(interval)
+            }
+          })
+
+        this.pollAttempts++
+        if (this.pollAttempts > this.maxPollAttempts) {
+          console.log('polling timed out')
+          this.updatePageForPollingTimeout()
           clearInterval(interval)
         }
-        })
-
-      this.pollAttempts++
-      if (this.pollAttempts > this.maxPollAttempts) {
-        console.log('polling timed out')
-        this.updatePageForPollingTimeout()
-        clearInterval(interval)
-      }
       }, this.pollingInterval)
     }, this.pollingOffset)
   }
@@ -61,16 +61,14 @@ export default class StatusPage {
     this.processingMessage.style.display = 'none'
     this.continueButton.textContent = this.buttonTexts.continue
     this.continueButton.style.display = 'block'
-
   }
 
-  updatePageForPollingTimeout() {
+  updatePageForPollingTimeout () {
     // update the page
     this.heading.textContent = this.headingTexts.checkingFile
     this.processingMessage.style.display = 'none'
     this.continueButton.textContent = this.buttonTexts.retrieveLatestStatus
     this.continueButton.style.display = 'block'
-  
   }
 }
 
