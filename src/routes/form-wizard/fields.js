@@ -4,19 +4,17 @@ import UploadUrlController from '../../controllers/uploadUrlController.js'
 export default {
   'data-subject': {
     validate: 'required',
-    invalidates: ['dataset', 'validationResult', 'upload-method', 'geomType']
+    invalidates: ['dataset', 'upload-method', 'geomType']
   },
   dataset: {
     validate: 'required',
-    invalidates: ['validationResult', 'upload-method', 'geomType']
+    invalidates: ['upload-method', 'geomType']
   },
   geomType: {
     validate: 'required',
-    invalidates: ['validationResult']
   },
   'upload-method': {
     validate: 'required',
-    invalidates: ['validationResult']
   },
   datafile: {
     validate: [
@@ -29,7 +27,6 @@ export default {
       { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
       { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
     ],
-    invalidates: ['validationResult']
   },
   url: {
     validate: [
@@ -37,7 +34,6 @@ export default {
       { type: 'format', fn: UploadUrlController.urlIsValid },
       { type: 'length', fn: UploadUrlController.urlIsNotTooLong }
     ],
-    invalidates: ['validationResult']
   },
   dataLooksCorrect: {
     validate: 'required'
