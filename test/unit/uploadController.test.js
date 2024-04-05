@@ -17,17 +17,17 @@ describe('UploadController', () => {
     uploadController.resetValidationErrorMessage()
     expect(uploadController.validationErrorMessage).toBe(undefined)
   })
-  
+
   it('validationError', ({ assert }) => {
     const errorObject = new Error('Test error')
     uploadController.validationError('TestType', 'Test message', errorObject, {})
     expect(uploadController.validationErrorMessage).toBe('Test message')
   })
-  
+
   it('getBaseFormData', ({ assert }) => {
     const req = {
       sessionModel: {
-        get: (key) => key === 'dataset' ? 'Test dataset' : key === 'data-subject' ? 'Test subject' : 'Test geomType',
+        get: (key) => key === 'dataset' ? 'Test dataset' : key === 'data-subject' ? 'Test subject' : 'Test geomType'
       },
       session: {
         id: 'Test session id'
