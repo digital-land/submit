@@ -165,7 +165,7 @@ export default class RequestData {
 
     let rows = this.response.details
 
-    if(filterNonErrors){
+    if (filterNonErrors) {
       rows = rows.filter(row => row.issue_logs.filter(issue => issue.severity === 'error').length > 0)
     }
 
