@@ -32,27 +32,25 @@ export default class StatusPage {
   beginPolling (statusEndpoint) {
     this.pollAttempts = 0
 
-    setTimeout(() => {
-      const interval = setInterval(() => {
-        fetch(statusEndpoint)
-          .then(res => res.json())
-          .then(data => {
-            console.log('polled request and got a status of: ' + data.status)
-            // ToDo: handle other status' here
-            if (finishedProcessingStatuses.includes(data.status)) {
-              this.updatePageToComplete()
-              clearInterval(interval)
-            }
-          })
+    const interval = setInterval(() => {
+      fetch(statusEndpoint)
+        .then(res => res.json())
+        .then(data => {
+          console.log('polled request and got a status of: ' + data.status)
+          // ToDo: handle other status' here
+          if (finishedProcessingStatuses.includes(data.status)) {
+            this.updatePageToComplete()
+            clearInterval(interval)
+          }
+        })
 
-        this.pollAttempts++
-        if (this.pollAttempts > this.maxPollAttempts) {
-          console.log('polling timed out')
-          this.updatePageForPollingTimeout()
-          clearInterval(interval)
-        }
-      }, this.pollingInterval)
-    }, this.pollingOffset)
+      this.pollAttempts++
+      if (this.pollAttempts > this.maxPollAttempts) {
+        console.log('polling timed out')
+        this.updatePageForPollingTimeout()
+        clearInterval(interval)
+      }
+    }, this.pollingInterval)
   }
 
   updatePageToComplete () {
