@@ -36,7 +36,7 @@ class ResultsController extends PageController {
       req.form.options.columns = this.result.getColumns()
       req.form.options.fields = this.result.getFields()
       req.form.options.mappings = this.result.getFieldMappings()
-      req.form.options.verboseRows = this.result.getRowsWithVerboseColumns()
+      req.form.options.verboseRows = this.result.getRowsWithVerboseColumns(this.result.hasErrors())
       req.form.options.geometries = this.result.getGeometries()
     } else {
       req.form.options.error = this.result.getError()

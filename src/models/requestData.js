@@ -108,7 +108,7 @@ export default class RequestData {
   }
 
   // This function returns an array of rows with verbose columns
-  getRowsWithVerboseColumns () {
+  getRowsWithVerboseColumns (filterNonErrors = false) {
     // This function processes a row and returns verbose columns
     const getVerboseColumns = (row) => {
       const columnFieldLog = this.response.data['column-field-log']
@@ -163,8 +163,14 @@ export default class RequestData {
       return []
     }
 
+    let rows = this.response.details
+
+    if(filterNonErrors){
+      rows = rows.filter(row => row.issue_logs.filter(issue => issue.severity === 'error').length > 0)
+    }
+
     // Map over the details in the response and return an array of rows with verbose columns
-    return this.response.details.map(row => ({
+    return rows.map(row => ({
       entryNumber: row.entry_number,
       hasErrors: row.issue_logs.filter(issue => issue.severity === 'error').length > 0,
       columns: getVerboseColumns(row)
