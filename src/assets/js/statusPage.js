@@ -6,6 +6,7 @@ export default class StatusPage {
   constructor (pollingInterval, maxPollAttempts) {
     this.pollingInterval = pollingInterval || 1000
     this.maxPollAttempts = maxPollAttempts || 30
+    this.pollingOffset = 400
     this.pollAttempts = 0
 
     this.interval = null
@@ -19,36 +20,57 @@ export default class StatusPage {
     fileChecked: 'File Checked'
   }
 
+  messageTexts = {
+    pleaseWait: 'Please wait',
+  }
+
+  buttonTexts = {
+    continue: 'Continue',
+    retrieveLatestStatus: 'Retrieve Latest Status'
+  }
+
   beginPolling (statusEndpoint) {
     this.pollAttempts = 0
 
-    const interval = setInterval(() => {
+    setTimeout(() => {
+      const interval = setInterval(() => {
       fetch(statusEndpoint)
         .then(res => res.json())
         .then(data => {
-          console.log(data.status)
-          console.log(finishedProcessingStatuses.includes(data.status))
-          console.log(finishedProcessingStatuses)
-          // ToDo: handle other status' here
-          if (finishedProcessingStatuses.includes(data.status)) {
-            this.updatePage()
-            clearInterval(interval)
-          }
+        console.log('polled request and got a status of: ' + data.status)
+        // ToDo: handle other status' here
+        if (finishedProcessingStatuses.includes(data.status)) {
+          this.updatePageToComplete()
+          clearInterval(interval)
+        }
         })
 
       this.pollAttempts++
       if (this.pollAttempts > this.maxPollAttempts) {
-        this.updatePage()
+        console.log('polling timed out')
+        this.updatePageForPollingTimeout()
         clearInterval(interval)
       }
-    }, this.pollingInterval)
+      }, this.pollingInterval)
+    }, this.pollingOffset)
   }
 
-  updatePage () {
+  updatePageToComplete () {
     // update the page
     this.heading.textContent = this.headingTexts.fileChecked
     this.processingMessage.style.display = 'none'
+    this.continueButton.textContent = this.buttonTexts.continue
     this.continueButton.style.display = 'block'
+
+  }
+
+  updatePageForPollingTimeout() {
+    // update the page
+    this.heading.textContent = this.headingTexts.checkingFile
+    this.processingMessage.style.display = 'none'
+    this.continueButton.textContent = this.buttonTexts.retrieveLatestStatus
+    this.continueButton.style.display = 'block'
+  
   }
 }
 
