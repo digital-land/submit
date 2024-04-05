@@ -1,67 +1,139 @@
+import { it, describe, expect, afterEach, vi } from 'vitest'
 import { postFileRequest, postUrlRequest, getRequestData } from '../../src/utils/publishRequestAPI.js'
+import axios from 'axios'
 import RequestData from '../../src/models/requestData.js'
-import { test, describe, expect, beforeEach, vi } from 'vitest'
+import config from '../../config/index.js'
 
-describe('publishRequestApi', () => {
-  beforeEach(() => {
-    global.fetch = vi.fn().mockImplementation(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ id: 'testId' })
-      })
-    )
+vi.mock('axios')
+
+describe('publishRequestAPI', () => {
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
-  test('postFileRequest', async ({ fetch }) => {
-    const formData = {
-      uploadedFilename: 'testFile',
-      originalFilename: 'originalTestFile',
-      dataset: 'testDataset',
-      collection: 'testCollection',
-      geomType: 'testGeomType'
-    }
+  describe('postFileRequest', () => {
+    it('should make a POST request with the correct data', async () => {
+      const formData = {
+        uploadedFilename: 'file.txt',
+        originalFilename: 'file.txt',
+        dataset: 'dataset',
+        collection: 'collection',
+        geomType: 'point'
+      }
 
-    const response = await postFileRequest(formData)
+      const expectedFormData = {
+        dataset: 'dataset',
+        collection: 'collection',
+        geom_type: 'point',
+        uploaded_filename: 'file.txt',
+        original_filename: 'file.txt',
+        type: 'check_file'
+      }
 
-    expect(response).toBe('testId')
+      const expectedResponse = { data: { id: '123' } }
+      axios.post.mockResolvedValue(expectedResponse)
+
+      const result = await postFileRequest(formData)
+
+      expect(axios.post).toHaveBeenCalledWith(expect.any(String), { params: expectedFormData })
+      expect(result).toBe('123')
+    })
+
+    it('should throw an error if the POST request fails', async () => {
+      const formData = {
+        uploadedFilename: 'file.txt',
+        originalFilename: 'file.txt',
+        dataset: 'dataset',
+        collection: 'collection',
+        geomType: 'point'
+      }
+
+      const expectedError = new Error('HTTP error! status: 500')
+      axios.post.mockRejectedValue({ response: { status: 500 } })
+
+      await expect(postFileRequest(formData)).rejects.toThrow(expectedError)
+    })
   })
 
-  test('postUrlRequest', async ({ fetch }) => {
-    const formData = {
-      url: 'https://test.com',
-      dataset: 'testDataset',
-      collection: 'testCollection',
-      geomType: 'testGeomType'
-    }
+  describe('postUrlRequest', () => {
+    it('should make a POST request with the correct data', async () => {
+      const formData = {
+        url: 'https://example.com',
+        dataset: 'dataset',
+        collection: 'collection',
+        geomType: 'point'
+      }
 
-    const response = await postUrlRequest(formData)
+      const expectedFormData = {
+        dataset: 'dataset',
+        collection: 'collection',
+        geom_type: 'point',
+        url: 'https://example.com',
+        type: 'check_url'
+      }
 
-    expect(response).toBe('testId')
+      const expectedResponse = { data: { id: '123' } }
+      axios.post.mockResolvedValue(expectedResponse)
+
+      const result = await postUrlRequest(formData)
+
+      expect(axios.post).toHaveBeenCalledWith(expect.any(String), { params: expectedFormData })
+      expect(result).toBe('123')
+    })
+
+    it('should throw an error if the POST request fails', async () => {
+      const formData = {
+        url: 'https://example.com',
+        dataset: 'dataset',
+        collection: 'collection',
+        geomType: 'point'
+      }
+
+      const expectedError = new Error('HTTP error! status: 500')
+      axios.post.mockRejectedValue({ response: { status: 500 } })
+
+      await expect(postUrlRequest(formData)).rejects.toThrow(expectedError)
+    })
   })
 
-  test('getRequestData', async () => {
-    const resultId = 'testId'
+  describe('getRequestData', () => {
+    it('should make a GET request with the correct URL', async () => {
+      const resultId = '123'
+      const expectedUrl = `${config.publishRequestApi.url}/requests/${resultId}`
 
-    const mockFetchResponse = {
-      id: 'testId',
-      response: {
-        data: {
-          error_summary: []
-        }
-      },
-      status: 'COMPLETE'
-    }
-    global.fetch = vi.fn().mockImplementation(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockFetchResponse)
-      })
-    )
+      const expectedResponse = { status: 200, data: { id: '123' } }
+      axios.get.mockResolvedValue(expectedResponse)
 
-    const requestData = await getRequestData(resultId)
+      const result = await getRequestData(resultId)
 
-    expect(requestData).toBeInstanceOf(RequestData)
-    expect(requestData.hasErrors()).toBe(false)
-    expect(requestData.isComplete()).toBe(true)
+      expect(axios.get).toHaveBeenCalledWith(expectedUrl)
+      expect(result).toBeInstanceOf(RequestData)
+    })
+
+    it('should throw an error if the GET request fails with status 404', async () => {
+      const resultId = '123'
+
+      const expectedError = new Error('HTTP error! status: 404')
+      expectedError.message = 'HTTP error! status: 404'
+      expectedError.status = 404
+
+      const expectedResponse = { status: 404 }
+      axios.get.mockRejectedValue(expectedResponse)
+
+      await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
+    })
+
+    it('should throw an error if the GET request fails with status 500', async () => {
+      const resultId = '123'
+
+      const expectedError = new Error('HTTP error! status: 500')
+      expectedError.message = 'HTTP error! status: 500'
+      expectedError.status = 500
+
+      const expectedResponse = { status: 500 }
+      axios.get.mockRejectedValue(expectedResponse)
+
+      await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
+    })
   })
 })
