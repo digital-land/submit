@@ -15,7 +15,8 @@ describe('LocalstackContainer', () => {
     await container.stop()
   })
 
-  it('should create a S3 bucket', async () => {
+  // ToDo: here is an example of testcontainers, to be used at a later date for integration and acceptance testing
+  it.skip('should create a S3 bucket', async () => {
     const client = new S3Client({
       endpoint: container.getConnectionUri(),
       forcePathStyle: true,
