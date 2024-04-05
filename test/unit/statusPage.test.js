@@ -12,7 +12,7 @@ describe('StatusPage', () => {
     global.fetch = vi.fn()
     mockHeading = { textContent: 'Checking File' }
     mockButton = { textContent: 'Continue', style: { display: 'none' } }
-    mockMessage = { textContent: 'Please wait', style: { display: 'block' }}
+    mockMessage = { textContent: 'Please wait', style: { display: 'block' } }
     global.window = {
       addEventListener: vi.fn()
     }
@@ -48,7 +48,7 @@ describe('StatusPage', () => {
     statusPage.beginPolling('http://test.com', '123')
     await vi.advanceTimersByTimeAsync(1000)
     await Promise.resolve() // wait for promises to resolve
-    
+
     expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
     expect(statusPage.continueButton.style.display).toBe('block')
     expect(statusPage.processingMessage.style.display).toBe('none')
