@@ -50,19 +50,27 @@ describe('ResultsController', () => {
     })
 
     it('should set the template to the errors template if the result has errors', async () => {
-      const mockResult = { hasErrors: () => true }
+      const mockResult = { hasErrors: () => true, isFailed: () => false }
       publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(req.form.options.template).toBe('errors')
+      expect(resultsController.template).toBe('errors')
     })
 
     it('should set the template to the no-errors template if the result has no errors', async () => {
-      const mockResult = { hasErrors: () => false }
+      const mockResult = { hasErrors: () => false, isFailed: () => false }
       publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(req.form.options.template).toBe('no-errors')
+      expect(resultsController.template).toBe('no-errors')
+    })
+
+    it('should set the template to the failedRequest template if the result is failed', async () => {
+      const mockResult = { isFailed: () => true, hasErrors: () => false }
+      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+
+      await resultsController.configure(req, {}, () => {})
+      expect(resultsController.template).toBe('failedRequest')
     })
   })
 
@@ -92,7 +100,8 @@ describe('ResultsController', () => {
         getColumns: () => (['columns']),
         getRowsWithVerboseColumns: () => (['verbose-columns']),
         getFields: () => (['fields']),
-        getFieldMappings: () => ({ fields: 'geometries' })
+        getFieldMappings: () => ({ fields: 'geometries' }),
+        hasErrors: () => false
       }
       const res = { redirect: vi.fn() }
       await resultsController.locals(req, res, () => {})
