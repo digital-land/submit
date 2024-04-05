@@ -1,11 +1,10 @@
 {
-  "id": 2,
-  "request_id": "NRbBKmgStY5ZAjWFfZKyAd",
+  "id": 'NRbBKmgStY5ZAjWFfZKyAd',
   "type": "check_file",
   "status": "COMPLETE",
   "created": "2024-03-27T18:42:17.602511Z",
   "modified": "2024-03-27T18:42:18.703341Z",
-  "request": {
+  "params": {
       "type": "check_file",
       "dataset": "conservation-area",
       "geom_type": "",
