@@ -35,6 +35,7 @@ class UploadFileController extends UploadController {
         filePath: req.file.path,
         fileName: req.file.originalname
       }
+      req.body.datafile = req.file
     }
 
     const localValidationResult = UploadFileController.localValidateFile(dataFileForLocalValidation)
@@ -56,7 +57,6 @@ class UploadFileController extends UploadController {
     const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
 
     req.body.request_id = id
-    req.body.datafile = req.file
     super.post(req, res, next)
   }
 

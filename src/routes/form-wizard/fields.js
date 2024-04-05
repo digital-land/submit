@@ -11,10 +11,10 @@ export default {
     invalidates: ['upload-method', 'geomType']
   },
   geomType: {
-    validate: 'required',
+    validate: 'required'
   },
   'upload-method': {
-    validate: 'required',
+    validate: 'required'
   },
   datafile: {
     validate: [
@@ -26,14 +26,14 @@ export default {
       { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
       { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
       { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
-    ],
+    ]
   },
   url: {
     validate: [
       'required',
       { type: 'format', fn: UploadUrlController.urlIsValid },
       { type: 'length', fn: UploadUrlController.urlIsNotTooLong }
-    ],
+    ]
   },
   dataLooksCorrect: {
     validate: 'required'
