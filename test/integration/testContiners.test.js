@@ -4,6 +4,11 @@ import { LocalstackContainer } from '@testcontainers/localstack'
 
 import { S3Client, CreateBucketCommand, HeadBucketCommand } from '@aws-sdk/client-s3'
 
+/*
+  This is a test bench made to test the LocalstackContainer class.
+  We will use this later on as a starting pointto write better integration tests 
+*/
+
 describe('LocalstackContainer', () => {
   let container
 
