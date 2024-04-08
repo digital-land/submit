@@ -1,0 +1,25 @@
+{
+    "id": 4,
+    "request_id": "iScVrQBgijEgdiMHg4vMn5",
+    "type": "check_url",
+    "status": "FAILED",
+    "created": "2024-04-03T09:27:42.770275Z",
+    "modified": "2024-04-03T09:27:43.603611Z",
+    "request": {
+        "url": "http://spatialdata-cbmdc.hub.arcgis.com/datasets/3386c3e741ad48279db09342c0c0ea48_2.geojson",
+        "type": "check_url",
+        "dataset": "conservation-area",
+        "geom_type": "",
+        "collection": "conservation-area"
+    },
+    "response": {
+        "data": null,
+        "error": {
+            "errMsg": "The requested URL could not be downloaded: 404 error",
+            "errCode": "404",
+            "errTime": "2024-04-03 09:27:43.590023",
+            "errType": "User Error"
+        },
+        "details": []
+    }
+}

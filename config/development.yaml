@@ -1,6 +1,7 @@
-api: {
-    url: https://publish-api.development.digital-land.info,
-    port: 8082,
-    validationEndpoint: /api/dataset/validate/file/request,
-    requestTimeout: 50000
+asyncRequestApi: {
+    url: http://development-pub-async-api-lb-2117113766.eu-west-2.elb.amazonaws.com
+}
+aws: {
+    region: eu-west-2,
+    bucket: 'development-pub-async-request-files',
 }

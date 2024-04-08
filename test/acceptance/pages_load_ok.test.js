@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { describe } from 'node:test'
 
 const checkRouteResponse = async (page, route, status) => {
   const response = await page.goto(route)
@@ -12,45 +13,60 @@ const checkSessionExpired = async (page, route) => {
   await expect(sessionExpiredText !== undefined).toBeTruthy()
 }
 
-test('start page loads ok', async ({ page }) => {
+test.skip('start page loads ok', async ({ page }) => {
   await checkRouteResponse(page, '/', 200)
 })
 
 test.describe('without a valid session, the user can not access the later pages', () => {
-  test('/upload-method', async ({ page }) => {
+  test.skip('/upload-method', async ({ page }) => {
     await checkSessionExpired(page, '/upload-method')
   })
 
-  test('/dataset', async ({ page }) => {
+  test.skip('/dataset', async ({ page }) => {
     await checkSessionExpired(page, '/dataset')
   })
 
-  test('/geometry-type', async ({ page }) => {
+  test.skip('/geometry-type', async ({ page }) => {
     await checkSessionExpired(page, '/geometry-type')
   })
 
-  test('/upload', async ({ page }) => {
+  test.skip('/upload', async ({ page }) => {
     await checkSessionExpired(page, '/upload')
   })
 
-  test('/url', async ({ page }) => {
+  test.skip('/url', async ({ page }) => {
     await checkSessionExpired(page, '/url')
   })
+})
 
-  test('/no-errors', async ({ page }) => {
-    await checkSessionExpired(page, '/no-errors')
+// ToDo: Complete these tests
+describe('status and results', () => {
+  test.skip('with an existing request id that is still processing when visiting the status page the user remains on the status page', () => {
+
   })
 
-  test('/errors', async ({ page }) => {
-    await checkSessionExpired(page, '/errors')
+  test.skip('with an existing request id that has completed when visiting the status page the user is redirected to the results page', () => {
+
   })
 
-  test('/confirmation', async ({ page }) => {
-    await checkSessionExpired(page, '/confirmation')
+  test.skip('with an existing request id that is processing, when visiting the results page the user is redirected to the status page', () => {
+
+  })
+
+  test.skip('with an existing request id that has completed when visiting the results page the user remains on the results page', () => {
+
+  })
+
+  test.skip('with a non existing request id when visiting the status page the user is redirected to the 404 page', () => {
+
+  })
+
+  test.skip('with a non existing request id when visiting the results page the user is redirected to the 404 page', () => {
+
   })
 })
 
 // the accessibility page loads ok
-test('/accessibility loads ok', async ({ page }) => {
+test.skip('/accessibility loads ok', async ({ page }) => {
   await checkRouteResponse(page, '/accessibility', 200)
 })

@@ -1,28 +1,24 @@
-import { validate } from 'email-validator'
 import UploadFileController from '../../controllers/uploadFileController.js'
-import UploadController from '../../controllers/uploadController.js'
-import UploadUrlController from '../../controllers/uploadUrlController.js'
+import SubmitUrlController from '../../controllers/submitUrlController.js'
 
 export default {
   'data-subject': {
     validate: 'required',
-    invalidates: ['dataset', 'validationResult', 'upload-method', 'geomType']
+    invalidates: ['dataset', 'upload-method', 'geomType']
   },
   dataset: {
     validate: 'required',
-    invalidates: ['validationResult', 'upload-method', 'geomType']
+    invalidates: ['upload-method', 'geomType']
   },
   geomType: {
-    validate: 'required',
-    invalidates: ['validationResult']
+    validate: 'required'
   },
   'upload-method': {
-    validate: 'required',
-    invalidates: ['validationResult']
+    validate: 'required'
   },
   datafile: {
     validate: [
-      'required',
+      { type: 'required', fn: UploadFileController.notUndefined },
       { type: 'fileType', fn: UploadFileController.extensionIsValid },
       { type: 'fileSize', fn: UploadFileController.sizeIsValid },
       { type: 'fileNameTooLong', fn: UploadFileController.fileNameIsntTooLong },
@@ -30,37 +26,14 @@ export default {
       { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
       { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
       { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
-    ],
-    invalidates: ['validationResult']
+    ]
   },
   url: {
     validate: [
       'required',
-      { type: 'format', fn: UploadUrlController.urlIsValid },
-      { type: 'length', fn: UploadUrlController.urlIsNotTooLong }
-    ],
-    invalidates: ['validationResult']
-  },
-  validationResult: {
-    validate: [
-      'required',
-      { type: 'validationError', fn: UploadController.resultIsValid }
+      { type: 'format', fn: SubmitUrlController.urlIsValid },
+      { type: 'length', fn: SubmitUrlController.urlIsNotTooLong }
     ]
-  },
-  'email-address': {
-    validate: [
-      'required',
-      { type: 'format', fn: email => validate(email) }
-    ]
-  },
-  'first-name': {
-    validate: 'required'
-  },
-  'last-name': {
-    validate: 'required'
-  },
-  lpa: {
-    validate: 'required'
   },
   dataLooksCorrect: {
     validate: 'required'

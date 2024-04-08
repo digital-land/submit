@@ -6,7 +6,12 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">{{pageName}}</h1>
-      <p>You’ll be able to use the service from {{upTime}}.</p>
+      {% if downtime %}
+        <p>The service will be unavailable from {{downtime}}.</p>
+      {% endif %}
+      {% if upTime %}
+        <p>You’ll be able to use the service from {{upTime}}.</p>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

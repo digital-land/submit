@@ -12,66 +12,31 @@ describe('UploadController', () => {
     uploadController = new UploadController(options)
   })
 
-  describe('resultIsValid', () => {
-    it('should return false if validationResult is undefined', () => {
-      expect(UploadController.resultIsValid(undefined)).toBe(false)
-    })
-
-    it('should return false if validationResult.error is true', () => {
-      expect(UploadController.resultIsValid({ error: true })).toBe(false)
-    })
-
-    it('should return true if validationResult.error is not true', () => {
-      expect(UploadController.resultIsValid({ error: false })).toBe(true)
-    })
+  it('resetValidationErrorMessage', ({ assert }) => {
+    uploadController.validationErrorMessage = 'Error message'
+    uploadController.resetValidationErrorMessage()
+    expect(uploadController.validationErrorMessage).toBe(undefined)
   })
 
-  describe('hasErrors', () => {
-    it('should return false if errorCount is 0', () => {
-      uploadController.errorCount = 0
-      expect(uploadController.hasErrors()).toBe(false)
-    })
-
-    it('should return true if errorCount is greater than 0', () => {
-      uploadController.errorCount = 1
-      expect(uploadController.hasErrors()).toBe(true)
-    })
+  it('validationError', ({ assert }) => {
+    const errorObject = new Error('Test error')
+    uploadController.validationError('TestType', 'Test message', errorObject, {})
+    expect(uploadController.validationErrorMessage).toBe('Test message')
   })
 
-  describe('handleValidationResult', () => {
-    it('should handle an error result', () => {
-      const req = { body: {} }
-      const jsonResult = { error: true, message: 'Test error', errorObject: {} }
-      uploadController.handleValidationResult(jsonResult, req)
-
-      expect(req.body.validationResult).toEqual(jsonResult)
-      expect(uploadController.validationErrorMessage).toBe('Test error')
-    })
-
-    it('should handle a successful result', () => {
-      const req = { body: {} }
-      const jsonResult = {
-        'issue-log': [{ severity: 'error' }],
-        'column-field-log': [{ missing: true }]
+  it('getBaseFormData', ({ assert }) => {
+    const req = {
+      sessionModel: {
+        get: (key) => key === 'dataset' ? 'Test dataset' : key === 'data-subject' ? 'Test subject' : 'Test geomType'
+      },
+      session: {
+        id: 'Test session id'
       }
-
-      uploadController.handleValidationResult(jsonResult, req)
-
-      expect(req.body.validationResult).toEqual(jsonResult)
-      expect(uploadController.errorCount).toBe(2)
-    })
-  })
-
-  describe('handleApiError', () => {
-    it('should handle a connection refused error', () => {
-      const req = {
-        body: {}
-      }
-      const error = { code: 'ECONNREFUSED' }
-
-      uploadController.handleApiError(error, req)
-
-      expect(uploadController.validationErrorMessage).toBe('Unable to reach the api')
-    })
+    }
+    const result = uploadController.getBaseFormData(req)
+    expect(result.dataset).toBe('Test dataset')
+    expect(result.collection).toBe('Test subject')
+    expect(result.geomType).toBe('Test geomType')
+    expect(result.sessionId).toBe('Test session id')
   })
 })

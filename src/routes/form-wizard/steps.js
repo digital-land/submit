@@ -1,9 +1,9 @@
 import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadFileController from '../../controllers/uploadFileController.js'
-import uploadUrlController from '../../controllers/uploadUrlController.js'
-import errorsController from '../../controllers/errorsController.js'
-import NoErrorsController from '../../controllers/noErrorsController.js'
+import submitUrlController from '../../controllers/submitUrlController.js'
+import statusController from '../../controllers/statusController.js'
+import resultsController from '../../controllers/resultsController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -51,60 +51,42 @@ export default {
   },
   '/url': {
     ...baseSettings,
-    controller: uploadUrlController,
-    fields: ['url', 'validationResult'],
-    next: [
-      { fn: 'hasErrors', next: 'errors' },
-      'no-errors'
-    ],
+    controller: submitUrlController,
+    fields: ['url', 'request_id'],
+    next: (req, res) => `status/${req.sessionModel.get('request_id')}`,
     backLink: './upload-method'
   },
   '/upload': {
     ...baseSettings,
     controller: uploadFileController,
-    fields: ['datafile', 'validationResult'],
-    next: [
-      { fn: 'hasErrors', next: 'errors' },
-      'no-errors'
-    ],
+    fields: ['datafile', 'request_id'],
+    next: (req, res) => `status/${req.sessionModel.get('request_id')}`,
     backLink: './upload-method'
   },
-  '/errors': {
+  '/status/:id': {
     ...baseSettings,
-    controller: errorsController,
-    backLink: './upload-method'
+    template: 'statusPage/status',
+    controller: statusController,
+    checkJourney: false,
+    entryPoint: true,
+    next: (req, res) => `/results/${req.params.id}`
   },
-  '/no-errors': {
+  '/results/:id': {
     ...baseSettings,
-    controller: NoErrorsController,
+    template: undefined, // as we will dynamically set the template in the controller
+    controller: resultsController,
+    checkJourney: false,
+    entryPoint: true,
+    forwardQuery: true,
     fields: ['dataLooksCorrect'],
     next: [
       { field: 'dataLooksCorrect', op: '===', value: 'yes', next: 'confirmation' },
-      'upload-method'
-    ],
-    backLink: './upload-method'
+      '/'
+    ]
   },
-  // '/email-address': {
-  //   ...baseSettings,
-  //   fields: ['email-address'],
-  //   next: 'name'
-  // },
-  // '/name': {
-  //   ...baseSettings,
-  //   fields: ['first-name', 'last-name'],
-  //   next: 'lpa'
-  // },
-  // '/lpa': {
-  //   ...baseSettings,
-  //   fields: ['lpa'],
-  //   next: 'check'
-  // },
-  // '/check': {
-  //   ...baseSettings,
-  //   next: 'confirmation'
-  // },
   '/confirmation': {
     ...baseSettings,
-    noPost: true
+    noPost: true,
+    checkJourney: false // ToDo: it would be useful here if we make sure they have selected if their results are ok from the previous step
   }
 }

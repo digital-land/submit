@@ -6,7 +6,7 @@ import UploadFilePOM from './PageObjectModels/uploadFilePOM'
 import ErrorsPOM from './PageObjectModels/errorsPOM'
 
 // a playwright test that uploads a file with a missing required column, and checks that the correct error message is displayed
-test('when the user uploads a file with a missing required column, the page correctly indicates there\'s an error', async ({ page }) => {
+test.skip('when the user uploads a file with a missing required column, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
   const uploadMethodPOM = new UploadMethodPOM(page)

@@ -1,0 +1,13 @@
+{
+    "request": {
+        "urlPath": "/requests",
+        "method": "POST"
+    },
+    "response": {
+        "status": 202,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "bodyFileName": "request-created.json.handlebars"
+    }
+}
