@@ -1,6 +1,6 @@
 import BasePage from './BasePage'
 
-export default class UploadMethodPOM extends BasePage {
+export default class UploadMethodPage extends BasePage {
   static uploadMethods = {
     File: 'File Upload',
     URL: 'URL'

@@ -1,6 +1,6 @@
 import BasePage from './BasePage'
 
-export default class DatasetPOM extends BasePage {
+export default class DatasetPage extends BasePage {
   static datasets = {
     Article_4_direction_area_dataset: 'Article 4 direction area dataset',
     Conservation_area_dataset: 'Conservation area dataset',

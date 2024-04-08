@@ -3,15 +3,15 @@
 */
 
 import { expect } from '@playwright/test'
-import NoErrorsPOM from './noErrorsPOM'
-import ErrorsPOM from './errorsPOM'
+import NoErrorsPage from './noErrorsPage'
+import ErrorsPage from './errorsPage'
 import BasePage from './BasePage'
 
-export default class resultsPOM extends BasePage {
+export default class resultsPage extends BasePage {
   constructor (page) {
     super(page, '/results')
-    Object.assign(this, new ErrorsPOM())
-    Object.assign(this, new NoErrorsPOM())
+    Object.assign(this, new ErrorsPage())
+    Object.assign(this, new NoErrorsPage())
   }
 
   async expectPageIsErrorsPage () {
