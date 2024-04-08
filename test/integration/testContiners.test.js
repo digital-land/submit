@@ -6,7 +6,7 @@ import { S3Client, CreateBucketCommand, HeadBucketCommand } from '@aws-sdk/clien
 
 /*
   This is a test bench made to test the LocalstackContainer class.
-  We will use this later on as a starting pointto write better integration tests
+  We will use this later on as a starting point to write better integration tests
 */
 
 describe('LocalstackContainer', () => {

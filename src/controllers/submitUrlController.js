@@ -2,10 +2,10 @@ import UploadController from './uploadController.js'
 import { postUrlRequest } from '../utils/asyncRequestApi.js'
 import { URL } from 'url'
 
-class UploadUrlController extends UploadController {
+class SubmitUrlController extends UploadController {
   async post (req, res, next) {
     this.resetValidationErrorMessage()
-    if (!UploadUrlController.localUrlValidation(req.body.url)) {
+    if (!SubmitUrlController.localUrlValidation(req.body.url)) {
       this.validationError('format', '', null, req)
     } else {
       try {
@@ -19,7 +19,7 @@ class UploadUrlController extends UploadController {
   }
 
   static localUrlValidation (url) {
-    return UploadUrlController.urlIsValid(url) && UploadUrlController.urlIsNotTooLong(url)
+    return SubmitUrlController.urlIsValid(url) && SubmitUrlController.urlIsNotTooLong(url)
   }
 
   static urlIsValid (url) {
@@ -37,4 +37,4 @@ class UploadUrlController extends UploadController {
   }
 }
 
-export default UploadUrlController
+export default SubmitUrlController

@@ -1,5 +1,5 @@
 import UploadFileController from '../../controllers/uploadFileController.js'
-import UploadUrlController from '../../controllers/uploadUrlController.js'
+import SubmitUrlController from '../../controllers/submitUrlController.js'
 
 export default {
   'data-subject': {
@@ -31,8 +31,8 @@ export default {
   url: {
     validate: [
       'required',
-      { type: 'format', fn: UploadUrlController.urlIsValid },
-      { type: 'length', fn: UploadUrlController.urlIsNotTooLong }
+      { type: 'format', fn: SubmitUrlController.urlIsValid },
+      { type: 'length', fn: SubmitUrlController.urlIsNotTooLong }
     ]
   },
   dataLooksCorrect: {

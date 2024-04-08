@@ -1,7 +1,7 @@
 import PageController from '../../controllers/pageController.js'
 import datasetController from '../../controllers/datasetController.js'
 import uploadFileController from '../../controllers/uploadFileController.js'
-import uploadUrlController from '../../controllers/uploadUrlController.js'
+import submitUrlController from '../../controllers/submitUrlController.js'
 import statusController from '../../controllers/statusController.js'
 import resultsController from '../../controllers/resultsController.js'
 
@@ -51,7 +51,7 @@ export default {
   },
   '/url': {
     ...baseSettings,
-    controller: uploadUrlController,
+    controller: submitUrlController,
     fields: ['url', 'request_id'],
     next: (req, res) => `status/${req.sessionModel.get('request_id')}`,
     backLink: './upload-method'
