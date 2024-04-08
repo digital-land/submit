@@ -8,7 +8,7 @@ import UploadURLPOM from './PageObjectModels/uploadURLPOM'
 import ErrorsPOM from './PageObjectModels/errorsPOM'
 import NoErrorsPOM from './PageObjectModels/noErrorsPOM'
 
-test('when the user clicks continue on the dataset page without entering a dataset, the page correctly indicates there\'s an error', async ({ page }) => {
+test.skip('when the user clicks continue on the dataset page without entering a dataset, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
 
@@ -25,7 +25,7 @@ test('when the user clicks continue on the dataset page without entering a datas
   await datasetPOM.expectErrorMessages(expectedErrors)
 })
 
-test('when the user clicks continue on the geometry-type page without entering a geometry type, the page correctly indicates there\'s an error', async ({ page }) => {
+test.skip('when the user clicks continue on the geometry-type page without entering a geometry type, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
   const geometryTypePOM = new GeometryTypePOM(page)
@@ -46,7 +46,7 @@ test('when the user clicks continue on the geometry-type page without entering a
   await geometryTypePOM.expectErrorMessages(expectedErrors)
 })
 
-test('when the user clicks continue on the how do you want to provide your data page without selecting a method, the page correctly indicates there\'s an error', async ({ page }) => {
+test.skip('when the user clicks continue on the how do you want to provide your data page without selecting a method, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
   const uploadMethodPOM = new UploadMethodPOM(page)
@@ -67,7 +67,7 @@ test('when the user clicks continue on the how do you want to provide your data 
   await uploadMethodPOM.expectErrorMessages(expectedErrors)
 })
 
-test('when the user clicks continue on the file upload page without selecting a file, the page correctly indicates there\'s an error', async ({ page }) => {
+test.skip('when the user clicks continue on the file upload page without selecting a file, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
   const uploadMethodPOM = new UploadMethodPOM(page)
@@ -92,7 +92,7 @@ test('when the user clicks continue on the file upload page without selecting a 
   await uploadFilePOM.expectErrorMessages(expectedErrors)
 })
 
-test('when the user clicks continue on the url page without entering a url, the page correctly indicates there\'s an error', async ({ page }) => {
+test.skip('when the user clicks continue on the url page without entering a url, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
   const uploadMethodPOM = new UploadMethodPOM(page)

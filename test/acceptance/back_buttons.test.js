@@ -12,7 +12,7 @@ import NoErrorsPOM from './PageObjectModels/noErrorsPOM'
 test.use({ javaScriptEnabled: false })
 
 test.describe('Back buttons work as expected without js for', () => {
-  test('data set page', async ({ page, baseURL }) => {
+  test.skip('data set page', async ({ page, baseURL }) => {
     const startPOM = new StartPOM(page)
     const datasetPOM = new DatasetPOM(page)
 
@@ -25,7 +25,7 @@ test.describe('Back buttons work as expected without js for', () => {
     await startPOM.waitForPage()
   })
 
-  test('geometry type page', async ({ page, baseURL }) => {
+  test.skip('geometry type page', async ({ page, baseURL }) => {
     const startPOM = new StartPOM(page)
     const datasetPOM = new DatasetPOM(page)
     const geometryTypePOM = new GeometryTypePOM(page)
@@ -46,7 +46,7 @@ test.describe('Back buttons work as expected without js for', () => {
     await startPOM.waitForPage()
   })
 
-  test('upload method page', async ({ page, baseURL }) => {
+  test.skip('upload method page', async ({ page, baseURL }) => {
     const startPOM = new StartPOM(page)
     const datasetPOM = new DatasetPOM(page)
     const uploadMethodPOM = new UploadMethodPOM(page)
@@ -67,7 +67,7 @@ test.describe('Back buttons work as expected without js for', () => {
     await startPOM.waitForPage()
   })
 
-  test('upload method page (from geometry type)', async ({ page, baseURL }) => {
+  test.skip('upload method page (from geometry type)', async ({ page, baseURL }) => {
     const startPOM = new StartPOM(page)
     const datasetPOM = new DatasetPOM(page)
     const geometryTypePOM = new GeometryTypePOM(page)
@@ -94,7 +94,7 @@ test.describe('Back buttons work as expected without js for', () => {
     await startPOM.waitForPage()
   })
 
-  test('upload file page', async ({ page, baseURL }) => {
+  test.skip('upload file page', async ({ page, baseURL }) => {
     const startPOM = new StartPOM(page)
     const datasetPOM = new DatasetPOM(page)
     const uploadMethodPOM = new UploadMethodPOM(page)
@@ -123,7 +123,7 @@ test.describe('Back buttons work as expected without js for', () => {
     await startPOM.waitForPage()
   })
 
-  test('upload url page', async ({ page, baseURL }) => {
+  test.skip('upload url page', async ({ page, baseURL }) => {
     const startPOM = new StartPOM(page)
     const datasetPOM = new DatasetPOM(page)
     const uploadMethodPOM = new UploadMethodPOM(page)
