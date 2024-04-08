@@ -2,13 +2,13 @@ import StatusController from '../../src/controllers/statusController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 describe('StatusController', () => {
-  vi.mock('@/utils/publishRequestAPI.js')
+  vi.mock('@/utils/asyncRequestApi.js')
 
-  let publishRequestApi
+  let asyncRequestApi
   let statusController
 
   beforeEach(async () => {
-    publishRequestApi = await import('@/utils/publishRequestAPI')
+    asyncRequestApi = await import('@/utils/asyncRequestApi')
 
     statusController = new StatusController({
       route: '/status'
@@ -29,11 +29,11 @@ describe('StatusController', () => {
       const next = vi.fn()
 
       const mockResult = { response: { test: 'test' }, hasErrors: () => false }
-      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await statusController.configure(req, res, next)
 
-      expect(publishRequestApi.getRequestData).toHaveBeenCalledWith(req.params.id)
+      expect(asyncRequestApi.getRequestData).toHaveBeenCalledWith(req.params.id)
     })
   })
 

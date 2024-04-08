@@ -2,9 +2,9 @@ import ResultsController from '../../src/controllers/resultsController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 describe('ResultsController', () => {
-  vi.mock('@/utils/publishRequestAPI.js')
+  vi.mock('@/utils/asyncRequestApi.js')
 
-  let publishRequestApi
+  let asyncRequestApi
   let resultsController
 
   const req = {
@@ -13,7 +13,7 @@ describe('ResultsController', () => {
   }
 
   beforeEach(async () => {
-    publishRequestApi = await import('@/utils/publishRequestAPI')
+    asyncRequestApi = await import('@/utils/asyncRequestApi')
 
     resultsController = new ResultsController({
       route: '/results'
@@ -23,14 +23,14 @@ describe('ResultsController', () => {
   describe('configure', () => {
     it('should add the result to the controller class', async () => {
       const mockResult = { hasErrors: () => false }
-      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
       expect(resultsController.result).toBeDefined()
     })
 
     it("should call next with a 404 error if the result wasn't found", async () => {
-      publishRequestApi.getRequestData = vi.fn().mockImplementation(() => {
+      asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
         throw new Error('Request not found', { message: 'Request not found', status: 404 })
       })
 
@@ -40,7 +40,7 @@ describe('ResultsController', () => {
     })
 
     it('should call next with a 500 error if the result processing errored', async () => {
-      publishRequestApi.getRequestData = vi.fn().mockImplementation(() => {
+      asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
         throw new Error('Unexpected error', { message: 'Unexpected error', status: 500 })
       })
 
@@ -51,7 +51,7 @@ describe('ResultsController', () => {
 
     it('should set the template to the errors template if the result has errors', async () => {
       const mockResult = { hasErrors: () => true, isFailed: () => false }
-      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
       expect(resultsController.template).toBe('errors')
@@ -59,7 +59,7 @@ describe('ResultsController', () => {
 
     it('should set the template to the no-errors template if the result has no errors', async () => {
       const mockResult = { hasErrors: () => false, isFailed: () => false }
-      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
       expect(resultsController.template).toBe('no-errors')
@@ -67,7 +67,7 @@ describe('ResultsController', () => {
 
     it('should set the template to the failedRequest template if the result is failed', async () => {
       const mockResult = { isFailed: () => true, hasErrors: () => false }
-      publishRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
       expect(resultsController.template).toBe('failedRequest')

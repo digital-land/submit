@@ -1,12 +1,12 @@
 import { it, describe, expect, afterEach, vi } from 'vitest'
-import { postFileRequest, postUrlRequest, getRequestData } from '../../src/utils/publishRequestAPI.js'
+import { postFileRequest, postUrlRequest, getRequestData } from '../../src/utils/asyncRequestApi.js'
 import axios from 'axios'
 import RequestData from '../../src/models/requestData.js'
 import config from '../../config/index.js'
 
 vi.mock('axios')
 
-describe('publishRequestAPI', () => {
+describe('asyncRequestApi', () => {
   afterEach(() => {
     vi.clearAllMocks()
   })
@@ -99,7 +99,7 @@ describe('publishRequestAPI', () => {
   describe('getRequestData', () => {
     it('should make a GET request with the correct URL', async () => {
       const resultId = '123'
-      const expectedUrl = `${config.publishRequestApi.url}/requests/${resultId}`
+      const expectedUrl = `${config.asyncRequestApi.url}/requests/${resultId}`
 
       const expectedResponse = { status: 200, data: { id: '123' } }
       axios.get.mockResolvedValue(expectedResponse)

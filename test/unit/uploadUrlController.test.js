@@ -3,14 +3,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import UploadUrlController from '../../src/controllers/uploadUrlController.js'
 
 describe('UploadUrlController', async () => {
-  vi.mock('@/utils/publishRequestAPI.js')
+  vi.mock('@/utils/asyncRequestApi.js')
 
   let uploadUrlController
-  let publishRequestApi
+  let asyncRequestApi
 
   beforeEach(async () => {
-    publishRequestApi = await import('@/utils/publishRequestAPI')
-    publishRequestApi.postUrlRequest = vi.fn()
+    asyncRequestApi = await import('@/utils/asyncRequestApi')
+    asyncRequestApi.postUrlRequest = vi.fn()
 
     uploadUrlController = new UploadUrlController({
       route: '/url'
@@ -18,7 +18,7 @@ describe('UploadUrlController', async () => {
   })
 
   describe('post', () => {
-    it('should call publishRequestApi.postRequest with the correct data', async () => {
+    it('should call asyncRequestApi.postRequest with the correct data', async () => {
       const req = {
         body: {
           url: 'http://example.com'
@@ -35,7 +35,7 @@ describe('UploadUrlController', async () => {
 
       await uploadUrlController.post(req, res, next)
 
-      expect(publishRequestApi.postUrlRequest).toHaveBeenCalledWith({
+      expect(asyncRequestApi.postUrlRequest).toHaveBeenCalledWith({
         url: 'http://example.com',
         sessionId: '1234',
         dataset: undefined,
@@ -61,7 +61,7 @@ describe('UploadUrlController', async () => {
 
       await uploadUrlController.post(req, res, next)
 
-      expect(publishRequestApi.postUrlRequest).not.toHaveBeenCalled()
+      expect(asyncRequestApi.postUrlRequest).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()
     })
 
@@ -82,7 +82,7 @@ describe('UploadUrlController', async () => {
 
       await uploadUrlController.post(req, res, next)
 
-      expect(publishRequestApi.postUrlRequest).not.toHaveBeenCalled()
+      expect(asyncRequestApi.postUrlRequest).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()
     })
   })

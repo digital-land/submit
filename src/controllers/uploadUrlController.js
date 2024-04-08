@@ -1,5 +1,5 @@
 import UploadController from './uploadController.js'
-import { postUrlRequest } from '../utils/publishRequestAPI.js'
+import { postUrlRequest } from '../utils/asyncRequestApi.js'
 import { URL } from 'url'
 
 class UploadUrlController extends UploadController {

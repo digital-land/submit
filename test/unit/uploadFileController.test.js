@@ -4,9 +4,9 @@ import UploadFileController from '../../src/controllers/uploadFileController.js'
 
 describe('UploadFileController', () => {
   let uploadFileController
-  let publishRequestApi
+  let asyncRequestApi
 
-  vi.mock('@/utils/publishRequestAPI.js')
+  vi.mock('@/utils/asyncRequestApi.js')
 
   vi.mock('fs', async () => {
     const actual = await vi.importActual('fs')
@@ -36,8 +36,8 @@ describe('UploadFileController', () => {
   })
 
   beforeEach(async () => {
-    publishRequestApi = await import('@/utils/publishRequestAPI')
-    publishRequestApi.postFileRequest = vi.fn().mockResolvedValue('1234')
+    asyncRequestApi = await import('@/utils/asyncRequestApi')
+    asyncRequestApi.postFileRequest = vi.fn().mockResolvedValue('1234')
 
     uploadFileController = new UploadFileController({
       route: '/upload'
@@ -142,7 +142,7 @@ describe('UploadFileController', () => {
 
       await uploadFileController.post(req, res, next)
 
-      expect(publishRequestApi.postFileRequest).toHaveBeenCalledWith({
+      expect(asyncRequestApi.postFileRequest).toHaveBeenCalledWith({
         ...uploadFileController.getBaseFormData(req),
         originalFilename: req.file.originalname,
         uploadedFilename: 'uploadedFilename'

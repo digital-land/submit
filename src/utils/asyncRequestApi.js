@@ -2,7 +2,7 @@ import axios from 'axios'
 import config from '../../config/index.js'
 import RequestData from '../models/requestData.js'
 
-const requestsEndpoint = `${config.publishRequestApi.url}/${config.publishRequestApi.requestsEndpoint}`
+const requestsEndpoint = `${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}`
 
 export const postFileRequest = async (formData) => {
   const { uploadedFilename, originalFilename, dataset, collection, geomType } = formData
@@ -42,7 +42,7 @@ const postRequest = async (formData) => {
 
 export const getRequestData = async (resultId) => {
   try {
-    const response = await axios.get(`${config.publishRequestApi.url}/${config.publishRequestApi.requestsEndpoint}/${resultId}`)
+    const response = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${resultId}`)
 
     return new RequestData(response.data)
   } catch (error) {

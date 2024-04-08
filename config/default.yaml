@@ -1,5 +1,5 @@
 port: 5000
-publishRequestApi: {
+asyncRequestApi: {
     url: https://publish-api.planning.data.gov.uk,
     port: 8082,
     requestsEndpoint: 'requests',
