@@ -1,7 +1,6 @@
 import { test } from '@playwright/test'
 
 import Localstack from '../testContainers/localstack'
-
 import config from '../../config/index'
 
 import StartPage from '../PageObjectModels/startPage'
