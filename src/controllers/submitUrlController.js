@@ -5,16 +5,16 @@ import { URL } from 'url'
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
     this.resetValidationErrorMessage()
-    if (!SubmitUrlController.localUrlValidation(req.body.url)) {
-      this.validationError('format', '', null, req)
-    } else {
-      try {
-        const id = await postUrlRequest({ ...this.getBaseFormData(req), url: req.body.url })
-        req.body.request_id = id
-      } catch (error) {
-        this.handleApiError(error, req)
-      }
+
+    const localValidationResult = SubmitUrlController.localUrlValidation(req.body.url)
+    if (!localValidationResult) {
+      this.validationError('localValidationError', '', null, req)
+      super.post(req, res, next)
+      return
     }
+
+    const id = await postUrlRequest({ ...this.getBaseFormData(req), url: req.body.url })
+    req.body.request_id = id
     super.post(req, res, next)
   }
 
