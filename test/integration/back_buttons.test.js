@@ -1,8 +1,5 @@
 import { test } from '@playwright/test'
 
-import Localstack from '../testContainers/localstack'
-import config from '../../config/index'
-
 import StartPage from '../PageObjectModels/startPage'
 import DatasetPage from '../PageObjectModels/datasetPage'
 import GeometryTypePage from '../PageObjectModels/geometryTypePage'
@@ -10,20 +7,8 @@ import UploadMethodPage from '../PageObjectModels/uploadMethodPage'
 import UploadFilePage from '../PageObjectModels/uploadFilePage'
 import UploadURLPage from '../PageObjectModels/uploadURLPage'
 
-let localstack
-
 test.describe('Back buttons work as expected without js for...', () => {
   test.use({ javaScriptEnabled: false })
-
-  test.beforeAll(async () => {
-    test.setTimeout(2 * 60 * 1000)
-    localstack = await new Localstack().start()
-    await localstack.createBucket(config.aws.bucket)
-  })
-
-  test.afterAll(async () => {
-    await localstack.stop()
-  })
 
   test('data set page', async ({ page }) => {
     const startPage = new StartPage(page)
