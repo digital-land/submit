@@ -34,8 +34,4 @@ export default class Wiremock {
     console.log('Stopping WiremockContainer')
     await this.container.stop()
   }
-
-  getBaseUrl () {
-    return this.baseUrl
-  }
 }
