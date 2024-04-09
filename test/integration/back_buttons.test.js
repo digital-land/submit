@@ -12,7 +12,7 @@ import UploadURLPage from '../PageObjectModels/uploadURLPage'
 
 let localstack
 
-test.describe('Back buttons work as expected without js for...', async () => {
+test.describe('Back buttons work as expected without js for...', () => {
   test.use({ javaScriptEnabled: false })
 
   test.beforeAll(async () => {
