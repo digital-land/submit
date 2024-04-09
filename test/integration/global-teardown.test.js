@@ -1,6 +1,6 @@
 import { test as teardown } from '@playwright/test'
 
-teardown('close wiremock', async () => {
-  console.log('close wiremock (ToDo)')
+teardown('Global teardown', async () => {
+  console.log('Global teardown')
   // Delete the database
 })
