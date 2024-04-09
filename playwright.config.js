@@ -12,7 +12,8 @@ import config from './config/index.js'
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './test/acceptance',
+  testMatch: '**/*.test.js',
+  testDir: './test',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -35,18 +36,29 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      name: 'global setup',
+      testMatch: '**/global-setup.js'
+      // teardown: 'global teardown'
     },
-
+    // {
+    //   name: 'global teardown',
+    //   testMatch: '**/global-teardown.js'
+    // },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['global setup']
+    },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      use: { ...devices['Desktop Firefox'] },
+      dependencies: ['global setup']
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      use: { ...devices['Desktop Safari'] },
+      dependencies: ['global setup']
     }
 
     /* Test against mobile viewports. */
@@ -72,8 +84,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'concurrently "NODE_ENV=test npm run start" "NODE_ENV=test npm run mock:api"',
-    url: `http://127.0.0.1:${config.port}`,
+    command: 'NODE_ENV=test npm run start',
+    url: 'http://127.0.0.1:5000',
     reuseExistingServer: !process.env.CI
   }
 })

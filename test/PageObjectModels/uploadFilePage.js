@@ -1,6 +1,6 @@
 import BasePage from './BasePage'
 
-export default class UploadFilePOM extends BasePage {
+export default class UploadFilePage extends BasePage {
   constructor (page) {
     super(page, '/upload')
   }

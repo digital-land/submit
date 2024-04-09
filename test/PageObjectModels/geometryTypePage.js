@@ -1,6 +1,6 @@
 import BasePage from './BasePage'
 
-export default class GeometryTypePOM extends BasePage {
+export default class GeometryTypePage extends BasePage {
   static geometryTypes = {
     point: 'point',
     polygon: 'polygon'

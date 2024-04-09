@@ -1,7 +1,7 @@
 import BasePage from './BasePage'
 import { expect } from '@playwright/test'
 
-export default class ErrorsPOM extends BasePage {
+export default class ErrorsPage extends BasePage {
   constructor (page) {
     super(page, '/errors')
   }

@@ -1,7 +1,7 @@
 import BasePage from './BasePage'
 import { expect } from '@playwright/test'
 
-export default class noErrorsPOM extends BasePage {
+export default class noErrorsPage extends BasePage {
   static dataCorrectResponses = {
     yes: 'Yes',
     no: 'No, I need to fix it'
