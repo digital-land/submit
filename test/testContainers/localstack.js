@@ -35,8 +35,4 @@ export default class Localstack {
     await client.send(command)
     this.buckets.push(bucketName)
   }
-
-  getConnectionUri () {
-    return 'http://localhost:4566'
-  }
 }
