@@ -37,12 +37,12 @@ export default defineConfig({
   projects: [
     {
       name: 'global setup',
-      testMatch: '**/global-setup.test.js',
+      testMatch: '**/global-setup.js',
       teardown: 'global teardown'
     },
     {
       name: 'global teardown',
-      testMatch: '**/global-teardown.test.js'
+      testMatch: '**/global-teardown.js'
     },
     {
       name: 'chromium',
