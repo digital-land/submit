@@ -113,20 +113,8 @@ export default class RequestData {
     return this.response.data['error-summary']
   }
 
-  // This function returns an array of rows with verbose columns
-  getRowsWithVerboseColumns (filterNonErrors = false) {
-    // This function processes a row and returns verbose columns
-    const getVerboseColumns = (row) => {
-      const columnFieldLog = this.response.data['column-field-log']
-      if (!columnFieldLog || !row.issue_logs) {
-        // Log an error if the["column-field-log"] or issue_logs are missing, and return what we can
-        logger.error('Invalid row data, missing["column-field-log"] or issue_logs')
-        return Object.entries(row.converted_row).map(([key, value]) => [key, { value, column: key, field: key, error: 'missing["column-field-log"] or issue_logs' }])
-      }
-      // Process the row and return verbose columns
-      return processRow(row, columnFieldLog)
-    }
-
+  // This function processes a row and returns verbose columns
+  getVerboseColumns (row) {
     // This function processes a row and returns verbose values
     const processRow = (row, columnFieldLog) => {
       const valuesAsArray = Object.entries(row.converted_row)
@@ -134,7 +122,7 @@ export default class RequestData {
       // Reduce verbose values to handle duplicate keys
       return reduceVerboseValues(verboseValuesAsArray)
     }
-
+  
     // This function processes a key-value pair and returns a verbose value
     const processKeyValue = (key, value, row, columnFieldLog) => {
       const columnField = columnFieldLog.find(column => column.column === key)
@@ -144,7 +132,7 @@ export default class RequestData {
       // Return the verbose value
       return [field, { value, column: key, field, error }]
     }
-
+  
     // This function reduces verbose values to handle duplicate keys
     const reduceVerboseValues = (verboseValuesAsArray) => {
       return verboseValuesAsArray.reduce((acc, [key, value]) => {
@@ -167,6 +155,20 @@ export default class RequestData {
       }, {})
     }
 
+    const columnFieldLog = this.response.data['column-field-log']
+    if (!columnFieldLog || !row.issue_logs) {
+      // Log an error if the["column-field-log"] or issue_logs are missing, and return what we can
+      logger.error('Invalid row data, missing["column-field-log"] or issue_logs')
+      return Object.entries(row.converted_row).map(([key, value]) => [key, { value, column: key, field: key, error: 'missing["column-field-log"] or issue_logs' }])
+    }
+    // Process the row and return verbose columns
+    return processRow(row, columnFieldLog)
+  }
+
+  // This function returns an array of rows with verbose columns
+  getRowsWithVerboseColumns (filterNonErrors = false) {
+
+
     if (!this.response || !this.response.details) {
       return []
     }
@@ -181,7 +183,7 @@ export default class RequestData {
     return rows.map(row => ({
       entryNumber: row.entry_number,
       hasErrors: row.issue_logs.filter(issue => issue.severity === 'error').length > 0,
-      columns: getVerboseColumns(row)
+      columns: this.getVerboseColumns(row)
     }))
   }
 
