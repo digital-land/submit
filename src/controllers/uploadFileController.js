@@ -53,14 +53,13 @@ class UploadFileController extends UploadController {
       const uploadedFilename = await UploadFileController.uploadFileToS3(req.file)
       // delete the file from the uploads folder
       if (req.file && req.file.path) { fs.unlink(req.file.path) }
-  
+
       const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
       req.body.request_id = id
-      
+
       super.post(req, res, next)
     } catch (error) {
       next(error)
-      return
     }
   }
 
