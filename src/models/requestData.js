@@ -1,4 +1,5 @@
 import getVerboseColumns from '../utils/getVerboseColumns.js'
+import logger from '../utils/logger.js'
 
 export default class RequestData {
   constructor (data) {
@@ -10,14 +11,19 @@ export default class RequestData {
   }
 
   getError () {
-    if (this.response) {
-      return this.response.error
-    } else {
+    if (!this.response) {
+      logger.error('trying to get error when there are none: request id: ' + this.id)
       return { message: 'An unknown error occurred.' }
     }
+
+    return this.response.error
   }
 
   hasErrors () {
+    if (!this.response || !this.response.data) {
+      logger.error('trying to check for errors when there are none: request id: ' + this.id)
+      return true
+    }
     if (this.response == null) {
       return true
     }
@@ -37,6 +43,7 @@ export default class RequestData {
 
   getRows () {
     if (!this.response || !this.response.details) {
+      logger.error('trying to get response details when there are none: request id: ' + this.id)
       return []
     }
     return this.response.details
@@ -44,6 +51,7 @@ export default class RequestData {
 
   getColumnFieldLog () {
     if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
+      logger.error('trying to get column field log when there is none: request id: ' + this.id)
       return []
     }
     return this.response.data['column-field-log']
@@ -51,6 +59,7 @@ export default class RequestData {
 
   getGeometryKey () {
     if (!this.params) {
+      logger.error('trying to get geometry key when there are no params: request id: ' + this.id)
       return null
     }
 
@@ -108,6 +117,7 @@ export default class RequestData {
 
   getErrorSummary () {
     if (!this.response || !this.response.data || !this.response.data['error-summary']) {
+      logger.error('trying to get error summary when there is none: request id: ' + this.id)
       return []
     }
     return this.response.data['error-summary']
@@ -116,6 +126,7 @@ export default class RequestData {
   // This function returns an array of rows with verbose columns
   getRowsWithVerboseColumns (filterNonErrors = false) {
     if (!this.response || !this.response.details) {
+      logger.error('trying to get response details when there are none: request id: ' + this.id)
       return []
     }
 
@@ -134,6 +145,11 @@ export default class RequestData {
   }
 
   getGeometries () {
+    if (!this.response || !this.response.details) {
+      logger.error('trying to get response details when there are none: request id: ' + this.id)
+      return undefined
+    }
+
     const geometryKey = this.getGeometryKey()
     const geometries = this.response.details.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
     if (geometries.length === 0) {
