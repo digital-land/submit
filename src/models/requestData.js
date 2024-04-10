@@ -1,3 +1,5 @@
+import logger from '../utils/logger'
+
 export default class RequestData {
   constructor (data) {
     Object.assign(this, data)
@@ -113,7 +115,9 @@ export default class RequestData {
     const getVerboseColumns = (row) => {
       const columnFieldLog = this.response.data.column_field_log
       if (!columnFieldLog || !row.issue_logs) {
-        throw new Error('Invalid row data, missing column_field_log or issue_logs')
+        // Log an error if the column_field_log or issue_logs are missing, and return what we can
+        logger.error('Invalid row data, missing column_field_log or issue_logs')
+        return Object.entries(row.converted_row).map(([key, value]) => [key, { value, column: key, field: key, error: 'missing column_field_log or issue_logs' }])
       }
       // Process the row and return verbose columns
       return processRow(row, columnFieldLog)
