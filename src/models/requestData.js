@@ -24,10 +24,10 @@ export default class RequestData {
     if (this.response.data == null) {
       return true
     }
-    if (this.response.data["error-summary"] == null) {
+    if (this.response.data['error-summary'] == null) {
       return true
     }
-    return this.response.data["error-summary"].length > 0
+    return this.response.data['error-summary'].length > 0
   }
 
   isComplete () {
@@ -43,10 +43,10 @@ export default class RequestData {
   }
 
   getColumnFieldLog () {
-    if (!this.response || !this.response.data || !this.response.data["column-field-log"]) {
+    if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
       return []
     }
-    return this.response.data["column-field-log"]
+    return this.response.data['column-field-log']
   }
 
   getGeometryKey () {
@@ -107,17 +107,17 @@ export default class RequestData {
   }
 
   getErrorSummary () {
-    if (!this.response || !this.response.data || !this.response.data["error-summary"]) {
+    if (!this.response || !this.response.data || !this.response.data['error-summary']) {
       return []
     }
-    return this.response.data["error-summary"]
+    return this.response.data['error-summary']
   }
 
   // This function returns an array of rows with verbose columns
   getRowsWithVerboseColumns (filterNonErrors = false) {
     // This function processes a row and returns verbose columns
     const getVerboseColumns = (row) => {
-      const columnFieldLog = this.response.data["column-field-log"]
+      const columnFieldLog = this.response.data['column-field-log']
       if (!columnFieldLog || !row.issue_logs) {
         // Log an error if the["column-field-log"] or issue_logs are missing, and return what we can
         logger.error('Invalid row data, missing["column-field-log"] or issue_logs')
