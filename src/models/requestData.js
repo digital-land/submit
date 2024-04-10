@@ -1,4 +1,4 @@
-import logger from '../utils/logger'
+import logger from '../utils/logger.js'
 
 export default class RequestData {
   constructor (data) {
@@ -10,7 +10,11 @@ export default class RequestData {
   }
 
   getError () {
-    return this.response.error
+    if (this.response) {
+      return this.response.error
+    } else {
+      return { message: 'An unknown error occurred.' }
+    }
   }
 
   hasErrors () {
