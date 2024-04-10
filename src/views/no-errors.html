@@ -40,18 +40,23 @@
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              {% for header in options.columns %}
-                <th scope="col" class="govuk-table__header">{{header}}</th>
+              {% for field in options.fields %}
+                {% if options.mappings[field] and options.mappings[field] != field %}
+                  <th scope="col" class="govuk-table__header">{{field}} <span style="color: #999999;"> - ({{options.mappings[field]}})</span></th>
+                {% else %}
+                  <th scope="col" class="govuk-table__header">{{field}}</th>
+                {% endif %}
               {% endfor %}
             </tr>
           </thead>
           <tbody class="govuk-table__body">
             {% for row in options.verboseRows %}
               <tr class="govuk-table__row">
-                {% for column in options.columns %}
+                {% for field in options.fields %}
+                  {% set columnData = row.columns[field] %}
                   <td class="govuk-table__cell app-wrap">
-                      {% if row.columns[column].value %}
-                        {{row.columns[column].value}}
+                      {% if columnData.value %}
+                        {{columnData.value}}
                       {% endif %}
                   </td>
                 {% endfor %}
