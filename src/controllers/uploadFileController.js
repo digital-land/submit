@@ -93,7 +93,7 @@ class UploadFileController extends UploadController {
       return uuid
     } catch (error) {
       console.log('Error uploading file: ', error)
-      throw new Error('Error uploading file to S3')
+      throw new Error('Error uploading file to S3: ' + error.message)
     }
   }
 
