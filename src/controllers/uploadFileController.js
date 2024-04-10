@@ -46,18 +46,21 @@ class UploadFileController extends UploadController {
       return
     }
 
-    // log the file name, type and size as an object
-    logger.info('file uploaded:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
+    try {
+      const uploadedFilename = await UploadFileController.uploadFileToS3(req.file)
+      // delete the file from the uploads folder
+      if (req.file && req.file.path) { fs.unlink(req.file.path) }
 
-    const uploadedFilename = await UploadFileController.uploadFileToS3(req.file)
+      const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
+      req.body.request_id = id
 
-    // delete the file from the uploads folder
-    if (req.file && req.file.path) { fs.unlink(req.file.path) }
+      // log the file name, type and size as an object
+      logger.info('file submitted for processing:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
 
-    const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
-
-    req.body.request_id = id
-    super.post(req, res, next)
+      super.post(req, res, next)
+    } catch (error) {
+      next(error)
+    }
   }
 
   static localValidateFile (datafile) {
@@ -89,8 +92,8 @@ class UploadFileController extends UploadController {
       await s3.upload(params).promise()
       return uuid
     } catch (error) {
-      console.log('Error uploading file: ', error)
-      throw new Error('Error uploading file to S3')
+      logger.error('Error uploading file to S3: ' + error.message)
+      throw error
     }
   }
 

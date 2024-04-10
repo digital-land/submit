@@ -1,3 +1,6 @@
+import getVerboseColumns from '../utils/getVerboseColumns.js'
+import logger from '../utils/logger.js'
+
 export default class RequestData {
   constructor (data) {
     Object.assign(this, data)
@@ -8,20 +11,29 @@ export default class RequestData {
   }
 
   getError () {
+    if (!this.response) {
+      logger.error('trying to get error when there are none: request id: ' + this.id)
+      return { message: 'An unknown error occurred.' }
+    }
+
     return this.response.error
   }
 
   hasErrors () {
+    if (!this.response || !this.response.data) {
+      logger.error('trying to check for errors when there are none: request id: ' + this.id)
+      return true
+    }
     if (this.response == null) {
       return true
     }
     if (this.response.data == null) {
       return true
     }
-    if (this.response.data.error_summary == null) {
+    if (this.response.data['error-summary'] == null) {
       return true
     }
-    return this.response.data.error_summary.length > 0
+    return this.response.data['error-summary'].length > 0
   }
 
   isComplete () {
@@ -31,20 +43,23 @@ export default class RequestData {
 
   getRows () {
     if (!this.response || !this.response.details) {
+      logger.error('trying to get response details when there are none: request id: ' + this.id)
       return []
     }
     return this.response.details
   }
 
   getColumnFieldLog () {
-    if (!this.response || !this.response.data || !this.response.data.column_field_log) {
+    if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
+      logger.error('trying to get column field log when there is none: request id: ' + this.id)
       return []
     }
-    return this.response.data.column_field_log
+    return this.response.data['column-field-log']
   }
 
   getGeometryKey () {
     if (!this.params) {
+      logger.error('trying to get geometry key when there are no params: request id: ' + this.id)
       return null
     }
 
@@ -101,65 +116,17 @@ export default class RequestData {
   }
 
   getErrorSummary () {
-    if (!this.response || !this.response.data || !this.response.data.error_summary) {
+    if (!this.response || !this.response.data || !this.response.data['error-summary']) {
+      logger.error('trying to get error summary when there is none: request id: ' + this.id)
       return []
     }
-    return this.response.data.error_summary
+    return this.response.data['error-summary']
   }
 
   // This function returns an array of rows with verbose columns
   getRowsWithVerboseColumns (filterNonErrors = false) {
-    // This function processes a row and returns verbose columns
-    const getVerboseColumns = (row) => {
-      const columnFieldLog = this.response.data.column_field_log
-      if (!columnFieldLog || !row.issue_logs) {
-        throw new Error('Invalid row data, missing column_field_log or issue_logs')
-      }
-      // Process the row and return verbose columns
-      return processRow(row, columnFieldLog)
-    }
-
-    // This function processes a row and returns verbose values
-    const processRow = (row, columnFieldLog) => {
-      const valuesAsArray = Object.entries(row.converted_row)
-      const verboseValuesAsArray = valuesAsArray.map(([key, value]) => processKeyValue(key, value, row, columnFieldLog))
-      // Reduce verbose values to handle duplicate keys
-      return reduceVerboseValues(verboseValuesAsArray)
-    }
-
-    // This function processes a key-value pair and returns a verbose value
-    const processKeyValue = (key, value, row, columnFieldLog) => {
-      const columnField = columnFieldLog.find(column => column.column === key)
-      const field = columnField ? columnField.field : key
-      // If the column field is missing, set the error to 'missing value', otherwise find the error in issue_logs
-      const error = columnField && columnField.missing ? 'missing value' : row.issue_logs.find(error => error.field === field)
-      // Return the verbose value
-      return [field, { value, column: key, field, error }]
-    }
-
-    // This function reduces verbose values to handle duplicate keys
-    const reduceVerboseValues = (verboseValuesAsArray) => {
-      return verboseValuesAsArray.reduce((acc, [key, value]) => {
-        if (key in acc) {
-          // If both the existing and new values are not null and they are different, log a message
-          if (value.value && acc[key].value && value.value !== acc[key].value) {
-            // ToDo: we need to handle this case
-            console.log(`Duplicate keys with different values: ${key}`)
-            // If the new value is not null, replace the existing value and log a message
-          } else if (value.value) {
-            acc[key] = value
-            console.log(`Duplicate key found, keeping the one with value: ${key}`)
-          }
-        // If the key does not exist in the accumulator, add it
-        } else {
-          acc[key] = value
-        }
-        // Return the accumulator
-        return acc
-      }, {})
-    }
-
     if (!this.response || !this.response.details) {
+      logger.error('trying to get response details when there are none: request id: ' + this.id)
       return []
     }
 
@@ -173,11 +140,16 @@ export default class RequestData {
     return rows.map(row => ({
       entryNumber: row.entry_number,
       hasErrors: row.issue_logs.filter(issue => issue.severity === 'error').length > 0,
-      columns: getVerboseColumns(row)
+      columns: getVerboseColumns(row, this.getColumnFieldLog())
     }))
   }
 
   getGeometries () {
+    if (!this.response || !this.response.details) {
+      logger.error('trying to get response details when there are none: request id: ' + this.id)
+      return undefined
+    }
+
     const geometryKey = this.getGeometryKey()
     const geometries = this.response.details.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
     if (geometries.length === 0) {

@@ -1,3 +1,5 @@
+import logger from '../utils/logger.js'
+
 const validationMessages = {
   'email-address': {
     required: 'Enter an email address',
@@ -34,7 +36,8 @@ const validationMessages = {
 
 function validationMessageLookup (field, type) {
   if (!validationMessages[field] || !validationMessages[field][type]) {
-    throw new Error('No validation message found for field ' + field + ' and type ' + type)
+    logger.error('No validation message found for field ' + field + ' and type ' + type)
+    return `An error occurred of type ${type} for field ${field}`
   }
   return validationMessages[field][type]
 }

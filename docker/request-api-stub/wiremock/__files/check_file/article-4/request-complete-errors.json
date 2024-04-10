@@ -14,7 +14,7 @@
   },
   "response": {
       "data": {
-          "error_summary": [
+          "error-summary": [
               "1 geometry must be in Well-Known Text (WKT) format",
               "1 documentation URL must be a real URL",
               "1 entry date must be today or in the past",
@@ -22,7 +22,7 @@
               "1 geometry missing",
               "Reference column missing"
           ],
-          "column_field_log": [
+          "column-field-log": [
               {
                   "field": "geometry",
                   "column": "wkt",
