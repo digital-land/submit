@@ -122,7 +122,7 @@ export default class RequestData {
       // Reduce verbose values to handle duplicate keys
       return reduceVerboseValues(verboseValuesAsArray)
     }
-  
+
     // This function processes a key-value pair and returns a verbose value
     const processKeyValue = (key, value, row, columnFieldLog) => {
       const columnField = columnFieldLog.find(column => column.column === key)
@@ -132,7 +132,7 @@ export default class RequestData {
       // Return the verbose value
       return [field, { value, column: key, field, error }]
     }
-  
+
     // This function reduces verbose values to handle duplicate keys
     const reduceVerboseValues = (verboseValuesAsArray) => {
       return verboseValuesAsArray.reduce((acc, [key, value]) => {
@@ -167,8 +167,6 @@ export default class RequestData {
 
   // This function returns an array of rows with verbose columns
   getRowsWithVerboseColumns (filterNonErrors = false) {
-
-
     if (!this.response || !this.response.details) {
       return []
     }
