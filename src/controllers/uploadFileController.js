@@ -46,16 +46,17 @@ class UploadFileController extends UploadController {
       return
     }
 
-    // log the file name, type and size as an object
-    logger.info('file uploaded:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
-
+    
     try {
       const uploadedFilename = await UploadFileController.uploadFileToS3(req.file)
       // delete the file from the uploads folder
       if (req.file && req.file.path) { fs.unlink(req.file.path) }
-
+      
       const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
       req.body.request_id = id
+      
+      // log the file name, type and size as an object
+      logger.info('file submitted for processing:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
 
       super.post(req, res, next)
     } catch (error) {
