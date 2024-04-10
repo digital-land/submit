@@ -11,7 +11,7 @@ export default class RequestData {
   }
 
   getError () {
-    if(!this.response) {
+    if (!this.response) {
       logger.error('trying to get error when there are none: request id: ' + this.id)
       return { message: 'An unknown error occurred.' }
     }
@@ -20,7 +20,7 @@ export default class RequestData {
   }
 
   hasErrors () {
-    if(!this.response || !this.response.data) {
+    if (!this.response || !this.response.data) {
       logger.error('trying to check for errors when there are none: request id: ' + this.id)
       return true
     }
@@ -145,7 +145,6 @@ export default class RequestData {
   }
 
   getGeometries () {
-
     if (!this.response || !this.response.details) {
       logger.error('trying to get response details when there are none: request id: ' + this.id)
       return undefined
