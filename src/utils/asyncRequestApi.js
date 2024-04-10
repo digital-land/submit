@@ -56,7 +56,6 @@ const postRequest = async (formData) => {
       errorMessage = `Error in Axios configuration: ${error.config}`
     }
 
-    // ToDo: don't throw error, return error object
     throw new Error(errorMessage)
   }
 }
