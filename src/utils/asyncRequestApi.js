@@ -32,8 +32,6 @@ export const postUrlRequest = async (formData) => {
 const postRequest = async (formData) => {
   try {
     const response = await axios.post(requestsEndpoint, { params: formData })
-
-    console.log('Response:', response)
     return response.data.id // assuming the response contains the id
   } catch (error) {
     let errorMessage = 'An unknown error occurred.'

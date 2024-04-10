@@ -92,8 +92,8 @@ class UploadFileController extends UploadController {
       await s3.upload(params).promise()
       return uuid
     } catch (error) {
-      console.log('Error uploading file: ', error)
-      throw new Error('Error uploading file to S3: ' + error.message)
+      logger.error('Error uploading file to S3: ' + error.message)
+      throw error
     }
   }
 
