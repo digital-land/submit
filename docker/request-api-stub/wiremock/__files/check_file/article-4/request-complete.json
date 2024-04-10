@@ -14,8 +14,8 @@
   },
   "response": {
       "data": {
-          "error_summary": [],
-          "column_field_log": [
+          "error-summary": [],
+          "column-field-log": [
               {
                   "field": "geometry",
                   "column": "wkt",
