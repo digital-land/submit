@@ -1,0 +1,13 @@
+{
+    "request": {
+        "urlPath": "/requests/processing",
+        "method": "GET"
+    },
+    "response": {
+        "status": 202,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "bodyFileName": "check_file/article-4/request-processing.json"
+    }
+}
