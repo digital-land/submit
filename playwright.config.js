@@ -37,31 +37,29 @@ export default defineConfig({
   projects: [
     {
       name: 'global setup',
-      testMatch: '**/global-setup.js'
-      // teardown: 'global teardown'
+      testMatch: '**/global-setup.js',
+      teardown: 'global teardown'
     },
-    // {
-    //   name: 'global teardown',
-    //   testMatch: '**/global-teardown.js'
-    // },
+    {
+      name: 'global teardown',
+      testMatch: '**/global-teardown.js'
+    },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['global setup']
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      dependencies: ['global setup']
+    },
+
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      dependencies: ['global setup']
     }
-
-    // For some reason, global setup is being torn down after once browser has run. for now we will just test with one browser and come back to this issue
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    //   dependencies: ['global setup']
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    //   dependencies: ['global setup']
-    // }
 
     /* Test against mobile viewports. */
     // {
