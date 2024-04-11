@@ -12,6 +12,8 @@ const getConfig = () => {
 
   const environment = process.env.NODE_ENV || process.env.ENVIRONMENT || 'production'
 
+  console.log('USING CONFIG: ' + environment)
+
   const customConfig = readConfig(environment)
 
   const combinedConfig = _.merge({}, defaultConfig, customConfig)

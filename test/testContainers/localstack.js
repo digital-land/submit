@@ -19,6 +19,7 @@ export default class Localstack {
   }
 
   async createBucket (bucketName) {
+    console.log('CREATING BUCKET: ' + bucketName)
     const client = new S3Client({
       endpoint: this.container.getConnectionUri(),
       forcePathStyle: true,
