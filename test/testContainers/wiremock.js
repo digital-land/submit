@@ -26,12 +26,23 @@ export default class Wiremock {
         container: 8080,
         host: config.asyncRequestApi.port
       })
-      .start()
+      .withReuse(true).start()
     return this
   }
 
   async stop () {
     console.log('Stopping WiremockContainer')
-    await this.container.stop()
+    this.container = await new WireMockContainer(this.image)
+      .withBindMounts([{
+        source: this.mappingsFolder,
+        target: '/home/wiremock',
+        mode: 'ro'
+      }])
+      .withExposedPorts({
+        container: 8080,
+        host: config.asyncRequestApi.port
+      })
+      .withReuse(true).start()
+    this.container.stop()
   }
 }

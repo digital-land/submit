@@ -3,15 +3,11 @@
 */
 
 import { expect } from '@playwright/test'
-import NoErrorsPage from './noErrorsPage'
-import ErrorsPage from './errorsPage'
 import BasePage from './BasePage'
 
 export default class resultsPage extends BasePage {
   constructor (page) {
     super(page, '/results')
-    Object.assign(this, new ErrorsPage())
-    Object.assign(this, new NoErrorsPage())
   }
 
   async expectPageIsErrorsPage () {
@@ -20,5 +16,9 @@ export default class resultsPage extends BasePage {
 
   async expectPageIsNoErrorsPage () {
     expect(await this.page.locator('h1').innerText()).toEqual('No errors')
+  }
+
+  async navigateToResult (id) {
+    return await this.page.goto(`${this.url}/${id}`)
   }
 }

@@ -1,11 +1,7 @@
-import BasePage from './BasePage'
 import { expect } from '@playwright/test'
+import resultsPage from './resultsPage'
 
-export default class ErrorsPage extends BasePage {
-  constructor (page) {
-    super(page, '/errors')
-  }
-
+export default class ErrorsPage extends resultsPage {
   async clickUploadNewVersion () {
     await this.page.getByRole('button', { name: 'Upload a new version' }).click()
   }

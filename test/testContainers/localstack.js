@@ -9,16 +9,19 @@ export default class Localstack {
 
   async start () {
     console.log('Starting LocalstackContainer')
-    this.container = await new LocalstackContainer(this.image).start()
+    this.container = await new LocalstackContainer(this.image).withReuse(true).start()
     return this
   }
 
   async stop () {
     console.log('Stopping LocalstackContainer')
+    this.container = await new LocalstackContainer(this.image).withReuse(true).start()
+    this.container.stop()
     await this.container.stop()
   }
 
   async createBucket (bucketName) {
+    console.log('CREATING BUCKET: ' + bucketName)
     const client = new S3Client({
       endpoint: this.container.getConnectionUri(),
       forcePathStyle: true,

@@ -37,13 +37,13 @@ export default defineConfig({
   projects: [
     {
       name: 'global setup',
-      testMatch: '**/global-setup.js'
-      // teardown: 'global teardown'
+      testMatch: '**/global-setup.js',
+      teardown: 'global teardown'
     },
-    // {
-    //   name: 'global teardown',
-    //   testMatch: '**/global-teardown.js'
-    // },
+    {
+      name: 'global teardown',
+      testMatch: '**/global-teardown.js'
+    },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
