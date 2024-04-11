@@ -14,4 +14,8 @@ export default class StatusPage extends BasePage {
     // ToDo: this should wait some time if the status is not immediately as expected.
     expect(await this.page.locator('h1').innerText()).toEqual(status)
   }
+
+  async navigateToRequest (id) {
+    return await this.page.goto(`${this.url}/${id}`)
+  }
 }
