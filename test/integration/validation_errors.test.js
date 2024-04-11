@@ -124,7 +124,7 @@ test('when the user clicks continue on the url page without entering a url, the 
 test('when the user clicks continue on the no errors page, without saying their data looks ok, the page correctly indicates there\'s an error', async ({ page }) => {
   const noErrorsPage = new NoErrorsPage(page)
 
-  await noErrorsPage.navigateToResult('complete')
+  await noErrorsPage.navigateToRequest('complete')
   await noErrorsPage.clickContinue()
 
   const expectedErrors = [

@@ -18,7 +18,7 @@ export default class resultsPage extends BasePage {
     expect(await this.page.locator('h1').innerText()).toEqual('No errors')
   }
 
-  async navigateToResult (id) {
+  async navigateToRequest (id) {
     return await this.page.goto(`${this.url}/${id}`)
   }
 }
