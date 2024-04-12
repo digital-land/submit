@@ -26,7 +26,7 @@
     "test:integration": "playwright test test/integration",
     "test:acceptance": "playwright test test/acceptance",
     "test:acceptance:ui": "playwright test --ui",
-    "test:acceptance:codegen": "playwright codegen http://localhost:5000",
+    "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
