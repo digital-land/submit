@@ -68,6 +68,16 @@ test('receiving a result with a 404', async ({ page }) => {
   // ToDo: Complete the rest of this once Alex's new page gets added
 })
 
+test('receiving a non existing result', async ({ page }) => {
+  const resultsPage = new ResultsPage(page)
+
+  await resultsPage.navigateToRequest('non-existing')
+  await expect(page.locator('h1')).toContainText('Sorry, there’s a problem with the service')
+
+  
+})
+
+
 const getTableContents = async (page, tableClass) => {
   const tableContents = []
 
