@@ -59,8 +59,13 @@ test('receiving a result with errors', async ({ page }) => {
   }
 })
 
-test.skip('receiving a result with a 404', () => {
+test('receiving a result with a 404', async ({ page }) => {
+  const resultsPage = new ResultsPage(page)
 
+  await resultsPage.navigateToRequest('404')
+  await resultsPage.expectIsFailedPage()
+
+  // ToDo: Complete the rest of this once Alex's new page gets added
 })
 
 const getTableContents = async (page, tableClass) => {
