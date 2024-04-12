@@ -1,6 +1,6 @@
 {
     "request": {
-        "urlPath": "/requests/failed",
+        "urlPath": "/requests/404",
         "method": "GET"
     },
     "response": {
