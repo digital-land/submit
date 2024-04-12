@@ -73,10 +73,7 @@ test('receiving a non existing result', async ({ page }) => {
 
   await resultsPage.navigateToRequest('non-existing')
   await expect(page.locator('h1')).toContainText('Sorry, there’s a problem with the service')
-
-  
 })
-
 
 const getTableContents = async (page, tableClass) => {
   const tableContents = []
