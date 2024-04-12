@@ -18,6 +18,10 @@ export default class resultsPage extends BasePage {
     expect(await this.page.locator('h1').innerText()).toEqual('Check your data before you continue')
   }
 
+  async expectIsFailedPage () {
+    expect(await this.page.locator('h1').innerText()).toEqual('Request Failed')
+  }
+
   async navigateToRequest (id) {
     return await this.page.goto(`${this.url}/${id}`)
   }
