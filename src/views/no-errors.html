@@ -41,11 +41,7 @@
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
               {% for field in options.fields %}
-                {% if options.mappings[field] and options.mappings[field] != field %}
-                  <th scope="col" class="govuk-table__header">{{field}} <span style="color: #999999;"> - ({{options.mappings[field]}})</span></th>
-                {% else %}
-                  <th scope="col" class="govuk-table__header">{{field}}</th>
-                {% endif %}
+                <th scope="col" class="govuk-table__header">{{field}}</th>
               {% endfor %}
             </tr>
           </thead>
