@@ -6,7 +6,7 @@ export default class StatusPage extends BasePage {
   }
 
   async waitForContinueButton () {
-    await this.page.waitForSelector('button[data-testid="continue-button"]')
+    await this.page.waitForSelector('button', { text: 'Continue' })
   }
 
   async expectPageToBeProcessing () {
@@ -31,5 +31,13 @@ export default class StatusPage extends BasePage {
 
   async getIdFromUrl () {
     return await this.page.url().split('/').pop()
+  }
+
+  async expectCheckStatusButtonToBeVisible () {
+    await this.page.waitForSelector('button', { text: 'Retrieve Latest Status' })
+  }
+
+  async clickCheckStatusButton () {
+    await this.page.click('button', { text: 'Retrieve Latest Status' })
   }
 }
