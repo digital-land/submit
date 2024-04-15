@@ -11,7 +11,7 @@ describe('StatusPage', () => {
     vi.useFakeTimers()
     global.fetch = vi.fn()
     mockHeading = { textContent: 'Checking File' }
-    mockButton = { textContent: 'Continue', style: { display: 'none' } }
+    mockButton = { textContent: 'Retrieve Latest Status', style: { display: 'block' } }
     mockMessage = { textContent: 'Please wait', style: { display: 'block' } }
     global.window = {
       addEventListener: vi.fn()
@@ -32,12 +32,16 @@ describe('StatusPage', () => {
     }
     StatusPage = (await import('@/assets/js/statusPage.js')).default
     statusPage = new StatusPage() // eslint-disable-line new-cap
+    statusPage.updatePageToChecking()
   })
 
   it('should initialize correctly', () => {
     expect(statusPage.heading).toBe(mockHeading)
     expect(statusPage.continueButton).toBe(mockButton)
     expect(statusPage.processingMessage).toBe(mockMessage)
+    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.checkingFile)
+    expect(statusPage.processingMessage.textContent).toBe(statusPage.messageTexts.pleaseWait)
+    expect(statusPage.continueButton.style.display).toBe('none')
   })
 
   it('should begin polling and update page when status is COMPLETE', async () => {
