@@ -12,6 +12,7 @@ import StartPage from '../PageObjectModels/startPage'
 import DatasetPage from '../PageObjectModels/datasetPage'
 import UploadMethodPage from '../PageObjectModels/uploadMethodPage'
 import UploadFilePage from '../PageObjectModels/uploadFilePage'
+import SubmitURLPage from '../PageObjectModels/submitURLPage'
 import StatusPage from '../PageObjectModels/statusPage'
 import ResultsPage from '../PageObjectModels/resultsPage'
 
@@ -50,11 +51,11 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageIsNoErrorsPage()
     })
 
-    test.skip('request check of a url', async ({ page }) => {
+    test('request check of a url', async ({ page }) => {
       const startPage = new StartPage(page)
       const datasetPage = new DatasetPage(page)
       const uploadMethodPage = new UploadMethodPage(page)
-      const uploadFilePage = new UploadFilePage(page)
+      const submitURLPage = new SubmitURLPage(page)
       const statusPage = new StatusPage(page)
       const resultsPage = new ResultsPage(page)
 
@@ -66,21 +67,20 @@ test.describe('Request Check', () => {
       await datasetPage.clickContinue()
 
       await uploadMethodPage.waitForPage()
-      await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.File)
+      await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.URL)
       await uploadMethodPage.clickContinue()
 
-      await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('test/datafiles/Article_4_direction_area_dataset.csv')
-      await uploadFilePage.clickContinue()
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv')
+      await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectStatusToBe('NEW')
-      await statusPage.expectStatusToBe('IN_PROGRESS')
-      await statusPage.waitForContinueButton()
-      await statusPage.expectStatusToBe('COMPLETE')
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
       await statusPage.clickContinue()
 
-      await resultsPage.waitForPage()
+      await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
     })
   })
@@ -120,19 +120,15 @@ test.describe('Request Check', () => {
 
       await statusPage.clickCheckStatusButton()
 
-      // await statusPage.waitForPage(id)
-      // await statusPage.expectPageToHaveFinishedProcessing()
-      // await statusPage.clickContinue()
-
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
     })
 
-    test.skip('request check of a url', async ({ page }) => {
+    test('request check of a url', async ({ page }) => {
       const startPage = new StartPage(page)
       const datasetPage = new DatasetPage(page)
       const uploadMethodPage = new UploadMethodPage(page)
-      const uploadFilePage = new UploadFilePage(page)
+      const submitURLPage = new SubmitURLPage(page)
       const statusPage = new StatusPage(page)
       const resultsPage = new ResultsPage(page)
 
@@ -144,21 +140,23 @@ test.describe('Request Check', () => {
       await datasetPage.clickContinue()
 
       await uploadMethodPage.waitForPage()
-      await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.File)
+      await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.URL)
       await uploadMethodPage.clickContinue()
 
-      await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('test/datafiles/Article_4_direction_area_dataset.csv')
-      await uploadFilePage.clickContinue()
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv')
+      await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectStatusToBe('NEW')
-      await statusPage.expectStatusToBe('IN_PROGRESS')
-      await statusPage.waitForContinueButton()
-      await statusPage.expectStatusToBe('COMPLETE')
-      await statusPage.clickContinue()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-      await resultsPage.waitForPage()
+      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+
+      await statusPage.clickCheckStatusButton()
+
+      await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
     })
   })
