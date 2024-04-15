@@ -88,7 +88,7 @@ test.describe('Request Check', () => {
   test.describe('With javascript disabled', () => {
     test.use({ javaScriptEnabled: false })
 
-    test.skip('request check of a datafile', async ({ page }) => {
+    test('request check of a datafile', async ({ page }) => {
       const startPage = new StartPage(page)
       const datasetPage = new DatasetPage(page)
       const uploadMethodPage = new UploadMethodPage(page)
@@ -108,19 +108,24 @@ test.describe('Request Check', () => {
       await uploadMethodPage.clickContinue()
 
       await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('test/datafiles/Article_4_direction_area_dataset.csv')
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
       await uploadFilePage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectStatusToBe('NEW')
-      await statusPage.waitForContinueButton()
-      await statusPage.clickContinue()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-      await resultsPage.waitForPage()
+      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
 
-      // could be redirected back to the status page here? or could remain on  the results page
+      await statusPage.clickCheckStatusButton()
 
-      await statusPage.waitForPage()
+      // await statusPage.waitForPage(id)
+      // await statusPage.expectPageToHaveFinishedProcessing()
+      // await statusPage.clickContinue()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsNoErrorsPage()
     })
 
     test.skip('request check of a url', async ({ page }) => {
