@@ -1,5 +1,4 @@
 import BasePage from './BasePage'
-import { expect } from '@playwright/test'
 
 export default class StatusPage extends BasePage {
   constructor (page) {
@@ -10,12 +9,27 @@ export default class StatusPage extends BasePage {
     await this.page.waitForSelector('button[data-testid="continue-button"]')
   }
 
-  async expectStatusToBe (status) {
-    // ToDo: this should wait some time if the status is not immediately as expected.
-    expect(await this.page.locator('h1').innerText()).toEqual(status)
+  async expectPageToBeProcessing () {
+    await this.page.waitForSelector('h1', { text: 'Checking File' })
+  }
+
+  async expectPageToHaveFinishedProcessing () {
+    await this.page.waitForSelector('h1', { text: 'File Checked' })
   }
 
   async navigateToRequest (id) {
     return await this.page.goto(`${this.url}/${id}`)
+  }
+
+  async waitForPage (id = undefined) {
+    if (id) {
+      return await this.page.waitForURL(`**${this.url}/${id}`)
+    } else {
+      return await this.page.waitForURL(`**${this.url}/**`)
+    }
+  }
+
+  async getIdFromUrl () {
+    return await this.page.url().split('/').pop()
   }
 }
