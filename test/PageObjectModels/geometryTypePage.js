@@ -1,11 +1,12 @@
 import BasePage from './BasePage'
 import UploadMethodPage from './uploadMethodPage'
-export default class GeometryTypePage extends BasePage {
-  static geometryTypes = {
-    point: 'point',
-    polygon: 'polygon'
-  }
 
+export const geometryTypes = {
+  point: 'point',
+  polygon: 'polygon'
+}
+
+export default class GeometryTypePage extends BasePage {
   constructor (page) {
     super(page, '/geometry-type')
   }
@@ -15,9 +16,9 @@ export default class GeometryTypePage extends BasePage {
     return await this.page.getByLabel(type).check()
   }
 
-  async clickContinue () {
+  async clickContinue (skipVerification) {
     await super.clickContinue()
 
-    await super.verifyAndReturnPage(UploadMethodPage)
+    return await super.verifyAndReturnPage(UploadMethodPage, skipVerification)
   }
 }

@@ -2,12 +2,12 @@ import BasePage from './BasePage'
 import UploadFilePage from './uploadFilePage'
 import SubmitURLPage from './submitURLPage'
 
-export default class UploadMethodPage extends BasePage {
-  static uploadMethods = {
-    File: 'File Upload',
-    URL: 'URL'
-  }
+export const uploadMethods = {
+  File: 'File Upload',
+  URL: 'URL'
+}
 
+export default class UploadMethodPage extends BasePage {
   constructor (page) {
     super(page, '/upload-method')
   }
@@ -17,13 +17,13 @@ export default class UploadMethodPage extends BasePage {
     return await this.page.getByLabel(method).check()
   }
 
-  async clickContinue () {
+  async clickContinue (skipVerification) {
     await super.clickContinue()
 
-    if (this.currentUploadMethod === UploadMethodPage.uploadMethods.File) {
-      await super.verifyAndReturnPage(UploadFilePage)
+    if (this.currentUploadMethod === uploadMethods.File) {
+      return await super.verifyAndReturnPage(UploadFilePage, skipVerification)
     } else {
-      await super.verifyAndReturnPage(SubmitURLPage)
+      return await super.verifyAndReturnPage(SubmitURLPage, skipVerification)
     }
   }
 }

@@ -13,8 +13,8 @@ export default class UploadFilePage extends BasePage {
     await fileChooser.setFiles(filePath)
   }
 
-  async clickContinue () {
+  async clickContinue (skipVerification) {
     await super.clickContinue()
-    await super.verifyAndReturnPage(StatusPage)
+    return await super.verifyAndReturnPage(StatusPage, skipVerification)
   }
 }

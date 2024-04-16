@@ -11,8 +11,8 @@ export default class UploadURLPage extends BasePage {
     await this.page.getByLabel('URL').fill(url)
   }
 
-  async clickContinue () {
+  async clickContinue (skipVerification) {
     await super.clickContinue()
-    await super.verifyAndReturnPage(StatusPage)
+    return await super.verifyAndReturnPage(StatusPage, skipVerification)
   }
 }

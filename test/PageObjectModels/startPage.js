@@ -1,13 +1,13 @@
 import BasePage from './BasePage'
-import DatasetPage from './DatasetPage'
+import DatasetPage from './datasetPage'
 
 export default class StartPage extends BasePage {
   constructor (page) {
     super(page, '/')
   }
 
-  async clickStartNow () {
+  async clickStartNow (skipVerification) {
     await this.page.click('text=Start now')
-    await super.verifyAndReturnPage(DatasetPage)
+    return await super.verifyAndReturnPage(DatasetPage, skipVerification)
   }
 }
