@@ -1,17 +1,23 @@
 'use strict'
 
-import logger from './src/utils/logger.js'
 import express from 'express'
-import cookieParser from 'cookie-parser'
 import session from 'express-session'
+import { createClient } from 'redis'
+import RedisStore from 'connect-redis'
+import cookieParser from 'cookie-parser'
 import nunjucks from 'nunjucks'
 import bodyParser from 'body-parser'
+import dotenv from 'dotenv'
+
+import logger from './src/utils/logger.js'
 import config from './config/index.js'
 import formWizard from './src/routes/form-wizard/index.js'
 import hash from './src/utils/hasher.js'
 import addFilters from './src/filters/filters.js'
 import accessibility from './src/routes/accessibility.js'
 import polling from './src/routes/api.js'
+
+dotenv.config()
 
 const app = express()
 
@@ -33,11 +39,28 @@ app.use('/public', express.static('./public'))
 
 // cookies and sessions (redis or elasticache should be used in a prod env)
 app.use(cookieParser())
+
+// Initialize client.
+const redisClient = createClient({
+  host: config.redis.host,
+  port: config.redis.port
+})
+redisClient.connect().catch(logger.error)
+
+// Initialize store.
+const redisStore = new RedisStore({
+  client: redisClient
+})
+
 app.use(session({
-  secret: 'keyboard cat', // ToDo: move to config
+  secret: process.env.SESSION_SECRET, // ToDo: move to config
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false }
+  store: redisStore,
+  cookie: {
+    secure: config.environment === 'production', // ToDo: move to config
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  }
 }))
 
 // templating engine (turn on caching and turn off watching in prod env)
