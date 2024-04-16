@@ -14,6 +14,10 @@ aws: {
     bucket: '',
     s3ForcePathStyle: false,
 }
+redis: {
+    host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
+    port: '6379'
+}
 url: 'https://publish-planning.data.gov.uk'
 serviceName: 'Publish planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
