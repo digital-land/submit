@@ -53,4 +53,10 @@ export default class BasePage {
   async testScreenShot () {
     return await expect(this.page).toHaveScreenshot()
   }
+
+  async verifyAndReturnPage (PageType) {
+    const page = new PageType(this.page)
+    await page.waitForPage()
+    return page
+  }
 }

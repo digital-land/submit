@@ -1,4 +1,5 @@
 import BasePage from './BasePage'
+import StatusPage from './statusPage'
 
 export default class UploadFilePage extends BasePage {
   constructor (page) {
@@ -10,5 +11,10 @@ export default class UploadFilePage extends BasePage {
     await this.page.getByText('Upload data').click()
     const fileChooser = await fileChooserPromise
     await fileChooser.setFiles(filePath)
+  }
+
+  async clickContinue () {
+    await super.clickContinue()
+    await super.verifyAndReturnPage(StatusPage)
   }
 }

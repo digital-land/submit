@@ -1,4 +1,5 @@
 import BasePage from './BasePage'
+import DatasetPage from './DatasetPage'
 
 export default class StartPage extends BasePage {
   constructor (page) {
@@ -6,6 +7,7 @@ export default class StartPage extends BasePage {
   }
 
   async clickStartNow () {
-    return await this.page.click('text=Start now')
+    await this.page.click('text=Start now')
+    await super.verifyAndReturnPage(DatasetPage)
   }
 }

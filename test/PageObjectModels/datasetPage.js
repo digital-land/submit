@@ -1,4 +1,6 @@
 import BasePage from './BasePage'
+import GeometryTypePage from './geometryTypePage'
+import UploadMethodPage from './uploadMethodPage'
 
 export default class DatasetPage extends BasePage {
   static datasets = {
@@ -13,7 +15,18 @@ export default class DatasetPage extends BasePage {
     super(page, '/dataset')
   }
 
-  async selectDataset (dataSet) {
-    return await this.page.getByLabel(dataSet).check()
+  async selectDataset (dataset) {
+    this.currentDataset = dataset
+    return await this.page.getByLabel(dataset).check()
+  }
+
+  async clickContinue () {
+    await super.clickContinue()
+
+    if (this.currentDataset === DatasetPage.datasets.Tree) {
+      await super.verifyAndReturnPage(GeometryTypePage)
+    } else {
+      await super.verifyAndReturnPage(UploadMethodPage)
+    }
   }
 }
