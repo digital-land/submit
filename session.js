@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser'
 import config from './config/index.js'
 import logger from './src/utils/logger.js'
 
-export function setupSession(app) {
+export function setupSession (app) {
   app.use(cookieParser())
 
   const redisClient = createClient({

@@ -2,7 +2,7 @@ import nunjucks from 'nunjucks'
 import config from './config/index.js'
 import addFilters from './src/filters/filters.js'
 
-export function setupNunjucks(app) {
+export function setupNunjucks (app) {
   app.set('view engine', 'html')
   const nunjucksEnv = nunjucks.configure([
     'src/views',

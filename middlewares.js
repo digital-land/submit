@@ -5,7 +5,7 @@ import logger from './src/utils/logger.js'
 import hash from './src/utils/hasher.js'
 import config from './config/index.js'
 
-export function setupMiddlewares(app) {
+export function setupMiddlewares (app) {
   app.use(async (req, res, next) => {
     logger.info({
       type: 'Request',

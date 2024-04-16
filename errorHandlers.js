@@ -1,6 +1,6 @@
 import logger from './src/utils/logger.js'
 
-export function setupErrorHandlers(app) {
+export function setupErrorHandlers (app) {
   app.use((err, req, res, next) => {
     logger.error({
       type: 'Request error',
