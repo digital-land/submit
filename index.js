@@ -5,11 +5,11 @@ import dotenv from 'dotenv'
 import logger from './src/utils/logger.js'
 import config from './config/index.js'
 
-import { setupMiddlewares } from './middlewares.js'
-import { setupRoutes } from './routes.js'
-import { setupErrorHandlers } from './errorHandlers.js'
-import { setupSession } from './session.js'
-import { setupNunjucks } from './nunjucks.js'
+import { setupMiddlewares } from './src/serverSetup/middlewares.js'
+import { setupRoutes } from './src/serverSetup/routes.js'
+import { setupErrorHandlers } from './src/serverSetup/errorHandlers.js'
+import { setupSession } from './src/serverSetup/session.js'
+import { setupNunjucks } from './src/serverSetup/nunjucks.js'
 
 dotenv.config()
 

@@ -1,6 +1,6 @@
 import nunjucks from 'nunjucks'
-import config from './config/index.js'
-import addFilters from './src/filters/filters.js'
+import config from '../../config/index.js'
+import addFilters from '../filters/filters.js'
 
 export function setupNunjucks (app) {
   app.set('view engine', 'html')

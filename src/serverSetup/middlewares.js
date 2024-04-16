@@ -1,9 +1,9 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
-import logger from './src/utils/logger.js'
-import hash from './src/utils/hasher.js'
-import config from './config/index.js'
+import logger from '../utils/logger.js'
+import hash from '../utils/hasher.js'
+import config from '../../config/index.js'
 
 export function setupMiddlewares (app) {
   app.use(async (req, res, next) => {

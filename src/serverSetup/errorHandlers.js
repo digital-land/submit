@@ -1,4 +1,4 @@
-import logger from './src/utils/logger.js'
+import logger from '../utils/logger.js'
 
 export function setupErrorHandlers (app) {
   app.use((err, req, res, next) => {

@@ -2,8 +2,8 @@ import session from 'express-session'
 import { createClient } from 'redis'
 import RedisStore from 'connect-redis'
 import cookieParser from 'cookie-parser'
-import config from './config/index.js'
-import logger from './src/utils/logger.js'
+import config from '../../config/index.js'
+import logger from '../utils/logger.js'
 
 export function setupSession (app) {
   app.use(cookieParser())
