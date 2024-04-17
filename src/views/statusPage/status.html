@@ -9,11 +9,11 @@
 
 {% if options.processingComplete %}
   {% set pageContent = fileCheckedContent() %}
-  {% set buttonText = "Check status" %}
-  {% set buttonClasses = "" %}
-{% else %}
-  {% set pageContent = checkingFileContent() %}
   {% set buttonText = "Continue" %}
+  {% set buttonClasses = "" %}
+  {% else %}
+  {% set pageContent = checkingFileContent() %}
+  {% set buttonText = "Retrieve Latest Status" %}
   {% set buttonClasses = "js-hidden" %}
 {% endif %}
 
