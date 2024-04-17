@@ -37,17 +37,29 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'global setup',
+      testMatch: '**/global-setup.js',
+      teardown: 'global teardown'
+    },
+    {
+      name: 'global teardown',
+      testMatch: '**/global-teardown.js'
+    },
+    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['global setup']
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] }
+      use: { ...devices['Desktop Firefox'] },
+      dependencies: ['global setup']
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] }
+      use: { ...devices['Desktop Safari'] },
+      dependencies: ['global setup']
     }
 
     /* Test against mobile viewports. */
