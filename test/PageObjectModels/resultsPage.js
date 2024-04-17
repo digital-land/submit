@@ -25,7 +25,7 @@ export default class resultsPage extends BasePage {
   async navigateToRequest (id) {
     return await this.page.goto(`${this.url}/${id}`)
   }
-  
+
   async waitForPage (id = undefined) {
     if (id) {
       return await this.page.waitForURL(`**${this.url}/${id}`)
