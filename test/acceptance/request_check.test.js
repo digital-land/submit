@@ -98,7 +98,7 @@ test.describe('Request Check', () => {
       await statusPage.expectCheckStatusButtonToBeVisible()
       const id = await statusPage.getIdFromUrl()
 
-      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
 
       const resultsPage = await statusPage.clickCheckStatusButton()
 
