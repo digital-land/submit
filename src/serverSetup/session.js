@@ -8,7 +8,7 @@ import logger from '../utils/logger.js'
 export function setupSession (app) {
   app.use(cookieParser())
 
-  let sessionStore;
+  let sessionStore
   if (config.redis) {
     const redisClient = createClient({
       host: config.redis.host,
