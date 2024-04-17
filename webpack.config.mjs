@@ -6,7 +6,9 @@ const __dirname = dirname(__filename)
 
 export default {
   entry: {
-    map: '/src/assets/js/map.js'
+    map: '/src/assets/js/map.js',
+    application: '/src/assets/js/application.js',
+    statusPage: '/src/assets/js/statusPage.js'
   },
   output: {
     filename: '[name].bundle.js',

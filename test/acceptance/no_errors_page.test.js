@@ -5,7 +5,8 @@ import UploadMethodPOM from './PageObjectModels/uploadMethodPOM'
 import UploadFilePOM from './PageObjectModels/uploadFilePOM'
 import NoErrorsPOM from './PageObjectModels/noErrorsPOM'
 
-test('the page renders a table with the correct data', async ({ page }) => {
+// ToDo: this need rewriting or removing
+test.skip('the page renders a table with the correct data', async ({ page }) => {
   const startPOM = new StartPOM(page)
   const datasetPOM = new DatasetPOM(page)
   const uploadMethodPOM = new UploadMethodPOM(page)

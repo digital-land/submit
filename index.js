@@ -9,8 +9,9 @@ import bodyParser from 'body-parser'
 import config from './config/index.js'
 import formWizard from './src/routes/form-wizard/index.js'
 import hash from './src/utils/hasher.js'
-import accessibility from './src/routes/accessibility.js'
 import addFilters from './src/filters/filters.js'
+import accessibility from './src/routes/accessibility.js'
+import polling from './src/routes/api.js'
 
 const app = express()
 
@@ -79,6 +80,7 @@ app.use((req, res, next) => {
 app.use('/', formWizard)
 
 app.use('/accessibility', accessibility)
+app.use('/api', polling)
 
 // error handler
 app.use((err, req, res, next) => {
@@ -92,12 +94,7 @@ app.use((err, req, res, next) => {
     errorStack: err.stack
   })
 
-  err.template = err.template || 'errorPages/500'
-
-  // handle session expired
-  if (err.code === 'SESSION_TIMEOUT') {
-    err.template = 'session-expired'
-  }
+  err.template = err.template || (err.status && `errorPages/${err.status}`) || 'errorPages/500'
 
   // handle errors with automatic redirects
   if (err.redirect) {

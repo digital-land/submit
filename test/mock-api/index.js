@@ -10,6 +10,8 @@ import config from '../../config/index.js'
 
 import multer from 'multer'
 
+import logger from '../../src/utils/logger.js'
+
 import { readFileSync } from 'fs'
 const upload = multer({ dest: 'uploads/' })
 
@@ -42,5 +44,5 @@ app.post(config.api.validationEndpoint, (req, res) => {
 })
 
 app.listen(config.api.port, () => {
-  console.log('listening on port ' + config.api.port)
+  logger.log('listening on port ' + config.api.port)
 })

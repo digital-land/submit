@@ -1,0 +1,46 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set pageName = 'Request Failed' %}
+{% set error = options.error %}
+
+{% block pageTitle %}
+    Error: {{super()}}
+{% endblock %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">
+                {{pageName}}
+            </h1>
+            <p>Your request could not be processed. Please see the error details below:</p>
+        </div>
+    </div>
+
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            {{ govukErrorSummary({
+                titleText: "There’s a problem",
+                errorList: [
+                    {
+                        text: error.errMsg
+                    }
+                ]
+            }) }}
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                    <li>Error Code: {{ error.errCode }}</li>
+                    <li>Error Time: {{ error.errTime }}</li>
+                    <li>Error Type: {{ error.errType }}</li>
+                </ul>
+            </div>
+            {{ govukButton({
+                text: "Start over",
+                href: "/"
+            }) }}
+        </div>
+    </div>
+{% endblock %}

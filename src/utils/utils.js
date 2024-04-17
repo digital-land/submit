@@ -78,3 +78,8 @@ export const dataSubjects = {
     ]
   }
 }
+
+export const finishedProcessingStatuses = [
+  'COMPLETE',
+  'FAILED'
+]

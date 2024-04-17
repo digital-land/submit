@@ -1,17 +1,28 @@
 import HmpoConfig from 'hmpo-config'
+import yaml from 'js-yaml'
+import fs from 'fs'
+import _ from 'lodash'
 
-const config = new HmpoConfig()
-
-// add default config
-config.addFile('./config/default.yaml')
-
-const environment = process.env.NODE_ENV || process.env.ENVIRONMENT || 'production'
-
-// add environment specific config
-try {
-  config.addFile('./config/' + environment + '.yaml')
-} catch (err) {
-  console.error('No environment specific config file found for ' + environment + '.yaml')
+const readConfig = (config) => {
+  return yaml.load(fs.readFileSync(`./config/${config}.yaml`, 'utf8'))
 }
 
-export default config.toJSON()
+const getConfig = () => {
+  const defaultConfig = readConfig('default')
+
+  const environment = process.env.NODE_ENV || process.env.ENVIRONMENT || 'production'
+
+  console.log('USING CONFIG: ' + environment)
+
+  const customConfig = readConfig(environment)
+
+  const combinedConfig = _.merge({}, defaultConfig, customConfig)
+
+  const config = new HmpoConfig()
+  config.addConfig(combinedConfig)
+
+  const configJson = config.toJSON()
+  return configJson
+}
+
+export default getConfig()

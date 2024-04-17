@@ -1,13 +1,18 @@
 port: 5000
-api: {
+asyncRequestApi: {
     url: https://publish-api.planning.data.gov.uk,
     port: 8082,
-    validationEndpoint: /api/dataset/validate/file/request,
+    requestsEndpoint: 'requests',
     requestTimeout: 50000
 }
 maintenance: {
     serviceUnavailable: false,
     upTime: "9am on Monday 19 November 2024"
+}
+aws: {
+    region: eu-west-2,
+    bucket: '',
+    s3ForcePathStyle: false,
 }
 serviceName: 'Publish planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
