@@ -1,6 +1,8 @@
+// this file holds the playwright configuration for the integration tests
+
 // @ts-check
 import { defineConfig, devices } from '@playwright/test'
-import config from './config/index.js'
+import config from '../../config/index.js'
 
 /**
  * Read environment variables from file.
@@ -13,7 +15,7 @@ import config from './config/index.js'
  */
 export default defineConfig({
   testMatch: '**/*.test.js',
-  testDir: './test',
+  testDir: './',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -28,7 +30,6 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: `http://127.0.0.1:${config.port}`,
-
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry'
   },

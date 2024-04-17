@@ -5,3 +5,4 @@ aws: {
     region: eu-west-2,
     bucket: 'development-pub-async-request-files',
 }
+url: 'https://publish.development.digital-land.info/'

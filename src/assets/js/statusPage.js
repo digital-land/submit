@@ -53,6 +53,13 @@ export default class StatusPage {
     }, this.pollingInterval)
   }
 
+  updatePageToChecking () {
+    // update the page
+    this.heading.textContent = this.headingTexts.checkingFile
+    this.processingMessage.textContent = this.messageTexts.pleaseWait
+    this.continueButton.style.display = 'none'
+  }
+
   updatePageToComplete () {
     // update the page
     this.heading.textContent = this.headingTexts.fileChecked
@@ -72,5 +79,6 @@ export default class StatusPage {
 
 window.addEventListener('load', () => {
   const statusPage = new StatusPage()
+  statusPage.updatePageToChecking()
   statusPage.beginPolling(window.serverContext.pollingEndpoint)
 })

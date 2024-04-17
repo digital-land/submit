@@ -1,7 +1,7 @@
 import BasePage from './BasePage'
 import StatusPage from './statusPage'
 
-export default class UploadURLPage extends BasePage {
+export default class SubmitURLPage extends BasePage {
   constructor (page) {
     super(page, '/url')
   }
