@@ -22,7 +22,7 @@ export function setupSession (app) {
   }
 
   app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'keyboard cat',
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
