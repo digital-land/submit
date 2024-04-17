@@ -1,21 +1,19 @@
 import { test } from '@playwright/test'
 
 import StartPage from '../PageObjectModels/startPage'
-import DatasetPage from '../PageObjectModels/datasetPage'
-import GeometryTypePage from '../PageObjectModels/geometryTypePage'
-import UploadMethodPage from '../PageObjectModels/uploadMethodPage'
-import UploadFilePage from '../PageObjectModels/uploadFilePage'
-import UploadURLPage from '../PageObjectModels/uploadURLPage'
+
+import { datasets } from '../PageObjectModels/datasetPage'
+import { geometryTypes } from '../PageObjectModels/geometryTypePage'
+import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
 test.describe('Back buttons work as expected without js for...', () => {
   test.use({ javaScriptEnabled: false })
 
   test('data set page', async ({ page }) => {
     const startPage = new StartPage(page)
-    const datasetPage = new DatasetPage(page)
 
     await startPage.navigateHere()
-    await startPage.clickStartNow()
+    const datasetPage = await startPage.clickStartNow()
 
     await datasetPage.waitForPage()
     await datasetPage.goBack()
@@ -25,15 +23,13 @@ test.describe('Back buttons work as expected without js for...', () => {
 
   test('geometry type page', async ({ page }) => {
     const startPage = new StartPage(page)
-    const datasetPage = new DatasetPage(page)
-    const geometryTypePage = new GeometryTypePage(page)
 
     await startPage.navigateHere()
-    await startPage.clickStartNow()
+    const datasetPage = await startPage.clickStartNow()
 
     await datasetPage.waitForPage()
-    await datasetPage.selectDataset(DatasetPage.datasets.Tree)
-    await datasetPage.clickContinue()
+    await datasetPage.selectDataset(datasets.Tree)
+    const geometryTypePage = await datasetPage.clickContinue()
 
     await geometryTypePage.waitForPage()
     await geometryTypePage.goBack()
@@ -46,15 +42,13 @@ test.describe('Back buttons work as expected without js for...', () => {
 
   test('upload method page', async ({ page, baseURL }) => {
     const startPage = new StartPage(page)
-    const datasetPage = new DatasetPage(page)
-    const uploadMethodPage = new UploadMethodPage(page)
 
     await startPage.navigateHere()
-    await startPage.clickStartNow()
+    const datasetPage = await startPage.clickStartNow()
 
     await datasetPage.waitForPage()
-    await datasetPage.selectDataset(DatasetPage.datasets.Article_4_direction_area_dataset)
-    await datasetPage.clickContinue()
+    await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+    const uploadMethodPage = await datasetPage.clickContinue()
 
     await uploadMethodPage.waitForPage()
     await uploadMethodPage.goBack()
@@ -67,20 +61,17 @@ test.describe('Back buttons work as expected without js for...', () => {
 
   test('upload method page (from geometry type)', async ({ page, baseURL }) => {
     const startPage = new StartPage(page)
-    const datasetPage = new DatasetPage(page)
-    const geometryTypePage = new GeometryTypePage(page)
-    const uploadMethodPage = new UploadMethodPage(page)
 
     await startPage.navigateHere()
-    await startPage.clickStartNow()
+    const datasetPage = await startPage.clickStartNow()
 
     await datasetPage.waitForPage()
-    await datasetPage.selectDataset(DatasetPage.datasets.Tree)
-    await datasetPage.clickContinue()
+    await datasetPage.selectDataset(datasets.Tree)
+    const geometryTypePage = await datasetPage.clickContinue()
 
     await geometryTypePage.waitForPage()
-    await geometryTypePage.selectGeometryType(GeometryTypePage.geometryTypes.point)
-    await geometryTypePage.clickContinue()
+    await geometryTypePage.selectGeometryType(geometryTypes.point)
+    const uploadMethodPage = await geometryTypePage.clickContinue()
 
     await uploadMethodPage.waitForPage()
     await uploadMethodPage.goBack()
@@ -94,20 +85,17 @@ test.describe('Back buttons work as expected without js for...', () => {
 
   test('upload file page', async ({ page, baseURL }) => {
     const startPage = new StartPage(page)
-    const datasetPage = new DatasetPage(page)
-    const uploadMethodPage = new UploadMethodPage(page)
-    const uploadFilePage = new UploadFilePage(page)
 
     await startPage.navigateHere()
-    await startPage.clickStartNow()
+    const datasetPage = await startPage.clickStartNow()
 
     await datasetPage.waitForPage()
-    await datasetPage.selectDataset(DatasetPage.datasets.Article_4_direction_area_dataset)
-    await datasetPage.clickContinue()
+    await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+    const uploadMethodPage = await datasetPage.clickContinue()
 
     await uploadMethodPage.waitForPage()
-    await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.File)
-    await uploadMethodPage.clickContinue()
+    await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+    const uploadFilePage = await uploadMethodPage.clickContinue()
 
     await uploadFilePage.waitForPage()
     await uploadFilePage.goBack()
@@ -123,23 +111,20 @@ test.describe('Back buttons work as expected without js for...', () => {
 
   test('upload url page', async ({ page, baseURL }) => {
     const startPage = new StartPage(page)
-    const datasetPage = new DatasetPage(page)
-    const uploadMethodPage = new UploadMethodPage(page)
-    const uploadURLPage = new UploadURLPage(page)
 
     await startPage.navigateHere()
-    await startPage.clickStartNow()
+    const datasetPage = await startPage.clickStartNow()
 
     await datasetPage.waitForPage()
-    await datasetPage.selectDataset(DatasetPage.datasets.Article_4_direction_area_dataset)
-    await datasetPage.clickContinue()
+    await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+    const uploadMethodPage = await datasetPage.clickContinue()
 
     await uploadMethodPage.waitForPage()
-    await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.URL)
-    await uploadMethodPage.clickContinue()
+    await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+    const submitURLPage = await uploadMethodPage.clickContinue()
 
-    await uploadURLPage.waitForPage()
-    await uploadURLPage.goBack()
+    await submitURLPage.waitForPage()
+    await submitURLPage.goBack()
 
     await uploadMethodPage.waitForPage()
     await uploadMethodPage.goBack()

@@ -11,14 +11,18 @@ export default class resultsPage extends BasePage {
   }
 
   async expectPageIsErrorsPage () {
-    expect(await this.page.locator('h1').innerText()).toEqual('Errors')
+    expect(await this.page.locator('h1').innerText()).toEqual('Your data has errors')
   }
 
   async expectPageIsNoErrorsPage () {
-    expect(await this.page.locator('h1').innerText()).toEqual('No errors')
+    expect(await this.page.locator('h1').innerText()).toEqual('Check your data before you continue')
   }
 
-  async navigateToResult (id) {
+  async expectIsFailedPage () {
+    expect(await this.page.locator('h1').innerText()).toEqual('Request Failed')
+  }
+
+  async navigateToRequest (id) {
     return await this.page.goto(`${this.url}/${id}`)
   }
 }

@@ -1,6 +1,6 @@
 {
     "request": {
-        "urlPath": "/requests/404",
+        "urlPath": "/requests/processing",
         "method": "GET"
     },
     "response": {
@@ -8,6 +8,6 @@
         "headers": {
           "Content-Type": "application/json"
         },
-        "bodyFileName": "check_file/article-4/404.json"
+        "bodyFileName": "check_file/article-4/request-processing.json"
     }
 }
