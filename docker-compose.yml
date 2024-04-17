@@ -10,3 +10,9 @@ services:
     ports:
       - "8001:8080"
 
+  redis:
+    image: redis:6.0.9
+    restart: on-failure
+    ports:
+      - "6379:6379"
+

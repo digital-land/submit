@@ -7,3 +7,7 @@ aws: {
     endpoint: 'http://localhost:4566',
     s3ForcePathStyle: true,
 }
+redis: {
+    host: 'localhost',
+    port: '6379'
+}

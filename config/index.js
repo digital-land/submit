@@ -22,6 +22,7 @@ const getConfig = () => {
   config.addConfig(combinedConfig)
 
   const configJson = config.toJSON()
+  configJson.environment = environment
   return configJson
 }
 

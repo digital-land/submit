@@ -5,4 +5,8 @@ aws: {
     region: eu-west-2,
     bucket: 'development-pub-async-request-files',
 }
+redis: {
+    host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
+    port: '6379'
+}
 url: 'https://publish.development.digital-land.info/'
