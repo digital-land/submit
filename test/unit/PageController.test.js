@@ -7,11 +7,9 @@ import logger from '../../src/utils/logger.js'
 import hash from '../../src/utils/hasher.js'
 
 describe('PageController', () => {
-  const loggerInfoMock = vi.fn()
-
   vi.mock('../utils/logger.js', () => {
     return {
-      info: loggerInfoMock
+      info: vi.fn()
     }
   })
 

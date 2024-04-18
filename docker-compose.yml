@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+
+  request-api:
+    image: wiremock/wiremock:3.4.2
+    restart: on-failure
+    entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--verbose"]
+    volumes:
+      - "./docker/request-api-stub/wiremock:/home/wiremock"
+    ports:
+      - "8001:8080"
+
+  redis:
+    image: redis:6.0.9
+    restart: on-failure
+    ports:
+      - "6379:6379"
+

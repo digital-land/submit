@@ -10,7 +10,7 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <span class="govuk-caption-l">
-        {{options.dataset}}
+        {{options.requestParams.dataset}}
       </span>
       <h1 class="govuk-heading-l">
         {{pageName}}
@@ -26,7 +26,7 @@
   </div>
 </div>
 
-{% if options.rows|length > 0 %}
+{% if options.verboseRows|length > 0 %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <h2 class="govuk-heading-m">
@@ -36,27 +36,30 @@
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              {% for column in options.columnNames %}
-                <th scope="col" class="govuk-table__header">{{column}}</th>
+              {% for field in options.fields %}
+                <th scope="col" class="govuk-table__header">{{field}}</th>
               {% endfor %}
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for row in options.rows %}
-              <tr class="govuk-table__row">
-                {% for columnName, column in row %}
-                <td class="govuk-table__cell app-wrap">
-                    {% if column.issue %}
-                      {{ govukInsetText({
-                        classes: "app-inset-text---error",
-                        html: '<p class="app-inset-text__value">'+column.value | striptags +'</p> <p class="app-inset-text__error">'+column.issue.description | prettifyColumnName +'</p>'
-                      }) }}
-                    {% else %}
-                      {{column.value}}
-                    {% endif %}
-                  </td>
-                {% endfor %}
-              </tr>
+            {% for row in options.verboseRows %}
+              {% if row.hasErrors %}
+                <tr class="govuk-table__row">
+                  {% for field in options.fields %}
+                    {% set columnData = row.columns[field] %}
+                    <td class="govuk-table__cell app-wrap">
+                      {% if columnData.error %}
+                        {{ govukInsetText({
+                          classes: "app-inset-text---error",
+                          html: '<p class="app-inset-text__value">'+columnData.value | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | prettifyColumnName +'</p>'
+                        }) }}
+                      {% else %}
+                        {{columnData.value}}
+                      {% endif %}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endif %}
             {% endfor %}
 
           </tbody>
@@ -67,12 +70,12 @@
 {% endif %}
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      {{ govukButton({
-        text: "Upload a new version",
-        href: "/upload-method"
-      }) }}
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukButton({
+      text: "Upload a new version",
+      href: "/upload-method"
+    }) }}
 
-    </div>
   </div>
+</div>
 {% endblock %}

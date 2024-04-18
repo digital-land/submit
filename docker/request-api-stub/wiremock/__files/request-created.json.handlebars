@@ -1,0 +1,9 @@
+{
+  "id": "{{randomValue length=12 type='ALPHANUMERIC'}}",
+  "type": "{{jsonPath request.body '$.params.type'}}",
+  "status": "NEW",
+  "created": "{{now format='yyyy-MM-dd HH:mm:ssZ'}}",
+  "modified": "{{now format='yyyy-MM-dd HH:mm:ssZ'}}",
+  "params": {{jsonPath request.body '$.params'}},
+  "response": null
+}

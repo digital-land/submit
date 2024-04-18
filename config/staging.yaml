@@ -1,6 +1,7 @@
-api: {
-    url: https://publish-api.staging.digital-land.info,
-    port: 8082,
-    validationEndpoint: /api/dataset/validate/file/request,
-    requestTimeout: 50000
+asyncRequestApi: {
+    url: https://publish-api.staging.digital-land.info
+}
+redis: {
+    host: 'staging-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
+    port: '6379'
 }

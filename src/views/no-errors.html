@@ -22,6 +22,7 @@
 {% endblock %}
 
 {% block content %}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">
@@ -33,24 +34,25 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <p>{{options.rows.length}} rows can be published.</p>
+      <p>{{options.verboseRows.length}} rows can be published.</p>
 
       <div class="app-scrollable-container" s>
         <table class="govuk-table">
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              {% for header in options.headers %}
-                <th scope="col" class="govuk-table__header">{{header}}</th>
+              {% for field in options.fields %}
+                <th scope="col" class="govuk-table__header">{{field}}</th>
               {% endfor %}
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for row in options.rows %}
+            {% for row in options.verboseRows %}
               <tr class="govuk-table__row">
-                {% for header in options.headers %}
+                {% for field in options.fields %}
+                  {% set columnData = row.columns[field] %}
                   <td class="govuk-table__cell app-wrap">
-                      {% if row[header] %}
-                        {{row[header]}}
+                      {% if columnData.value %}
+                        {{columnData.value}}
                       {% endif %}
                   </td>
                 {% endfor %}
@@ -61,7 +63,7 @@
         </table>
       </div>
 
-      {% if options.geometryKey %}
+      {% if options.geometries %}
         <p>Here’s your data on a map:</p>
         <div id="map" class="app-map"></div>
       {% endif %}
@@ -119,13 +121,12 @@
 
 {% block scripts %}
   {{ super() }}
-  {% if options.geometryKey %}
+  {% if options.geometries %}
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
         containerId: 'map', 
-        rows: {{ options.rows | dump | safe }}, 
-        geometryKey: '{{options.geometryKey}}'
+        geometries: {{ options.geometries | dump | safe }},
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>
