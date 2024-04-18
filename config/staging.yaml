@@ -1,5 +1,5 @@
 asyncRequestApi: {
-    url: http://staging-pub-async-api-lb-12493311.eu-west-2.elb.amazonaws.com/
+    url: http://staging-pub-async-api-lb-12493311.eu-west-2.elb.amazonaws.com
 }
 aws: {
     region: eu-west-2,
