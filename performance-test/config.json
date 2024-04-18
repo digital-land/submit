@@ -3,8 +3,8 @@
     {
       "type": "check_file",
       "dataset": "article-4-direction",
-      "file_path": "files/article4-direction.json",
-      "original_filename": "article4-direction.json",
+      "file_path": "files/article-4-direction.json",
+      "original_filename": "article-4-direction.json",
       "mime_type": "application/json"
     },
     {
@@ -77,12 +77,14 @@
       "dataset": "tree",
       "file_path": "files/trees.json",
       "original_filename": "trees.json",
-      "mime_type": "application/json"
+      "mime_type": "application/json",
+      "geom_type": "point"
     },
     {
       "type": "check_url",
       "dataset": "tree",
-      "url": "https://www.stalbans.gov.uk/sites/default/files/documents/publications/planning-building-control/Agile/Tree_Dataset.json"
+      "url": "https://www.stalbans.gov.uk/sites/default/files/documents/publications/planning-building-control/Agile/Tree_Dataset.json",
+      "geom_type": "point"
     },
     {
       "type": "check_file",

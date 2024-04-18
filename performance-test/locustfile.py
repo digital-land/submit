@@ -21,6 +21,15 @@ def on_locust_init(environment: Environment, **kwargs):
         config = Config.model_validate_json(configfile.read())
 
 
+def _handle_error_response(response, action_description):
+    if not response.ok:
+        error = (f"Unsuccessful response upon ${action_description}, got status code "
+                 f"{response.status_code} with body "
+                 f"{response.content}")
+        logging.error(error)
+        raise RescheduleTask(error)
+
+
 class DataProviderUser(FastHttpUser):
 
     host = 'https://publish.development.digital-land.info'
@@ -43,29 +52,17 @@ class DataProviderUser(FastHttpUser):
             url="/dataset",
             data=f"dataset={params.dataset}"
         )
-        if not dataset_selection_response.ok:
-            error = (f"Unsuccessful response upon selection of dataset, got status code "
-                     f"{dataset_selection_response.status_code}")
-            logging.error(error)
-            raise RescheduleTask(error)
+        _handle_error_response(dataset_selection_response, "selection of dataset")
 
         upload_method = 'file' if params.type == RequestTypeEnum.check_file else 'url'
         upload_method_response = self._form_post(
             url="/upload-method",
             data=f"upload-method={upload_method}"
         )
-        if not upload_method_response.ok:
-            error = (f"Unsuccessful response upon submission of upload method, got status code "
-                     f"{upload_method_response.status_code}")
-            logging.error(error)
-            raise RescheduleTask(error)
+        _handle_error_response(upload_method_response, "selection of upload method")
 
         submit_response = self.submit_check_request(params)
-        if not submit_response or not submit_response.ok:
-            error = (f"Unsuccessful response upon submission of check request, got status code "
-                     f"{submit_response.status_code}")
-            logging.error(error)
-            raise RescheduleTask(error)
+        _handle_error_response(submit_response, "submission of check request")
 
         request_id = submit_response.url[submit_response.url.rfind('/')+1:]
         print(f"Request id: {request_id}")
