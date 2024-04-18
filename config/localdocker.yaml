@@ -8,7 +8,6 @@ aws: {
     s3ForcePathStyle: true,
 }
 redis: {
-    secure: false,
-    host: 'localhost',
+    host: 'redis',
     port: '6379'
 }

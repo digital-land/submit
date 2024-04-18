@@ -1,4 +1,5 @@
 redis: {
+    secure: true,
     host: 'production-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
     port: '6379'
 }
