@@ -39,8 +39,8 @@
     {
       "type": "check_file",
       "dataset": "conservation-area-document",
-      "file_path": "files/conservation-areas-documents.csv",
-      "original_filename": "conservation-areas-documents.csv",
+      "file_path": "files/conservation_areas_documents.csv",
+      "original_filename": "conservation_areas_documents.csv",
       "mime_type": "text/csv"
     },
     {
