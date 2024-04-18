@@ -2,6 +2,7 @@ asyncRequestApi: {
     url: https://publish-api.staging.digital-land.info
 }
 redis: {
+    secure: true,
     host: 'staging-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
     port: '6379'
 }

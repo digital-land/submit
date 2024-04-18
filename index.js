@@ -22,5 +22,5 @@ setupRoutes(app)
 setupErrorHandlers(app)
 
 app.listen(config.port, () => {
-  logger.info('App listening on http://localhost::port', { port: config.port })
+  logger.info(`App listening on all interfaces (0.0.0.0) on port ${config.port}`)
 })
