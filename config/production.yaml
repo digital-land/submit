@@ -7,7 +7,7 @@ aws: {
 }
 redis: {
     secure: true,
-    host: 'production-pub-async-redis-eihmmv.serverless.euw2.cache.amazonaws.com:6379',
+    host: 'production-pub-async-redis-eihmmv.serverless.euw2.cache.amazonaws.com',
     port: '6379'
 }
 url: 'https://publish.digital-land.info/'
