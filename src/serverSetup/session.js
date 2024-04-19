@@ -19,14 +19,13 @@ export function setupSession (app) {
       client: redisClient
     })
   }
-
   app.use(session({
     secret: process.env.SESSION_SECRET || 'keyboard cat',
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      secure: config.environment === 'production',
+      secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 7
     }
   }))
