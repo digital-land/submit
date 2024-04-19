@@ -3,6 +3,7 @@ asyncRequestApi: {
     port: 8001
 }
 redis: {
+    secure: false,
     host: 'localhost',
     port: '6379'
 }

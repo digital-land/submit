@@ -7,12 +7,11 @@ import logger from '../utils/logger.js'
 
 export function setupSession (app) {
   app.use(cookieParser())
-
   let sessionStore
   if (config.redis) {
+    const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
     const redisClient = createClient({
-      host: config.redis.host,
-      port: config.redis.port
+      url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
     redisClient.connect().catch(logger.error)
 
@@ -20,14 +19,13 @@ export function setupSession (app) {
       client: redisClient
     })
   }
-
   app.use(session({
     secret: process.env.SESSION_SECRET || 'keyboard cat',
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      secure: config.environment === 'production',
+      secure: false,
       maxAge: 1000 * 60 * 60 * 24 * 7
     }
   }))
