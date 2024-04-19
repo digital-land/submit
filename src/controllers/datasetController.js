@@ -11,6 +11,7 @@ class DatasetController extends PageController {
     const availableDataSubjects = Object.values(dataSubjects).filter(dataSubject => dataSubject.available)
     const dataSets = Object.values(availableDataSubjects).map(dataSubject => dataSubject.dataSets).flat()
     const availableDatasets = dataSets.filter(dataSet => dataSet.available)
+    availableDatasets.sort((a, b) => a.text.localeCompare(b.text));
 
     req.form.options.datasetItems = availableDatasets
 
