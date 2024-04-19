@@ -22,7 +22,7 @@ export function setupSession (app) {
   // Trust first proxy otherwise secure cookies will not be returned
   // See https://github.com/expressjs/session?tab=readme-ov-file#cookiesecure
   // See https://expressjs.com/en/guide/behind-proxies.html
-  app.set('trust proxy', 1) // trust first proxy
+  app.set('trust proxy', 2) // trust two proxy hops
   app.use(session({
     secret: process.env.SESSION_SECRET || 'keyboard cat',
     resave: false,
