@@ -35,7 +35,6 @@ class UploadFileController extends UploadController {
         filePath: req.file.path,
         fileName: req.file.originalname
       }
-      req.body.datafile = req.file
     }
 
     const localValidationErrorType = UploadFileController.localValidateFile(dataFileForLocalValidation)
