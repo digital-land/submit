@@ -4,7 +4,6 @@ import { URL } from 'url'
 import logger from '../utils/logger.js'
 import axios from 'axios'
 
-
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
     this.resetValidationErrorMessage()
