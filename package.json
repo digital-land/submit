@@ -82,5 +82,10 @@
       "**/public/**"
     ],
     "ext": "html js css"
+  },
+  "standard": {
+    "ignore": [
+      "performance-test/"
+    ]
   }
 }
