@@ -1,4 +1,3 @@
-import UploadFileController from '../../controllers/uploadFileController.js'
 import SubmitUrlController from '../../controllers/submitUrlController.js'
 
 export default {
@@ -17,16 +16,7 @@ export default {
     validate: 'required'
   },
   datafile: {
-    validate: [
-      { type: 'required', fn: UploadFileController.notUndefined },
-      { type: 'fileType', fn: UploadFileController.extensionIsValid },
-      { type: 'fileSize', fn: UploadFileController.sizeIsValid },
-      { type: 'fileNameTooLong', fn: UploadFileController.fileNameIsntTooLong },
-      { type: 'fileNameInvalidCharacters', fn: UploadFileController.fileNameIsValid },
-      { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
-      { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
-      { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
-    ]
+    validate: undefined // validation is done manually in the controller as we want to run it before the request is made to the backend
   },
   url: {
     validate: [
