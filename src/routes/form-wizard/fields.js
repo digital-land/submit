@@ -1,4 +1,3 @@
-import SubmitUrlController from '../../controllers/submitUrlController.js'
 
 export default {
   'data-subject': {
@@ -19,11 +18,7 @@ export default {
     validate: undefined // validation is done manually in the controller as we want to run it before the request is made to the backend
   },
   url: {
-    validate: [
-      'required',
-      { type: 'format', fn: SubmitUrlController.urlIsValid },
-      { type: 'length', fn: SubmitUrlController.urlIsNotTooLong }
-    ]
+    validate: undefined // validation is done manually in the controller as we want to run it before the request is made to the backend
   },
   dataLooksCorrect: {
     validate: 'required'
