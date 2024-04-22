@@ -89,20 +89,20 @@ describe('SubmitUrlController', async () => {
 
   describe('validators', () => {
     describe('localUrlValidation', () => {
-      it('should return true for valid and not too long URLs', () => {
+      it('should return undefined for valid and not too long URLs', () => {
         const url = 'http://example.com'
-        expect(SubmitUrlController.localUrlValidation(url)).toBe(true)
+        expect(SubmitUrlController.localUrlValidation(url)).toBeUndefined()
       })
 
-      it('should return false for invalid URLs', () => {
+      it('should return the correct error for invalid URLs', () => {
         const url = 'invalid-url'
-        expect(SubmitUrlController.localUrlValidation(url)).toBe(false)
+        expect(SubmitUrlController.localUrlValidation(url)).toBe('format')
       })
 
-      it('should return false for too long URLs', () => {
+      it('should return the correct error for too long URLs', () => {
         let url = 'http://example.com/'
         url += 'a'.repeat(2048)
-        expect(SubmitUrlController.localUrlValidation(url)).toBe(false)
+        expect(SubmitUrlController.localUrlValidation(url)).toBe('length')
       })
     })
 
