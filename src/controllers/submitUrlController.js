@@ -2,6 +2,8 @@ import UploadController from './uploadController.js'
 import { postUrlRequest } from '../utils/asyncRequestApi.js'
 import { URL } from 'url'
 import logger from '../utils/logger.js'
+import axios from 'axios'
+
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
@@ -35,7 +37,8 @@ class SubmitUrlController extends UploadController {
     const validators = [
       { type: 'required', fn: SubmitUrlController.urlIsDefined },
       { type: 'format', fn: SubmitUrlController.urlIsValid },
-      { type: 'length', fn: SubmitUrlController.urlIsNotTooLong }
+      { type: 'length', fn: SubmitUrlController.urlIsNotTooLong },
+      { type: 'size', fn: SubmitUrlController.urlResponseIsNotTooLarge }
     ]
 
     return validators.find(validator => !validator.fn(url))?.type
@@ -57,6 +60,20 @@ class SubmitUrlController extends UploadController {
 
   static urlIsNotTooLong (url) {
     return url.length <= 2048
+  }
+
+  static async urlResponseIsNotTooLarge (url) {
+    try {
+      const response = await axios.head(url)
+      const contentLength = response.headers['content-length']
+
+      // Convert content length to MB
+      const sizeInMB = contentLength / (1024 * 1024)
+
+      return sizeInMB <= 10
+    } catch (err) {
+      console.error(err)
+    }
   }
 }
 

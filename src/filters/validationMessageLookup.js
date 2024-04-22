@@ -27,7 +27,8 @@ const validationMessages = {
   url: {
     required: 'Enter a URL',
     format: 'Enter a valid URL',
-    length: 'The URL must be less than 2048 characters'
+    length: 'The URL must be less than 2048 characters',
+    size: 'The URL response must be smaller than 10MB'
   },
   validationResult: {
     required: 'Unable to contact the API'
