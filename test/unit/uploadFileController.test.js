@@ -109,7 +109,7 @@ describe('UploadFileController', () => {
       const res = {}
       const next = vi.fn()
 
-      UploadFileController.localValidateFile = vi.fn().mockReturnValue(true)
+      UploadFileController.localValidateFile = vi.fn().mockReturnValue(false)
       UploadFileController.uploadFileToS3 = vi.fn().mockResolvedValue('uploadedFilename')
 
       await uploadFileController.post(req, res, next)
@@ -137,7 +137,7 @@ describe('UploadFileController', () => {
       const res = {}
       const next = vi.fn()
 
-      UploadFileController.localValidateFile = vi.fn().mockReturnValue(true)
+      UploadFileController.localValidateFile = vi.fn().mockReturnValue(false)
       UploadFileController.uploadFileToS3 = vi.fn().mockResolvedValue('uploadedFilename')
 
       await uploadFileController.post(req, res, next)
@@ -169,7 +169,7 @@ describe('UploadFileController', () => {
       const res = {}
       const next = vi.fn()
 
-      UploadFileController.localValidateFile = vi.fn().mockReturnValue(true)
+      UploadFileController.localValidateFile = vi.fn().mockReturnValue(false)
       UploadFileController.uploadFileToS3 = vi.fn().mockResolvedValue('uploadedFilename')
 
       await uploadFileController.post(req, res, next)
