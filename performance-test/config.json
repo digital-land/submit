@@ -26,18 +26,6 @@
     },
     {
       "type": "check_file",
-      "dataset": "conservation-area",
-      "file_path": "files/conservation-areas.xml",
-      "original_filename": "conservation-areas.xml",
-      "mime_type": "application/xml"
-    },
-    {
-      "type": "check_url",
-      "dataset": "conservation-area",
-      "url": "https://medwaymaps.medway.gov.uk/WFS/wfs.exe?service=WFS&version=2.0.0&request=GetFeature&TypeNames=DVL_CONSERVATION_AREAS"
-    },
-    {
-      "type": "check_file",
       "dataset": "conservation-area-document",
       "file_path": "files/conservation_areas_documents.csv",
       "original_filename": "conservation_areas_documents.csv",
@@ -89,9 +77,9 @@
     {
       "type": "check_file",
       "dataset": "tree-preservation-zone",
-      "file_path": "files/tree-preservation-zone.gpkg",
-      "original_filename": "tree-preservation-zone.gpkg",
-      "mime_type": "application/x-sqlite3"
+      "file_path": "files/tree-preservation-zone.json",
+      "original_filename": "tree-preservation-zone.json",
+      "mime_type": "application/json"
     },
     {
       "type": "check_url",

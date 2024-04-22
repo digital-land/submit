@@ -45,15 +45,26 @@ class DataProviderUser(FastHttpUser):
     def check_datafile(self):
         params = config.journey_parameters[random.randint(0, len(config.journey_parameters) - 1)]
         self._get(url='/')
+        time.sleep(self._user_think_time())
         # connect_sid_cookie = list(filter(lambda c: c.name == 'connect.sid', self.client.cookiejar))[0]
         # print(f"Journey started for session: {connect_sid_cookie.value}")
         self._get(url='/dataset')
+        time.sleep(self._user_think_time())
         dataset_selection_response = self._form_post(
             url="/dataset",
             data=f"dataset={params.dataset}"
         )
         _handle_error_response(dataset_selection_response, "selection of dataset")
 
+        if params.geom_type:
+            time.sleep(self._user_think_time())
+            geom_type_response = self._form_post(
+                url="/geometry-type",
+                data=f"geomType={params.geom_type}"
+            )
+            _handle_error_response(geom_type_response, "selection of geometry type")
+
+        time.sleep(self._user_think_time())
         upload_method = 'file' if params.type == RequestTypeEnum.check_file else 'url'
         upload_method_response = self._form_post(
             url="/upload-method",
@@ -61,14 +72,16 @@ class DataProviderUser(FastHttpUser):
         )
         _handle_error_response(upload_method_response, "selection of upload method")
 
+        time.sleep(self._user_think_time(min=6, max=15))
         submit_response = self.submit_check_request(params)
         _handle_error_response(submit_response, "submission of check request")
 
         request_id = submit_response.url[submit_response.url.rfind('/')+1:]
-        print(f"Request id: {request_id}")
+        logging.info(f"Got request id: {request_id}, for params: {params}")
 
         self._get(url=f"/status/{request_id}", name="/status/[request_id]")
-        self._poll_for_completion(request_id)
+        result = self._poll_for_completion(request_id)
+        logging.info(f"Request with id: {request_id}, got status: {result.json().get('status')}")
         self._get(url=f"/results/{request_id}", name="/results/[request_id]"),
         # print(f"Journey complete for session: {connect_sid_cookie.value}")
         self.client.cookiejar.clear()
@@ -115,18 +128,21 @@ class DataProviderUser(FastHttpUser):
                 name=name
         )
 
-    def _poll_for_completion(self, request_id, statuses=['COMPLETE', 'FAILED'], wait_seconds=300):
+    def _poll_for_completion(self, request_id, statuses=['COMPLETE', 'FAILED'], wait_seconds=3, timeout_seconds=900):
         seconds_waited = 0
-        while seconds_waited < wait_seconds:
+        while seconds_waited < timeout_seconds:
             response = self._get(url=f"/api/status/{request_id}", name="/api/status/[request_id]")
             if response.ok and response.json().get('status') in statuses:
-                break
+                return response
             else:
-                time.sleep(1)
-                seconds_waited += 1
-            if seconds_waited == wait_seconds:
-                raise Exception(f"Timeout of {wait_seconds} seconds exceeded waiting for status to be complete or "
+                time.sleep(wait_seconds)
+                seconds_waited += wait_seconds
+            if seconds_waited == timeout_seconds:
+                raise Exception(f"Timeout of {timeout_seconds} seconds exceeded waiting for status to be complete or "
                                 f"failed")
+
+    def _user_think_time(self, min=3, max=5):
+        return random.randint(min, max)
 
 
 if __name__ == "__main__":
