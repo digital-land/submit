@@ -52,9 +52,15 @@ tolerated or where an average response time is deemed unacceptable.
 ## Development
 
 If you ever need to make some changes to dependencies, then add these to the `requirements.in` file.  Make sure you're
-using a virtual environment (e.g. `python -m venv venv`) and then freeze the dependencies like so:
+using a virtual environment (e.g. `python -m venv venv`) and then pin the dependencies like so:
 
 ```
-pip freeze > requirements.txt
+./venv/bin/pip-compile requirements.in
+```
+
+Note that if you've installed pip compile globally then you'll be able to just run the command like so:
+
+```
+pip-compile requirements.in
 ```
 
