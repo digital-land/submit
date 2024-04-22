@@ -49,3 +49,12 @@ See https://docs.locust.io/en/stable/running-without-web-ui.html#controlling-the
 more information.  This could be useful in a continuous integration scenario where a certain error percentile is to be
 tolerated or where an average response time is deemed unacceptable.
 
+## Development
+
+If you ever need to make some changes to dependencies, then add these to the `requirements.in` file.  Make sure you're
+using a virtual environment (e.g. `python -m venv venv`) and then freeze the dependencies like so:
+
+```
+pip freeze > requirements.txt
+```
+
