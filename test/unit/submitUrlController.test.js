@@ -8,6 +8,20 @@ describe('SubmitUrlController', async () => {
   let submitUrlController
   let asyncRequestApi
 
+  const mocks = vi.hoisted(() => {
+    return {
+      headMock: vi.fn()
+    }
+  })
+
+  vi.mock('axios', () => {
+    return {
+      default: {
+        head: mocks.headMock
+      }
+    }
+  })
+
   beforeEach(async () => {
     asyncRequestApi = await import('@/utils/asyncRequestApi')
     asyncRequestApi.postUrlRequest = vi.fn()
@@ -128,6 +142,20 @@ describe('SubmitUrlController', async () => {
         let url = 'http://example.com/'
         url += 'a'.repeat(2048)
         expect(SubmitUrlController.urlIsNotTooLong(url)).toBe(false)
+      })
+    })
+
+    describe('url has a response under our processing limit', () => {
+      it('should return true for URLs with a response smaller than 10MB', async () => {
+        const url = 'http://example.com'
+        mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1' } }))
+        expect(await SubmitUrlController.urlResponseIsNotTooLarge(url)).toBe(true)
+      })
+
+      it('should return false for URLs with a response larger than 10MB', async () => {
+        const url = 'http://example.com'
+        mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '11000000' } }))
+        expect(await SubmitUrlController.urlResponseIsNotTooLarge(url)).toBe(false)
       })
     })
   })
