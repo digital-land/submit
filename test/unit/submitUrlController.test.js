@@ -10,7 +10,7 @@ describe('SubmitUrlController', async () => {
 
   const mocks = vi.hoisted(() => {
     return {
-      headMock: vi.fn()
+      headMock: vi.fn().mockImplementation(() => ({ headers: { 'content-length': '1', 'content-type': 'text/csv' }, status: 200 }))
     }
   })
 
@@ -101,22 +101,39 @@ describe('SubmitUrlController', async () => {
     })
   })
 
+  describe('getHeadRequest', () => {
+    it('should call axios.head with the correct URL', async () => {
+      mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1' } }))
+      await SubmitUrlController.getHeadRequest('http://example.com')
+      expect(mocks.headMock).toHaveBeenCalledWith('http://example.com')
+    })
+
+    it('should return the response from axios.head', async () => {
+      const response = { headers: { 'content-length': '1' } }
+      mocks.headMock.mockImplementation(() => response)
+      expect(await SubmitUrlController.getHeadRequest('http://example.com')).toBe(response)
+    })
+  })
+
   describe('validators', () => {
     describe('localUrlValidation', () => {
-      it('should return undefined for valid and not too long URLs', () => {
+      it('should return undefined for valid and not too long URLs', async () => {
+        mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1', 'content-type': 'text/csv' }, status: 200 }))
         const url = 'http://example.com'
-        expect(SubmitUrlController.localUrlValidation(url)).toBeUndefined()
+        expect(await SubmitUrlController.localUrlValidation(url)).toBeUndefined()
       })
 
-      it('should return the correct error for invalid URLs', () => {
+      it('should return the correct error for invalid URLs', async () => {
+        mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1', 'content-type': 'text/csv' }, status: 200 }))
         const url = 'invalid-url'
-        expect(SubmitUrlController.localUrlValidation(url)).toBe('format')
+        expect(await SubmitUrlController.localUrlValidation(url)).toBe('format')
       })
 
-      it('should return the correct error for too long URLs', () => {
+      it('should return the correct error for too long URLs', async () => {
+        mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1', 'content-type': 'text/csv' }, status: 200 }))
         let url = 'http://example.com/'
         url += 'a'.repeat(2048)
-        expect(SubmitUrlController.localUrlValidation(url)).toBe('length')
+        expect(await SubmitUrlController.localUrlValidation(url)).toBe('length')
       })
     })
 
@@ -145,17 +162,41 @@ describe('SubmitUrlController', async () => {
       })
     })
 
-    describe('url has a response under our processing limit', () => {
+    describe('urlSize', () => {
       it('should return true for URLs with a response smaller than 10MB', async () => {
-        const url = 'http://example.com'
-        mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1' } }))
-        expect(await SubmitUrlController.urlResponseIsNotTooLarge(url)).toBe(true)
+        expect(SubmitUrlController.urlResponseIsNotTooLarge({ headers: { 'content-length': '1' } })).toBe(true)
       })
 
       it('should return false for URLs with a response larger than 10MB', async () => {
-        const url = 'http://example.com'
-        mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '11000000' } }))
-        expect(await SubmitUrlController.urlResponseIsNotTooLarge(url)).toBe(false)
+        expect(SubmitUrlController.urlResponseIsNotTooLarge({ headers: { 'content-length': '11000000' } })).toBe(false)
+      })
+    })
+
+    describe('urlExists', () => {
+      it('should return true for URLs that exist', async () => {
+        expect(SubmitUrlController.urlExists({ status: 200 })).toBe(true)
+      })
+
+      it('should return false for URLs that exist with a 3XX status code', async () => {
+        expect(SubmitUrlController.urlExists({ status: 301 })).toBe(false)
+      })
+
+      it('should return false for URLs that exist with a 4XX status code', async () => {
+        expect(SubmitUrlController.urlExists({ status: 404 })).toBe(false)
+      })
+
+      it('should return false for URLs that do not exist', async () => {
+        expect(SubmitUrlController.urlExists(null)).toBe(false)
+      })
+    })
+
+    describe('validateAcceptedFileType', () => {
+      it('should return true for accepted file types', async () => {
+        expect(SubmitUrlController.validateAcceptedFileType({ headers: { 'content-type': 'text/csv' } })).toBe(true)
+      })
+
+      it('should return false for unaccepted file types', async () => {
+        expect(SubmitUrlController.validateAcceptedFileType({ headers: { 'content-type': 'text/html' } })).toBe(false)
       })
     })
   })
