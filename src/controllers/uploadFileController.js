@@ -111,7 +111,7 @@ class UploadFileController extends UploadController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3']
+    const allowedExtensions = Object.keys(config.allowedFileTypes)
 
     const parts = datafile.originalname.split('.')
 
@@ -158,17 +158,7 @@ class UploadFileController extends UploadController {
   }
 
   static fileMimeTypeIsValid (datafile) {
-    const allowedMimeTypes = [
-      'text/csv',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/json',
-      'application/vnd.geo+json',
-      'application/gml+xml',
-      'application/gpkg',
-      'application/geopackage+sqlite3',
-      'application/octet-stream' // This is a catch all for when the mime type is not recognised
-    ]
+    const allowedMimeTypes = Object.values(config.allowedFileTypes)
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
     }
@@ -183,16 +173,7 @@ class UploadFileController extends UploadController {
       return true
     }
 
-    const mimeTypes = {
-      csv: 'text/csv',
-      xls: 'application/vnd.ms-excel',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      json: 'application/json',
-      geojson: 'application/vnd.geo+json',
-      gml: 'application/gml+xml',
-      gpkg: 'application/gpkg',
-      sqlite: 'application/geopackage+sqlite3'
-    }
+    const mimeTypes = config.allowedFileTypes
 
     if (mimeTypes[extension] !== datafile.mimetype) {
       return false
