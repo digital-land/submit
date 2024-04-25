@@ -35,15 +35,20 @@ class UploadFileController extends UploadController {
         filePath: req.file.path,
         fileName: req.file.originalname
       }
-      req.body.datafile = req.file
     }
 
-    const localValidationResult = UploadFileController.localValidateFile(dataFileForLocalValidation)
+    const localValidationErrorType = UploadFileController.localValidateFile(dataFileForLocalValidation)
 
-    if (!localValidationResult) {
-      this.validationError('localValidationError', '', null, req)
-      super.post(req, res, next)
-      return
+    if (localValidationErrorType) {
+      const error = {
+        key: 'datafile',
+        type: localValidationErrorType
+      }
+      const errors = {
+        datafile: new UploadFileController.Error(error.key, error, req, res)
+      }
+      logger.error('local validation failed during file upload', error)
+      return next(errors)
     }
 
     try {
@@ -64,14 +69,18 @@ class UploadFileController extends UploadController {
   }
 
   static localValidateFile (datafile) {
-    return UploadFileController.notUndefined(datafile) &&
-            UploadFileController.extensionIsValid(datafile) &&
-            UploadFileController.sizeIsValid(datafile) &&
-            UploadFileController.fileNameIsntTooLong(datafile) &&
-            UploadFileController.fileNameIsValid(datafile) &&
-            UploadFileController.fileNameDoesntContainDoubleExtension(datafile) &&
-            UploadFileController.fileMimeTypeIsValid(datafile) &&
-            UploadFileController.fileMimeTypeMatchesExtension(datafile)
+    const validators = [
+      { type: 'required', fn: UploadFileController.notUndefined },
+      { type: 'fileType', fn: UploadFileController.extensionIsValid },
+      { type: 'fileSize', fn: UploadFileController.sizeIsValid },
+      { type: 'fileNameTooLong', fn: UploadFileController.fileNameIsntTooLong },
+      { type: 'fileNameInvalidCharacters', fn: UploadFileController.fileNameIsValid },
+      { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
+      { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
+      { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
+    ]
+
+    return validators.find(validator => !validator.fn(datafile))?.type
   }
 
   /*

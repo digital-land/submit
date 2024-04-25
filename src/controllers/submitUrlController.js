@@ -1,16 +1,24 @@
 import UploadController from './uploadController.js'
 import { postUrlRequest } from '../utils/asyncRequestApi.js'
 import { URL } from 'url'
+import logger from '../utils/logger.js'
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
     this.resetValidationErrorMessage()
 
-    const localValidationResult = SubmitUrlController.localUrlValidation(req.body.url)
-    if (!localValidationResult) {
-      this.validationError('localValidationError', '', null, req)
-      super.post(req, res, next)
-      return
+    const localValidationErrorType = SubmitUrlController.localUrlValidation(req.body.url)
+
+    if (localValidationErrorType) {
+      const error = {
+        key: 'url',
+        type: localValidationErrorType
+      }
+      const errors = {
+        url: new SubmitUrlController.Error(error.key, error, req, res)
+      }
+      logger.error('local validation failed during url submission', error)
+      return next(errors)
     }
 
     try {
@@ -24,7 +32,17 @@ class SubmitUrlController extends UploadController {
   }
 
   static localUrlValidation (url) {
-    return SubmitUrlController.urlIsValid(url) && SubmitUrlController.urlIsNotTooLong(url)
+    const validators = [
+      { type: 'required', fn: SubmitUrlController.urlIsDefined },
+      { type: 'format', fn: SubmitUrlController.urlIsValid },
+      { type: 'length', fn: SubmitUrlController.urlIsNotTooLong }
+    ]
+
+    return validators.find(validator => !validator.fn(url))?.type
+  }
+
+  static urlIsDefined (url) {
+    return url !== '' && url !== undefined
   }
 
   static urlIsValid (url) {
