@@ -9,6 +9,7 @@ import { promises as fs, createReadStream } from 'fs'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import { postFileRequest } from '../utils/asyncRequestApi.js'
+import { allowedFileTypes } from '../utils/utils.js'
 
 AWS.config.update({
   region: config.aws.region,
@@ -111,7 +112,7 @@ class UploadFileController extends UploadController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = Object.keys(config.allowedFileTypes)
+    const allowedExtensions = Object.keys(allowedFileTypes)
 
     const parts = datafile.originalname.split('.')
 
@@ -158,7 +159,7 @@ class UploadFileController extends UploadController {
   }
 
   static fileMimeTypeIsValid (datafile) {
-    const allowedMimeTypes = Object.values(config.allowedFileTypes)
+    const allowedMimeTypes = Object.values(allowedFileTypes)
 
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
@@ -174,9 +175,7 @@ class UploadFileController extends UploadController {
       return true
     }
 
-    const mimeTypes = config.allowedFileTypes
-
-    if (mimeTypes[extension] !== datafile.mimetype) {
+    if (allowedFileTypes[extension] !== datafile.mimetype) {
       return false
     }
 

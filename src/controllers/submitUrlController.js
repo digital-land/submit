@@ -3,7 +3,7 @@ import { postUrlRequest } from '../utils/asyncRequestApi.js'
 import { URL } from 'url'
 import logger from '../utils/logger.js'
 import axios from 'axios'
-import config from '../../config/index.js'
+import { allowedFileTypes } from '../utils/utils.js'
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
@@ -104,7 +104,7 @@ class SubmitUrlController extends UploadController {
   static validateAcceptedFileType (response) {
     try {
       const contentType = response.headers['content-type']
-      const acceptedTypes = Object.values(config.allowedFileTypes) // Add your accepted file types here
+      const acceptedTypes = Object.values(allowedFileTypes) // Add your accepted file types here
       return acceptedTypes.includes(contentType)
     } catch (err) {
       console.error(err)

@@ -18,14 +18,3 @@ redis: false
 url: 'https://publish-planning.data.gov.uk'
 serviceName: 'Publish planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
-allowedFileTypes: {
-    csv: 'text/csv',
-    xls: 'application/vnd.ms-excel',
-    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    json: 'application/json',
-    geojson: 'application/vnd.geo+json',
-    gml: 'application/gml+xml',
-    gpkg: 'application/gpkg',
-    sqlite: 'application/geopackage+sqlite3',
-    zip: 'application/zip',
-}
