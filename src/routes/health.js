@@ -1,7 +1,7 @@
 import express from 'express'
 import config from '../../config/index.js'
 import AWS from 'aws-sdk'
-import redis from 'redis'
+import { createClient } from 'redis'
 // import gitCommitInfo from 'git-commit-info'
 
 const router = express.Router()
@@ -57,9 +57,9 @@ const checkRequestApi = async () => {
 }
 
 const checkRedis = async () => {
-  const client = redis.createClient({
-    host: config.redis.host,
-    port: config.redis.port
+  const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
+  const client = createClient({
+    url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
   })
 
   return await client.connect().then(() => {
