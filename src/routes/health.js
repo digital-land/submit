@@ -57,7 +57,7 @@ const checkRedis = async () => {
   })
 
   return await client.connect().then(() => {
-    if (client.connected) {
+    if (client.isOpen) {
       client.quit()
       return true
     } else {
