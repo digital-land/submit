@@ -93,5 +93,5 @@ export const allowedFileTypes = {
   gml: 'application/gml+xml',
   gpkg: 'application/gpkg',
   sqlite: 'application/geopackage+sqlite3',
-  zip: 'application/zip',
+  zip: 'application/zip'
 }
