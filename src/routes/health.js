@@ -2,17 +2,23 @@ import express from 'express'
 import config from '../../config/index.js'
 import AWS from 'aws-sdk'
 import redis from 'redis'
-import gitCommitInfo from 'git-commit-info'
+// import gitCommitInfo from 'git-commit-info'
 
 const router = express.Router()
 
-const commitInfo = gitCommitInfo()
+// const commitInfo = gitCommitInfo()
+
+AWS.config.update({
+  region: config.aws.region,
+  endpoint: config.aws.endpoint,
+  s3ForcePathStyle: config.aws.s3ForcePathStyle || false
+})
 
 router.get('/', async (req, res) => {
   const toReturn = {
     name: config.serviceName,
     environment: config.environment,
-    version: commitInfo.shortHash,
+    version: 'ToDo', // commitInfo.shortHash,
     maintenance: config.maintenance.serviceUnavailable,
     dependencies: [
       {
