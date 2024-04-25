@@ -111,7 +111,7 @@ class UploadFileController extends UploadController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3']
+    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3', 'zip']
 
     const parts = datafile.originalname.split('.')
 
@@ -167,7 +167,8 @@ class UploadFileController extends UploadController {
       'application/gml+xml',
       'application/gpkg',
       'application/geopackage+sqlite3',
-      'application/octet-stream' // This is a catch all for when the mime type is not recognised
+      'application/octet-stream', // This is a catch all for when the mime type is not recognised
+      'application/zip' // Add support for zip files
     ]
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
@@ -191,7 +192,8 @@ class UploadFileController extends UploadController {
       geojson: 'application/vnd.geo+json',
       gml: 'application/gml+xml',
       gpkg: 'application/gpkg',
-      sqlite: 'application/geopackage+sqlite3'
+      sqlite: 'application/geopackage+sqlite3',
+      zip: 'application/zip'
     }
 
     if (mimeTypes[extension] !== datafile.mimetype) {
