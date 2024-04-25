@@ -35,15 +35,20 @@ class UploadFileController extends UploadController {
         filePath: req.file.path,
         fileName: req.file.originalname
       }
-      req.body.datafile = req.file
     }
 
-    const localValidationResult = UploadFileController.localValidateFile(dataFileForLocalValidation)
+    const localValidationErrorType = UploadFileController.localValidateFile(dataFileForLocalValidation)
 
-    if (!localValidationResult) {
-      this.validationError('localValidationError', '', null, req)
-      super.post(req, res, next)
-      return
+    if (localValidationErrorType) {
+      const error = {
+        key: 'datafile',
+        type: localValidationErrorType
+      }
+      const errors = {
+        datafile: new UploadFileController.Error(error.key, error, req, res)
+      }
+      logger.error('local validation failed during file upload', error)
+      return next(errors)
     }
 
     try {
@@ -64,14 +69,18 @@ class UploadFileController extends UploadController {
   }
 
   static localValidateFile (datafile) {
-    return UploadFileController.notUndefined(datafile) &&
-            UploadFileController.extensionIsValid(datafile) &&
-            UploadFileController.sizeIsValid(datafile) &&
-            UploadFileController.fileNameIsntTooLong(datafile) &&
-            UploadFileController.fileNameIsValid(datafile) &&
-            UploadFileController.fileNameDoesntContainDoubleExtension(datafile) &&
-            UploadFileController.fileMimeTypeIsValid(datafile) &&
-            UploadFileController.fileMimeTypeMatchesExtension(datafile)
+    const validators = [
+      { type: 'required', fn: UploadFileController.notUndefined },
+      { type: 'fileType', fn: UploadFileController.extensionIsValid },
+      { type: 'fileSize', fn: UploadFileController.sizeIsValid },
+      { type: 'fileNameTooLong', fn: UploadFileController.fileNameIsntTooLong },
+      { type: 'fileNameInvalidCharacters', fn: UploadFileController.fileNameIsValid },
+      { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
+      { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
+      { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
+    ]
+
+    return validators.find(validator => !validator.fn(datafile))?.type
   }
 
   /*
@@ -102,7 +111,7 @@ class UploadFileController extends UploadController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3']
+    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3', 'zip']
 
     const parts = datafile.originalname.split('.')
 
@@ -158,7 +167,8 @@ class UploadFileController extends UploadController {
       'application/gml+xml',
       'application/gpkg',
       'application/geopackage+sqlite3',
-      'application/octet-stream' // This is a catch all for when the mime type is not recognised
+      'application/octet-stream', // This is a catch all for when the mime type is not recognised
+      'application/zip' // Add support for zip files
     ]
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
@@ -182,7 +192,8 @@ class UploadFileController extends UploadController {
       geojson: 'application/vnd.geo+json',
       gml: 'application/gml+xml',
       gpkg: 'application/gpkg',
-      sqlite: 'application/geopackage+sqlite3'
+      sqlite: 'application/geopackage+sqlite3',
+      zip: 'application/zip'
     }
 
     if (mimeTypes[extension] !== datafile.mimetype) {
