@@ -181,7 +181,7 @@ describe('UploadFileController', () => {
   describe('validators', () => {
     describe('file extension', () => {
       it('should return true if the file extension is one of the accepted extensions', () => {
-        const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg']
+        const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'zip']
 
         for (const extension of allowedExtensions) {
           expect(UploadFileController.extensionIsValid({ originalname: `test.${extension}` })).toEqual(true)
@@ -230,6 +230,34 @@ describe('UploadFileController', () => {
 
       it('should return false if the file name contains a double extension', () => {
         expect(UploadFileController.fileNameDoesntContainDoubleExtension({ originalname: 'test.csv.csv' })).toEqual(false)
+      })
+    })
+
+    describe('file mime type', () => {
+      it('should return true if the file mime type is one of the accepted mime types', () => {
+        const allowedMimeTypes = ['text/csv', 'application/json', 'application/zip']
+
+        for (const mimeType of allowedMimeTypes) {
+          expect(UploadFileController.fileMimeTypeIsValid({ mimetype: mimeType })).toEqual(true)
+        }
+      })
+
+      it('should return false if the file mime type is not one of the accepted mime types', () => {
+        expect(UploadFileController.fileMimeTypeIsValid({ mimetype: 'application/exe' })).toEqual(false)
+      })
+    })
+
+    describe('file mime type matching extension', () => {
+      it('should return true if the file mime type matches the extension', () => {
+        const file = { originalname: 'test.csv', mimetype: 'text/csv' }
+
+        expect(UploadFileController.fileMimeTypeMatchesExtension(file)).toEqual(true)
+      })
+
+      it('should return false if the file mime type does not match the extension', () => {
+        const file = { originalname: 'test.csv', mimetype: 'application/json' }
+
+        expect(UploadFileController.fileMimeTypeMatchesExtension(file)).toEqual(false)
       })
     })
   })

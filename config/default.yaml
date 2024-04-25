@@ -26,5 +26,6 @@ allowedFileTypes: {
     geojson: 'application/vnd.geo+json',
     gml: 'application/gml+xml',
     gpkg: 'application/gpkg',
-    sqlite: 'application/geopackage+sqlite3'
+    sqlite: 'application/geopackage+sqlite3',
+    zip: 'application/zip',
 }
