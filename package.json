@@ -61,6 +61,7 @@
     "express": "^4.18.2",
     "express-session": "^1.18.0",
     "fs": "^0.0.1-security",
+    "git-commit-info": "^2.0.2",
     "govuk-frontend": "^4.7.0",
     "hmpo-config": "^3.0.0",
     "hmpo-form-wizard": "^13.0.0",

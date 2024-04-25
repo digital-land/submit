@@ -2,15 +2,17 @@ import express from 'express'
 import config from '../../config/index.js'
 import AWS from 'aws-sdk'
 import redis from 'redis'
-import childProcess from 'child_process'
+import gitCommitInfo from 'git-commit-info'
 
 const router = express.Router()
+
+const commitInfo = gitCommitInfo()
 
 router.get('/', async (req, res) => {
   const toReturn = {
     name: config.serviceName,
     environment: config.environment,
-    version: getGitHash(),
+    version: commitInfo.shortHash,
     maintenance: config.maintenance.serviceUnavailable,
     dependencies: [
       {
@@ -65,10 +67,6 @@ const checkRedis = async () => {
     console.log('error:', err)
     return false
   })
-}
-
-const getGitHash = () => {
-  return childProcess.execSync('git rev-parse HEAD').toString().trim()
 }
 
 export default router
