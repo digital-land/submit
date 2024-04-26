@@ -179,7 +179,7 @@ export default class RequestData {
     pageNumber = parseInt(pageNumber)
     const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
 
-    const items = pagination(6, pageNumber + 1).map(item => {
+    const items = pagination(totalPages, pageNumber + 1).map(item => {
       if (item === '...') {
         return {
           ellipsis: true,
