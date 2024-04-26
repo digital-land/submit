@@ -43,6 +43,8 @@ class ResultsController extends PageController {
       req.form.options.mappings = this.result.getFieldMappings()
       req.form.options.verboseRows = this.result.getRowsWithVerboseColumns(this.result.hasErrors())
       req.form.options.geometries = this.result.getGeometries()
+      req.form.options.pagination = this.result.getPagination(req.params.pageNumber)
+      req.form.options.id = req.params.id
     } else {
       req.form.options.error = this.result.getError()
     }

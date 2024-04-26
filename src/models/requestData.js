@@ -11,6 +11,12 @@ export default class RequestData {
   async fetchResponseDetails (pageNumber = 0, limit = 50) {
     const request = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?offset=${pageNumber * limit}&limit=${limit}`, { timeout: 30000 })
     this.response.details = request.data
+
+    this.pagination = {
+      totalResults: request.headers['x-pagination-total-results'],
+      offset: request.headers['x-pagination-offset'],
+      limit: request.headers['x-pagination-limit']
+    };
   }
 
   isFailed () {
@@ -122,6 +128,10 @@ export default class RequestData {
     return this.params
   }
 
+  getId () {
+    return this.id
+  }
+
   getErrorSummary () {
     if (!this.response || !this.response.data || !this.response.data['error-summary']) {
       logger.error('trying to get error summary when there is none: request id: ' + this.id)
@@ -163,5 +173,19 @@ export default class RequestData {
       return null
     }
     return geometries
+  }
+
+  getPagination (pageNumber) {
+    pageNumber = parseInt(pageNumber)
+    const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
+    return {
+      totalResults: parseInt(this.pagination.totalResults),
+      offset: parseInt(this.pagination.offset),
+      limit: parseInt(this.pagination.limit),
+      currentPage: pageNumber,
+      nextPage: pageNumber < totalPages - 1 ? pageNumber + 1 : null,
+      previousPage: pageNumber > 0 ? pageNumber - 1 : null,
+      totalPages
+    }
   }
 }

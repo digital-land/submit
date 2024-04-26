@@ -4,6 +4,7 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
 {% set pageName = 'Check your data before you continue' %}
 
@@ -34,7 +35,8 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <p>{{options.verboseRows.length}} rows can be published.</p>
+      <p>{{options.pagination.totalResults}} rows can be published.</p>
+      <p>Viewing records {{options.pagination.offset}} - {{options.pagination.offset + options.pagination.limit}}</p>
 
       <div class="app-scrollable-container" s>
         <table class="govuk-table">
@@ -62,6 +64,30 @@
           </tbody>
         </table>
       </div>
+
+      {{ govukPagination({
+        previous: {
+          href: '/results/'+options.id+'/'+options.pagination.previousPage
+        },
+        next: {
+          href: '/results/'+options.id+'/'+options.pagination.nextPage
+        },
+        items: [
+          {
+            number: 1,
+            href: "#"
+          },
+          {
+            number: 2,
+            current: true,
+            href: "#"
+          },
+          {
+            number: 3,
+            href: "#"
+          }
+        ]
+      }) }}
 
       {% if options.geometries %}
         <p>Here’s your data on a map:</p>
