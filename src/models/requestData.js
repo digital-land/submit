@@ -178,6 +178,22 @@ export default class RequestData {
   getPagination (pageNumber) {
     pageNumber = parseInt(pageNumber)
     const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
+
+    const items = pagination(6, pageNumber + 1).map(item => {
+      if (item === '...') {
+        return {
+          ellipsis: true,
+          href: '#'
+        }
+      } else {
+        return {
+          number: item,
+          href: `/results/${this.id}/${parseInt(item) - 1}`,
+          current: pageNumber === parseInt(item) - 1
+        }
+      }
+    })
+
     return {
       totalResults: parseInt(this.pagination.totalResults),
       offset: parseInt(this.pagination.offset),
@@ -185,7 +201,29 @@ export default class RequestData {
       currentPage: pageNumber,
       nextPage: pageNumber < totalPages - 1 ? pageNumber + 1 : null,
       previousPage: pageNumber > 0 ? pageNumber - 1 : null,
-      totalPages
+      totalPages,
+      items
     }
   }
+}
+
+const { min, max } = Math
+const range = (lo, hi) => Array.from({ length: hi - lo }, (_, i) => i + lo)
+
+const pagination = (count, current, ellipsis = '...') => {
+  if (count <= 4) {
+    return range(1, count + 1)
+  }
+  const adjacent = 1
+  const left = current === count ? current - 2 * adjacent : max(0, current - adjacent)
+  const right = current === 1 ? 1 + adjacent * 2 : min(count, current + adjacent)
+  const middle = range(left, right + 1)
+  const leftEllipsis = left > 1
+  const rightEllipsis = right < count
+  const result = [
+    ...(leftEllipsis ? [1, ellipsis] : middle),
+    ...(leftEllipsis && rightEllipsis ? middle : []),
+    ...(rightEllipsis ? [ellipsis, count] : middle)
+  ]
+  return result
 }

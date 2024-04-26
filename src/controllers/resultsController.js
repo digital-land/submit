@@ -1,9 +1,9 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../utils/asyncRequestApi.js'
 
-const failedRequestTemplate = 'failedRequest'
-const errorsTemplate = 'errors'
-const noErrorsTemplate = 'no-errors'
+const failedRequestTemplate = 'results/failedRequest'
+const errorsTemplate = 'results/errors'
+const noErrorsTemplate = 'results/no-errors'
 
 class ResultsController extends PageController {
   async configure (req, res, next) {
