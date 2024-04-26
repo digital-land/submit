@@ -1,9 +1,16 @@
 import getVerboseColumns from '../utils/getVerboseColumns.js'
 import logger from '../utils/logger.js'
+import axios from 'axios'
+import config from '../../config/index.js'
 
 export default class RequestData {
-  constructor (data) {
-    Object.assign(this, data)
+  constructor (response) {
+    Object.assign(this, response)
+  }
+
+  async fetchResponseDetails(pageNumber = 0, limit = 50) {
+    const request = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?offset=${pageNumber*limit}&limit=${limit}`, { timeout: 30000 })
+    this.response.details = request.data
   }
 
   isFailed () {
