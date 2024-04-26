@@ -8,8 +8,8 @@ export default class RequestData {
     Object.assign(this, response)
   }
 
-  async fetchResponseDetails(pageNumber = 0, limit = 50) {
-    const request = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?offset=${pageNumber*limit}&limit=${limit}`, { timeout: 30000 })
+  async fetchResponseDetails (pageNumber = 0, limit = 50) {
+    const request = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?offset=${pageNumber * limit}&limit=${limit}`, { timeout: 30000 })
     this.response.details = request.data
   }
 

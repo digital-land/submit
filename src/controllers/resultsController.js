@@ -17,7 +17,7 @@ class ResultsController extends PageController {
         this.template = noErrorsTemplate
       }
 
-      if(this.template !== failedRequestTemplate) {
+      if (this.template !== failedRequestTemplate) {
         await this.result.fetchResponseDetails(req.params.pageNumber)
       }
 
