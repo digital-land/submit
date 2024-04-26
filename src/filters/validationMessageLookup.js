@@ -27,7 +27,10 @@ const validationMessages = {
   url: {
     required: 'Enter a URL',
     format: 'Enter a valid URL',
-    length: 'The URL must be less than 2048 characters'
+    length: 'The URL must be less than 2048 characters',
+    exists: 'The URL does not exist',
+    filetype: 'The file referenced by URL must be a CSV, GeoJSON, GML or GeoPackage file',
+    size: 'The file referenced by URL must be smaller than 10MB'
   },
   validationResult: {
     required: 'Unable to contact the API'
