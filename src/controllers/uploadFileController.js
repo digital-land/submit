@@ -9,6 +9,7 @@ import { promises as fs, createReadStream } from 'fs'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import { postFileRequest } from '../utils/asyncRequestApi.js'
+import { allowedFileTypes } from '../utils/utils.js'
 
 AWS.config.update({
   region: config.aws.region,
@@ -111,7 +112,7 @@ class UploadFileController extends UploadController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3', 'zip']
+    const allowedExtensions = Object.keys(allowedFileTypes)
 
     const parts = datafile.originalname.split('.')
 
@@ -158,18 +159,8 @@ class UploadFileController extends UploadController {
   }
 
   static fileMimeTypeIsValid (datafile) {
-    const allowedMimeTypes = [
-      'text/csv',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/json',
-      'application/vnd.geo+json',
-      'application/gml+xml',
-      'application/gpkg',
-      'application/geopackage+sqlite3',
-      'application/octet-stream', // This is a catch all for when the mime type is not recognised
-      'application/zip' // Add support for zip files
-    ]
+    const allowedMimeTypes = Object.values(allowedFileTypes)
+
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
     }
@@ -184,19 +175,7 @@ class UploadFileController extends UploadController {
       return true
     }
 
-    const mimeTypes = {
-      csv: 'text/csv',
-      xls: 'application/vnd.ms-excel',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      json: 'application/json',
-      geojson: 'application/vnd.geo+json',
-      gml: 'application/gml+xml',
-      gpkg: 'application/gpkg',
-      sqlite: 'application/geopackage+sqlite3',
-      zip: 'application/zip'
-    }
-
-    if (mimeTypes[extension] !== datafile.mimetype) {
+    if (allowedFileTypes[extension] !== datafile.mimetype) {
       return false
     }
 
