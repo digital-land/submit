@@ -16,7 +16,7 @@ export default class RequestData {
       totalResults: request.headers['x-pagination-total-results'],
       offset: request.headers['x-pagination-offset'],
       limit: request.headers['x-pagination-limit']
-    };
+    }
   }
 
   isFailed () {
