@@ -34,7 +34,7 @@ describe('errors page', () => {
       }
     }
 
-    const html = nunjucks.render('errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
+    const html = nunjucks.render('results/errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
 
     // error summary
     expect(html).toContain('<ul class="govuk-list govuk-list--bullet"> <li> 1 geometry must be in Well-Known Text (WKT) format </li> <li> 1 documentation URL must be a real URL </li> <li> 1 entry date must be today or in the past </li> <li> 1 start date must be a real date </li> <li> 1 geometry missing </li> <li> Reference column missing </li> </ul> ')

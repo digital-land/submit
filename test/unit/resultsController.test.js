@@ -54,7 +54,7 @@ describe('ResultsController', () => {
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(resultsController.template).toBe('errors')
+      expect(resultsController.template).toBe('results/errors')
     })
 
     it('should set the template to the no-errors template if the result has no errors', async () => {
@@ -62,7 +62,7 @@ describe('ResultsController', () => {
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(resultsController.template).toBe('no-errors')
+      expect(resultsController.template).toBe('results/no-errors')
     })
 
     it('should set the template to the failedRequest template if the result is failed', async () => {
@@ -70,7 +70,7 @@ describe('ResultsController', () => {
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(resultsController.template).toBe('failedRequest')
+      expect(resultsController.template).toBe('results/failedRequest')
     })
   })
 
@@ -101,7 +101,8 @@ describe('ResultsController', () => {
         getRowsWithVerboseColumns: () => (['verbose-columns']),
         getFields: () => (['fields']),
         getFieldMappings: () => ({ fields: 'geometries' }),
-        hasErrors: () => false
+        hasErrors: () => false,
+        getPagination: () => 'pagination'
       }
       const res = { redirect: vi.fn() }
       await resultsController.locals(req, res, () => {})
@@ -112,6 +113,7 @@ describe('ResultsController', () => {
       expect(req.form.options.fields).toStrictEqual(['fields'])
       expect(req.form.options.verboseRows).toStrictEqual(['verbose-columns'])
       expect(req.form.options.geometries).toStrictEqual(['geometries'])
+      expect(req.form.options.pagination).toBe('pagination')
     })
   })
 

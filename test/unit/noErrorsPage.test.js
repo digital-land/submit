@@ -36,7 +36,7 @@ describe('no Errors Page', () => {
       errors: {}
     }
 
-    const html = nunjucks.render('no-errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
+    const html = nunjucks.render('results/no-errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
 
     // expect the table column headers to be correct
     expect(html).toContain('<thead class="govuk-table__head"> <tr class="govuk-table__row"> <th scope="col" class="govuk-table__header">id</th> <th scope="col" class="govuk-table__header">geometry</th> <th scope="col" class="govuk-table__header">name</th> <th scope="col" class="govuk-table__header">Layer</th> <th scope="col" class="govuk-table__header">area(ha)</th> <th scope="col" class="govuk-table__header">entry-date</th> <th scope="col" class="govuk-table__header">start-date</th> <th scope="col" class="govuk-table__header">documentation-url</th> </tr> </thead>')
