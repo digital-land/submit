@@ -4,6 +4,8 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
 {% set pageName = 'Your data has errors' %}
 
 {% block content %}
@@ -28,6 +30,7 @@
 
 {% if options.verboseRows|length > 0 %}
   <div class="govuk-grid-row">
+    <p>Viewing records {{options.pagination.offset}} - {{options.pagination.offset + options.pagination.limit}}</p>
     <div class="govuk-grid-column-full">
       <h2 class="govuk-heading-m">
         Check your errors
@@ -65,6 +68,17 @@
           </tbody>
         </table>
       </div>
+
+      {{ govukPagination({
+        previous: {
+          href: '/results/'+options.id+'/'+options.pagination.previousPage
+        },
+        next: {
+          href: '/results/'+options.id+'/'+options.pagination.nextPage
+        },
+        items: options.pagination.items
+      })}}
+
     </div>
   </div>
 {% endif %}
