@@ -12,7 +12,7 @@ export default class RequestData {
     const urlParams = new URLSearchParams()
     urlParams.append('offset', pageNumber * limit)
     urlParams.append('limit', limit)
-    if(severity){
+    if (severity) {
       urlParams.append('jsonpath', `$.issue_logs[*].severity=="${severity}"`)
     }
 
