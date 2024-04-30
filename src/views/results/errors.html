@@ -69,15 +69,17 @@
         </table>
       </div>
 
-      {{ govukPagination({
-        previous: {
-          href: '/results/'+options.id+'/'+options.pagination.previousPage
-        },
-        next: {
-          href: '/results/'+options.id+'/'+options.pagination.nextPage
-        },
-        items: options.pagination.items
-      })}}
+      {% if options.pagination.items | length > 1 %}
+        {{ govukPagination({
+          previous: {
+            href: '/results/'+options.id+'/'+options.pagination.previousPage
+          },
+          next: {
+            href: '/results/'+options.id+'/'+options.pagination.nextPage
+          },
+          items: options.pagination.items
+        })}}
+      {% endif %}
 
     </div>
   </div>
