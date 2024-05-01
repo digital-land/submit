@@ -5,6 +5,7 @@ import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 
 import errorResponse from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json'
+import errorResponseDetails from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors-details.json'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -21,6 +22,14 @@ addFilters(nunjucksEnv)
 describe('errors page', () => {
   it('renders the correct number of errors', () => {
     const requestData = new RequestData(errorResponse)
+
+    requestData.response.details = errorResponseDetails
+
+    requestData.response.pagination = {
+      totalResults: 100,
+      offset: 0,
+      limit: 50
+    }
 
     const params = {
       options: {
