@@ -104,7 +104,7 @@ class SubmitUrlController extends UploadController {
   static validateAcceptedFileType (response) {
     try {
       const contentType = response.headers['content-type']
-      const acceptedTypes = Object.values(allowedFileTypes).flat();
+      const acceptedTypes = Object.values(allowedFileTypes).flat()
       return acceptedTypes.includes(contentType)
     } catch (err) {
       console.error(err)
