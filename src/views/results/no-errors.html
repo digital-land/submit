@@ -16,16 +16,22 @@
   {% set dataLooksCorrectError = true %}
 {% endif %}
 
+
 {% block pageTitle %}
+  {% set pageTitle = super() %}
   {% if dataLooksCorrectError %}
-    Error: {{super()}}
-  {% else %}
-    {{super()}}
+    {% set pageTitle = "Error:" + pageTitle %}
   {% endif %}
+  {% if options.pagination.totalPages > 1 %}
+    {% set pageTitleString = ' (page ' + options.pagination.currentPage + ' of ' + options.pagination.totalPages + ')'%}
+    {% set pageTitle = pageTitle + pageTitleString %}
+  {% endif %}
+
+  {{pageTitle}}
 {% endblock %}
 
-{% block content %}
 
+{% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">
@@ -38,7 +44,6 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
       <p>{{options.pagination.totalResults}} rows can be published.</p>
-      <p>Viewing records {{options.pagination.offset}} - {{options.pagination.offset + options.pagination.limit}}</p>
 
       <div class="app-scrollable-container" s>
         <table class="govuk-table">

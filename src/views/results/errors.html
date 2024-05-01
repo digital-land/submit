@@ -8,6 +8,16 @@
 
 {% set pageName = 'Your data has errors' %}
 
+{% block pageTitle %}
+  {% set pageTitle = super() %}
+  {% if options.pagination.totalPages > 1 %}
+    {% set pageTitleString = ' (page ' + options.pagination.currentPage + ' of ' + options.pagination.totalPages + ')'%}
+    {% set pageTitle = pageTitle + pageTitleString %}
+  {% endif %}
+
+  {{pageTitle}}
+{% endblock %}
+
 {% block content %}
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -30,7 +40,6 @@
 
 {% if options.verboseRows|length > 0 %}
   <div class="govuk-grid-row">
-    <p>Viewing records {{options.pagination.offset}} - {{options.pagination.offset + options.pagination.limit}}</p>
     <div class="govuk-grid-column-full">
       <h2 class="govuk-heading-m">
         Check your errors

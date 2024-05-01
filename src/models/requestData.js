@@ -205,7 +205,7 @@ export default class RequestData {
       totalResults: parseInt(this.pagination.totalResults),
       offset: parseInt(this.pagination.offset),
       limit: parseInt(this.pagination.limit),
-      currentPage: pageNumber,
+      currentPage: pageNumber + 1,
       nextPage: pageNumber < totalPages - 1 ? pageNumber + 1 : null,
       previousPage: pageNumber > 0 ? pageNumber - 1 : null,
       totalPages,
