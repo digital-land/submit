@@ -9,7 +9,10 @@ class ResultsController extends PageController {
   async configure (req, res, next) {
     try {
       this.result = await getRequestData(req.params.id)
-      if (this.result.isFailed()) {
+      if (!this.result.isComplete()) {
+        res.redirect(`/status/${req.params.id}`)
+        return
+      } else if (this.result.isFailed()) {
         this.template = failedRequestTemplate
       } else if (this.result.hasErrors()) {
         this.template = errorsTemplate
@@ -26,11 +29,6 @@ class ResultsController extends PageController {
   }
 
   async locals (req, res, next) {
-    if (!this.result.isComplete()) {
-      res.redirect(`/status/${req.params.id}`)
-      return
-    }
-
     req.form.options.template = this.template
     req.form.options.requestParams = this.result.getParams()
 

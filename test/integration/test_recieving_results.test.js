@@ -17,6 +17,7 @@ import fs from 'fs'
 
 test('receiving a successful result', async ({ page }) => {
   const successResponse = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete.json')
+  const successResponseDetails = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-details.json')
 
   const resultsPage = new ResultsPage(page)
 
@@ -26,12 +27,13 @@ test('receiving a successful result', async ({ page }) => {
   await expect(page.locator('#main-content')).toContainText('3 rows can be published.')
 
   const tableValues = await getTableContents(page, 'govuk-table')
-  const expectedTableValues = getTableValuesFromResponse(successResponse)
+  const expectedTableValues = getTableValuesFromResponse(successResponse, successResponseDetails)
   expect(tableValues).toEqual(expectedTableValues)
 })
 
 test('receiving a result with errors', async ({ page }) => {
   const errorResponse = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json')
+  const errorResponseDetails = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors-details.json')
 
   const resultsPage = new ResultsPage(page)
 
@@ -45,12 +47,12 @@ test('receiving a result with errors', async ({ page }) => {
   }
 
   const tableValues = await getTableContents(page, 'govuk-table')
-  const expectedTableValues = getTableValuesFromResponse(errorResponse)
+  const expectedTableValues = getTableValuesFromResponse(errorResponse, errorResponseDetails)
   expect(tableValues[0]).toEqual(expectedTableValues[0])
   expect(tableValues[1]).toEqual(expectedTableValues[1])
   expect(tableValues[2]).toEqual(expectedTableValues[3])
 
-  const issues = errorResponse.response.details.map(detail => detail.issue_logs.filter(issue => issue.severity === 'error').map(issue => issue.message)).filter(issue => issue.length > 0)
+  const issues = errorResponseDetails.map(detail => detail.issue_logs.filter(issue => issue.severity === 'error').map(issue => issue.message)).filter(issue => issue.length > 0)
 
   for (const [index, issuesForRow] in issues) {
     for (const issue in issuesForRow) {
@@ -110,11 +112,9 @@ const getTableCellValue = async (page, row, column) => {
   }
 }
 
-const getTableValuesFromResponse = (response) => {
+const getTableValuesFromResponse = (response,details) => {
   const tableValues = []
 
-  // Extract the details array from the response
-  const details = response.response.details
   const columnFieldLog = response.response.data['column-field-log']
 
   // Map over the details array and extract the necessary values
