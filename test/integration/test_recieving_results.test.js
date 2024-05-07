@@ -112,7 +112,7 @@ const getTableCellValue = async (page, row, column) => {
   }
 }
 
-const getTableValuesFromResponse = (response,details) => {
+const getTableValuesFromResponse = (response, details) => {
   const tableValues = []
 
   const columnFieldLog = response.response.data['column-field-log']
