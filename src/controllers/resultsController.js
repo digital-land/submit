@@ -10,7 +10,7 @@ class ResultsController extends PageController {
     try {
       const result = await getRequestData(req.params.id)
       req.session.result = result
-      
+
       if (result.isFailed()) {
         req.session.template = failedRequestTemplate
       } else if (result.hasErrors()) {
