@@ -50,7 +50,7 @@ describe('ResultsController', () => {
     })
 
     it('should set the template to the errors template if the result has errors', async () => {
-      const mockResult = { hasErrors: () => true, isFailed: () => false, isComplete: () => true}
+      const mockResult = { hasErrors: () => true, isFailed: () => false, isComplete: () => true }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
@@ -58,7 +58,7 @@ describe('ResultsController', () => {
     })
 
     it('should set the template to the no-errors template if the result has no errors', async () => {
-      const mockResult = { hasErrors: () => false, isFailed: () => false, isComplete: () => true}
+      const mockResult = { hasErrors: () => false, isFailed: () => false, isComplete: () => true }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
@@ -66,7 +66,7 @@ describe('ResultsController', () => {
     })
 
     it('should set the template to the failedRequest template if the result is failed', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true}
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
@@ -74,7 +74,7 @@ describe('ResultsController', () => {
     })
 
     it('should redirect to the status page if the result is not complete', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => false}
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => false }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       const res = { redirect: vi.fn() }
