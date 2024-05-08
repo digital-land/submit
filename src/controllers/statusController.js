@@ -5,7 +5,7 @@ import { finishedProcessingStatuses } from '../utils/utils.js'
 class StatusController extends PageController {
   async configure (req, res, next) {
     try {
-      this.result = await getRequestData(req.params.id)
+      req.session.result = await getRequestData(req.params.id)
       super.configure(req, res, next)
     } catch (error) {
       next(error, req, res, next)
@@ -13,9 +13,9 @@ class StatusController extends PageController {
   }
 
   async locals (req, res, next) {
-    req.form.options.data = this.result
-    req.form.options.processingComplete = finishedProcessingStatuses.includes(this.result.status)
-    req.form.options.pollingEndpoint = `/api/status/${this.result.id}`
+    req.form.options.data = req.session.result
+    req.form.options.processingComplete = finishedProcessingStatuses.includes(req.session.result.status)
+    req.form.options.pollingEndpoint = `/api/status/${req.session.result.id}`
     super.locals(req, res, next)
   }
 }
