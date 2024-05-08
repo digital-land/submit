@@ -41,6 +41,9 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
+
+      const confirmationPage = await resultsPage.clickContinue()
+      confirmationPage.waitForPage()
     })
 
     test('request check of a url', async ({ page }) => {
