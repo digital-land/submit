@@ -70,6 +70,33 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
     })
+    test('request check of an error datafile', async ({ page }) => {
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
+
+      await uploadFilePage.waitForPage()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
+      const statusPage = await uploadFilePage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
+      const resultsPage = await statusPage.clickContinue()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsErrorsPage()
+    })
   })
 
   test.describe('With javascript disabled', () => {
@@ -135,6 +162,36 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
+    })
+    test('request check of an error datafile', async ({ page }) => {
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
+
+      await uploadFilePage.waitForPage()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
+      const statusPage = await uploadFilePage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
+
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
+
+      const resultsPage = await statusPage.clickCheckStatusButton()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsErrorsPage()
     })
   })
 })

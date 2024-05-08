@@ -28,9 +28,9 @@ export default class resultsPage extends BasePage {
 
   async waitForPage (id = undefined) {
     if (id) {
-      return await this.page.waitForURL(`**${this.url}/${id}`)
+      return await this.page.waitForURL(`**${this.url}/${id}/0`)
     } else {
-      return await this.page.waitForURL(`**${this.url}/**`)
+      return await this.page.waitForURL(`**${this.url}/**/0`)
     }
   }
 }
