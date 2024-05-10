@@ -53,8 +53,13 @@ jobs:
       - id: run-with-docker-compose
         run: docker compose -f docker-compose-real-backend.yml up -d
 
+      - id: install Node dependencies & playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps
+
       - id: run-acceptance-tests
-        run: NODE_ENV=local playwright test --config ./test/acceptance/playwright.config.js
+        run: NODE_ENV=docker playwright test --config ./test/acceptance/playwright.config.js
 
   deploy:
     runs-on: ubuntu-latest
