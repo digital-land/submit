@@ -57,10 +57,10 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps
-          NODE_ENV=docker playwright test --config ./test/acceptance/playwright.config.js
+          npm run test:acceptance:docker
 
 #      - id: run-acceptance-tests
-#        run:
+#        run: npm run test:acceptance:docker
 
   deploy:
     runs-on: ubuntu-latest
