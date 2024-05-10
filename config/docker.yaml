@@ -12,4 +12,4 @@ redis: {
     host: 'redis',
     port: '6379'
 }
-url: "http://localhost:8500"
+url: "http://localhost:8085"
