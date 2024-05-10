@@ -53,7 +53,7 @@ jobs:
       - id: run-with-docker-compose
         run: docker compose -f docker-compose-real-backend.yml up -d
 
-      - id: install node dependencies and playwright
+      - id: install-dependencies-and-playwright
         run: |
           npm ci
           npx playwright install --with-deps
