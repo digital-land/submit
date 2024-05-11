@@ -67,7 +67,7 @@ jobs:
       - id: run-acceptance-tests
         run: npm run test:acceptance:docker
 
-      - id: Stop containers
+      - id: stop-containers
         if: always()
         run: docker compose -f docker-compose-real-backend.yml down
 
