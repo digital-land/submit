@@ -35,12 +35,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: |
+      - id: install-awscli
+        run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip -q awscliv2.zip
           sudo ./aws/install --update
           sudo apt-get update
           sudo apt-get install -y rsync
+
+      - id: install-node-dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps
 
       - uses: aws-actions/configure-aws-credentials@v1-node16
         with:
@@ -53,14 +59,17 @@ jobs:
       - id: run-with-docker-compose
         run: docker compose -f docker-compose-real-backend.yml up -d
 
-      - id: install-dependencies-and-run-acceptance-tests
+      - id: docker-compose-ps
         run: |
-          npm ci
-          npx playwright install --with-deps
-          npm run test:acceptance:docker
+          sleep 15
+          docker compose -f docker-compose-real-backend.yml ps
 
-#      - id: run-acceptance-tests
-#        run: npm run test:acceptance:docker
+      - id: run-acceptance-tests
+        run: npm run test:acceptance:docker
+
+      - id: Stop containers
+        if: always()
+        run: docker compose -f docker-compose-real-backend.yml down
 
   deploy:
     runs-on: ubuntu-latest
