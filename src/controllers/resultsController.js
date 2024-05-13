@@ -6,36 +6,24 @@ const errorsTemplate = 'results/errors'
 const noErrorsTemplate = 'results/no-errors'
 
 class ResultsController extends PageController {
-  async configure (req, res, next) {
-    try {
-      const result = await getRequestData(req.params.id)
-      req.session.result = result
-
-      if (result.isFailed()) {
-        req.session.template = failedRequestTemplate
-      } else if (result.hasErrors()) {
-        req.session.template = errorsTemplate
-        await result.fetchResponseDetails(req.params.pageNumber, 50, 'error')
-      } else {
-        req.session.template = noErrorsTemplate
-        await result.fetchResponseDetails(req.params.pageNumber)
-      }
-
-      super.configure(req, res, next)
-    } catch (error) {
-      next(error, req, res, next)
-    }
-  }
-
   async locals (req, res, next) {
-    const result = req.session.result
+    const result = await getRequestData(req.params.id)
+
+    if (result.isFailed()) {
+      req.form.options.template = failedRequestTemplate
+    } else if (result.hasErrors()) {
+      req.form.options.template = errorsTemplate
+      await result.fetchResponseDetails(req.params.pageNumber, 50, 'error')
+    } else {
+      req.form.options.template = noErrorsTemplate
+      await result.fetchResponseDetails(req.params.pageNumber)
+    }
 
     if (!result.isComplete()) {
       res.redirect(`/status/${req.params.id}`)
       return
     }
 
-    req.form.options.template = req.session.template
     req.form.options.requestParams = result.getParams()
 
     if (req.session.template !== failedRequestTemplate) {
@@ -54,8 +42,8 @@ class ResultsController extends PageController {
     super.locals(req, res, next)
   }
 
-  noErrors (req, res, next) {
-    const result = req.session.result
+  async noErrors (req, res, next) {
+    const result = await getRequestData(req.params.id)
     return !result.hasErrors()
   }
 }
