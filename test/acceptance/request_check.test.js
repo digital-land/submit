@@ -42,7 +42,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
 
-      await resultsPage.selectLabel("Yes")
+      await resultsPage.selectLabel('Yes')
       const confirmationPage = await resultsPage.clickContinue()
       await confirmationPage.waitForPage()
     })
@@ -74,7 +74,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsErrorsPage()
 
-     await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTableAndSummary()
     })
 
     test('request check of a url', async ({ page }) => {
@@ -104,7 +104,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
     })
-    
+
     test('request check of an error url', async ({ page }) => {
       const startPage = new StartPage(page)
 
@@ -168,7 +168,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
 
-      await resultsPage.selectLabel("Yes")
+      await resultsPage.selectLabel('Yes')
       const confirmationPage = await resultsPage.clickContinue()
       await confirmationPage.waitForPage()
     })
@@ -237,36 +237,35 @@ test.describe('Request Check', () => {
     })
 
     test('request check of an error url', async ({ page }) => {
-        const startPage = new StartPage(page)
-  
-        await startPage.navigateHere()
-        const datasetPage = await startPage.clickStartNow()
-  
-        await datasetPage.waitForPage()
-        await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-        const uploadMethodPage = await datasetPage.clickContinue()
-  
-        await uploadMethodPage.waitForPage()
-        await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
-        const submitURLPage = await uploadMethodPage.clickContinue()
-  
-        await submitURLPage.waitForPage()
-        await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
-        const statusPage = await submitURLPage.clickContinue()
-  
-        await statusPage.waitForPage()
-        await statusPage.expectPageToBeProcessing()
-        await statusPage.expectCheckStatusButtonToBeVisible()
-        const id = await statusPage.getIdFromUrl()
-  
-        await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
-  
-        const resultsPage = await statusPage.clickCheckStatusButton()
-  
-        await resultsPage.waitForPage(id)
-        await resultsPage.expectPageIsErrorsPage()
-        await resultsPage.expectPageHasTableAndSummary()
-      })
-    
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
+
+      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+
+      const resultsPage = await statusPage.clickCheckStatusButton()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTableAndSummary()
+    })
   })
 })
