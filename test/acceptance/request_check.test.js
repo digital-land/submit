@@ -13,6 +13,11 @@ import StartPage from '../PageObjectModels/startPage'
 import { datasets } from '../PageObjectModels/datasetPage'
 import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
+test.beforeAll(async () => {
+  // Set timeout for this hook.
+  test.setTimeout(1000 * 60 * 10); // 600,000ms = 10m
+});
+
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
     test('request check of a datafile', async ({ page }) => {
