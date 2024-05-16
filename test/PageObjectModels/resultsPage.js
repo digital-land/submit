@@ -6,7 +6,7 @@ import { expect } from '@playwright/test'
 import BasePage from './BasePage'
 import ConfirmationPage from './confirmationPage'
 
-export default class resultsPage extends BasePage {
+export default class ResultsPage extends BasePage {
   constructor (page) {
     super(page, '/results')
   }

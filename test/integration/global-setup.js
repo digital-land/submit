@@ -8,7 +8,7 @@ import config from '../../config/index'
 let localstack
 
 setup('Global setup', async () => {
-  setup.setTimeout(5 * 60 * 1000)
+  setup.setTimeout(1000 * 60 * 10)
 
   await new Wiremock().start()
 

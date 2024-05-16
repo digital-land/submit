@@ -1,5 +1,5 @@
 import BasePage from './BasePage'
-import resultsPage from './resultsPage'
+import ResultsPage from './resultsPage'
 
 export default class StatusPage extends BasePage {
   constructor (page) {
@@ -12,7 +12,7 @@ export default class StatusPage extends BasePage {
 
   async clickContinue () {
     await super.clickContinue()
-    return await super.verifyAndReturnPage(resultsPage)
+    return await super.verifyAndReturnPage(ResultsPage)
   }
 
   async expectPageToBeProcessing () {
@@ -45,6 +45,6 @@ export default class StatusPage extends BasePage {
 
   async clickCheckStatusButton () {
     await this.page.click('button', { text: 'Retrieve Latest Status' })
-    return await super.verifyAndReturnPage(resultsPage)
+    return await super.verifyAndReturnPage(ResultsPage)
   }
 }
