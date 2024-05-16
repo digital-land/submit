@@ -32,8 +32,7 @@ services:
       - "./localstack_bootstrap:/etc/localstack/init/ready.d/"
 
   request-api:
-#    image: public.ecr.aws/l6z6v3j6/development-pub-async-request-api:main
-    image: request-api:latest
+    image: public.ecr.aws/l6z6v3j6/development-pub-async-request-api:main
     environment:
       PYTHONUNBUFFERED: 1
       AWS_ENDPOINT_URL: http://localstack:4566
@@ -55,8 +54,7 @@ services:
     restart: on-failure
 
   request-processor:
-#    image: public.ecr.aws/l6z6v3j6/development-pub-async-request-processor:main
-    image: request-processor:latest
+    image: public.ecr.aws/l6z6v3j6/development-pub-async-request-processor:main
     environment:
       PYTHONUNBUFFERED: 1
       AWS_ENDPOINT_URL: http://localstack:4566
