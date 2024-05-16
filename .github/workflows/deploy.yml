@@ -61,8 +61,9 @@ jobs:
 
       - id: docker-compose-ps
         run: |
-          sleep 15
+          sleep 30
           docker compose -f docker-compose-real-backend.yml ps
+          curl -v http://localhost:8085/
 
       - id: run-acceptance-tests
         run: npm run test:acceptance:docker
