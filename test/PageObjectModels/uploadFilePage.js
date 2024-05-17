@@ -15,6 +15,7 @@ export default class UploadFilePage extends BasePage {
 
   async clickContinue (skipVerification) {
     await super.clickContinue()
+    await this.page.waitForTimeout(5000)
     return await super.verifyAndReturnPage(StatusPage, skipVerification)
   }
 }
