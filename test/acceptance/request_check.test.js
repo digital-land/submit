@@ -37,8 +37,8 @@ test.describe('Request Check', () => {
 
       await uploadFilePage.waitForPage()
       await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
-      await page.waitForTimeout(5000)
       const statusPage = await uploadFilePage.clickContinue()
+      await page.waitForTimeout(5000)
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
@@ -70,8 +70,8 @@ test.describe('Request Check', () => {
 
       await uploadFilePage.waitForPage()
       await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
-      await page.waitForTimeout(5000)
       const statusPage = await uploadFilePage.clickContinue()
+      await page.waitForTimeout(5000)
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
@@ -162,8 +162,8 @@ test.describe('Request Check', () => {
 
       await uploadFilePage.waitForPage()
       await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
-      await page.waitForTimeout(5000)
       const statusPage = await uploadFilePage.clickContinue()
+      await page.waitForTimeout(5000)
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
@@ -198,8 +198,8 @@ test.describe('Request Check', () => {
 
       await uploadFilePage.waitForPage()
       await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
-      await page.waitForTimeout(5000)
       const statusPage = await uploadFilePage.clickContinue()
+      await page.waitForTimeout(5000)
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
