@@ -66,7 +66,7 @@ jobs:
           curl -v http://localhost:8085/
 
       - id: run-acceptance-tests
-        run: npm run test:acceptance:docker
+        run: npm run test:acceptance:ci
 
       - id: stop-containers
         if: always()
