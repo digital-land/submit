@@ -20,7 +20,7 @@ test.beforeAll(async () => {
 
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
-    test('request check of a datafile', async ({ page }) => {
+    test('request check of a @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -52,7 +52,7 @@ test.describe('Request Check', () => {
       await confirmationPage.waitForPage()
     })
 
-    test('request check of an error datafile', async ({ page }) => {
+    test('request check of an error @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -82,7 +82,7 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageHasTableAndSummary()
     })
 
-    test('request check of a url', async ({ page }) => {
+    test('request check of a @url', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -110,7 +110,7 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageIsNoErrorsPage()
     })
 
-    test('request check of an error url', async ({ page }) => {
+    test('request check of an error @url', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -143,7 +143,7 @@ test.describe('Request Check', () => {
   test.describe('With javascript disabled', () => {
     test.use({ javaScriptEnabled: false })
 
-    test('request check of a datafile', async ({ page }) => {
+    test('request check of a @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -178,7 +178,7 @@ test.describe('Request Check', () => {
       await confirmationPage.waitForPage()
     })
 
-    test('request check of an error datafile', async ({ page }) => {
+    test('request check of an error @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -210,7 +210,7 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageHasTableAndSummary()
     })
 
-    test('request check of a url', async ({ page }) => {
+    test('request check of a @url', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -241,7 +241,7 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageIsNoErrorsPage()
     })
 
-    test('request check of an error url', async ({ page }) => {
+    test('request check of an error @url', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
