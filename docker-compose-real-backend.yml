@@ -5,7 +5,7 @@ services:
     build:
       context: .
     environment:
-      NODE_ENV: docker
+      NODE_ENV: ci
     ports:
       - "8085:5000"
 
