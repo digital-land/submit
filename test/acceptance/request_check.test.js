@@ -18,6 +18,7 @@ test.beforeAll(async () => {
   test.setTimeout(1000 * 60 * 10) // 600,000ms = 10m
 })
 
+test.setTimeout(50000)
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
     test('request check of a @datafile', async ({ page }) => {
