@@ -38,7 +38,7 @@ test.describe('Request Check', () => {
       await uploadFilePage.waitForPage()
       await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
       const statusPage = await uploadFilePage.clickContinue()
-      
+
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectPageToHaveFinishedProcessing()
@@ -70,7 +70,7 @@ test.describe('Request Check', () => {
       await uploadFilePage.waitForPage()
       await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
       const statusPage = await uploadFilePage.clickContinue()
-      
+
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectPageToHaveFinishedProcessing()
@@ -161,7 +161,7 @@ test.describe('Request Check', () => {
       await uploadFilePage.waitForPage()
       await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
       const statusPage = await uploadFilePage.clickContinue()
-      
+
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectCheckStatusButtonToBeVisible()
