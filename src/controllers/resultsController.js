@@ -7,10 +7,10 @@ const noErrorsTemplate = 'results/no-errors'
 
 class ResultsController extends PageController {
   async locals (req, res, next) {
-    let requestData;
-    try{
+    let requestData
+    try {
       requestData = await getRequestData(req.params.id)
-    } catch (e){
+    } catch (e) {
       next(e, req, res, next)
       return
     }
@@ -20,7 +20,7 @@ class ResultsController extends PageController {
       return
     }
 
-    let responseDetails;
+    let responseDetails
 
     if (requestData.isFailed()) {
       req.form.options.template = failedRequestTemplate

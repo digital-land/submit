@@ -10,7 +10,7 @@ describe('ResultsController', () => {
   const req = {
     params: { id: 'testId' },
     form: { options: {} },
-    session: { template: 'template'}
+    session: { template: 'template' }
   }
 
   beforeEach(async () => {
@@ -51,7 +51,7 @@ describe('ResultsController', () => {
         getRowsWithVerboseColumns: () => ['verbose-columns'],
         getGeometries: () => ['geometries']
       }
-      
+
       const mockResult = {
         isFailed: () => false,
         getError: () => 'error',
@@ -78,7 +78,7 @@ describe('ResultsController', () => {
         getRowsWithVerboseColumns: () => ['verbose-columns'],
         getGeometries: () => ['geometries']
       }
-      
+
       const mockResult = {
         isFailed: () => false,
         getError: () => 'error',
@@ -104,7 +104,7 @@ describe('ResultsController', () => {
         getRowsWithVerboseColumns: () => ['verbose-columns'],
         getGeometries: () => ['geometries']
       }
-      
+
       const mockResult = {
         isFailed: () => true,
         getError: () => 'error',
@@ -130,7 +130,7 @@ describe('ResultsController', () => {
         getRowsWithVerboseColumns: () => ['verbose-columns'],
         getGeometries: () => ['geometries']
       }
-      
+
       const mockResult = {
         isFailed: () => false,
         getError: () => 'error',

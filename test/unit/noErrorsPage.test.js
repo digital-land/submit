@@ -23,7 +23,7 @@ addFilters(nunjucksEnv)
 describe('no Errors Page', () => {
   it('renders the correct number of errors', () => {
     const requestData = new RequestData(errorResponse)
-    const responseDetails = new ResponseDetails({data: errorResponseDetails})
+    const responseDetails = new ResponseDetails({ data: errorResponseDetails })
 
     requestData.response.pagination = {
       totalResults: 100,

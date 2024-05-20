@@ -72,9 +72,9 @@ export default class RequestData {
       return null
     }
 
-    let columnFieldEntry = columnFieldLog.find(column => column.field === 'point') || columnFieldLog.find(column => column.field === 'geometry')
+    const columnFieldEntry = columnFieldLog.find(column => column.field === 'point') || columnFieldLog.find(column => column.field === 'geometry')
 
-    if(!columnFieldEntry){
+    if (!columnFieldEntry) {
       return null
     }
 

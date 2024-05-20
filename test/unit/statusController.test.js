@@ -27,13 +27,11 @@ describe('StatusController', () => {
         params: 'fake_id'
       }
 
-
-      
       const res = {}
       const next = vi.fn()
-      
+
       await statusController.locals(req, res, next)
-      
+
       expect(req.form.options.data).toBe(mockResult)
       expect(req.form.options.processingComplete).toBe(true)
       expect(req.form.options.pollingEndpoint).toBe(`/api/status/${mockResult.id}`)
