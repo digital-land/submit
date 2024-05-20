@@ -1,6 +1,7 @@
 import logger from '../utils/logger.js'
 import axios from 'axios'
 import config from '../../config/index.js'
+import ResponseDetails from './responseDetails.js'
 
 export default class RequestData {
   constructor (response) {
@@ -16,13 +17,22 @@ export default class RequestData {
     }
 
     const request = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?${urlParams.toString()}`, { timeout: 30000 })
-    this.response.details = request.data
 
     this.pagination = {
       totalResults: request.headers['x-pagination-total-results'],
       offset: request.headers['x-pagination-offset'],
       limit: request.headers['x-pagination-limit']
     }
+
+    return new ResponseDetails(request.data)
+  }
+
+  getErrorSummary () {
+    if (!this.response || !this.response.data || !this.response.data['error-summary']) {
+      logger.error('trying to get error summary when there is none: request id: ' + this.id)
+      return []
+    }
+    return this.response.data['error-summary']
   }
 
   isFailed () {
@@ -53,6 +63,22 @@ export default class RequestData {
       return true
     }
     return this.response.data['error-summary'].length > 0
+  }
+
+  getGeometryKey () {
+    const columnFieldLog = this.getColumnFieldLog()
+
+    if (!columnFieldLog) {
+      return null
+    }
+
+    let columnFieldEntry = columnFieldLog.find(column => column.field === 'point') || columnFieldLog.find(column => column.field === 'geometry')
+
+    if(!columnFieldEntry){
+      return null
+    }
+
+    return columnFieldEntry.column
   }
 
   isComplete () {

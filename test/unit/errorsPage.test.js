@@ -6,6 +6,7 @@ import addFilters from '../../src/filters/filters'
 
 import errorResponse from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json'
 import errorResponseDetails from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors-details.json'
+import ResponseDetails from '../../src/models/responseDetails.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -23,7 +24,7 @@ describe('errors page', () => {
   it('renders the correct number of errors', () => {
     const requestData = new RequestData(errorResponse)
 
-    requestData.response.details = errorResponseDetails
+    const responseDetails = new ResponseDetails(errorResponseDetails)
 
     requestData.response.pagination = {
       totalResults: 100,
@@ -35,11 +36,11 @@ describe('errors page', () => {
       options: {
         requestParams: requestData.getParams(),
         errorSummary: requestData.getErrorSummary(),
-        rows: requestData.getRows(),
+        rows: responseDetails.getRows(),
         geometryKey: requestData.getGeometryKey(),
-        columns: requestData.getColumns(),
-        fields: requestData.getFields(),
-        verboseRows: requestData.getRowsWithVerboseColumns()
+        columns: responseDetails.getColumns(),
+        fields: responseDetails.getFields(),
+        verboseRows: responseDetails.getRowsWithVerboseColumns()
       }
     }
 
