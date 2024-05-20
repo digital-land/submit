@@ -8,7 +8,7 @@ export default class UploadFilePage extends BasePage {
   }
 
   async uploadFile (filePath) {
-    console.log('file exists?: ',fs.existsSync(filePath))
+    console.log('file exists?: ', fs.existsSync(filePath))
     const fileChooserPromise = this.page.waitForEvent('filechooser')
     await this.page.getByText('Upload data').click()
     const fileChooser = await fileChooserPromise
