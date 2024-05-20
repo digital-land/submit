@@ -159,7 +159,7 @@ class UploadFileController extends UploadController {
   }
 
   static fileMimeTypeIsValid (datafile) {
-    const allowedMimeTypes = Object.values(allowedFileTypes)
+    const allowedMimeTypes = Object.values(allowedFileTypes).flat()
 
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
@@ -175,7 +175,7 @@ class UploadFileController extends UploadController {
       return true
     }
 
-    if (allowedFileTypes[extension] !== datafile.mimetype) {
+    if (!allowedFileTypes[extension].includes(datafile.mimetype)) {
       return false
     }
 

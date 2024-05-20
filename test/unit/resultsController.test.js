@@ -50,47 +50,40 @@ describe('ResultsController', () => {
     })
 
     it('should set the template to the errors template if the result has errors', async () => {
-      const mockResult = { hasErrors: () => true, isFailed: () => false }
+      const mockResult = { hasErrors: () => true, isFailed: () => false, isComplete: () => true }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(resultsController.template).toBe('errors')
+      expect(resultsController.template).toBe('results/errors')
     })
 
     it('should set the template to the no-errors template if the result has no errors', async () => {
-      const mockResult = { hasErrors: () => false, isFailed: () => false }
+      const mockResult = { hasErrors: () => false, isFailed: () => false, isComplete: () => true }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(resultsController.template).toBe('no-errors')
+      expect(resultsController.template).toBe('results/no-errors')
     })
 
     it('should set the template to the failedRequest template if the result is failed', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false }
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
-      expect(resultsController.template).toBe('failedRequest')
+      expect(resultsController.template).toBe('results/failedRequest')
+    })
+
+    it('should redirect to the status page if the result is not complete', async () => {
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => false }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+
+      const res = { redirect: vi.fn() }
+      await resultsController.configure(req, res, () => {})
+      expect(res.redirect).toHaveBeenCalledWith(`/status/${req.params.id}`)
     })
   })
 
   describe('locals', () => {
-    it('should redirect to the status page if the result is not complete', async () => {
-      resultsController.result = {
-        isComplete: () => false,
-        getParams: () => ({ id: 'testId' }),
-        getErrorSummary: () => ({}),
-        getRows: () => ({}),
-        getGeometryKey: () => 'point',
-        getColumns: () => ({}),
-        getRowsWithVerboseColumns: () => ({}),
-        getFields: () => ({})
-      }
-      const res = { redirect: vi.fn() }
-      await resultsController.locals(req, res, () => {})
-      expect(res.redirect).toHaveBeenCalledWith(`/status/${req.params.id}`)
-    })
-
     it('should set the result to the form options if the result is complete', async () => {
       resultsController.result = {
         isComplete: () => true,
@@ -101,7 +94,8 @@ describe('ResultsController', () => {
         getRowsWithVerboseColumns: () => (['verbose-columns']),
         getFields: () => (['fields']),
         getFieldMappings: () => ({ fields: 'geometries' }),
-        hasErrors: () => false
+        hasErrors: () => false,
+        getPagination: () => 'pagination'
       }
       const res = { redirect: vi.fn() }
       await resultsController.locals(req, res, () => {})
@@ -112,6 +106,7 @@ describe('ResultsController', () => {
       expect(req.form.options.fields).toStrictEqual(['fields'])
       expect(req.form.options.verboseRows).toStrictEqual(['verbose-columns'])
       expect(req.form.options.geometries).toStrictEqual(['geometries'])
+      expect(req.form.options.pagination).toBe('pagination')
     })
   })
 
