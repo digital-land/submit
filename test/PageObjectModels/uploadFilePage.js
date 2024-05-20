@@ -15,7 +15,7 @@ export default class UploadFilePage extends BasePage {
 
   async clickContinue (skipVerification) {
     await super.clickContinue()
-    console.log("URL is: ",this.page.url())
+    console.log('URL is: ', this.page.url())
     return await super.verifyAndReturnPage(StatusPage, skipVerification)
   }
 }
