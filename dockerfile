@@ -19,6 +19,7 @@ WORKDIR /app
 COPY --from=build config config
 COPY --from=build node_modules node_modules
 COPY --from=build src src
+COPY --from=build test test
 COPY --from=build public public
 COPY --from=build index.js .
 COPY --from=build package.json .
