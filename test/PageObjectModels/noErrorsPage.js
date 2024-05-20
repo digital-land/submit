@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
-import resultsPage from './resultsPage'
+import ResultsPage from './resultsPage'
 
-export default class noErrorsPage extends resultsPage {
+export default class noErrorsPage extends ResultsPage {
   static dataCorrectResponses = {
     yes: 'Yes',
     no: 'No, I need to fix it'

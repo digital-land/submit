@@ -17,7 +17,7 @@ export default defineConfig({
   testMatch: '**/*.test.js',
   testDir: './',
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -37,29 +37,17 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
-      name: 'global setup',
-      testMatch: '**/global-setup.js',
-      teardown: 'global teardown'
-    },
-    {
-      name: 'global teardown',
-      testMatch: '**/global-teardown.js'
-    },
-    {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-      dependencies: ['global setup']
+      use: { ...devices['Desktop Chrome'] }
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-      dependencies: ['global setup']
+      use: { ...devices['Desktop Firefox'] }
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-      dependencies: ['global setup']
+      use: { ...devices['Desktop Safari'] }
     }
 
     /* Test against mobile viewports. */
