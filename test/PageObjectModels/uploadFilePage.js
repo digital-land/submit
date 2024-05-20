@@ -1,5 +1,6 @@
 import BasePage from './BasePage'
 import StatusPage from './statusPage'
+import fs from 'fs'
 
 export default class UploadFilePage extends BasePage {
   constructor (page) {
@@ -7,6 +8,7 @@ export default class UploadFilePage extends BasePage {
   }
 
   async uploadFile (filePath) {
+    console.log('file exists?: ',fs.existsSync(filePath))
     const fileChooserPromise = this.page.waitForEvent('filechooser')
     await this.page.getByText('Upload data').click()
     const fileChooser = await fileChooserPromise
