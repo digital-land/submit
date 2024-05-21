@@ -36,7 +36,6 @@ describe('no Errors Page', () => {
         requestParams: requestData.getParams(),
         errorSummary: requestData.getErrorSummary(),
         rows: responseDetails.getRows(),
-        geometryKey: requestData.getGeometryKey(),
         columns: responseDetails.getColumns(),
         fields: responseDetails.getFields(),
         mappings: responseDetails.getFieldMappings(),
