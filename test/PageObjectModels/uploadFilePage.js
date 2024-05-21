@@ -1,6 +1,5 @@
 import BasePage from './BasePage'
 import StatusPage from './statusPage'
-import fs from 'fs'
 
 export default class UploadFilePage extends BasePage {
   constructor (page) {
@@ -16,11 +15,8 @@ export default class UploadFilePage extends BasePage {
 
   async clickContinue (skipVerification) {
     await super.clickContinue()
-    await this.page.waitForTimeout(10000)
-    const screenshotPath = 'test/datafiles/screenshot.png'
-    const screenshotBuffer = await this.page.screenshot()
-    fs.writeFileSync(screenshotPath, screenshotBuffer)
-    console.log(`Screenshot saved to: ${screenshotPath}`)
+    await this.page.waitForTimeout(5000)
+    await this.page.screenshot({ path: 'playwright-report/data/screenshot.png', fullPage: true })
     console.log('URL here:', this.page.url())
     return await super.verifyAndReturnPage(StatusPage, skipVerification)
   }
