@@ -67,6 +67,10 @@ jobs:
 
       - id: run-acceptance-tests
         run: npm run test:acceptance:ci
+      
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v2
+
 
       - id: stop-containers
         if: always()
