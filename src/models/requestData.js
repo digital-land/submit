@@ -65,33 +65,9 @@ export default class RequestData {
     return this.response.data['error-summary'].length > 0
   }
 
-  getGeometryKey () {
-    const columnFieldLog = this.getColumnFieldLog()
-
-    if (!columnFieldLog) {
-      return null
-    }
-
-    const columnFieldEntry = columnFieldLog.find(column => column.field === 'point') || columnFieldLog.find(column => column.field === 'geometry')
-
-    if (!columnFieldEntry) {
-      return null
-    }
-
-    return columnFieldEntry.column
-  }
-
   isComplete () {
     const finishedProcessingStatuses = ['COMPLETE', 'FAILED']
     return finishedProcessingStatuses.includes(this.status)
-  }
-
-  getRows () {
-    if (!this.response || !this.response.details) {
-      logger.error('trying to get response details when there are none: request id: ' + this.id)
-      return []
-    }
-    return this.response.details
   }
 
   getColumnFieldLog () {
@@ -102,55 +78,11 @@ export default class RequestData {
     return this.response.data['column-field-log']
   }
 
-  getColumns (includeNonMapped = true) {
-    if (!this.getRows().length) {
-      return []
-    }
-    return [...new Set(this.getRows().map(row => row.converted_row).flatMap(row => Object.keys(row)))]
-  }
-
-  getFields (includeNonMapped = true) {
-    return [...new Set(this.getColumns().map(column => {
-      const columnFieldLog = this.getColumnFieldLog()
-      const fieldLog = columnFieldLog.find(fieldLog => fieldLog.column === column)
-      if (!fieldLog) {
-        return column
-      } else {
-        return fieldLog.field
-      }
-    }))]
-  }
-
-  getFieldMappings () {
-    return Object.fromEntries(this.getFields().map(field => {
-      const columnFieldLog = this.getColumnFieldLog()
-      const columnLog = columnFieldLog.find(fieldLog => fieldLog.field === field)
-      return [
-        field,
-        columnLog ? columnLog.column : null
-      ]
-    }))
-  }
-
   getParams () {
     return this.params
   }
 
   getId () {
     return this.id
-  }
-
-  getGeometries () {
-    if (!this.response || !this.response.details) {
-      logger.error('trying to get response details when there are none: request id: ' + this.id)
-      return undefined
-    }
-
-    const geometryKey = this.getGeometryKey()
-    const geometries = this.response.details.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
-    if (geometries.length === 0) {
-      return null
-    }
-    return geometries
   }
 }

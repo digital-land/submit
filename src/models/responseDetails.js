@@ -86,11 +86,29 @@ export default class ResponseDetails {
     }))
   }
 
-  getGeometries (geometryKey) {
+  getGeometryKey () {
+    const columnFieldLog = this.getColumnFieldLog()
+
+    if (!columnFieldLog) {
+      return null
+    }
+
+    const columnFieldEntry = columnFieldLog.find(column => column.field === 'point') || columnFieldLog.find(column => column.field === 'geometry')
+
+    if (!columnFieldEntry) {
+      return null
+    }
+
+    return columnFieldEntry.column
+  }
+
+  getGeometries () {
     if (!this.response) {
       logger.error('trying to get response details when there are none: request id: ' + this.id)
       return undefined
     }
+
+    const geometryKey = this.getGeometryKey()
 
     const geometries = this.response.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
     if (geometries.length === 0) {
