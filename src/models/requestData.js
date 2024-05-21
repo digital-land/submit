@@ -1,4 +1,3 @@
-import getVerboseColumns from '../utils/getVerboseColumns.js'
 import logger from '../utils/logger.js'
 import axios from 'axios'
 import config from '../../config/index.js'
@@ -19,13 +18,13 @@ export default class RequestData {
 
     const request = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?${urlParams.toString()}`, { timeout: 30000 })
 
-    this.pagination = {
+    const pagination = {
       totalResults: request.headers['x-pagination-total-results'],
       offset: request.headers['x-pagination-offset'],
       limit: request.headers['x-pagination-limit']
     }
 
-    return new ResponseDetails(request.data)
+    return new ResponseDetails(request.data, pagination, this.getColumnFieldLog())
   }
 
   getErrorSummary () {
@@ -141,27 +140,6 @@ export default class RequestData {
     return this.id
   }
 
-  // This function returns an array of rows with verbose columns
-  getRowsWithVerboseColumns (filterNonErrors = false) {
-    if (!this.response || !this.response.details) {
-      logger.error('trying to get response details when there are none: request id: ' + this.id)
-      return []
-    }
-
-    let rows = this.response.details
-
-    if (filterNonErrors) {
-      rows = rows.filter(row => row.issue_logs.filter(issue => issue.severity === 'error').length > 0)
-    }
-
-    // Map over the details in the response and return an array of rows with verbose columns
-    return rows.map(row => ({
-      entryNumber: row.entry_number,
-      hasErrors: row.issue_logs.filter(issue => issue.severity === 'error').length > 0,
-      columns: getVerboseColumns(row, this.getColumnFieldLog())
-    }))
-  }
-
   getGeometries () {
     if (!this.response || !this.response.details) {
       logger.error('trying to get response details when there are none: request id: ' + this.id)
@@ -175,67 +153,4 @@ export default class RequestData {
     }
     return geometries
   }
-
-  getPagination (pageNumber) {
-    pageNumber = parseInt(pageNumber)
-    const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
-
-    const items = pagination(totalPages, pageNumber + 1).map(item => {
-      if (item === '...') {
-        return {
-          ellipsis: true,
-          href: '#'
-        }
-      } else {
-        return {
-          number: item,
-          href: `/results/${this.id}/${parseInt(item) - 1}`,
-          current: pageNumber === parseInt(item) - 1
-        }
-      }
-    })
-
-    return {
-      totalResults: parseInt(this.pagination.totalResults),
-      offset: parseInt(this.pagination.offset),
-      limit: parseInt(this.pagination.limit),
-      currentPage: pageNumber + 1,
-      nextPage: pageNumber < totalPages - 1 ? pageNumber + 1 : null,
-      previousPage: pageNumber > 0 ? pageNumber - 1 : null,
-      totalPages,
-      items
-    }
-  }
-}
-
-const { min, max } = Math
-const range = (lo, hi) => Array.from({ length: hi - lo }, (_, i) => i + lo)
-
-export const pagination = (count, current, ellipsis = '...') => {
-  if (count <= 5) {
-    return range(1, count + 1)
-  }
-  const adjacent = 1
-  const left = current === count ? current - 2 * adjacent : max(0, current - adjacent)
-  const right = current === 1 ? 1 + adjacent * 2 : min(count, current + adjacent)
-  const middle = range(left, right + 1)
-  let leftEllipsis = left > 1
-  let rightEllipsis = right < count
-
-  if (leftEllipsis && middle[0] === 2) {
-    leftEllipsis = false
-    middle.unshift(1)
-  }
-
-  if (rightEllipsis && middle[middle.length - 1] === count - 1) {
-    rightEllipsis = false
-    middle.push(count)
-  }
-
-  const result = [
-    ...(leftEllipsis ? [1, ellipsis] : middle),
-    ...(leftEllipsis && rightEllipsis ? middle : []),
-    ...(rightEllipsis ? [ellipsis, count] : middle)
-  ]
-  return result
 }
