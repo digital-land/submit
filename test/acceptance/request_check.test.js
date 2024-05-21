@@ -16,7 +16,7 @@ import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 test.setTimeout(50000)
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
-    test('request check of a @datafile', async ({ page }) => {
+    test('request check of a @datafile1', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
@@ -31,7 +31,7 @@ test.describe('Request Check', () => {
       const uploadFilePage = await uploadMethodPage.clickContinue()
 
       await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
+      await uploadFilePage.uploadFile('./article4directionareas-ok.csv')
       const statusPage = await uploadFilePage.clickContinue()
 
       await statusPage.waitForPage()
