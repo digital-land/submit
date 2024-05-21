@@ -49,7 +49,8 @@ describe('ResultsController', () => {
         getFields: () => ['fields'],
         getFieldMappings: () => 'fieldMappings',
         getRowsWithVerboseColumns: () => ['verbose-columns'],
-        getGeometries: () => ['geometries']
+        getGeometries: () => ['geometries'],
+        getPagination: () => 'pagination'
       }
 
       const mockResult = {
@@ -59,8 +60,8 @@ describe('ResultsController', () => {
         isComplete: () => true,
         getParams: () => ('params'),
         getId: () => 'fake_id',
-        getPagination: () => 'pagination',
-        fetchResponseDetails: () => mockDetails
+        fetchResponseDetails: () => mockDetails,
+        getErrorSummary: () => ['error summary']
       }
 
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
@@ -76,7 +77,8 @@ describe('ResultsController', () => {
         getFields: () => ['fields'],
         getFieldMappings: () => 'fieldMappings',
         getRowsWithVerboseColumns: () => ['verbose-columns'],
-        getGeometries: () => ['geometries']
+        getGeometries: () => ['geometries'],
+        getPagination: () => 'pagination'
       }
 
       const mockResult = {
@@ -86,8 +88,8 @@ describe('ResultsController', () => {
         isComplete: () => true,
         getParams: () => ('params'),
         getId: () => 'fake_id',
-        getPagination: () => 'pagination',
-        fetchResponseDetails: () => mockDetails
+        fetchResponseDetails: () => mockDetails,
+        getErrorSummary: () => ['error summary']
       }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
@@ -102,7 +104,8 @@ describe('ResultsController', () => {
         getFields: () => ['fields'],
         getFieldMappings: () => 'fieldMappings',
         getRowsWithVerboseColumns: () => ['verbose-columns'],
-        getGeometries: () => ['geometries']
+        getGeometries: () => ['geometries'],
+        getPagination: () => 'pagination'
       }
 
       const mockResult = {
@@ -112,7 +115,6 @@ describe('ResultsController', () => {
         isComplete: () => true,
         getParams: () => ('params'),
         getId: () => 'fake_id',
-        getPagination: () => 'pagination',
         fetchResponseDetails: () => mockDetails
       }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
@@ -128,7 +130,8 @@ describe('ResultsController', () => {
         getFields: () => ['fields'],
         getFieldMappings: () => 'fieldMappings',
         getRowsWithVerboseColumns: () => ['verbose-columns'],
-        getGeometries: () => ['geometries']
+        getGeometries: () => ['geometries'],
+        getPagination: () => 'pagination'
       }
 
       const mockResult = {
@@ -138,8 +141,8 @@ describe('ResultsController', () => {
         isComplete: () => true,
         getParams: () => ('params'),
         getId: () => 'fake_id',
-        getPagination: () => 'pagination',
-        fetchResponseDetails: () => mockDetails
+        fetchResponseDetails: () => mockDetails,
+        getErrorSummary: () => ['error summary']
       }
 
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
@@ -154,6 +157,7 @@ describe('ResultsController', () => {
       expect(req.form.options.verboseRows).toStrictEqual(['verbose-columns'])
       expect(req.form.options.geometries).toStrictEqual(['geometries'])
       expect(req.form.options.pagination).toBe('pagination')
+      expect(req.form.options.errorSummary).toStrictEqual(['error summary'])
     })
   })
 })
