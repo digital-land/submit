@@ -5,6 +5,7 @@ import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 
 import errorResponse from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json'
+import errorResponseDetails from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors-details.json'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -22,6 +23,14 @@ describe('no Errors Page', () => {
   it('renders the correct number of errors', () => {
     const requestData = new RequestData(errorResponse)
 
+    requestData.response.details = errorResponseDetails
+
+    requestData.response.pagination = {
+      totalResults: 100,
+      offset: 0,
+      limit: 50
+    }
+
     const params = {
       options: {
         requestParams: requestData.getParams(),
@@ -36,7 +45,7 @@ describe('no Errors Page', () => {
       errors: {}
     }
 
-    const html = nunjucks.render('no-errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
+    const html = nunjucks.render('results/no-errors.html', params).replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ')
 
     // expect the table column headers to be correct
     expect(html).toContain('<thead class="govuk-table__head"> <tr class="govuk-table__row"> <th scope="col" class="govuk-table__header">id</th> <th scope="col" class="govuk-table__header">geometry</th> <th scope="col" class="govuk-table__header">name</th> <th scope="col" class="govuk-table__header">Layer</th> <th scope="col" class="govuk-table__header">area(ha)</th> <th scope="col" class="govuk-table__header">entry-date</th> <th scope="col" class="govuk-table__header">start-date</th> <th scope="col" class="govuk-table__header">documentation-url</th> </tr> </thead>')

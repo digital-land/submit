@@ -69,9 +69,9 @@ export default {
     controller: statusController,
     checkJourney: false,
     entryPoint: true,
-    next: (req, res) => `/results/${req.params.id}`
+    next: (req, res) => `/results/${req.params.id}/0`
   },
-  '/results/:id': {
+  '/results/:id/:pageNumber': {
     ...baseSettings,
     template: undefined, // as we will dynamically set the template in the controller
     controller: resultsController,

@@ -4,7 +4,19 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
 {% set pageName = 'Your data has errors' %}
+
+{% block pageTitle %}
+  {% set pageTitle = super() %}
+  {% if options.pagination.totalPages > 1 %}
+    {% set pageTitleString = ' (page ' + options.pagination.currentPage + ' of ' + options.pagination.totalPages + ')'%}
+    {% set pageTitle = pageTitle + pageTitleString %}
+  {% endif %}
+
+  {{pageTitle}}
+{% endblock %}
 
 {% block content %}
   <div class="govuk-grid-row">
@@ -65,6 +77,19 @@
           </tbody>
         </table>
       </div>
+
+      {% if options.pagination.items | length > 1 %}
+        {{ govukPagination({
+          previous: {
+            href: '/results/'+options.id+'/'+options.pagination.previousPage
+          },
+          next: {
+            href: '/results/'+options.id+'/'+options.pagination.nextPage
+          },
+          items: options.pagination.items
+        })}}
+      {% endif %}
+
     </div>
   </div>
 {% endif %}

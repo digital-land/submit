@@ -1,0 +1,16 @@
+{
+    "request": {
+        "urlPath": "/requests/complete/response-details",
+        "method": "GET"
+    },
+    "response": {
+        "status": 202,
+        "headers": {
+            "Content-Type": "application/json",
+            "x-pagination-total-results": "3",
+            "x-pagination-offset": "0",
+            "x-pagination-limit": "50"
+        },
+        "bodyFileName": "check_file/article-4/request-complete-details.json"
+    }
+}

@@ -25,6 +25,7 @@
     "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
     "test:integration": "NODE_ENV=test playwright test --config ./test/integration/playwright.config.js",
     "test:acceptance": "NODE_ENV=development playwright test --config ./test/acceptance/playwright.config.js",
+    "test:acceptance:ci": "NODE_ENV=ci playwright test --config ./test/acceptance/playwright.config.js --grep @url",
     "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
     "lint:fix": "standard --fix"

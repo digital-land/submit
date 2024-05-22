@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
-import resultsPage from './resultsPage'
+import ResultsPage from './resultsPage'
 
-export default class ErrorsPage extends resultsPage {
+export default class ErrorsPage extends ResultsPage {
   async clickUploadNewVersion () {
     await this.page.getByRole('button', { name: 'Upload a new version' }).click()
   }
