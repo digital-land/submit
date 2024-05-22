@@ -6,6 +6,10 @@ services:
       context: .
     environment:
       NODE_ENV: ci
+      AWS_ACCESS_KEY_ID: example
+      AWS_SECRET_ACCESS_KEY: example
+      AWS_DEFAULT_REGION: eu-west-2
+      # AWS_ENDPOINT_URL: http://localstack:4566
     ports:
       - "8085:5000"
 
