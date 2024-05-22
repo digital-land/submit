@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
   const toReturn = {
     name: config.serviceName,
     environment: config.environment,
-    version: 'ToDo', // commitInfo.shortHash,
+    version: process.env.GIT_COMMIT || 'unknown', // commitInfo.shortHash,
     maintenance: config.maintenance.serviceUnavailable,
     dependencies: [
       {

@@ -1,6 +1,10 @@
 # Stage 1: Build
 FROM node:20-alpine as build
 
+# set the git commit sha as an environment variable
+ARG GIT_COMMIT
+ENV GIT_COMMIT=$GIT_COMMIT
+
 RUN npm install -g npm@10.3.0
 
 COPY package.json .
