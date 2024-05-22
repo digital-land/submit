@@ -49,7 +49,7 @@ const checkS3Bucket = async () => {
 // ToDo: this should query the request-api health endpoint
 const checkRequestApi = async () => {
   try {
-    const response = await fetch(config.asyncRequestApi.url)
+    const response = await fetch(`${config.asyncRequestApi.url}/health`)
     return response.ok
   } catch (error) {
     return false
