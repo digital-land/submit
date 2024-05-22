@@ -75,6 +75,12 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
+      - id: docker-compose-logs
+        if: always()
+        run: |
+          sleep 30
+          docker compose -f docker-compose-real-backend.yml logs --tail frontend
+          docker compose -f docker-compose-real-backend.yml logs --tail request-api
 
       - id: stop-containers
         if: always()
