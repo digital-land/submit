@@ -16,7 +16,7 @@ import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 test.setTimeout(50000)
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
-    test('request check of a @datafile1', async ({ page }) => {
+    test('request check of a @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
 
       await startPage.navigateHere()
