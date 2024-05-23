@@ -1,11 +1,8 @@
 # Stage 1: Build
 FROM node:20-alpine as build
 
-# set the git commit sha as an environment variable
-ARG GIT_COMMIT
-ENV GIT_COMMIT=$GIT_COMMIT
-
 RUN npm install -g npm@10.3.0
+
 
 COPY package.json .
 
@@ -26,6 +23,9 @@ COPY --from=build src src
 COPY --from=build public public
 COPY --from=build index.js .
 COPY --from=build package.json .
+
+ARG GIT_COMMIT
+ENV GIT_COMMIT=$GIT_COMMIT
 
 ENV PORT=5000
 
