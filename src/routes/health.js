@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
   const toReturn = {
     name: config.serviceName,
     environment: config.environment,
-    version: process.env.GIT_COMMIT || 'unknown', 
+    version: process.env.GIT_COMMIT || 'unknown',
     maintenance: config.maintenance.serviceUnavailable,
     dependencies: [
       {
@@ -72,4 +72,4 @@ const checkRedis = async () => {
 }
 
 export default router
-export { checkS3Bucket, checkRequestApi, checkRedis}
+export { checkS3Bucket, checkRequestApi, checkRedis }
