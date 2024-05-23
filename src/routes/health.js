@@ -76,3 +76,4 @@ const checkRedis = async () => {
 }
 
 export default router
+export { checkS3Bucket, checkRequestApi, checkRedis }
