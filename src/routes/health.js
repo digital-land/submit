@@ -2,11 +2,8 @@ import express from 'express'
 import config from '../../config/index.js'
 import AWS from 'aws-sdk'
 import { createClient } from 'redis'
-// import gitCommitInfo from 'git-commit-info'
 
 const router = express.Router()
-
-// const commitInfo = gitCommitInfo()
 
 AWS.config.update({
   region: config.aws.region,
@@ -18,7 +15,7 @@ router.get('/', async (req, res) => {
   const toReturn = {
     name: config.serviceName,
     environment: config.environment,
-    version: process.env.GIT_COMMIT || 'unknown', // commitInfo.shortHash,
+    version: process.env.GIT_COMMIT || 'unknown', 
     maintenance: config.maintenance.serviceUnavailable,
     dependencies: [
       {
@@ -46,7 +43,6 @@ const checkS3Bucket = async () => {
     .catch(() => false)
 }
 
-// ToDo: this should query the request-api health endpoint
 const checkRequestApi = async () => {
   try {
     const response = await fetch(`${config.asyncRequestApi.url}/health`)
@@ -76,4 +72,4 @@ const checkRedis = async () => {
 }
 
 export default router
-export { checkS3Bucket, checkRequestApi, checkRedis }
+export { checkS3Bucket, checkRequestApi, checkRedis}
