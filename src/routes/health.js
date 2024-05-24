@@ -33,7 +33,12 @@ router.get('/', async (req, res) => {
     ]
   }
 
-  res.json(toReturn)
+  const isAnyServiceUnreachable = toReturn.dependencies.some(service => service.status === 'unreachable')
+  if (isAnyServiceUnreachable) {
+    res.status(500).json(toReturn)
+  } else {
+    res.json(toReturn)
+  }
 })
 
 const checkS3Bucket = async () => {
