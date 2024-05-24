@@ -31,7 +31,7 @@ test.describe('Request Check', () => {
       const uploadFilePage = await uploadMethodPage.clickContinue()
 
       await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('./article4directionareas-ok.csv')
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
       const statusPage = await uploadFilePage.clickContinue()
 
       await statusPage.waitForPage()
