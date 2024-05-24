@@ -14,7 +14,7 @@ import config from '../../config/index.js'
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testMatch: '**/*.test.js',
+  testMatch: '**/*.playwright.test.js',
   testDir: './',
   /* Run tests in files in parallel */
   fullyParallel: true,
