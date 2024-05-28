@@ -1,21 +1,27 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../utils/asyncRequestApi.js'
 
-const failedRequestTemplate = 'failedRequest'
-const errorsTemplate = 'errors'
-const noErrorsTemplate = 'no-errors'
+const failedRequestTemplate = 'results/failedRequest'
+const errorsTemplate = 'results/errors'
+const noErrorsTemplate = 'results/no-errors'
 
 class ResultsController extends PageController {
   async configure (req, res, next) {
     try {
       this.result = await getRequestData(req.params.id)
-      if (this.result.isFailed()) {
+      if (!this.result.isComplete()) {
+        res.redirect(`/status/${req.params.id}`)
+        return
+      } else if (this.result.isFailed()) {
         this.template = failedRequestTemplate
       } else if (this.result.hasErrors()) {
         this.template = errorsTemplate
+        await this.result.fetchResponseDetails(req.params.pageNumber, 50, 'error')
       } else {
         this.template = noErrorsTemplate
+        await this.result.fetchResponseDetails(req.params.pageNumber)
       }
+
       super.configure(req, res, next)
     } catch (error) {
       next(error, req, res, next)
@@ -23,11 +29,6 @@ class ResultsController extends PageController {
   }
 
   async locals (req, res, next) {
-    if (!this.result.isComplete()) {
-      res.redirect(`/status/${req.params.id}`)
-      return
-    }
-
     req.form.options.template = this.template
     req.form.options.requestParams = this.result.getParams()
 
@@ -38,6 +39,8 @@ class ResultsController extends PageController {
       req.form.options.mappings = this.result.getFieldMappings()
       req.form.options.verboseRows = this.result.getRowsWithVerboseColumns(this.result.hasErrors())
       req.form.options.geometries = this.result.getGeometries()
+      req.form.options.pagination = this.result.getPagination(req.params.pageNumber)
+      req.form.options.id = req.params.id
     } else {
       req.form.options.error = this.result.getError()
     }

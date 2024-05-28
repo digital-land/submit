@@ -23,7 +23,9 @@
     "test:unit": "vitest run test/unit",
     "test:watch": "vitest test/unit test/integration test/contract",
     "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
-    "test:integration": "NODE_ENV=test playwright test test/integration",
+    "test:integration": "NODE_ENV=test playwright test --config ./test/integration/playwright.config.js",
+    "test:acceptance": "NODE_ENV=development playwright test --config ./test/acceptance/playwright.config.js",
+    "test:acceptance:ci": "NODE_ENV=ci playwright test --config ./test/acceptance/playwright.config.js --grep @url",
     "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
     "lint:fix": "standard --fix"
@@ -54,8 +56,11 @@
     "@x-govuk/govuk-prototype-filters": "^1.2.0",
     "aws-sdk": "^2.1581.0",
     "axios": "^1.6.2",
+    "connect-redis": "^7.1.1",
+    "dotenv": "^16.4.5",
     "email-validator": "^2.0.4",
     "express": "^4.18.2",
+    "express-session": "^1.18.0",
     "fs": "^0.0.1-security",
     "govuk-frontend": "^4.7.0",
     "hmpo-config": "^3.0.0",
@@ -65,6 +70,7 @@
     "maplibre-gl": "^4.1.0",
     "multer": "^1.4.5-lts.1",
     "nunjucks": "^3.2.4",
+    "redis": "^4.6.13",
     "sass": "^1.69.4",
     "uuid": "^9.0.1",
     "wellknown": "^0.5.0",
@@ -77,5 +83,10 @@
       "**/public/**"
     ],
     "ext": "html js css"
+  },
+  "standard": {
+    "ignore": [
+      "performance-test/"
+    ]
   }
 }

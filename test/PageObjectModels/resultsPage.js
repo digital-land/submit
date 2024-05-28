@@ -4,8 +4,9 @@
 
 import { expect } from '@playwright/test'
 import BasePage from './BasePage'
+import ConfirmationPage from './confirmationPage'
 
-export default class resultsPage extends BasePage {
+export default class ResultsPage extends BasePage {
   constructor (page) {
     super(page, '/results')
   }
@@ -22,7 +23,40 @@ export default class resultsPage extends BasePage {
     expect(await this.page.locator('h1').innerText()).toEqual('Request Failed')
   }
 
-  async navigateToRequest (id) {
-    return await this.page.goto(`${this.url}/${id}`)
+  async navigateToRequest (id, pageNumber = 0) {
+    return await this.page.goto(`${this.url}/${id}/${pageNumber}`)
+  }
+
+  async waitForPage (id = undefined) {
+    if (id) {
+      return await this.page.waitForURL(`**${this.url}/${id}/0`)
+    } else {
+      return await this.page.waitForURL(`**${this.url}/**/0`)
+    }
+  }
+
+  async expectPageHasTableAndSummary () {
+    // Check if there's a table
+    expect(await this.page.locator('table').isVisible())
+
+    await this.page.waitForSelector('.govuk-list.govuk-list--bullet')
+    // Get the text content of the bullet points
+    const summarytext = await this.page.evaluate(() => {
+      const bulletPoints = Array.from(document.querySelectorAll('.govuk-list.govuk-list--bullet li'))
+      return bulletPoints.map(li => li.textContent.trim())
+    })
+
+    // Assert that the summary is generated
+    expect(summarytext).toContain('2 geometries must be in Well-Known Text (WKT) format')
+    expect(summarytext).toContain('3 start dates must be a real date')
+  }
+
+  async selectLabel (label) {
+    return await this.page.getByLabel(label).check()
+  }
+
+  async clickContinue (skipVerification) {
+    await super.clickContinue()
+    return await super.verifyAndReturnPage(ConfirmationPage, skipVerification)
   }
 }

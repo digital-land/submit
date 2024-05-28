@@ -8,124 +8,265 @@
 
 import { test } from '@playwright/test'
 
-import StartPage from './PageObjectModels/startPage'
-import DatasetPage from './PageObjectModels/datasetPage'
-import UploadMethodPage from './PageObjectModels/uploadMethodPage'
-import UploadFilePage from './PageObjectModels/uploadFilePage'
-import StatusPage from './PageObjectModels/statusPage'
-import ResultsPage from './PageObjectModels/resultsPage'
+import StartPage from '../PageObjectModels/startPage'
 
+import { datasets } from '../PageObjectModels/datasetPage'
+import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
+
+test.setTimeout(50000)
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
-    test.skip('request check of a datafile', async ({ page }) => {
+    test('request check of a @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
-      const datasetPage = new DatasetPage(page)
-      const uploadMethodPage = new UploadMethodPage(page)
-      const uploadFilePage = new UploadFilePage(page)
-      const statusPage = new StatusPage(page)
-      const resultsPage = new ResultsPage(page)
 
       await startPage.navigateHere()
-      await startPage.clickStartNow()
+      const datasetPage = await startPage.clickStartNow()
 
       await datasetPage.waitForPage()
-      await datasetPage.selectDataset(DatasetPage.datasets.Article_4_direction_area_dataset)
-      await datasetPage.clickContinue()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
 
       await uploadMethodPage.waitForPage()
-      await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.File)
-      await uploadMethodPage.clickContinue()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
 
       await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('test/datafiles/Article_4_direction_area_dataset.csv')
-      await uploadFilePage.clickContinue()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
+      const statusPage = await uploadFilePage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectStatusToBe('NEW')
-      await statusPage.expectStatusToBe('IN_PROGRESS')
-      await statusPage.waitForContinueButton()
-      await statusPage.expectStatusToBe('COMPLETE')
-      await statusPage.clickContinue()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
+      const resultsPage = await statusPage.clickContinue()
 
-      await resultsPage.waitForPage()
+      await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
+
+      await resultsPage.selectLabel('Yes')
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
+    })
+
+    test('request check of an error @datafile', async ({ page }) => {
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
+
+      await uploadFilePage.waitForPage()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
+      const statusPage = await uploadFilePage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
+      const resultsPage = await statusPage.clickContinue()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsErrorsPage()
+
+      await resultsPage.expectPageHasTableAndSummary()
+    })
+
+    test('request check of a @url', async ({ page }) => {
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
+      const resultsPage = await statusPage.clickContinue()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsNoErrorsPage()
+    })
+
+    test('request check of an error @url', async ({ page }) => {
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
+      const resultsPage = await statusPage.clickContinue()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTableAndSummary()
     })
   })
 
   test.describe('With javascript disabled', () => {
     test.use({ javaScriptEnabled: false })
 
-    test.skip('request check of a datafile', async ({ page }) => {
+    test('request check of a @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
-      const datasetPage = new DatasetPage(page)
-      const uploadMethodPage = new UploadMethodPage(page)
-      const uploadFilePage = new UploadFilePage(page)
-      const statusPage = new StatusPage(page)
-      const resultsPage = new ResultsPage(page)
 
       await startPage.navigateHere()
-      await startPage.clickStartNow()
+      const datasetPage = await startPage.clickStartNow()
 
       await datasetPage.waitForPage()
-      await datasetPage.selectDataset(DatasetPage.datasets.Article_4_direction_area_dataset)
-      await datasetPage.clickContinue()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
 
       await uploadMethodPage.waitForPage()
-      await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.File)
-      await uploadMethodPage.clickContinue()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
 
       await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('test/datafiles/Article_4_direction_area_dataset.csv')
-      await uploadFilePage.clickContinue()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
+      const statusPage = await uploadFilePage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectStatusToBe('NEW')
-      await statusPage.waitForContinueButton()
-      await statusPage.clickContinue()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-      await resultsPage.waitForPage()
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
 
-      // could be redirected back to the status page here? or could remain on  the results page
+      const resultsPage = await statusPage.clickCheckStatusButton()
 
-      await statusPage.waitForPage()
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsNoErrorsPage()
+
+      await resultsPage.selectLabel('Yes')
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
     })
-  })
 
-  test.describe('With javascript failing', () => {
-    test.skip('request check of a datafile', async ({ page }) => {
-      // we need a way to make javascript fail here.
-
+    test('request check of an error @datafile', async ({ page }) => {
       const startPage = new StartPage(page)
-      const datasetPage = new DatasetPage(page)
-      const uploadMethodPage = new UploadMethodPage(page)
-      const uploadFilePage = new UploadFilePage(page)
-      const statusPage = new StatusPage(page)
-      const resultsPage = new ResultsPage(page)
 
       await startPage.navigateHere()
-      await startPage.clickStartNow()
+      const datasetPage = await startPage.clickStartNow()
 
       await datasetPage.waitForPage()
-      await datasetPage.selectDataset(DatasetPage.datasets.Article_4_direction_area_dataset)
-      await datasetPage.clickContinue()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
 
       await uploadMethodPage.waitForPage()
-      await uploadMethodPage.selectUploadMethod(UploadMethodPage.uploadMethods.File)
-      await uploadMethodPage.clickContinue()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
 
       await uploadFilePage.waitForPage()
-      await uploadFilePage.uploadFile('test/datafiles/Article_4_direction_area_dataset.csv')
-      await uploadFilePage.clickContinue()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
+      const statusPage = await uploadFilePage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectStatusToBe('NEW')
-      await statusPage.expectStatusToBe('IN_PROGRESS')
-      await statusPage.waitForContinueButton()
-      await statusPage.expectStatusToBe('FAILED')
-      await statusPage.clickContinue()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-      await resultsPage.waitForPage()
-      await resultsPage.expectPageIsErrorPage()
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
+
+      const resultsPage = await statusPage.clickCheckStatusButton()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTableAndSummary()
+    })
+
+    test('request check of a @url', async ({ page }) => {
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
+
+      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+
+      const resultsPage = await statusPage.clickCheckStatusButton()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsNoErrorsPage()
+    })
+
+    test('request check of an error @url', async ({ page }) => {
+      const startPage = new StartPage(page)
+
+      await startPage.navigateHere()
+      const datasetPage = await startPage.clickStartNow()
+
+      await datasetPage.waitForPage()
+      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+      const uploadMethodPage = await datasetPage.clickContinue()
+
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
+
+      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+
+      const resultsPage = await statusPage.clickCheckStatusButton()
+
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTableAndSummary()
     })
   })
 })

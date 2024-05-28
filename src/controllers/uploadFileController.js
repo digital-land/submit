@@ -9,6 +9,7 @@ import { promises as fs, createReadStream } from 'fs'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import { postFileRequest } from '../utils/asyncRequestApi.js'
+import { allowedFileTypes } from '../utils/utils.js'
 
 AWS.config.update({
   region: config.aws.region,
@@ -35,15 +36,20 @@ class UploadFileController extends UploadController {
         filePath: req.file.path,
         fileName: req.file.originalname
       }
-      req.body.datafile = req.file
     }
 
-    const localValidationResult = UploadFileController.localValidateFile(dataFileForLocalValidation)
+    const localValidationErrorType = UploadFileController.localValidateFile(dataFileForLocalValidation)
 
-    if (!localValidationResult) {
-      this.validationError('localValidationError', '', null, req)
-      super.post(req, res, next)
-      return
+    if (localValidationErrorType) {
+      const error = {
+        key: 'datafile',
+        type: localValidationErrorType
+      }
+      const errors = {
+        datafile: new UploadFileController.Error(error.key, error, req, res)
+      }
+      logger.error('local validation failed during file upload', error)
+      return next(errors)
     }
 
     try {
@@ -64,14 +70,18 @@ class UploadFileController extends UploadController {
   }
 
   static localValidateFile (datafile) {
-    return UploadFileController.notUndefined(datafile) &&
-            UploadFileController.extensionIsValid(datafile) &&
-            UploadFileController.sizeIsValid(datafile) &&
-            UploadFileController.fileNameIsntTooLong(datafile) &&
-            UploadFileController.fileNameIsValid(datafile) &&
-            UploadFileController.fileNameDoesntContainDoubleExtension(datafile) &&
-            UploadFileController.fileMimeTypeIsValid(datafile) &&
-            UploadFileController.fileMimeTypeMatchesExtension(datafile)
+    const validators = [
+      { type: 'required', fn: UploadFileController.notUndefined },
+      { type: 'fileType', fn: UploadFileController.extensionIsValid },
+      { type: 'fileSize', fn: UploadFileController.sizeIsValid },
+      { type: 'fileNameTooLong', fn: UploadFileController.fileNameIsntTooLong },
+      { type: 'fileNameInvalidCharacters', fn: UploadFileController.fileNameIsValid },
+      { type: 'fileNameDoubleExtension', fn: UploadFileController.fileNameDoesntContainDoubleExtension },
+      { type: 'mimeType', fn: UploadFileController.fileMimeTypeIsValid },
+      { type: 'mimeTypeMalformed', fn: UploadFileController.fileMimeTypeMatchesExtension }
+    ]
+
+    return validators.find(validator => !validator.fn(datafile))?.type
   }
 
   /*
@@ -102,7 +112,7 @@ class UploadFileController extends UploadController {
   }
 
   static extensionIsValid (datafile) {
-    const allowedExtensions = ['csv', 'xls', 'xlsx', 'json', 'geojson', 'gml', 'gpkg', 'sqlite3']
+    const allowedExtensions = Object.keys(allowedFileTypes)
 
     const parts = datafile.originalname.split('.')
 
@@ -149,17 +159,8 @@ class UploadFileController extends UploadController {
   }
 
   static fileMimeTypeIsValid (datafile) {
-    const allowedMimeTypes = [
-      'text/csv',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/json',
-      'application/vnd.geo+json',
-      'application/gml+xml',
-      'application/gpkg',
-      'application/geopackage+sqlite3',
-      'application/octet-stream' // This is a catch all for when the mime type is not recognised
-    ]
+    const allowedMimeTypes = Object.values(allowedFileTypes).flat()
+
     if (!allowedMimeTypes.includes(datafile.mimetype)) {
       return false
     }
@@ -174,18 +175,7 @@ class UploadFileController extends UploadController {
       return true
     }
 
-    const mimeTypes = {
-      csv: 'text/csv',
-      xls: 'application/vnd.ms-excel',
-      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      json: 'application/json',
-      geojson: 'application/vnd.geo+json',
-      gml: 'application/gml+xml',
-      gpkg: 'application/gpkg',
-      sqlite: 'application/geopackage+sqlite3'
-    }
-
-    if (mimeTypes[extension] !== datafile.mimetype) {
+    if (!allowedFileTypes[extension].includes(datafile.mimetype)) {
       return false
     }
 

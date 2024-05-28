@@ -1,0 +1,13 @@
+asyncRequestApi: {
+    url: http://production-pub-async-api-lb-636110663.eu-west-2.elb.amazonaws.com
+}
+aws: {
+    region: eu-west-2,
+    bucket: 'production-pub-async-request-files',
+}
+redis: {
+    secure: true,
+    host: 'production-pub-async-redis-eihmmv.serverless.euw2.cache.amazonaws.com',
+    port: '6379'
+}
+url: 'https://publish.digital-land.info/'

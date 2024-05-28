@@ -1,0 +1,90 @@
+{
+  "journey_parameters": [
+    {
+      "type": "check_file",
+      "dataset": "article-4-direction",
+      "file_path": "files/article-4-direction.json",
+      "original_filename": "article-4-direction.json",
+      "mime_type": "application/json"
+    },
+    {
+      "type": "check_url",
+      "dataset": "article-4-direction",
+      "url": "https://services-eu1.arcgis.com/xk4RA36G57mVH7Aw/ArcGIS/rest/services/Article_4_Output_view/FeatureServer/1//query?where=1%3D1&f=json&outfields=*"
+    },
+    {
+      "type": "check_file",
+      "dataset": "article-4-direction-area",
+      "file_path": "files/article-4-direction-areas.csv",
+      "original_filename": "article-4-direction-areas.csv",
+      "mime_type": "text/csv"
+    },
+    {
+      "type": "check_url",
+      "dataset": "article-4-direction-area",
+      "url": "https://open.barnet.gov.uk/download/e5l77/dhv/article4-direction-areas.csv"
+    },
+    {
+      "type": "check_file",
+      "dataset": "conservation-area-document",
+      "file_path": "files/conservation_areas_documents.csv",
+      "original_filename": "conservation_areas_documents.csv",
+      "mime_type": "text/csv"
+    },
+    {
+      "type": "check_url",
+      "dataset": "conservation-area-document",
+      "url": "https://raw.githubusercontent.com/digital-land/PublishExamples/main/ConservationArea/Files/Conservation-area-document/Conservation_Area_Documentation_Dataset_ok.csv"
+    },
+    {
+      "type": "check_file",
+      "dataset": "listed-building-outline",
+      "file_path": "files/listed-building-outline.csv",
+      "original_filename": "listed-building-outline.csv",
+      "mime_type": "text/csv"
+    },
+    {
+      "type": "check_url",
+      "dataset": "listed-building-outline",
+      "url": "https://open.barnet.gov.uk/download/2w6jz/ztc/statutory-listed-buildings.csv"
+    },
+    {
+      "type": "check_file",
+      "dataset": "tree-preservation-order",
+      "file_path": "files/tree-preservation-order.csv",
+      "original_filename": "tree-preservation-order.csv",
+      "mime_type": "text/csv"
+    },
+    {
+      "type": "check_url",
+      "dataset": "tree-preservation-order",
+      "url": "https://open.barnet.gov.uk/download/e5nge/ktw/tree-preservation-order.csv"
+    },
+    {
+      "type": "check_file",
+      "dataset": "tree",
+      "file_path": "files/trees.json",
+      "original_filename": "trees.json",
+      "mime_type": "application/json",
+      "geom_type": "point"
+    },
+    {
+      "type": "check_url",
+      "dataset": "tree",
+      "url": "https://www.stalbans.gov.uk/sites/default/files/documents/publications/planning-building-control/Agile/Tree_Dataset.json",
+      "geom_type": "point"
+    },
+    {
+      "type": "check_file",
+      "dataset": "tree-preservation-zone",
+      "file_path": "files/tree-preservation-zone.json",
+      "original_filename": "tree-preservation-zone.json",
+      "mime_type": "application/json"
+    },
+    {
+      "type": "check_url",
+      "dataset": "tree-preservation-zone",
+      "url": "https://open.barnet.gov.uk/download/e5nge/837/tree-preservation-zone.gpkg"
+    }
+  ]
+}
