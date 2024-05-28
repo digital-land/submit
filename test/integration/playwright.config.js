@@ -86,7 +86,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'NODE_ENV=test npm run start',
-    url: 'http://127.0.0.1:5000',
+    url: `http://127.0.0.1:${config.port}`,
     reuseExistingServer: !process.env.CI
   }
 })

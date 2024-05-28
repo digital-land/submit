@@ -67,6 +67,20 @@ jobs:
 
       - id: run-acceptance-tests
         run: npm run test:acceptance:ci
+      
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - id: docker-compose-logs
+        if: always()
+        run: |
+          docker compose -f docker-compose-real-backend.yml logs --tail frontend
+          docker compose -f docker-compose-real-backend.yml logs --tail request-api
+
 
       - id: stop-containers
         if: always()
