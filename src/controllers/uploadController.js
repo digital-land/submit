@@ -1,27 +1,12 @@
 'use strict'
 import PageController from './pageController.js'
 import config from '../../config/index.js'
-import logger from '../utils/logger.js'
 
 class UploadController extends PageController {
   apiRoute = config.asyncRequestApi.url + config.asyncRequestApi.requestsEndpoint
 
-  locals (req, res, next) {
-    req.form.options.validationError = this.validationErrorMessage
-    super.locals(req, res, next)
-  }
-
   async post (req, res, next) {
     super.post(req, res, next)
-  }
-
-  resetValidationErrorMessage () {
-    this.validationErrorMessage = undefined
-  }
-
-  validationError (type, message, errorObject, req) {
-    logger.error({ type, message, errorObject })
-    this.validationErrorMessage = message
   }
 
   getBaseFormData (req) {
