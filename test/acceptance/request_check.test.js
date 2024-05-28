@@ -15,10 +15,6 @@ import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
 test.setTimeout(300000)
 
-// test.beforeEach(async ({ page }, testInfo) => {
-//   test.setTimeout(Number("60,000"));
-// });
-
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
     test('request check of a @datafile', async ({ page }) => {
