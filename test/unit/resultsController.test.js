@@ -66,7 +66,7 @@ describe('ResultsController', () => {
     })
 
     it('should set the template to the failedFileRequest template if the result of a file_check is failed', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_file'}
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_file' }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
@@ -74,7 +74,7 @@ describe('ResultsController', () => {
     })
 
     it('should set the template to the failedUrlRequest template if the result of a url_check is failed', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_url'}
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_url' }
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
       await resultsController.configure(req, {}, () => {})
