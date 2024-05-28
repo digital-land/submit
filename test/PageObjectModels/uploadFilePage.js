@@ -15,9 +15,6 @@ export default class UploadFilePage extends BasePage {
 
   async clickContinue (skipVerification) {
     await super.clickContinue()
-    await this.page.waitForTimeout(5000)
-    await this.page.screenshot({ path: 'playwright-report/data/screenshot.png', fullPage: true })
-    console.log('URL here:', this.page.url())
     return await super.verifyAndReturnPage(StatusPage, skipVerification)
   }
 }
