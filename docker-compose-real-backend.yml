@@ -6,6 +6,10 @@ services:
       context: .
     environment:
       NODE_ENV: ci
+      AWS_ACCESS_KEY_ID: example
+      AWS_SECRET_ACCESS_KEY: example
+      AWS_DEFAULT_REGION: eu-west-2
+      AWS_ENDPOINT_URL: http://localstack:4566
     ports:
       - "8085:5000"
 
@@ -33,6 +37,7 @@ services:
 
   request-api:
     image: public.ecr.aws/l6z6v3j6/development-pub-async-request-api:main
+    # image: request-api:latest # Uncomment when working locally with this file
     environment:
       PYTHONUNBUFFERED: 1
       AWS_ENDPOINT_URL: http://localstack:4566
@@ -55,6 +60,7 @@ services:
 
   request-processor:
     image: public.ecr.aws/l6z6v3j6/development-pub-async-request-processor:main
+    # image: request-processor:latest # Uncomment when working locally with this file
     environment:
       PYTHONUNBUFFERED: 1
       AWS_ENDPOINT_URL: http://localstack:4566
@@ -69,7 +75,7 @@ services:
       REQUEST_FILES_BUCKET_NAME: dluhc-data-platform-request-files-local
     restart: on-failure
     deploy:
-      replicas: 1
+      replicas: 2
     volumes:
       - "./request-processor-celery/docker_volume:/opt"
 

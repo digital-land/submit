@@ -7,8 +7,6 @@ import { allowedFileTypes } from '../utils/utils.js'
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
-    this.resetValidationErrorMessage()
-
     const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url)
 
     if (localValidationErrorType) {
