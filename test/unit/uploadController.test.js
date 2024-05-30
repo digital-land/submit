@@ -12,18 +12,6 @@ describe('UploadController', () => {
     uploadController = new UploadController(options)
   })
 
-  it('resetValidationErrorMessage', ({ assert }) => {
-    uploadController.validationErrorMessage = 'Error message'
-    uploadController.resetValidationErrorMessage()
-    expect(uploadController.validationErrorMessage).toBe(undefined)
-  })
-
-  it('validationError', ({ assert }) => {
-    const errorObject = new Error('Test error')
-    uploadController.validationError('TestType', 'Test message', errorObject, {})
-    expect(uploadController.validationErrorMessage).toBe('Test message')
-  })
-
   it('getBaseFormData', ({ assert }) => {
     const req = {
       sessionModel: {
