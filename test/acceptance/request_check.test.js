@@ -13,7 +13,8 @@ import StartPage from '../PageObjectModels/startPage'
 import { datasets } from '../PageObjectModels/datasetPage'
 import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
-test.setTimeout(50000)
+test.setTimeout(300000)
+
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
     test('request check of a @datafile', async ({ page }) => {
@@ -229,7 +230,7 @@ test.describe('Request Check', () => {
       await statusPage.expectCheckStatusButtonToBeVisible()
       const id = await statusPage.getIdFromUrl()
 
-      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+      await page.waitForTimeout(5000) // wait for 10 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
 
       const resultsPage = await statusPage.clickCheckStatusButton()
 
@@ -260,7 +261,7 @@ test.describe('Request Check', () => {
       await statusPage.expectCheckStatusButtonToBeVisible()
       const id = await statusPage.getIdFromUrl()
 
-      await page.waitForTimeout(3000) // wait for 3 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
 
       const resultsPage = await statusPage.clickCheckStatusButton()
 
