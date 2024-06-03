@@ -85,13 +85,14 @@ export const finishedProcessingStatuses = [
 ]
 
 export const allowedFileTypes = {
-  csv: ['text/csv', 'text/plain', 'application/octet-stream'],
-  xls: ['application/vnd.ms-excel', 'application/octet-stream'],
-  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/octet-stream'],
-  json: ['application/json', 'application/octet-stream'],
-  geojson: ['application/vnd.geo+json', 'application/octet-stream'],
-  gml: ['application/gml+xml', 'application/octet-stream'],
-  gpkg: ['application/gpkg', 'application/octet-stream'],
-  sqlite: ['application/geopackage+sqlite3', 'application/octet-stream'],
-  zip: ['application/zip', 'application/octet-stream']
+  csv: ['text/csv', 'text/plain', 'application/octet-stream', 'binary/octet-stream'],
+  xls: ['application/vnd.ms-excel', 'application/octet-stream', 'binary/octet-stream'],
+  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/octet-stream', 'binary/octet-stream'],
+  json: ['application/json', 'application/octet-stream', 'binary/octet-stream'],
+  geojson: ['application/vnd.geo+json', 'application/octet-stream', 'binary/octet-stream'],
+  gml: ['application/gml+xml', 'application/octet-stream', 'binary/octet-stream'],
+  gpkg: ['application/gpkg', 'application/octet-stream', 'binary/octet-stream'],
+  sqlite: ['application/geopackage+sqlite3', 'application/octet-stream', 'binary/octet-stream'],
+  zip: ['application/zip', 'application/octet-stream', 'binary/octet-stream']
+
 }
