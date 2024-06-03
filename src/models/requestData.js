@@ -30,6 +30,10 @@ export default class RequestData {
     return this.status === 'FAILED'
   }
 
+  getType () {
+    return this.type
+  }
+
   getError () {
     if (!this.response) {
       logger.error('trying to get error when there are none: request id: ' + this.id)
