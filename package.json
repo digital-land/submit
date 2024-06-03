@@ -25,7 +25,7 @@
     "test:coverage": "vitest test/unit test/integration test/contract  --coverage",
     "test:integration": "NODE_ENV=test playwright test --config ./test/integration/playwright.config.js",
     "test:acceptance": "NODE_ENV=development playwright test --config ./test/acceptance/playwright.config.js",
-    "test:acceptance:ci": "NODE_ENV=ci playwright test --config ./test/acceptance/playwright.config.js --grep @url",
+    "test:acceptance:ci": "NODE_ENV=ci playwright test --config ./test/acceptance/playwright.config.js",
     "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
     "lint:fix": "standard --fix"
@@ -45,6 +45,7 @@
     "husky": "^8.0.0",
     "nodemon": "^3.0.1",
     "standard": "^17.1.0",
+    "supertest": "^7.0.0",
     "vitest": "^0.34.6",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",

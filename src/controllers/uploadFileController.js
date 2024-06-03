@@ -26,8 +26,6 @@ class UploadFileController extends UploadController {
   }
 
   async post (req, res, next) {
-    this.resetValidationErrorMessage()
-
     let dataFileForLocalValidation = null
 
     if (req.file) {

@@ -7,54 +7,51 @@ const errorsTemplate = 'results/errors'
 const noErrorsTemplate = 'results/no-errors'
 
 class ResultsController extends PageController {
-  async configure (req, res, next) {
+  async locals (req, res, next) {
     try {
-      this.result = await getRequestData(req.params.id)
-      if (!this.result.isComplete()) {
+      const result = await getRequestData(req.params.id)
+      req.form.options.data = result
+
+      if (!result.isComplete()) {
         res.redirect(`/status/${req.params.id}`)
         return
-      } else if (this.result.isFailed()) {
-        if (this.result.getType() === 'check_file') {
-          this.template = failedFileRequestTemplate
+      } else if (result.isFailed()) {
+        if (req.form.options.data.getType() === 'check_file') {
+          req.form.options.template = failedFileRequestTemplate
         } else {
-          this.template = failedUrlRequestTemplate
+          req.form.options.template = failedUrlRequestTemplate
         }
-      } else if (this.result.hasErrors()) {
-        this.template = errorsTemplate
-        await this.result.fetchResponseDetails(req.params.pageNumber, 50, 'error')
+      } else if (result.hasErrors()) {
+        req.form.options.template = errorsTemplate
+        await result.fetchResponseDetails(req.params.pageNumber, 50, 'error')
       } else {
-        this.template = noErrorsTemplate
-        await this.result.fetchResponseDetails(req.params.pageNumber)
+        req.form.options.template = noErrorsTemplate
+        await result.fetchResponseDetails(req.params.pageNumber)
       }
 
-      super.configure(req, res, next)
+      req.form.options.requestParams = result.getParams()
+
+      if (req.form.options.template !== failedFileRequestTemplate && req.form.options.template !== failedUrlRequestTemplate) {
+        req.form.options.errorSummary = result.getErrorSummary()
+        req.form.options.columns = result.getColumns()
+        req.form.options.fields = result.getFields()
+        req.form.options.mappings = result.getFieldMappings()
+        req.form.options.verboseRows = result.getRowsWithVerboseColumns(result.hasErrors())
+        req.form.options.geometries = result.getGeometries()
+        req.form.options.pagination = result.getPagination(req.params.pageNumber)
+        req.form.options.id = req.params.id
+      } else {
+        req.form.options.error = result.getError()
+      }
+
+      super.locals(req, res, next)
     } catch (error) {
       next(error, req, res, next)
     }
   }
 
-  async locals (req, res, next) {
-    req.form.options.template = this.template
-    req.form.options.requestParams = this.result.getParams()
-
-    if (this.template !== failedFileRequestTemplate && this.template !== failedUrlRequestTemplate) {
-      req.form.options.errorSummary = this.result.getErrorSummary()
-      req.form.options.columns = this.result.getColumns()
-      req.form.options.fields = this.result.getFields()
-      req.form.options.mappings = this.result.getFieldMappings()
-      req.form.options.verboseRows = this.result.getRowsWithVerboseColumns(this.result.hasErrors())
-      req.form.options.geometries = this.result.getGeometries()
-      req.form.options.pagination = this.result.getPagination(req.params.pageNumber)
-      req.form.options.id = req.params.id
-    } else {
-      req.form.options.error = this.result.getError()
-    }
-
-    super.locals(req, res, next)
-  }
-
   noErrors (req, res, next) {
-    return !this.result.hasErrors()
+    return !req.form.options.data.hasErrors()
   }
 }
 

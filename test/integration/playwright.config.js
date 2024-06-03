@@ -14,7 +14,7 @@ import config from '../../config/index.js'
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testMatch: '**/*.test.js',
+  testMatch: '**/*.playwright.test.js',
   testDir: './',
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -86,7 +86,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'NODE_ENV=test npm run start',
-    url: 'http://127.0.0.1:5000',
+    url: `http://127.0.0.1:${config.port}`,
     reuseExistingServer: !process.env.CI
   }
 })

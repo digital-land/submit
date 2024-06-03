@@ -85,13 +85,13 @@ export const finishedProcessingStatuses = [
 ]
 
 export const allowedFileTypes = {
-  csv: ['text/csv', 'text/plain'],
-  xls: ['application/vnd.ms-excel'],
-  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-  json: ['application/json'],
-  geojson: ['application/vnd.geo+json'],
-  gml: ['application/gml+xml'],
-  gpkg: ['application/gpkg'],
-  sqlite: ['application/geopackage+sqlite3'],
-  zip: ['application/zip']
+  csv: ['text/csv', 'text/plain', 'application/octet-stream'],
+  xls: ['application/vnd.ms-excel', 'application/octet-stream'],
+  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/octet-stream'],
+  json: ['application/json', 'application/octet-stream'],
+  geojson: ['application/vnd.geo+json', 'application/octet-stream'],
+  gml: ['application/gml+xml', 'application/octet-stream'],
+  gpkg: ['application/gpkg', 'application/octet-stream'],
+  sqlite: ['application/geopackage+sqlite3', 'application/octet-stream'],
+  zip: ['application/zip', 'application/octet-stream']
 }
