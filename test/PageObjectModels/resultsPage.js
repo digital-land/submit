@@ -20,7 +20,7 @@ export default class ResultsPage extends BasePage {
   }
 
   async expectIsFailedPage () {
-    expect(await this.page.locator('h1').innerText()).toEqual('Request Failed')
+    expect(['There was a problem with the url provided', "The file you provided wasn't readable"]).toContain(await this.page.locator('h1').innerText())
   }
 
   async navigateToRequest (id, pageNumber = 0) {
