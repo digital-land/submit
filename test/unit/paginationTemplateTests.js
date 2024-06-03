@@ -64,7 +64,7 @@ const paginationTests = (template, nunjucks) => {
           { number: 1, href: '/results/test/0', current: false },
           { ellipsis: true, href: '#' },
           { number: 8, href: '/results/test/7', current: false },
-          { number: 9, href: '/results/test/9', current: false },
+          { number: 9, href: '/results/test/8', current: false },
           { number: 10, href: '/results/test/9', current: true }
         ]
       }
