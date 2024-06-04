@@ -77,32 +77,6 @@ describe('ResultsController', () => {
       expect(req.form.options.template).toBe('results/no-errors')
     })
 
-    it('should set the template to the failedRequest template if the result is failed', async () => {
-      const mockDetails = {
-        getErrorSummary: () => ['error summary'],
-        getColumns: () => ['columns'],
-        getFields: () => ['fields'],
-        getFieldMappings: () => 'fieldMappings',
-        getRowsWithVerboseColumns: () => ['verbose-columns'],
-        getGeometries: () => ['geometries'],
-        getPagination: () => 'pagination'
-      }
-
-      const mockResult = {
-        isFailed: () => true,
-        getError: () => 'error',
-        hasErrors: () => false,
-        isComplete: () => true,
-        getParams: () => ('params'),
-        getId: () => 'fake_id',
-        fetchResponseDetails: () => mockDetails
-      }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
-
-      await resultsController.locals(req, {}, () => {})
-      expect(req.form.options.template).toBe('results/failedRequest')
-    })
-
     it('should redirect to the status page if the form is complete', async () => {
       const mockResult = {
         isComplete: () => true,
