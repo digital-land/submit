@@ -16,5 +16,5 @@ aws: {
 }
 redis: false
 url: 'https://publish-planning.data.gov.uk'
-serviceName: 'Publish planning and housing data for England'
+serviceName: 'Check planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'

@@ -45,6 +45,7 @@
     "husky": "^8.0.0",
     "nodemon": "^3.0.1",
     "standard": "^17.1.0",
+    "supertest": "^7.0.0",
     "vitest": "^0.34.6",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",

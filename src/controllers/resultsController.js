@@ -1,7 +1,8 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../utils/asyncRequestApi.js'
 
-const failedRequestTemplate = 'results/failedRequest'
+const failedFileRequestTemplate = 'results/failedFileRequest'
+const failedUrlRequestTemplate = 'results/failedUrlRequest'
 const errorsTemplate = 'results/errors'
 const noErrorsTemplate = 'results/no-errors'
 
@@ -15,7 +16,11 @@ class ResultsController extends PageController {
         res.redirect(`/status/${req.params.id}`)
         return
       } else if (result.isFailed()) {
-        req.form.options.template = failedRequestTemplate
+        if (req.form.options.data.getType() === 'check_file') {
+          req.form.options.template = failedFileRequestTemplate
+        } else {
+          req.form.options.template = failedUrlRequestTemplate
+        }
       } else if (result.hasErrors()) {
         req.form.options.template = errorsTemplate
         await result.fetchResponseDetails(req.params.pageNumber, 50, 'error')
@@ -26,7 +31,7 @@ class ResultsController extends PageController {
 
       req.form.options.requestParams = result.getParams()
 
-      if (req.form.options.template !== failedRequestTemplate) {
+      if (req.form.options.template !== failedFileRequestTemplate && req.form.options.template !== failedUrlRequestTemplate) {
         req.form.options.errorSummary = result.getErrorSummary()
         req.form.options.columns = result.getColumns()
         req.form.options.fields = result.getFields()

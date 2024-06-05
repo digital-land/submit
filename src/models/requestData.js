@@ -30,6 +30,10 @@ export default class RequestData {
     return this.status === 'FAILED'
   }
 
+  getType () {
+    return this.type
+  }
+
   getError () {
     if (!this.response) {
       logger.error('trying to get error when there are none: request id: ' + this.id)
@@ -222,7 +226,7 @@ export const pagination = (count, current, ellipsis = '...') => {
     return range(1, count + 1)
   }
   const adjacent = 1
-  const left = current === count ? current - 2 * adjacent : max(0, current - adjacent)
+  const left = current === count ? current - 2 * adjacent : max(1, current - adjacent)
   const right = current === 1 ? 1 + adjacent * 2 : min(count, current + adjacent)
   const middle = range(left, right + 1)
   let leftEllipsis = left > 1
