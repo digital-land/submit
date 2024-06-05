@@ -13,7 +13,7 @@ describe('ResponseDetails', () => {
         name: 'South Jesmond',
         Layer: 'Conservation Area',
         'area(ha)': '35.4',
-        geometry: '',
+        geometry: 'POINT (423432.0000000000000000 564564.0000000000000000)',
         'entry-date': '04/04/2025',
         'start-date': '04/04/2024',
         'documentation-url': 'www.example.com'
@@ -28,7 +28,7 @@ describe('ResponseDetails', () => {
         name: 'North Jesmond',
         Layer: 'Conservation Area',
         'area(ha)': '35.4',
-        geometry: '',
+        geometry: 'POINT (423432.0000000000000000 564564.0000000000000000)',
         'entry-date': '04/04/2025',
         'start-date': '04/04/2024',
         'documentation-url': 'www.example.com'
@@ -177,13 +177,76 @@ describe('ResponseDetails', () => {
     // })
   })
 
-  // it('getGeometryKey', () => {
-  //   // TODO: Write test
-  // })
+  describe('getGeometryKey', () => {
+    it('returns the column for "point" field', () => {
+      const responseDetails = new ResponseDetails(undefined, undefined, [
+        { column: 'id', field: 'ID' },
+        { column: 'wkt', field: 'WKT' },
+        { column: 'point', field: 'point' },
+        { column: 'name', field: 'Name' }
+      ])
+      const result = responseDetails.getGeometryKey()
+      expect(result).toBe('point')
+    })
 
-  // it('getGeometries', () => {
-  //   // TODO: Write test
-  // })
+    it('returns the column for "geometry" field', () => {
+      const responseDetails = new ResponseDetails(undefined, undefined, [
+        { column: 'id', field: 'ID' },
+        { column: 'wkt', field: 'WKT' },
+        { column: 'geometry', field: 'geometry' },
+        { column: 'name', field: 'Name' }
+      ])
+      const result = responseDetails.getGeometryKey()
+      expect(result).toBe('geometry')
+    })
+
+    it('returns null if columnFieldLog is undefined', () => {
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const result = responseDetails.getGeometryKey()
+      expect(result).toBeNull()
+    })
+
+    it('returns null if no columnFieldEntry is found', () => {
+      const responseDetails = new ResponseDetails(undefined, undefined, [
+        { column: 'id', field: 'ID' },
+        { column: 'wkt', field: 'WKT' },
+        { column: 'name', field: 'Name' }
+      ])
+      const result = responseDetails.getGeometryKey()
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getGeometries', () => {
+    it('returns undefined and logs an error if there is no response', () => {
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const result = responseDetails.getGeometries()
+      expect(result).toBeUndefined()
+      expect(loggerErrorSpy).toHaveBeenCalled()
+    })
+
+    it('returns null if there are no geometries', () => {
+      const responseDetails = new ResponseDetails([], undefined, undefined)
+      const result = responseDetails.getGeometries()
+      expect(result).toBeNull()
+    })
+
+    it('returns an array of geometries', () => {
+      const mockColumnFieldLog = [
+        { column: 'id', field: 'ID' },
+        { column: 'wkt', field: 'WKT' },
+        { column: 'geometry', field: 'geometry' },
+        { column: 'name', field: 'Name' }
+      ]
+      const responseDetails = new ResponseDetails(mockResponse, undefined, mockColumnFieldLog)
+      const result = responseDetails.getGeometries()
+      const expected = [
+        'POINT (423432.0000000000000000 564564.0000000000000000)',
+        'POINT (423432.0000000000000000 564564.0000000000000000)'
+      ]
+      expect(result).toEqual(expected)
+    })
+  })
 
   describe('getPagination', () => {
     it('should return correct pagination data', () => {
