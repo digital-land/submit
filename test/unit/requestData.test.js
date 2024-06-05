@@ -247,5 +247,48 @@ describe('RequestData', () => {
     })
   })
 
-  
+  describe('getColumnFieldLog', () => {
+    it('should return the column field log from the response', () => {
+      const response = {
+        data: {
+          'column-field-log': ['column1', 'column2']
+        }
+      }
+      const requestData = new RequestData({ response })
+
+      const columnFieldLog = requestData.getColumnFieldLog()
+
+      expect(columnFieldLog).toStrictEqual(['column1', 'column2'])
+    })
+
+    it('should return an empty array if there is no column field log and log an error', () => {
+      const requestData = new RequestData({})
+
+      const columnFieldLog = requestData.getColumnFieldLog()
+
+      expect(columnFieldLog).toStrictEqual([])
+
+      expect(logger.error).toHaveBeenCalledWith('trying to get column field log when there is none: request id: undefined')
+    })
+  })
+
+  describe('getParams', () => {
+    it('should return the params', () => {
+      const requestData = new RequestData({ params: { param1: 'value1' } })
+
+      const params = requestData.getParams()
+
+      expect(params).toStrictEqual({ param1: 'value1' })
+    })
+  })
+
+  describe('getId', () => {
+    it('should return the id', () => {
+      const requestData = new RequestData({ id: 1 })
+
+      const id = requestData.getId()
+
+      expect(id).toBe(1)
+    })
+  })
 })
