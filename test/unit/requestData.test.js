@@ -211,4 +211,41 @@ describe('RequestData', () => {
       expect(hasErrors).toBe(false)
     })
   })
+
+  describe('isComplete', () => {
+    it('should return true if the status is COMPLETE', () => {
+      const response = {
+        status: 'COMPLETE'
+      }
+      const requestData = new RequestData(response)
+
+      const isComplete = requestData.isComplete()
+
+      expect(isComplete).toBe(true)
+    })
+
+    it('should return true if the status is FAILED', () => {
+      const response = {
+        status: 'FAILED'
+      }
+      const requestData = new RequestData(response)
+
+      const isComplete = requestData.isComplete()
+
+      expect(isComplete).toBe(true)
+    })
+
+    it('should return false if the status is not COMPLETE or FAILED', () => {
+      const response = {
+        status: 'IN_PROGRESS'
+      }
+      const requestData = new RequestData(response)
+
+      const isComplete = requestData.isComplete()
+
+      expect(isComplete).toBe(false)
+    })
+  })
+
+  
 })
