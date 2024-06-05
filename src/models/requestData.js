@@ -57,13 +57,8 @@ export default class RequestData {
       logger.error('trying to check for errors when there are none: request id: ' + this.id)
       return true
     }
-    if (this.response == null) {
-      return true
-    }
-    if (this.response.data == null) {
-      return true
-    }
     if (this.response.data['error-summary'] == null) {
+      logger.error('trying to check for errors but there is no error-summary: request id: ' + this.id)
       return true
     }
     return this.response.data['error-summary'].length > 0

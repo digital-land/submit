@@ -160,4 +160,55 @@ describe('RequestData', () => {
       expect(logger.error).toHaveBeenCalledWith('trying to get error when there are none: request id: undefined')
     })
   })
+
+  describe('hasErrors', () => {
+    it('should return true if there are errors', () => {
+      const response = {
+        data: {
+          'error-summary': ['error1', 'error2']
+        }
+      }
+      const requestData = new RequestData({ response })
+
+      const hasErrors = requestData.hasErrors()
+
+      expect(hasErrors).toBe(true)
+    })
+
+    it('should return true if there are no errors and log an error', () => {
+      const requestData = new RequestData({})
+
+      const hasErrors = requestData.hasErrors()
+
+      expect(hasErrors).toBe(true)
+
+      expect(logger.error).toHaveBeenCalledWith('trying to check for errors when there are none: request id: undefined')
+    })
+
+    it('should return true if there is no error summary and log an error', () => {
+      const response = {
+        data: {}
+      }
+      const requestData = new RequestData({ response })
+
+      const hasErrors = requestData.hasErrors()
+
+      expect(hasErrors).toBe(true)
+
+      expect(logger.error).toHaveBeenCalledWith('trying to check for errors but there is no error-summary: request id: undefined')
+    })
+
+    it('should return false if the error summary is empty', () => {
+      const response = {
+        data: {
+          'error-summary': []
+        }
+      }
+      const requestData = new RequestData({ response })
+
+      const hasErrors = requestData.hasErrors()
+
+      expect(hasErrors).toBe(false)
+    })
+  })
 })
