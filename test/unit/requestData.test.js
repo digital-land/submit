@@ -143,7 +143,7 @@ describe('RequestData', () => {
       const response = {
         error: { message: 'error message' }
       }
-      const requestData = new RequestData({response})
+      const requestData = new RequestData({ response })
 
       const error = requestData.getError()
 
