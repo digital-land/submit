@@ -2,6 +2,14 @@ import ResponseDetails, { pagination } from '../../src/models/responseDetails'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import logger from '../../src/utils/logger.js'
 
+vi.mock('../../src/utils/getVerboseColumns.js', () => {
+  return {
+    getVerboseColumns: vi.fn((row, columnFieldLog) => {
+      return { row, columnFieldLog }
+    })
+  }
+})
+
 describe('ResponseDetails', () => {
   const mockResponse = [
     {
@@ -140,12 +148,6 @@ describe('ResponseDetails', () => {
   })
 
   describe('getRowsWithVerboseColumns', () => {
-    vi.mock('../utils/getVerboseColumns.js', () => {
-      return vi.fn((row, columnFieldLog) => {
-        return { row, columnFieldLog }
-      })
-    })
-
     it('returns the rows with verbose columns', () => {
       const responseDetails = new ResponseDetails(mockResponse, mockPagination, mockColumnFieldLog)
       const result = responseDetails.getRowsWithVerboseColumns()
@@ -164,17 +166,49 @@ describe('ResponseDetails', () => {
       expect(result).toStrictEqual(expected)
     })
 
-    // it('returns the rows with verbose columns and filters out non-errors', () => {
-    //   const responseDetails = new ResponseDetails(mockResponse, mockPagination, mockColumnFieldLog)
-    //   const result = responseDetails.getRowsWithVerboseColumns(true)
-    // })
+    it('returns the rows with verbose columns and filters out non-errors', () => {
+      const errorRow = {
+        issue_logs: [
+          {
+            message: 'a made up issue with this row',
+            severity: 'error'
+          }
+        ],
+        entry_number: 3,
+        converted_row: {
+          id: '4',
+          wkt: 'POINT (423432.0000000000000000 564564.0000000000000000)',
+          name: 'South Jesmond',
+          Layer: 'Conservation Area',
+          'area(ha)': '35.4',
+          geometry: 'POINT (423432.0000000000000000 564564.0000000000000000)',
+          'entry-date': '04/04/2025',
+          'start-date': '04/04/2024',
+          'documentation-url': 'www.example.com'
+        }
+      }
+      const _mockResponse = [
+        ...mockResponse,
+        errorRow
+      ]
+      const responseDetails = new ResponseDetails(_mockResponse, mockPagination, mockColumnFieldLog)
+      const result = responseDetails.getRowsWithVerboseColumns(true)
+      const expected = [
+        {
+          entryNumber: 3,
+          hasErrors: true,
+          columns: { row: errorRow, columnFieldLog: mockColumnFieldLog }
+        }
+      ]
+      expect(result).toStrictEqual(expected)
+    })
 
-    // it('returns an empty array if there are no rows and logs an error', () => {
-    //   const responseDetails = new ResponseDetails(undefined, undefined, undefined)
-    //   const result = responseDetails.getRowsWithVerboseColumns()
-    //   expect(result).toStrictEqual([])
-    //   expect(loggerErrorSpy).toHaveBeenCalled()
-    // })
+    it('returns an empty array if there are no rows and logs an error', () => {
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const result = responseDetails.getRowsWithVerboseColumns()
+      expect(result).toStrictEqual([])
+      expect(loggerErrorSpy).toHaveBeenCalled()
+    })
   })
 
   describe('getGeometryKey', () => {
