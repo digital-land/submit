@@ -9,7 +9,6 @@ vi.mock('axios')
 describe('RequestData', () => {
   describe('fetchResponseDetails', () => {
     it('should return a new ResponseDetails object', async () => {
-
       axios.get.mockResolvedValue({
         headers: {
           'x-pagination-total-results': 1,
@@ -66,6 +65,6 @@ describe('RequestData', () => {
   })
 
   describe('getErrorSummary', () => {
-    
+
   })
 })
