@@ -76,10 +76,10 @@
         {{ govukPagination({
           previous: {
             href: '/results/'+options.id+'/'+options.pagination.previousPage
-          },
+          } if options.pagination.previousPage else undefined,
           next: {
             href: '/results/'+options.id+'/'+options.pagination.nextPage
-          },
+          } if options.pagination.nextPage else undefined,
           items: options.pagination.items
         })}}
       {% endif %}
