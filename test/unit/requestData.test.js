@@ -2,8 +2,19 @@ import RequestData from '../../src/models/requestData'
 import ResponseDetails from '../../src/models/responseDetails'
 import { describe, it, expect, vi } from 'vitest'
 import axios from 'axios'
+import logger from '../../src/utils/logger'
 
 vi.mock('axios')
+
+vi.mock('../utils/logger.js', () => {
+  return {
+    default: {
+      error: vi.fn()
+    }
+  }
+})
+
+vi.spyOn(logger, 'error')
 
 // Tech Debt: we should write some more tests around the requestData.js file
 describe('RequestData', () => {
@@ -65,6 +76,28 @@ describe('RequestData', () => {
   })
 
   describe('getErrorSummary', () => {
+    it('should return the error summary from the response', () => {
+      const response = {
+        data: {
+          'error-summary': ['error1', 'error2']
+        }
+      }
+      const requestData = new RequestData({ response })
 
+      const errorSummary = requestData.getErrorSummary()
+
+      expect(errorSummary).toStrictEqual(['error1', 'error2'])
+    })
+
+    it('should return an empty array if there is no error summary and log an error', () => {
+      const response = {}
+      const requestData = new RequestData(response)
+
+      const errorSummary = requestData.getErrorSummary()
+
+      expect(errorSummary).toStrictEqual([])
+
+      expect(logger.error).toHaveBeenCalledWith('trying to get error summary when there is none: request id: undefined')
+    })
   })
 })
