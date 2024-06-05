@@ -125,5 +125,39 @@ describe('RequestData', () => {
     })
   })
 
-  
+  describe('getType', () => {
+    it('should return the type', () => {
+      const response = {
+        type: 'type1'
+      }
+      const requestData = new RequestData(response)
+
+      const type = requestData.getType()
+
+      expect(type).toBe('type1')
+    })
+  })
+
+  describe('getError', () => {
+    it('should return the error from the response', () => {
+      const response = {
+        error: { message: 'error message' }
+      }
+      const requestData = new RequestData({response})
+
+      const error = requestData.getError()
+
+      expect(error).toStrictEqual({ message: 'error message' })
+    })
+
+    it('should return an unknown error if there is no error and log an error', () => {
+      const requestData = new RequestData({})
+
+      const error = requestData.getError()
+
+      expect(error).toStrictEqual({ message: 'An unknown error occurred.' })
+
+      expect(logger.error).toHaveBeenCalledWith('trying to get error when there are none: request id: undefined')
+    })
+  })
 })
