@@ -23,6 +23,9 @@ COPY --from=build public public
 COPY --from=build index.js .
 COPY --from=build package.json .
 
+ARG GIT_COMMIT
+ENV GIT_COMMIT=$GIT_COMMIT
+
 ENV PORT=5000
 
 EXPOSE 5000
