@@ -7,7 +7,8 @@ const setupSentry = (app) => {
       dsn: process.env.SENTRY_DSN,
       integrations: [nodeProfilingIntegration()],
       tracesSampleRate: parseFloat(process.env.SENTRY_TRACING_SAMPLE_RATE || '0.01'),
-      profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE || '0.01')
+      profilesSampleRate: parseFloat(process.env.SENTRY_PROFILES_SAMPLE_RATE || '0.01'),
+      debug: process.env.SENTRY_DEBUG || false
     })
 
     Sentry.setupExpressErrorHandler(app)
