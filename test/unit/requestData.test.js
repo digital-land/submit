@@ -100,4 +100,30 @@ describe('RequestData', () => {
       expect(logger.error).toHaveBeenCalledWith('trying to get error summary when there is none: request id: undefined')
     })
   })
+
+  describe('isFailed', () => {
+    it('should return true if the status is FAILED', () => {
+      const response = {
+        status: 'FAILED'
+      }
+      const requestData = new RequestData(response)
+
+      const isFailed = requestData.isFailed()
+
+      expect(isFailed).toBe(true)
+    })
+
+    it('should return false if the status is not FAILED', () => {
+      const response = {
+        status: 'SUCCESS'
+      }
+      const requestData = new RequestData(response)
+
+      const isFailed = requestData.isFailed()
+
+      expect(isFailed).toBe(false)
+    })
+  })
+
+  
 })
