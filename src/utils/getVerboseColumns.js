@@ -3,7 +3,7 @@
 */
 import logger from './logger.js'
 
-export default (row, columnFieldLog) => {
+const getVerboseColumns = (row, columnFieldLog) => {
   if (!columnFieldLog || !row.issue_logs) {
     // Log an error if the["column-field-log"] or issue_logs are missing, and return what we can
     logger.error('Invalid row data, missing["column-field-log"] or issue_logs')
@@ -49,3 +49,5 @@ const reduceVerboseValues = (verboseValuesAsArray) => {
     return acc
   }, {})
 }
+
+export { getVerboseColumns }

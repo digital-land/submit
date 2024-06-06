@@ -9,39 +9,41 @@ const noErrorsTemplate = 'results/no-errors'
 class ResultsController extends PageController {
   async locals (req, res, next) {
     try {
-      const result = await getRequestData(req.params.id)
-      req.form.options.data = result
+      const requestData = await getRequestData(req.params.id)
+      req.form.options.data = requestData
 
-      if (!result.isComplete()) {
+      let responseDetails
+
+      if (!requestData.isComplete()) {
         res.redirect(`/status/${req.params.id}`)
         return
-      } else if (result.isFailed()) {
+      } else if (req.form.options.data.isFailed()) {
         if (req.form.options.data.getType() === 'check_file') {
           req.form.options.template = failedFileRequestTemplate
         } else {
           req.form.options.template = failedUrlRequestTemplate
         }
-      } else if (result.hasErrors()) {
+      } else if (req.form.options.data.hasErrors()) {
         req.form.options.template = errorsTemplate
-        await result.fetchResponseDetails(req.params.pageNumber, 50, 'error')
+        responseDetails = await requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
       } else {
         req.form.options.template = noErrorsTemplate
-        await result.fetchResponseDetails(req.params.pageNumber)
+        responseDetails = await requestData.fetchResponseDetails(req.params.pageNumber)
       }
 
-      req.form.options.requestParams = result.getParams()
+      req.form.options.requestParams = requestData.getParams()
 
       if (req.form.options.template !== failedFileRequestTemplate && req.form.options.template !== failedUrlRequestTemplate) {
-        req.form.options.errorSummary = result.getErrorSummary()
-        req.form.options.columns = result.getColumns()
-        req.form.options.fields = result.getFields()
-        req.form.options.mappings = result.getFieldMappings()
-        req.form.options.verboseRows = result.getRowsWithVerboseColumns(result.hasErrors())
-        req.form.options.geometries = result.getGeometries()
-        req.form.options.pagination = result.getPagination(req.params.pageNumber)
+        req.form.options.errorSummary = requestData.getErrorSummary()
+        req.form.options.columns = responseDetails.getColumns()
+        req.form.options.fields = responseDetails.getFields()
+        req.form.options.mappings = responseDetails.getFieldMappings()
+        req.form.options.verboseRows = responseDetails.getRowsWithVerboseColumns(requestData.hasErrors())
+        req.form.options.geometries = responseDetails.getGeometries()
+        req.form.options.pagination = responseDetails.getPagination(req.params.pageNumber)
         req.form.options.id = req.params.id
       } else {
-        req.form.options.error = result.getError()
+        req.form.options.error = requestData.getError()
       }
 
       super.locals(req, res, next)
