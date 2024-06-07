@@ -3,16 +3,23 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "prepare": "husky",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "standard",
-    "lint:fix": "standard --fix"
+    "lint:fix": "standard --fix",
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "husky": "^9.0.11",
     "standard": "^17.1.0"
+  },
+  "dependencies": {
+    "hmpo-config": "^3.0.0",
+    "hmpo-form-wizard": "^13.0.0",
+    "hmpo-i18n": "^6.0.1"
   }
 }
