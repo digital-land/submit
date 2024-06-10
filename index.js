@@ -7,10 +7,10 @@ import { setupMiddlewares } from './src/serverSetup/middlewares.js'
 const app = express()
 const port = 3000
 
-setupSession(app)
-setupRoutes(app)
-setupNunjucks(app)
 setupMiddlewares(app)
+setupSession(app)
+setupNunjucks(app)
+setupRoutes(app)
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`)
