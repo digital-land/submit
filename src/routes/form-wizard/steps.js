@@ -1,7 +1,7 @@
 import chooseDatasetController from '../../controllers/chooseDatasetController.js'
 
 const defaultParams = {
-  entryPoint: true // needs changing before production
+  entryPoint: false // needs changing before production
 }
 
 export default {
@@ -25,7 +25,7 @@ export default {
   },
   '/dataset-details': {
     ...defaultParams,
-    fields: ['endpoint-url', 'documentation-url', 'hasLicense'],
+    fields: ['endpoint-url', 'documentation-url', 'hasLicence'],
     next: 'check-answers'
   },
   '/check-answers': {

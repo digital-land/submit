@@ -30,7 +30,7 @@ Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
           text: "Local planning authority"
         },
         value: {
-          text: data['lpa']
+          text: values['lpa']
         },
         actions: {
           items: [
@@ -47,7 +47,7 @@ Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
           text: "Full name"
         },
         value: {
-          text: data['fullName']
+          text: values['name']
         },
         actions: {
           items: [
@@ -64,7 +64,7 @@ Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
           text: "Email address"
         },
         value: {
-          text: data['emailAddress']
+          text: values['email']
         },
         actions: {
           items: [
@@ -81,7 +81,7 @@ Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
           text: "Dataset"
         },
         value: {
-          text: data['dataset']
+          text: values['dataset']
         },
         actions: {
           items: [
@@ -98,7 +98,7 @@ Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
           text: "Dataset URL"
         },
         value: {
-          text: data['datasetUrl']
+          text: values['endpoint-url']
         },
         actions: {
           items: [
@@ -115,7 +115,7 @@ Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
           text: "Documentation URL"
         },
         value: {
-          text: data['documentationUrl']
+          text: values['documentation-url']
         },
         actions: {
           items: [
@@ -132,7 +132,7 @@ Check your answers template – {{ serviceName }} – GOV.UK Prototype Kit
           text: "Dataset provided under Open Government Licence?"
         },
         value: {
-          text: "True" if data['licence'] == "true" else "False"
+          text: "True" if values['hasLicence'] == "true" else "False"
         },
         actions: {
           items: [

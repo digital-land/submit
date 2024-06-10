@@ -10,5 +10,14 @@ export default {
   },
   dataset: {
     // validate: ['required'],
+  },
+  'endpoint-url': {
+    // validate: ['required'],
+  },
+  'documentation-url': {
+    // validate: ['required'],
+  },
+  hasLicence: {
+    // validate: ['required'],
   }
 }
