@@ -1,4 +1,6 @@
 {% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "x-govuk/components/related-navigation/macro.njk" import xGovukRelatedNavigation %}
 
 {% set pageName = serviceName %}
 
@@ -47,7 +49,7 @@ The webpage must include, for each dataset:
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    {{content | govukMarkdown(headingsStartWith="l")}}
+    {{content | govukMarkdown(headingsStartWith="l") | safe}}
   </div>
   <div class="govuk-grid-column-one-third">
     {{ xGovukRelatedNavigation({
