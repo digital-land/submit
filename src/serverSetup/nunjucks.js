@@ -16,8 +16,8 @@ export function setupNunjucks (app) {
   })
 
   const globalValues = {
-    serviceName: 'Endpoint Submission Form',//config.serviceName,
-    feedbackLink: '#',//config.feedbackLink
+    serviceName: 'Endpoint Submission Form', // config.serviceName,
+    feedbackLink: '#'// config.feedbackLink
   }
 
   Object.keys(globalValues).forEach((key) => {
