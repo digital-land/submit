@@ -4,7 +4,7 @@
 {% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% set pageName = data['dataset'] + " details" %}
+{% set pageName = values['dataset'] + " details" %}
 
 {% block beforeContent %}
 {{ govukBackLink({
