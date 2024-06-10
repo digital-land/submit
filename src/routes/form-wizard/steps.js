@@ -11,7 +11,7 @@ export default {
     resetJourney: true,
     noPost: true,
     next: 'lpa-details'
-  }, 
+  },
   '/lpa-details': {
     ...defaultParams,
     fields: ['lpa', 'name', 'email'],
@@ -33,7 +33,7 @@ export default {
     next: 'confirmation'
   },
   '/confirmation': {
-    ...defaultParams,
-    
+    ...defaultParams
+
   }
 }
