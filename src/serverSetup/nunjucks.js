@@ -1,5 +1,5 @@
 import nunjucks from 'nunjucks'
-// import config from '../../config/index.js'
+import config from '../../config/index.js'
 import addFilters from '../filters/filters.js'
 
 export function setupNunjucks (app) {
@@ -16,8 +16,8 @@ export function setupNunjucks (app) {
   })
 
   const globalValues = {
-    serviceName: 'Endpoint Submission Form', // config.serviceName,
-    feedbackLink: '#'// config.feedbackLink
+    serviceName: config.serviceName,
+    feedbackLink: config.feedbackLink
   }
 
   Object.keys(globalValues).forEach((key) => {
