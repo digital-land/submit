@@ -6,17 +6,17 @@ const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
 
   // some additional filters useful for debugging:
- nunjucksEnv.addFilter('getkeys', function (object) {
+  nunjucksEnv.addFilter('getkeys', function (object) {
     if (Object.prototype.toString.call(object) === '[object Array]') {
-        let keys = [];
-        for (let i = object.length - 1; i >= 0; i--) {
-            keys.push(Object.keys(object[i]));
-        }
-        return keys;
+      const keys = []
+      for (let i = object.length - 1; i >= 0; i--) {
+        keys.push(Object.keys(object[i]))
+      }
+      return keys
     } else {
-        return Object.keys(object);
+      return Object.keys(object)
     }
-});
+  })
 
   nunjucksEnv.addGlobal('getContext', function () {
     return this.ctx
