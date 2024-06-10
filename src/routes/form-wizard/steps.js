@@ -1,7 +1,9 @@
 import chooseDatasetController from '../../controllers/chooseDatasetController.js'
+import PageController from '../../controllers/pageController.js'
 
 const defaultParams = {
-  entryPoint: false // needs changing before production
+  entryPoint: false,
+  controller: PageController
 }
 
 export default {
@@ -15,25 +17,28 @@ export default {
   '/lpa-details': {
     ...defaultParams,
     fields: ['lpa', 'name', 'email'],
-    next: 'choose-dataset'
+    next: 'choose-dataset',
+    backLink: '/start'
   },
   '/choose-dataset': {
     ...defaultParams,
     fields: ['dataset'],
     next: 'dataset-details',
-    controller: chooseDatasetController
+    controller: chooseDatasetController,
+    backLink: '/lpa-details'
   },
   '/dataset-details': {
     ...defaultParams,
     fields: ['endpoint-url', 'documentation-url', 'hasLicence'],
-    next: 'check-answers'
+    next: 'check-answers',
+    backLink: '/choose-dataset'
   },
   '/check-answers': {
     ...defaultParams,
-    next: 'confirmation'
+    next: 'confirmation',
+    backLink: '/dataset-details'
   },
   '/confirmation': {
     ...defaultParams
-
   }
 }
