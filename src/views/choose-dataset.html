@@ -5,6 +5,10 @@
 
 {% set pageName = "Choose dataset" %}
 
+{% block pageTitle %}
+  Choose dataset – {{ serviceName }}
+{% endblock %}
+
 {% block beforeContent %}
 {{ govukBackLink({
   text: "Back",

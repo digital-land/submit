@@ -1,6 +1,7 @@
 // this file holds unit tests that apply to all pages
 
 import { it, expect } from 'vitest'
+import { stripWhitespace } from '../utils/stripWhiteSpace'
 
 /*
     Params:
@@ -35,9 +36,4 @@ export const runGenericPageTests = (html, options) => {
       expect(html).toContain(stripWhitespace(`<title> ${options.pageTitle} </title>`))
     })
   }
-}
-
-// this function strips out unnecessary whitespace from our html to make sure comparisons are accurate
-const stripWhitespace = (str) => {
-  return str.replace(/(\r\n|\n|\r)/gm, '').replace(/\t/gm, '').replace(/\s+/g, ' ').replace(/>\s+</g, '><').replace(/>\s+/g, '>').replace(/\s+</g, '<').replace(/\s+>/g, '>').replace(/<\s+/g, '<')
 }

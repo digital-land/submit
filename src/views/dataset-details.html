@@ -6,6 +6,10 @@
 
 {% set pageName = values['dataset'] + " details" %}
 
+{% block pageTitle %}
+  {{ pageName }} – {{ serviceName }}
+{% endblock %}
+
 {% block beforeContent %}
 {{ govukBackLink({
   text: "Back",
