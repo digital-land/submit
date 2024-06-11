@@ -3,7 +3,10 @@ import config from '../../config/index.js'
 import addFilters from '../filters/filters.js'
 
 export function setupNunjucks (app) {
-  app.set('view engine', 'html')
+  if (app) {
+    app.set('view engine', 'html')
+  }
+
   const nunjucksEnv = nunjucks.configure([
     'src/views',
     'node_modules/govuk-frontend/dist/',
@@ -24,4 +27,6 @@ export function setupNunjucks (app) {
     nunjucksEnv.addGlobal(key, globalValues[key])
   })
   addFilters(nunjucksEnv)
+
+  return nunjucks
 }

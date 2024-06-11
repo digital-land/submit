@@ -52,8 +52,7 @@ export const dataSubjects = {
       {
         value: 'tree',
         text: 'Tree dataset',
-        available: true,
-        requiresGeometryTypeSelection: true
+        available: true
       }
     ]
   },

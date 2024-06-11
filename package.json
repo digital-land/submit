@@ -6,16 +6,18 @@
   "type": "module",
   "scripts": {
     "prepare": "husky",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "standard",
     "lint:fix": "standard --fix",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run test/unit"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "husky": "^9.0.11",
-    "standard": "^17.1.0"
+    "standard": "^17.1.0",
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "@x-govuk/govuk-prototype-components": "^3.0.5",
