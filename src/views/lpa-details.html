@@ -1,0 +1,73 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  Lpa details – {{ serviceName }}
+{% endblock %}
+
+{% block beforeContent %}
+{{ govukBackLink({
+  text: "Back",
+  href: "javascript:window.history.back()"
+}) }}
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-l">
+      Which LPA are you submitting data for?
+    </h1>
+
+    <form novalidate method="post">
+
+      {{
+        govukInput({
+          label: {
+            text: "Local planning authority",
+            classes: "govuk-label--m",
+            isPageHeading: false
+          },
+          id: "lpa",
+          name: "lpa",
+          classes: "govuk-!-width-three-quarters"
+        })
+      }}
+
+      {{ govukInput({
+        label: {
+          text: "Full name",
+          classes: "govuk-label--m",
+          isPageHeading: false
+        },
+        id: "name",
+        name: "name",
+        classes: "govuk-!-width-three-quarters"
+      }) }}
+
+
+      {{ govukInput({
+        label: {
+          text: "Email address",
+          classes: "govuk-label--m",
+          isPageHeading: false
+        },
+        id: "email",
+        name: "email",
+        classes: "govuk-!-width-three-quarters"
+      }) }}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}
