@@ -5,8 +5,6 @@ import { newRequestTemplate, requestAcknowledgedTemplate } from '../utils/emailT
 const dataManagementEmail = 'fakeymcfake@email.com'
 
 class CheckAnswersController extends PageController {
-  
-  
   /**
    * Handles the HTTP POST request for choosing a dataset.
    * during this, we will perform a few actions
@@ -18,7 +16,6 @@ class CheckAnswersController extends PageController {
    * @param {Function} next - The next middleware function.
   */
   post (req, res, next) {
-    
     this.sendEmails(req, res, next)
 
     super.post(req, res, next)
