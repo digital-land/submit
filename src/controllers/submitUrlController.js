@@ -32,16 +32,21 @@ class SubmitUrlController extends UploadController {
   }
 
   static async localUrlValidation (url) {
-    const headRequest = await SubmitUrlController.getHeadRequest(url)
-
     const validators = [
       { type: 'required', fn: () => SubmitUrlController.urlIsDefined(url) },
       { type: 'format', fn: () => SubmitUrlController.urlIsValid(url) },
-      { type: 'length', fn: () => SubmitUrlController.urlIsNotTooLong(url) },
-      { type: 'exists', fn: () => SubmitUrlController.urlExists(headRequest) },
-      { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(headRequest) },
-      { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(headRequest) }
+      { type: 'length', fn: () => SubmitUrlController.urlIsNotTooLong(url) }
     ]
+
+    const headRequest = await SubmitUrlController.getHeadRequest(url)
+
+    if (headRequest) {
+      validators.push(
+        { type: 'exists', fn: () => SubmitUrlController.urlExists(headRequest) },
+        { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(headRequest) },
+        { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(headRequest) }
+      )
+    }
 
     return validators.find(validator => !validator.fn())?.type
   }
@@ -68,8 +73,12 @@ class SubmitUrlController extends UploadController {
     try {
       return await axios.head(url)
     } catch (err) {
-      console.error(err)
-      return null
+      if (err.code === 'ENOTFOUND') {
+        return false
+      } else if (err.response.status === 400) {
+        return false
+      }
+      return err.response
     }
   }
 
@@ -92,7 +101,7 @@ class SubmitUrlController extends UploadController {
       return false
     }
     try {
-      return response.status >= 200 && response.status < 300
+      return (response.status >= 200 && response.status < 300) || response.status === 400 // need to add 400 as some servers return 400 for head requests
     } catch (err) {
       console.error(err)
       return true
