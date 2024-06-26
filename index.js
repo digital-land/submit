@@ -5,7 +5,7 @@ import { setupNunjucks } from './src/serverSetup/nunjucks.js'
 import { setupMiddlewares } from './src/serverSetup/middlewares.js'
 
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 
 setupMiddlewares(app)
 setupSession(app)
