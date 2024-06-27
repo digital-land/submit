@@ -44,8 +44,11 @@ class CheckAnswersController extends PageController {
     // send acknowledgement email to LPA
     sendEmail(email, AcknowledgementTemplateId, {
       name,
-      dataset,
-      email: dataManagementEmail
+      email,
+      organisation,
+      endpoint,
+      'documentation-url': documentationUrl,
+      dataset
     })
   }
 }
