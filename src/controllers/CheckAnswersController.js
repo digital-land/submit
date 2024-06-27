@@ -1,8 +1,8 @@
 import PageController from './pageController.js'
+import { sendEmail } from '../utils/mailClient.js'
+import config from '../../config/index.js'
 
-import { newRequestTemplate, requestAcknowledgedTemplate } from '../utils/emailTemplates.js'
-
-const dataManagementEmail = 'fakeymcfake@email.com'
+const dataManagementEmail = config.email.dataManagementEmail
 
 class CheckAnswersController extends PageController {
   /**
@@ -22,41 +22,31 @@ class CheckAnswersController extends PageController {
   }
 
   sendEmails (req, res, next) {
-    this.sendRequestEmail(req, res, next)
-    this.sendAcknowledgementEmail(req, res, next)
-  }
-
-  sendAcknowledgementEmail (req, res, next) {
-    const name = req.sessionModel.get('name')
-    const dataset = req.sessionModel.get('dataset')
-    const email = req.sessionModel.get('email')
-    const emailTemplate = requestAcknowledgedTemplate
-      .replace('{name}', name)
-      .replace('{dataset}', dataset)
-      .replace('{email}', dataManagementEmail)
-
-    this.sendEmail(email, 'Request Acknowledged', emailTemplate)
-  }
-
-  sendRequestEmail (req, res, next) {
     const name = req.sessionModel.get('name')
     const email = req.sessionModel.get('email')
-    const organisation = req.sessionModel.get('organisation')
+    const organisation = req.sessionModel.get('lpa')
     const dataset = req.sessionModel.get('dataset')
-    const emailTemplate = newRequestTemplate
-      .replace('{name}', name)
-      .replace('{dataset}', dataset)
-      .replace('{organisation}', organisation)
-      .replace('{email}', email)
+    const documentationUrl = req.sessionModel.get('documentation-url')
+    const endpoint = req.sessionModel.get('endpoint-url')
 
-    this.sendEmail(dataManagementEmail, 'New Request', emailTemplate)
-  }
+    const { RequestTemplateId, AcknowledgementTemplateId } = config.email.templates
 
-  sendEmail (to, subject, body) {
-    // Send email
-    console.log('======')
-    console.log(`Sending email to ${to} with subject ${subject} and body:`)
-    console.log(body)
+    // send request email to data management team
+    sendEmail(dataManagementEmail, RequestTemplateId, {
+      name,
+      email,
+      organisation,
+      endpoint,
+      'documentation-url': documentationUrl,
+      dataset
+    })
+
+    // send acknowledgement email to LPA
+    sendEmail(email, AcknowledgementTemplateId, {
+      name,
+      dataset,
+      email: dataManagementEmail
+    })
   }
 }
 

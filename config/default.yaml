@@ -3,6 +3,13 @@ maintenance: {
     serviceUnavailable: false,
     upTime: "9am on Monday 19 November 2024"
 }
+email: {
+    templates: {
+        RequestTemplateId: 'fa1c2b51-3c91-4f9d-9a18-83639164d552',
+        AcknowledgementTemplateId: '2a4dff6d-78c4-4fea-a489-c97485453807'
+    },
+    dataManagementEmail: 'fakeemail@fakemail.com'
+}
 redis: false
 url: ''
 serviceName: 'Endpoint Submission Form'
