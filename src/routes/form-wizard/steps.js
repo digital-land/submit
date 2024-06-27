@@ -1,5 +1,6 @@
 import chooseDatasetController from '../../controllers/chooseDatasetController.js'
 import PageController from '../../controllers/pageController.js'
+import CheckAnswersController from '../../controllers/CheckAnswersController.js'
 
 const defaultParams = {
   entryPoint: false,
@@ -35,6 +36,7 @@ export default {
   },
   '/check-answers': {
     ...defaultParams,
+    controller: CheckAnswersController,
     next: 'confirmation',
     backLink: '/dataset-details'
   },
