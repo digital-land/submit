@@ -3,16 +3,6 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { sendEmail } from '../../src/utils/mailClient'
 import { NotifyClient } from 'notifications-node-client'
 
-// vi.mock('notifications-node-client', () => {
-//     return {
-//         NotifyClient: vi.fn().mockReturnValue(
-//             {
-//                 sendEmail: vi.fn().mockResolvedValue({})
-//             }
-//         )
-//     }
-// });
-
 const sendEmailMock = vi.spyOn(NotifyClient.prototype, 'sendEmail')
 
 describe('sendEmail', () => {
