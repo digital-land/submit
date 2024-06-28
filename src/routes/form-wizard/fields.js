@@ -1,23 +1,38 @@
+import { validUrl } from '../../utils/validators.js'
+
 export default {
   lpa: {
-    // validate: ['required'],
+    validate: ['required']
   },
   name: {
-    // validate: ['required'],
+    validate: ['required']
   },
   email: {
-    // validate: ['required'],
+    validate: [
+      'required',
+      'email'
+    ]
   },
   dataset: {
-    // validate: ['required'],
+    validate: ['required']
   },
   'endpoint-url': {
-    // validate: ['required'],
+    validate: [
+      'required',
+      {
+        type: 'validUrl', fn: validUrl
+      }
+    ]
   },
   'documentation-url': {
-    // validate: ['required'],
+    validate: [
+      'required',
+      {
+        type: 'validUrl', fn: validUrl
+      }
+    ]
   },
   hasLicence: {
-    // validate: ['required'],
+    validate: ['required']
   }
 }
