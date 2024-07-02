@@ -20,14 +20,14 @@ export default {
     validate: [
       'required',
       { type: 'format', fn: validUrl },
-      { type: 'length', max: 2048 }
+      { type: 'maxlength', arguments: [2048] }
     ]
   },
   'documentation-url': {
     validate: [
       'required',
       { type: 'format', fn: validUrl },
-      { type: 'length', max: 2048 }
+      { type: 'maxlength', arguments: [2048] }
     ]
   },
   hasLicence: {

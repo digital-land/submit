@@ -17,12 +17,12 @@ const validationMessages = {
   'endpoint-url': {
     required: 'Enter an endpoint URL',
     format: 'Enter a valid endpoint URL',
-    length: 'The URL must be less than 2048 characters'
+    maxlength: 'The URL must be less than 2048 characters'
   },
   'documentation-url': {
     required: 'Enter a documentation URL',
     format: 'Enter a valid documentation URL',
-    length: 'The URL must be less than 2048 characters'
+    maxlength: 'The URL must be less than 2048 characters'
   },
   hasLicence: {
     required: 'Your data must be licensed under the Open Government Licence'
