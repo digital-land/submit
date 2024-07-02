@@ -15,17 +15,17 @@ const validationMessages = {
     required: 'Select a dataset'
   },
   'endpoint-url': {
-    required: 'Enter a URL',
-    format: 'Enter a valid URL',
+    required: 'Enter an endpoint URL',
+    format: 'Enter a valid endpoint URL',
     length: 'The URL must be less than 2048 characters'
   },
   'documentation-url': {
-    required: 'Enter a URL',
-    format: 'Enter a valid URL',
+    required: 'Enter a documentation URL',
+    format: 'Enter a valid documentation URL',
     length: 'The URL must be less than 2048 characters'
   },
   hasLicence: {
-    required: 'SYour data must be licensed under the Open Government Licence'
+    required: 'Your data must be licensed under the Open Government Licence'
   }
 }
 
