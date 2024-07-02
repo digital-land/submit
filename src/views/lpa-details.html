@@ -51,7 +51,8 @@
           classes: "govuk-!-width-three-quarters",
           errorMessage: {
             text: 'lpa' | validationMessageLookup(errors['lpa'].type) 
-          } if 'lpa' in errors
+          } if 'lpa' in errors,
+          value: values.lpa
         })
       }}
 
@@ -66,7 +67,8 @@
         classes: "govuk-!-width-three-quarters",
         errorMessage: {
           text: 'name' | validationMessageLookup(errors['name'].type) 
-        } if 'name' in errors
+        } if 'name' in errors,
+        value: values.name
       }) }}
 
 
@@ -81,7 +83,8 @@
         classes: "govuk-!-width-three-quarters",
         errorMessage: {
           text: 'email' | validationMessageLookup(errors['email'].type) 
-        } if 'email' in errors
+        } if 'email' in errors,
+        value: values.email
       }) }}
 
       {{ govukButton({
