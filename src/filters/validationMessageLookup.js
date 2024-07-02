@@ -1,17 +1,17 @@
 // import logger from '../utils/logger.js'
 
 const validationMessages = {
-  'lpa': {
+  lpa: {
     required: 'Enter the name of your local planning authority'
   },
-  'name': {
+  name: {
     required: 'Enter your full name'
   },
-  'email': {
+  email: {
     required: 'Enter an email address',
     email: 'Enter an email address in the correct format'
   },
-  'dataset': {
+  dataset: {
     required: 'Select a dataset'
   },
   'endpoint-url': {
@@ -24,7 +24,7 @@ const validationMessages = {
     format: 'Enter a valid URL',
     length: 'The URL must be less than 2048 characters'
   },
-  'hasLicence': {
+  hasLicence: {
     required: 'SYour data must be licensed under the Open Government Licence'
   }
 }
