@@ -19,17 +19,15 @@ export default {
   'endpoint-url': {
     validate: [
       'required',
-      {
-        type: 'validUrl', fn: validUrl
-      }
+      { type: 'format', fn: validUrl },
+      { type: 'length', max: 2048 }
     ]
   },
   'documentation-url': {
     validate: [
       'required',
-      {
-        type: 'validUrl', fn: validUrl
-      }
+      { type: 'format', fn: validUrl },
+      { type: 'length', max: 2048 }
     ]
   },
   hasLicence: {
