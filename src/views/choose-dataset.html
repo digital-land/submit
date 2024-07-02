@@ -2,11 +2,16 @@
 
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 {% set pageName = "Choose dataset" %}
 
 {% block pageTitle %}
-  Choose dataset – {{ serviceName }}
+  {% if errors | length %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
 {% endblock %}
 
 {% block beforeContent %}
@@ -23,6 +28,13 @@
 
     <form novalidate method="post">
 
+      {% if errors | length %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: errors | toErrorList
+        }) }}
+      {% endif %}
+
       {{ govukRadios({
         idPrefix: "dataset",
         name: "dataset",
@@ -34,7 +46,11 @@
           }
         },
         items: options.datasetItems,
-        value: data.dataset
+        value: data.dataset,
+        errorMessage: {
+          text: 'dataset' | validationMessageLookup(errors['dataset'].type)
+        } if 'dataset' in errors,
+        value: values.dataset
       }) }}
 
       {{ govukButton({
