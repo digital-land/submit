@@ -3,11 +3,16 @@
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 {% set pageName = values['dataset'] + " details" %}
 
 {% block pageTitle %}
-  {{ pageName }} – {{ serviceName }}
+  {% if errors | length %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
 {% endblock %}
 
 {% block beforeContent %}
@@ -28,6 +33,13 @@
 
     <form class="form" method="post">
 
+      {% if errors | length %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: errors | toErrorList
+        }) }}
+      {% endif %}
+
       {{ govukInput({
         label: {
           text: "Endpoint URL",
@@ -36,7 +48,11 @@
         },
         id: "endpoint-url",
         name: "endpoint-url",
-        classes: "govuk-!-width-three-quarters"
+        classes: "govuk-!-width-three-quarters",
+        errorMessage: {
+          text: 'endpoint-url' | validationMessageLookup(errors['endpoint-url'].type)
+        } if 'endpoint-url' in errors,
+        value: values['endpoint-url']
       }) }}
 
       {{ govukInput({
@@ -50,7 +66,11 @@
         },
         id: "documentation-url",
         name: "documentation-url",
-        classes: "govuk-!-width-three-quarters"
+        classes: "govuk-!-width-three-quarters",
+        errorMessage: {
+          text: 'documentation-url' | validationMessageLookup(errors['documentation-url'].type)
+        } if 'documentation-url' in errors,
+        value: values['documentation-url']
       }) }}
 
       {{ govukCheckboxes({
@@ -68,7 +88,10 @@
             text: "I confirm this dataset is provided under the Open Government Licence",
             name: "hasLicence"
           }
-        ]
+        ],
+        errorMessage: {
+          text: 'hasLicence' | validationMessageLookup(errors['hasLicence'].type)
+        } if 'hasLicence' in errors
       }) }}
 
       {{ govukButton({
