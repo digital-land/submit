@@ -10,13 +10,14 @@ describe('dataset details View', () => {
   const params = {
     values: {
         dataset: 'mockDataset'
-    }
+    },
+    errors: {},
   }
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
 
 
   runGenericPageTests(html, {
-    pageTitle: `mockDataset details – ${config.serviceName}`,
+    pageTitle: `mockDataset details - ${config.serviceName}`,
     serviceName: config.serviceName
   })
 

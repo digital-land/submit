@@ -6,11 +6,13 @@ import config from '../../config/index.js'
 const nunjucks = setupNunjucks()
 
 describe('choose dataset View', () => {
-  const params = {}
+  const params = {
+    errors: {}
+  }
   const html = nunjucks.render('choose-dataset.html', params)
 
   runGenericPageTests(html, {
-    pageTitle: `Choose dataset – ${config.serviceName}`,
+    pageTitle: `Choose dataset - ${config.serviceName}`,
     serviceName: config.serviceName
   })
 })
