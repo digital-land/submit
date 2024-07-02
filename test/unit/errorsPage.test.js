@@ -25,7 +25,7 @@ describe('errors page', () => {
   it('renders the correct number of errors', () => {
     const requestData = new RequestData(errorResponse)
 
-    const responseDetails = new ResponseDetails(errorResponseDetails, { totalResults: 3, offset: 0, limit: 50 }, requestData.getColumnFieldLog())
+    const responseDetails = new ResponseDetails('id', errorResponseDetails, { totalResults: 3, offset: 0, limit: 50 }, requestData.getColumnFieldLog())
 
     requestData.response.pagination = {
       totalResults: 100,
