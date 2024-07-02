@@ -32,16 +32,46 @@ describe('Lpa-details View', () => {
       testValidationErrorMessage(html, 'lpa', 'Enter the name of your local planning authority')
     })
 
-    // it('should display an error message when the name field is empty', () => {
+    it('should display an error message when the name field is empty', () => {
+      const params = {
+        errors: {
+          name: {
+            type: 'required'
+          }
+        }
+      }
 
-    // })
+      const html = nunjucks.render('lpa-details.html', params)
 
-    // it('should display an error message when the email field is empty', () => {
+      testValidationErrorMessage(html, 'name', 'Enter your full name')
+    })
 
-    // })
+    it('should display an error message when the email field is empty', () => {
+      const params = {
+        errors: {
+          email: {
+            type: 'required'
+          }
+        }
+      }
 
-    // it('should display an error message when the email field is not a valid email', () => {
+      const html = nunjucks.render('lpa-details.html', params)
 
-    // })
+      testValidationErrorMessage(html, 'email', 'Enter an email address')
+    })
+
+    it('should display an error message when the email field is not a valid email', () => {
+      const params = {
+        errors: {
+          email: {
+            type: 'email'
+          }
+        }
+      }
+
+      const html = nunjucks.render('lpa-details.html', params)
+
+      testValidationErrorMessage(html, 'email', 'Enter an email address in the correct format')
+    })
   })
 })
