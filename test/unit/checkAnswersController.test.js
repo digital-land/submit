@@ -1,23 +1,30 @@
-import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
+/* eslint-disable new-cap */
 
 import { describe, it, vi, expect, beforeEach } from 'vitest'
+import NotifyClientSingleton from '../../src/utils/mailClient.js'
 import config from '../../config/index.js'
-import { sendEmail } from '../../src/utils/mailClient.js'
 
-vi.mock('../../src/utils/mailClient.js')
+vi.mock('../../src/utils/mailClient.js', () => ({
+  default: {
+    getInstance: vi.fn()
+  }
+}))
 
 describe('Check answers controller', () => {
+  let CheckAnswersController
   let checkAnswersController
   let sendEmailMock
 
-  beforeEach(() => {
-    checkAnswersController = new CheckAnswersController({
+  beforeEach(async () => {
+    // Setup a mock for sendEmail function
+    sendEmailMock = vi.fn()
+    NotifyClientSingleton.getInstance = vi.fn().mockReturnValue({
+      sendEmail: sendEmailMock
+    })
+    CheckAnswersController = await vi.importActual('../../src/controllers/CheckAnswersController.js')
+    checkAnswersController = new CheckAnswersController.default({
       route: '/dataset'
     })
-
-    sendEmailMock = vi.fn()
-
-    sendEmail.mockImplementation(sendEmailMock)
   })
 
   describe('send emails', () => {
@@ -44,23 +51,35 @@ describe('Check answers controller', () => {
 
       checkAnswersController.sendEmails(req, res, next)
 
-      expect(sendEmailMock).toHaveBeenCalledWith(config.email.dataManagementEmail, config.email.templates.RequestTemplateId, {
-        name: 'John Doe',
-        email: 'JohnDoe@mail.com',
-        organisation: 'LPA',
-        dataset: 'Dataset',
-        'documentation-url': 'Documentation URL',
-        endpoint: 'Endpoint URL'
-      })
+      expect(sendEmailMock).toHaveBeenCalledWith(
+        config.email.templates.RequestTemplateId,
+        config.email.dataManagementEmail,
+        {
+          personalisation: {
+            name: 'John Doe',
+            email: 'JohnDoe@mail.com',
+            organisation: 'LPA',
+            dataset: 'Dataset',
+            'documentation-url': 'Documentation URL',
+            endpoint: 'Endpoint URL'
+          }
+        }
+      )
 
-      expect(sendEmailMock).toHaveBeenCalledWith('JohnDoe@mail.com', config.email.templates.AcknowledgementTemplateId, {
-        name: 'John Doe',
-        email: 'JohnDoe@mail.com',
-        organisation: 'LPA',
-        endpoint: 'Endpoint URL',
-        'documentation-url': 'Documentation URL',
-        dataset: 'Dataset'
-      })
+      expect(sendEmailMock).toHaveBeenCalledWith(
+        config.email.templates.AcknowledgementTemplateId,
+        'JohnDoe@mail.com',
+        {
+          personalisation: {
+            name: 'John Doe',
+            email: 'JohnDoe@mail.com',
+            organisation: 'LPA',
+            endpoint: 'Endpoint URL',
+            'documentation-url': 'Documentation URL',
+            dataset: 'Dataset'
+          }
+        }
+      )
     })
   })
 })

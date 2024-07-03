@@ -1,47 +1,29 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
-
-import { sendEmail } from '../../src/utils/mailClient'
+import { describe, it, beforeEach, vi, expect } from 'vitest'
+import NotifyClientSingleton from '../../src/utils/mailClient'
 import { NotifyClient } from 'notifications-node-client'
 
-const sendEmailMock = vi.spyOn(NotifyClient.prototype, 'sendEmail')
+vi.mock('notifications-node-client')
 
-describe('sendEmail', () => {
+describe('NotifyClientSingleton', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    // Clear instance for isolation between tests
+    NotifyClientSingleton.instance = null
+    NotifyClient.mockClear()
   })
 
-  it('should call NotifyClient.sendEmail with correct parameters', async () => {
-    const emailAddress = 'test@example.com'
-    const templateId = 'template-id'
-    const personalisation = { name: 'John Doe' }
-
-    await sendEmail(emailAddress, templateId, personalisation)
-
-    expect(sendEmailMock).toHaveBeenCalledWith(templateId, emailAddress, { personalisation })
+  it('throws error when trying to instantiate directly', () => {
+    expect(() => new NotifyClientSingleton()).toThrow('Use NotifyClientSingleton.getInstance()')
   })
 
-  it('should log the response on successful email send', async () => {
-    const consoleMock = vi.spyOn(global.console, 'log').mockImplementation(() => undefined)
-
-    const response = { id: '12345', content: { body: 'Test email content', subject: 'Test' } }
-    sendEmailMock.mockResolvedValue(response) // Explicitly resolve with a response
-
-    await sendEmail('test@example.com', 'template-id', { name: 'John Doe' })
-
-    expect(consoleMock).toHaveBeenCalledWith(response)
+  it('getInstance returns the same instance for multiple calls', () => {
+    const firstInstance = NotifyClientSingleton.getInstance()
+    const secondInstance = NotifyClientSingleton.getInstance()
+    expect(firstInstance).toBe(secondInstance)
   })
 
-  it('should log an error if email sending fails', async () => {
-    console.error = vi.fn()
-    const error = new Error('Failed to send email')
-    sendEmailMock.mockRejectedValue(error) // Explicitly reject with an error
-
-    try {
-      await sendEmail('test@example.com', 'template-id', { name: 'John Doe' })
-    } catch (e) {
-      // Catch the error to prevent the test from failing due to unhandled rejection
-    }
-
-    expect(console.error).toHaveBeenCalledWith(error)
+  it('getInstance creates an instance with the correct API key', () => {
+    process.env.GOVUK_NOTIFY_API_KEY = 'test-api-key'
+    NotifyClientSingleton.getInstance()
+    expect(NotifyClient).toHaveBeenCalledWith('test-api-key')
   })
 })
