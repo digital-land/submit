@@ -2,7 +2,7 @@
 
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 
-{% set pageName = values['dataset'] + " submitted" %}
+{% set pageName = (values['dataset'] | datasetSlugToReadableName) + " submitted" %}
 
 {% block content %}
 

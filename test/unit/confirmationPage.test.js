@@ -5,8 +5,9 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
+import { mockDataSubjects } from './data.js'
 
-const nunjucks = setupNunjucks()
+const nunjucks = setupNunjucks({ dataSubjects: mockDataSubjects })
 
 describe('Confirmation View', () => {
   const params = {
@@ -17,12 +18,12 @@ describe('Confirmation View', () => {
   const html = stripWhitespace(nunjucks.render('confirmation.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: `mockDataset submitted - ${config.serviceName}`,
+    pageTitle: `A Mock dataset submitted - ${config.serviceName}`,
     serviceName: config.serviceName
   })
 
   it('should render the gov uk panel', () => {
-    const regex = new RegExp('<h1 class="govuk-panel__title".*mockDataset submitted.*</h1>', 'g')
+    const regex = new RegExp('<h1 class="govuk-panel__title".*A Mock dataset submitted.*</h1>', 'g')
     expect(html).toMatch(regex)
   })
 })

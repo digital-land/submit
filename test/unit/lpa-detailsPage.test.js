@@ -3,8 +3,9 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
 import { testValidationErrorMessage } from './validation-tests.js'
+import { mockDataSubjects } from './data.js'
 
-const nunjucks = setupNunjucks()
+const nunjucks = setupNunjucks({ dataSubjects: mockDataSubjects })
 
 describe('Lpa-details View', () => {
   const params = {
@@ -12,8 +13,8 @@ describe('Lpa-details View', () => {
   }
   const htmlNoErrors = nunjucks.render('lpa-details.html', params)
 
-  runGenericPageTests(htmlNoErrors, {
-    pageTitle: `LPA details - ${config.serviceName}`,
+  runGenericPageTests(html, {
+    pageTitle: `Enter LPA details – ${config.serviceName}`,
     serviceName: config.serviceName
   })
 

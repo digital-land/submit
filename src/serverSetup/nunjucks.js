@@ -2,7 +2,7 @@ import nunjucks from 'nunjucks'
 import config from '../../config/index.js'
 import addFilters from '../filters/filters.js'
 
-export function setupNunjucks (app) {
+export function setupNunjucks ({ app, dataSubjects }) {
   if (app) {
     app.set('view engine', 'html')
   }
@@ -26,7 +26,7 @@ export function setupNunjucks (app) {
   Object.keys(globalValues).forEach((key) => {
     nunjucksEnv.addGlobal(key, globalValues[key])
   })
-  addFilters(nunjucksEnv)
+  addFilters(nunjucksEnv, { dataSubjects })
 
   return nunjucks
 }

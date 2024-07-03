@@ -20,7 +20,7 @@
   <div class="govuk-grid-column-two-thirds-from-desktop">
 
     <h1 class="govuk-heading-xl">
-      Check your answers before sending your application
+      Check your answers before submitting your dataset
     </h1>
 
     {{ govukSummaryList({
@@ -81,7 +81,7 @@
           text: "Dataset"
         },
         value: {
-          text: values['dataset']
+          text: values['dataset'] | datasetSlugToReadableName
         },
         actions: {
           items: [
@@ -149,7 +149,7 @@
     }) }}
 
     <h2 class="govuk-heading-m">
-      Submit your dataset
+      If this looks correct you can submit your dataset
     </h2>
 
     <p>
