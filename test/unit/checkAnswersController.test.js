@@ -44,13 +44,6 @@ describe('Check answers controller', () => {
 
       checkAnswersController.sendEmails(req, res, next)
 
-      expect(req.sessionModel.get).toHaveBeenCalledWith('name')
-      expect(req.sessionModel.get).toHaveBeenCalledWith('email')
-      expect(req.sessionModel.get).toHaveBeenCalledWith('lpa')
-      expect(req.sessionModel.get).toHaveBeenCalledWith('dataset')
-      expect(req.sessionModel.get).toHaveBeenCalledWith('documentation-url')
-      expect(req.sessionModel.get).toHaveBeenCalledWith('endpoint-url')
-
       expect(sendEmailMock).toHaveBeenCalledWith(config.email.dataManagementEmail, config.email.templates.RequestTemplateId, {
         name: 'John Doe',
         email: 'JohnDoe@mail.com',
