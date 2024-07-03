@@ -1,5 +1,5 @@
 import PageController from './pageController.js'
-import NotifyClientSingleton from './NotifyClientSingleton'
+import NotifyClientSingleton from '../utils/mailClient.js'
 import config from '../../config/index.js'
 
 const notifyClient = NotifyClientSingleton.getInstance()
