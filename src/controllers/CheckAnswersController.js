@@ -1,8 +1,8 @@
 import PageController from './pageController.js'
-import NotifyClientSingleton from './NotifyClientSingleton';
+import NotifyClientSingleton from './NotifyClientSingleton'
 import config from '../../config/index.js'
 
-const notifyClient = NotifyClientSingleton.getInstance();
+const notifyClient = NotifyClientSingleton.getInstance()
 const dataManagementEmail = config.email.dataManagementEmail
 
 class CheckAnswersController extends PageController {
@@ -34,9 +34,9 @@ class CheckAnswersController extends PageController {
 
     // ToDo: handle errors when sending emails
     notifyClient.sendEmail(
-      RequestTemplateId, 
-      dataManagementEmail, 
-      { 
+      RequestTemplateId,
+      dataManagementEmail,
+      {
         personalisation: {
           name,
           email,
@@ -44,7 +44,7 @@ class CheckAnswersController extends PageController {
           endpoint,
           'documentation-url': documentationUrl,
           dataset
-        } 
+        }
       }
     )
 
