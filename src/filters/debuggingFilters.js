@@ -1,7 +1,7 @@
 // some additional filters useful for debugging:
 
 export const getkeys = function (object) {
-  if (Object.prototype.toString.call(object) === '[object Array]') {
+  if (Array.isArray(object)) {
     const keys = []
     for (let i = object.length - 1; i >= 0; i--) {
       keys.push(Object.keys(object[i]))
