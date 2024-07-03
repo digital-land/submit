@@ -1,12 +1,21 @@
-import { NotifyClient } from 'notifications-node-client'
+import { NotifyClient } from 'notifications-node-client';
+import dotenv from 'dotenv';
 
-import dotenv from 'dotenv'
-dotenv.config()
+dotenv.config();
 
-const notifyClient = new NotifyClient(process.env.GOVUK_NOTIFY_API_KEY || 'test-key')
+class NotifyClientSingleton {
+  static instance;
 
-export const sendEmail = async (emailAddress, templateId, personalisation) => {
-  return notifyClient.sendEmail(templateId, emailAddress, { personalisation })
-    .then(response => console.log(response))
-    .catch(err => console.error(err))
+  constructor() {
+    throw new Error('Use NotifyClientSingleton.getInstance()');
+  }
+
+  static getInstance() {
+    if (!NotifyClientSingleton.instance) {
+      NotifyClientSingleton.instance = new NotifyClient(process.env.GOVUK_NOTIFY_API_KEY || 'test-key');
+    }
+    return NotifyClientSingleton.instance;
+  }
 }
+
+export default NotifyClientSingleton;

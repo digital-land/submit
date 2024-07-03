@@ -1,7 +1,8 @@
 import PageController from './pageController.js'
-import { sendEmail } from '../utils/mailClient.js'
+import NotifyClientSingleton from './NotifyClientSingleton';
 import config from '../../config/index.js'
 
+const notifyClient = NotifyClientSingleton.getInstance();
 const dataManagementEmail = config.email.dataManagementEmail
 
 class CheckAnswersController extends PageController {
@@ -31,25 +32,36 @@ class CheckAnswersController extends PageController {
 
     const { RequestTemplateId, AcknowledgementTemplateId } = config.email.templates
 
-    // send request email to data management team
-    sendEmail(dataManagementEmail, RequestTemplateId, {
-      name,
-      email,
-      organisation,
-      endpoint,
-      'documentation-url': documentationUrl,
-      dataset
-    })
+    // ToDo: handle errors when sending emails
+    notifyClient.sendEmail(
+      RequestTemplateId, 
+      dataManagementEmail, 
+      { 
+        personalisation: {
+          name,
+          email,
+          organisation,
+          endpoint,
+          'documentation-url': documentationUrl,
+          dataset
+        } 
+      }
+    )
 
-    // send acknowledgement email to LPA
-    sendEmail(email, AcknowledgementTemplateId, {
-      name,
+    notifyClient.sendEmail(
+      AcknowledgementTemplateId,
       email,
-      organisation,
-      endpoint,
-      'documentation-url': documentationUrl,
-      dataset
-    })
+      {
+        personalisation: {
+          name,
+          email,
+          organisation,
+          endpoint,
+          'documentation-url': documentationUrl,
+          dataset
+        }
+      }
+    )
   }
 }
 
