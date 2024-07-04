@@ -2,9 +2,16 @@
 
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set pageName = 'LPA details' %}
 
 {% block pageTitle %}
-  Lpa details – {{ serviceName }}
+  {% if errors | length %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
 {% endblock %}
 
 {% block beforeContent %}
@@ -18,6 +25,13 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
+    {% if errors | length %}
+      {{ govukErrorSummary({
+        titleText: "There’s a problem",
+        errorList: errors | toErrorList
+      }) }}
+    {% endif %}
 
     <h1 class="govuk-heading-l">
       Which LPA are you submitting data for?
@@ -34,7 +48,11 @@
           },
           id: "lpa",
           name: "lpa",
-          classes: "govuk-!-width-three-quarters"
+          classes: "govuk-!-width-three-quarters",
+          errorMessage: {
+            text: 'lpa' | validationMessageLookup(errors['lpa'].type) 
+          } if 'lpa' in errors,
+          value: values.lpa
         })
       }}
 
@@ -46,7 +64,11 @@
         },
         id: "name",
         name: "name",
-        classes: "govuk-!-width-three-quarters"
+        classes: "govuk-!-width-three-quarters",
+        errorMessage: {
+          text: 'name' | validationMessageLookup(errors['name'].type) 
+        } if 'name' in errors,
+        value: values.name
       }) }}
 
 
@@ -58,7 +80,11 @@
         },
         id: "email",
         name: "email",
-        classes: "govuk-!-width-three-quarters"
+        classes: "govuk-!-width-three-quarters",
+        errorMessage: {
+          text: 'email' | validationMessageLookup(errors['email'].type) 
+        } if 'email' in errors,
+        value: values.email
       }) }}
 
       {{ govukButton({
