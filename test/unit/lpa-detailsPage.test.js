@@ -13,8 +13,8 @@ describe('Lpa-details View', () => {
   }
   const htmlNoErrors = nunjucks.render('lpa-details.html', params)
 
-  runGenericPageTests(html, {
-    pageTitle: `Enter LPA details – ${config.serviceName}`,
+  runGenericPageTests(htmlNoErrors, {
+    pageTitle: `Enter LPA details - ${config.serviceName}`,
     serviceName: config.serviceName
   })
 
