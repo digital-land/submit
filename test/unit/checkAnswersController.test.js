@@ -1,14 +1,10 @@
 /* eslint-disable new-cap */
 
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import NotifyClientSingleton from '../../src/utils/mailClient.js'
+import notifyClient from '../../src/utils/mailClient.js'
 import config from '../../config/index.js'
 
-vi.mock('../../src/utils/mailClient.js', () => ({
-  default: {
-    getInstance: vi.fn()
-  }
-}))
+vi.mock('../../src/utils/mailClient.js')
 
 describe('Check answers controller', () => {
   let CheckAnswersController
@@ -18,9 +14,7 @@ describe('Check answers controller', () => {
   beforeEach(async () => {
     // Setup a mock for sendEmail function
     sendEmailMock = vi.fn()
-    NotifyClientSingleton.getInstance = vi.fn().mockReturnValue({
-      sendEmail: sendEmailMock
-    })
+    notifyClient.sendEmail = sendEmailMock
     CheckAnswersController = await vi.importActual('../../src/controllers/CheckAnswersController.js')
     checkAnswersController = new CheckAnswersController.default({
       route: '/dataset'

@@ -1,8 +1,7 @@
 import PageController from './pageController.js'
-import NotifyClientSingleton from '../utils/mailClient.js'
+import notifyClient from '../utils/mailClient.js'
 import config from '../../config/index.js'
 
-const notifyClient = NotifyClientSingleton.getInstance()
 const dataManagementEmail = config.email.dataManagementEmail
 
 class CheckAnswersController extends PageController {

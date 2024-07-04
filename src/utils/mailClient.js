@@ -3,19 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-class NotifyClientSingleton {
-  static instance
+const notifyClient = new NotifyClient(process.env.GOVUK_NOTIFY_API_KEY || 'test-key')
 
-  constructor () {
-    throw new Error('Use NotifyClientSingleton.getInstance()')
-  }
 
-  static getInstance () {
-    if (!NotifyClientSingleton.instance) {
-      NotifyClientSingleton.instance = new NotifyClient(process.env.GOVUK_NOTIFY_API_KEY || 'test-key')
-    }
-    return NotifyClientSingleton.instance
-  }
-}
-
-export default NotifyClientSingleton
+export default notifyClient
