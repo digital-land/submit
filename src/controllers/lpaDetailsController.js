@@ -6,8 +6,8 @@ class lpaDetailsController extends PageController {
     const localAuthorities = await fetchLocalAuthorities()
 
     const localAuthoritiesNames = localAuthorities.entities.map(lpa => ({
-        text: lpa.name,
-        value: lpa.name
+      text: lpa.name,
+      value: lpa.name
     }))
 
     req.form.options.localAuthorities = localAuthoritiesNames
