@@ -14,7 +14,7 @@ const port = process.env.PORT || 3000
 
 setupMiddlewares(app)
 setupSession(app)
-setupNunjucks({app, dataSubjects})
+setupNunjucks({ app, dataSubjects })
 setupRoutes(app)
 
 app.listen(port, () => {
