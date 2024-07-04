@@ -1,4 +1,5 @@
 import chooseDatasetController from '../../controllers/chooseDatasetController.js'
+import lpaDetailsController from '../../controllers/lpaDetailsController.js'
 import PageController from '../../controllers/pageController.js'
 
 const defaultParams = {
@@ -18,6 +19,7 @@ export default {
     ...defaultParams,
     fields: ['lpa', 'name', 'email'],
     next: 'choose-dataset',
+    controller: lpaDetailsController,
     backLink: '/start'
   },
   '/choose-dataset': {

@@ -2,6 +2,11 @@
 
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "x-govuk/components/autocomplete/macro.njk" import xGovukAutocomplete %}
+
+{% block headTitle %}
+  Lpa details – {{ serviceName }}
+{% endblock %}
 
 {% block pageTitle %}
   Lpa details – {{ serviceName }}
@@ -25,18 +30,18 @@
 
     <form novalidate method="post">
 
-      {{
-        govukInput({
-          label: {
-            text: "Local planning authority",
-            classes: "govuk-label--m",
-            isPageHeading: false
-          },
-          id: "lpa",
-          name: "lpa",
-          classes: "govuk-!-width-three-quarters"
-        })
-      }}
+      {{ xGovukAutocomplete({
+        id: "lpa",
+        name: "lpa",
+        allowEmpty: false,
+        label: {
+          classes: "govuk-label--m",
+          isPageHeading: false,
+          text: "Choose your local planning authority"
+        },
+        items: options.localAuthorities
+      }) }}
+      
 
       {{ govukInput({
         label: {
