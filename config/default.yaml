@@ -12,5 +12,5 @@ email: {
 }
 redis: false
 url: ''
-serviceName: 'Endpoint Submission Form'
+serviceName: 'Submit your planning and housing data for England'
 feedbackLink: '#'

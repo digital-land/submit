@@ -26,6 +26,7 @@
     "axios": "^1.7.2",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "govuk-frontend": "5.3.0",

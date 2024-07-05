@@ -5,8 +5,7 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
-
-const nunjucks = setupNunjucks()
+import { mockDataSubjects } from './data.js'
 
 describe('check-answers View', () => {
   const params = {
@@ -20,6 +19,7 @@ describe('check-answers View', () => {
       hasLicence: 'true'
     }
   }
+  const nunjucks = setupNunjucks({ dataSubjects: mockDataSubjects })
   const html = stripWhitespace(nunjucks.render('check-answers.html', params))
 
   runGenericPageTests(html, {
@@ -43,7 +43,7 @@ describe('check-answers View', () => {
   })
 
   it('should render the dataset entered', () => {
-    const datasetRegex = new RegExp('<div class="govuk-summary-list__row">.*Dataset.*mockDataset.*Change.*</div>', 'g')
+    const datasetRegex = new RegExp('<div class="govuk-summary-list__row">.*Dataset.*A Mock dataset.*Change.*</div>', 'g')
     expect(html).toMatch(datasetRegex)
   })
 
@@ -63,12 +63,13 @@ describe('check-answers View', () => {
   })
 
   it('should render the licence selected as false if the licence has not been confirmed', () => {
-    const params = {
+    const noLicenseParams = {
       values: {
+        ...params.values,
         hasLicence: 'false'
       }
     }
-    const html = stripWhitespace(nunjucks.render('check-answers.html', params))
+    const html = stripWhitespace(nunjucks.render('check-answers.html', noLicenseParams))
     const hasLicenceRegex = new RegExp('<div class="govuk-summary-list__row">.*Licence.*False.*Change.*</div>', 'g')
     expect(html).toMatch(hasLicenceRegex)
   })
