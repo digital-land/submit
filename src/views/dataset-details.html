@@ -5,7 +5,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
-{% set pageName = values['dataset'] + " details" %}
+{% set pageName = "Enter " + (values['dataset'] | datasetSlugToReadableName | lower) + " details" %}
 
 {% block pageTitle %}
   {% if errors | length %}

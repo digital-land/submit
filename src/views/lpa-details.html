@@ -4,7 +4,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
-{% set pageName = 'LPA details' %}
+{% set pageName = 'Enter LPA details' %}
 
 {% block pageTitle %}
   {% if errors | length %}
@@ -34,7 +34,7 @@
     {% endif %}
 
     <h1 class="govuk-heading-l">
-      Which LPA are you submitting data for?
+      {{pageName}}
     </h1>
 
     <form novalidate method="post">
