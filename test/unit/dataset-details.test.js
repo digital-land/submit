@@ -10,7 +10,7 @@ import { mockDataSubjects } from './data.js'
 
 const nunjucks = setupNunjucks({ dataSubjects: mockDataSubjects })
 
-function erorTestFn ({
+function errorTestFn ({
   params,
   fieldId,
   fieldType,
@@ -62,7 +62,7 @@ describe('dataset details View', () => {
     describe('endpoint-url', () => {
       it(
         'should display an error message when the endpoint-url field is empty',
-        erorTestFn({
+        errorTestFn({
           params,
           fieldId: 'endpoint-url',
           fieldType: 'required',
@@ -72,7 +72,7 @@ describe('dataset details View', () => {
 
       it(
         'should display an error message when the endpoint-url is not a valid URL',
-        erorTestFn({
+        errorTestFn({
           params,
           fieldId: 'endpoint-url',
           fieldType: 'format',
@@ -82,7 +82,7 @@ describe('dataset details View', () => {
 
       it(
         'should display an error message when the endpoint-url is too long',
-        erorTestFn({
+        errorTestFn({
           params,
           fieldId: 'endpoint-url',
           fieldType: 'maxlength',
@@ -94,7 +94,7 @@ describe('dataset details View', () => {
     describe('documentation-url', () => {
       it(
         'should display an error message when the documentation-url field is empty',
-        erorTestFn({
+        errorTestFn({
           params,
           fieldId: 'documentation-url',
           fieldType: 'required',
@@ -104,7 +104,7 @@ describe('dataset details View', () => {
 
       it(
         'should display an error message when the documentation-url is not a valid URL',
-        erorTestFn({
+        errorTestFn({
           params,
           fieldId: 'documentation-url',
           fieldType: 'format',
@@ -114,7 +114,7 @@ describe('dataset details View', () => {
 
       it(
         'should display an error message when the documentation-url is too long',
-        erorTestFn({
+        errorTestFn({
           params,
           fieldId: 'documentation-url',
           fieldType: 'maxlength',
@@ -126,7 +126,7 @@ describe('dataset details View', () => {
     describe('hasLicence', () => {
       it(
         'should display an error message when the hasLicence field is empty',
-        erorTestFn({
+        errorTestFn({
           params,
           fieldId: 'hasLicence',
           fieldType: 'required',
