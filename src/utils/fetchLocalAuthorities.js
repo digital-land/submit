@@ -10,7 +10,7 @@ import axios from 'axios'
  * @returns {Promise<string[]>} A promise that resolves to an array of local authority names.
  * @throws {Error} Throws an error if the HTTP request fails or data processing encounters an issue.
  */
-export default async () => {
+export const fetchLocalAuthorities = async () => {
   const sql = `select
       distinct provision.organisation,
       organisation.name,
@@ -26,7 +26,14 @@ export default async () => {
   const url = `https://datasette.planning.data.gov.uk/digital-land.json?sql=${encodeURIComponent(sql)}`
   try {
     const response = await axios.get(url)
-    const names = response.data.rows.map(row => row[1])
+    const names = response.data.rows.map(row => {
+      if (row[1] === null) {
+        console.log('Null value found in response:', row)
+        return null
+      } else {
+        return row[1]
+      }
+    }).filter(name => name !== null) // Filter out null values
     return names // Return the fetched data
   } catch (error) {
     console.error('Error fetching local authorities data:', error)

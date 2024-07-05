@@ -1,7 +1,7 @@
 import PageController from './pageController.js'
-import fetchLocalAuthorities from '../utils/fetchLocalAuthorities.js'
+import { fetchLocalAuthorities } from '../utils/fetchLocalAuthorities.js'
 
-class lpaDetailsController extends PageController {
+class LpaDetailsController extends PageController {
   async locals (req, res, next) {
     const localAuthoritiesNames = await fetchLocalAuthorities()
 
@@ -16,4 +16,4 @@ class lpaDetailsController extends PageController {
   }
 }
 
-export default lpaDetailsController
+export default LpaDetailsController
