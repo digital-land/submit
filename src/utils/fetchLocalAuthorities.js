@@ -21,9 +21,9 @@ export default async () => {
     where
       provision.organisation = organisation.organisation
     order by
-      provision.organisation`;
+      provision.organisation`
 
-  const url = `https://datasette.planning.data.gov.uk/digital-land.json?sql=${encodeURIComponent(sql)}`;
+  const url = `https://datasette.planning.data.gov.uk/digital-land.json?sql=${encodeURIComponent(sql)}`
   try {
     const response = await axios.get(url)
     const names = response.data.rows.map(row => row[1])
