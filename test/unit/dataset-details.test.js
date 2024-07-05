@@ -130,7 +130,7 @@ describe('dataset details View', () => {
 
         const html = nunjucks.render('dataset-details.html', params)
 
-        testValidationErrorMessage(html, 'hasLicence', 'Your data must be licensed under the Open Government Licence')
+        testValidationErrorMessage(html, 'hasLicence', 'You need to confirm this dataset is provided under the Open Government Licence')
       })
     })
   })

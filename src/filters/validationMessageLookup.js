@@ -25,7 +25,7 @@ const validationMessages = {
     maxlength: 'The URL must be less than 2048 characters'
   },
   hasLicence: {
-    required: 'Your data must be licensed under the Open Government Licence'
+    required: 'You need to confirm this dataset is provided under the Open Government Licence'
   }
 }
 
