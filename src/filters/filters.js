@@ -21,7 +21,7 @@ function createDatasetMapping (dataSubjects) {
   return mapping
 }
 
-const addFilters = ({ nunjucksEnv, dataSubjects }) => {
+const addFilters = (nunjucksEnv, { dataSubjects }) => {
   const datasetNameMapping = createDatasetMapping(dataSubjects)
   nunjucksEnv.addFilter('datasetSlugToReadableName', function (slug) {
     const name = datasetNameMapping.get(slug)
