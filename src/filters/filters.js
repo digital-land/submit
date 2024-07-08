@@ -6,7 +6,6 @@ import prettifyColumnName from './prettifyColumnName.js'
 
 const { govukMarkdown } = xGovFilters
 
-
 /**
  *
  * @param {*} dataSubjects
@@ -23,7 +22,6 @@ function createDatasetMapping (dataSubjects) {
 }
 
 const addFilters = (nunjucksEnv) => {
-
   const datasetNameMapping = createDatasetMapping(dataSubjects)
   nunjucksEnv.addFilter('datasetSlugToReadableName', function (slug) {
     const name = datasetNameMapping.get(slug)
