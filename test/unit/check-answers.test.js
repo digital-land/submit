@@ -23,7 +23,7 @@ describe('check-answers View', () => {
   const html = stripWhitespace(nunjucks.render('check-answers.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: `Check your answers – ${config.serviceName}`,
+    pageTitle: 'Check your answers - Check planning and housing data for England',
     serviceName: config.serviceName
   })
 

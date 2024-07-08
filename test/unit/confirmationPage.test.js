@@ -18,7 +18,7 @@ describe('Confirmation View', () => {
   const html = stripWhitespace(nunjucks.render('confirmation.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: `A Mock dataset submitted - ${config.serviceName}`,
+    pageTitle: 'A Mock dataset submitted - Check planning and housing data for England',
     serviceName: config.serviceName
   })
 

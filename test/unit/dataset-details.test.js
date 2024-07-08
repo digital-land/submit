@@ -43,9 +43,7 @@ describe('dataset details View', () => {
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
   const datasetName = mockDataSubjects.mockDataset.dataSets[0].text
   runGenericPageTests(html, {
-    pageTitle: `Enter ${datasetName.toLowerCase()} details - ${
-      config.serviceName
-    }`,
+    pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit planning and housing data for England`,
     serviceName: config.serviceName
   })
 
