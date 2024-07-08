@@ -5,6 +5,6 @@ import fields from './fields.js'
 
 const app = Router()
 
-app.use(wizard(steps, fields, { name: 'my-wizard', csrf: false }))
+app.use(wizard(steps, fields, { name: 'endpoint-submission-form-wizard', csrf: false }))
 
 export default app
