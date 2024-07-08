@@ -17,7 +17,7 @@ aws: {
 redis: false
 # ToDo: url and name might need updating
 url: 'https://check-planning.data.gov.uk'
-serviceName: 'Check planning and housing data for England'
+serviceName: 'Provide planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
 email: {
     templates: {
