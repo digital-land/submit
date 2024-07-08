@@ -2,11 +2,8 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "x-govuk/components/related-navigation/macro.njk" import xGovukRelatedNavigation %}
 
-{% set pageName = serviceName %}
-
-{% block pageTitle %}
-  Start – {{ serviceName }}
-{% endblock %}
+{% set serviceType = 'Submit' %}
+{% set pageName = 'Start' %}
 
 {% block content %}
 
@@ -46,7 +43,7 @@ The webpage must include, for each dataset:
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <h1 class="govuk-heading-xl">
-      {{ pageName }}
+      {{ serviceName }}
     </h1>
   </div>
 </div>

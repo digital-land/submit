@@ -4,9 +4,8 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
-{% block pageTitle %}
-  Check your answers – {{ serviceName }}
-{% endblock %}
+{% set serviceType = 'Check' %}
+{% set pageName = 'Check your answers' %}
 
 {% block beforeContent %}
 {{ govukBackLink({

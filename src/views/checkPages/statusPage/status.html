@@ -4,8 +4,8 @@
 
 {% extends "layouts/main.html" %}
 
+{% set serviceType = 'Check' %}
 {% set pageName = 'Status' %}
-
 
 {% if options.processingComplete %}
   {% set pageContent = fileCheckedContent() %}
