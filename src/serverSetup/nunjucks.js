@@ -9,6 +9,8 @@ export function setupNunjucks ({ app, dataSubjects }) {
 
   const nunjucksEnv = nunjucks.configure([
     'src/views',
+    'src/views/checkPages',
+    'src/views/endpointSubmissionFormPages',
     'node_modules/govuk-frontend/dist/',
     'node_modules/@x-govuk/govuk-prototype-components/'
   ], {
