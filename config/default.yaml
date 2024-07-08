@@ -15,6 +15,15 @@ aws: {
     s3ForcePathStyle: false,
 }
 redis: false
-url: 'https://publish-planning.data.gov.uk'
+# ToDo: url and name might need updating
+url: 'https://check-planning.data.gov.uk'
 serviceName: 'Check planning and housing data for England'
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
+email: {
+    templates: {
+        RequestTemplateId: 'fa1c2b51-3c91-4f9d-9a18-83639164d552',
+        AcknowledgementTemplateId: '2a4dff6d-78c4-4fea-a489-c97485453807'
+    },
+    dataManagementEmail: 'fakeemail@fakemail.com'
+}
+
