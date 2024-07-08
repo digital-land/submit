@@ -1,5 +1,5 @@
 // ToDo: split this into two form wizards
-import { validUrl } from '../../utils/validators.js'
+import { validUrl } from '../../../utils/validators.js'
 
 export default {
   lpa: {

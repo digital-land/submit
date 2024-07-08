@@ -1,7 +1,7 @@
 // ToDo: Split this into two form wizards
-import chooseDatasetController from '../../controllers/chooseDatasetController.js'
-import PageController from '../../controllers/pageController.js'
-import CheckAnswersController from '../../controllers/CheckAnswersController.js'
+import chooseDatasetController from '../../../controllers/chooseDatasetController.js'
+import PageController from '../../../controllers/pageController.js'
+import CheckAnswersController from '../../../controllers/CheckAnswersController.js'
 
 const defaultParams = {
   entryPoint: false,
@@ -9,12 +9,13 @@ const defaultParams = {
 }
 
 export default {
-  '/start': {
+  '/': {
     ...defaultParams,
     entryPoint: true,
     resetJourney: true,
     noPost: true,
-    next: 'lpa-details'
+    template: '../views/endpointSubmissionFormPages/start.html',
+    next: '/submit/lpa-details'
   },
   '/lpa-details': {
     ...defaultParams,
