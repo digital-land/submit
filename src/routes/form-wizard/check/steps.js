@@ -17,7 +17,7 @@ export default {
     entryPoint: true,
     resetJourney: true,
     next: 'dataset',
-    template: '../views/check/start.html',
+    template: 'check/start.html',
     noPost: true
   },
   // '/data-subject': {
