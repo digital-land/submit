@@ -31,13 +31,13 @@ The webpage must include, for each dataset:
 - a summary of what the data is about
 - a statement that the data is provided under the Open Government Licence
 
-
-{{ govukButton({
-    text: "Start now",
-    href: "./submit/lpa-details",
-    isStartButton: true
-  }) }}
-
+<form novalidate method="post">
+  {{ govukButton({
+      text: "Start now",
+      isStartButton: true
+    }) }}
+</form>
+ 
 {% endset %}
 
 <div class="govuk-grid-row">
