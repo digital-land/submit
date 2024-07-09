@@ -1,6 +1,6 @@
 $govuk-global-styles: true;
 
-@import "node_modules/govuk-frontend/govuk/all";
+@import "node_modules/govuk-frontend/dist/govuk/all";
 @import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
 @import "src/assets/scss/_scrollable-container.scss";
 
