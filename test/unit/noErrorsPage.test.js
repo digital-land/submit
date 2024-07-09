@@ -11,8 +11,8 @@ import paginationTemplateTests from './paginationTemplateTests.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
-  'src/views/checkPages',
-  'src/views/endpointSubmissionFormPages',
+  'src/views/check',
+  'src/views/submit',
   'node_modules/govuk-frontend/dist/',
   'node_modules/@x-govuk/govuk-prototype-components/'
 ], {

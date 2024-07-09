@@ -17,7 +17,7 @@ export default {
     entryPoint: true,
     resetJourney: true,
     next: 'dataset',
-    template: '../views/checkPages/start.html',
+    template: '../views/check/start.html',
     noPost: true
   },
   // '/data-subject': {
@@ -88,6 +88,7 @@ export default {
   '/confirmation': {
     ...baseSettings,
     noPost: true,
-    checkJourney: false // ToDo: it would be useful here if we make sure they have selected if their results are ok from the previous step
+    checkJourney: false, // ToDo: it would be useful here if we make sure they have selected if their results are ok from the previous step
+    template: 'check/confirmation.html'
   }
 }

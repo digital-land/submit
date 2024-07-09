@@ -14,8 +14,8 @@ export default {
     entryPoint: true,
     resetJourney: true,
     noPost: true,
-    template: '../views/endpointSubmissionFormPages/start.html',
-    next: '/submit/lpa-details'
+    template: 'submit/start.html',
+    next: 'submit/lpa-details'
   },
   '/lpa-details': {
     ...defaultParams,
@@ -43,6 +43,7 @@ export default {
     backLink: '/dataset-details'
   },
   '/confirmation': {
-    ...defaultParams
+    ...defaultParams,
+    template: 'submit/confirmation.html'
   }
 }
