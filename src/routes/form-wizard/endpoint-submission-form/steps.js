@@ -13,7 +13,6 @@ export default {
     ...defaultParams,
     entryPoint: true,
     resetJourney: true,
-    noPost: true,
     template: 'submit/start.html',
     next: '/submit/lpa-details'
   },
