@@ -2,7 +2,7 @@ import PageController from './pageController.js'
 import notifyClient from '../utils/mailClient.js'
 import config from '../../config/index.js'
 
-const dataManagementEmail = config.email.dataManagementEmail
+const dataManagementEmail = process.env.DATA_MANAGEMENT_EMAIL || config.email.dataManagementEmail
 
 class CheckAnswersController extends PageController {
   /**

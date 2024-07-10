@@ -1,0 +1,15 @@
+{
+    "id": "processing",
+    "type": "check_file",
+    "status": "PROCESSING",
+    "created": "2024-03-18 10:19:19+0000",
+    "modified": "2024-03-18 10:19:19+0000",
+    "params": {
+        "type": "check_file",
+        "collection": "article_4_direction",
+        "dataset": "article_4_direction_area",
+        "original_filename": "article_4_direction_area.geojson",
+        "uploaded_filename": "B1E16917-449C-4FC5-96D1-EE4255A79FB1"
+    },
+    "response": null
+}

@@ -1,0 +1,65 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/input/macro.njk' import govukInput %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set pageName = 'Your email address' %}
+
+{% set errorMessage = 'Please enter a valid email address' %}
+
+
+{% if 'email-address' in errors %}
+  {% set datasetError = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if datasetError %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if datasetError %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: errors | toErrorList
+        }) }}
+      {% endif %}
+
+      <form novalidate method="post">
+
+        {{ govukInput({
+          id: "email-address",
+          name: "email-address",
+          label: {
+            text: pageName,
+            isPageHeading: true,
+            classes: 'govuk-label--l'
+          },
+          type: "email",
+          autocomplete: "email",
+          spellcheck: false,
+          value: values['email-address'],
+          errorMessage: {
+            text: 'email-address' | validationMessageLookup(errors['email-address'].type)
+          } if datasetError else undefined
+        }) }}
+
+
+
+
+
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

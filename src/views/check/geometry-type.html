@@ -1,0 +1,74 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Is your geometry data given as points or polygons?' %}
+
+{% set errorMessage = 'Select if your geometry data given as points or polygons' %}
+
+{% if 'geomType' in errors %}
+  {% set error = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if error %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#geomType"
+            }
+          ]
+        }) }}
+      {% endif %}
+      <form novalidate method="post">
+
+        {{ govukRadios({
+          name: "geomType",
+          fieldset: {
+            legend: {
+              text: pageName,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--l"
+            }
+          },
+          value: data.check.uploadMethod,
+          items: [
+            {
+              value: "point",
+              text: "Points"
+            },
+            {
+              value: "polygon",
+              text: "Polygons"
+            }
+          ],
+          errorMessage: {
+            text: errorMessage 
+          } if error else undefined
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <p class="govuk-!-padding-top-4 govuk-!-padding-bottom-4"><a style="color: #fff" href="/no-errors">No errors</a></p>
+      </form>
+    </div>
+  </div>
+{% endblock %}

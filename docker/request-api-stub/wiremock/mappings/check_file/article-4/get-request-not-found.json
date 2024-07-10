@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPathPattern": "/requests/([a-zA-Z1-9]*)"
+    },
+    "response": {
+        "status": 404,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "bodyFileName": "check_file/article-4/request-not-found.json"
+    },
+    "priority": 10
+}

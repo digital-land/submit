@@ -1,0 +1,52 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/input/macro.njk' import govukInput %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set pageName = 'Local planning authority' %}
+
+{% block pageTitle %}
+  {% if errors | length %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {% if errors | length %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: errors | toErrorList
+        }) }}
+      {% endif %}
+
+      <form novalidate method="post">
+
+        {{ govukInput({
+          id: "lpa",
+          name: "lpa",
+          label: {
+            text: pageName,
+            isPageHeading: true,
+            classes: 'govuk-label--l'
+          },
+          type: "text",
+          value: values.lpa,
+          errorMessage: {
+            text: 'lpa' | validationMessageLookup(errors['lpa'].type) 
+          } if 'lpa' in errors
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

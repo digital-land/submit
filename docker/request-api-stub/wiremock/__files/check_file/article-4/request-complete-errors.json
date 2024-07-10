@@ -1,0 +1,69 @@
+{
+  "id": "complete-errors",
+  "type": "check_file",
+  "status": "COMPLETE",
+  "created": "2024-03-27T18:42:17.602511Z",
+  "modified": "2024-03-27T18:42:18.703341Z",
+  "params": {
+      "type": "check_file",
+      "dataset": "conservation-area",
+      "geom_type": "",
+      "collection": "conservation-area",
+      "original_filename": "conservation-area-errors.csv",
+      "uploaded_filename": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+  },
+  "response": {
+      "data": {
+          "error-summary": [
+              "1 geometry must be in Well-Known Text (WKT) format",
+              "1 documentation URL must be a real URL",
+              "1 entry date must be today or in the past",
+              "1 start date must be a real date",
+              "1 geometry missing",
+              "Reference column missing"
+          ],
+          "column-field-log": [
+              {
+                  "field": "geometry",
+                  "column": "wkt",
+                  "dataset": "conservation-area",
+                  "missing": false,
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+              },
+              {
+                  "field": "documentation-url",
+                  "column": "documentation-url",
+                  "dataset": "conservation-area",
+                  "missing": false,
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+              },
+              {
+                  "field": "entry-date",
+                  "column": "entry-date",
+                  "dataset": "conservation-area",
+                  "missing": false,
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+              },
+              {
+                  "field": "name",
+                  "column": "name",
+                  "dataset": "conservation-area",
+                  "missing": false,
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+              },
+              {
+                  "field": "start-date",
+                  "column": "start-date",
+                  "dataset": "conservation-area",
+                  "missing": false,
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+              },
+              {
+                  "field": "reference",
+                  "missing": true
+              }
+          ]
+      },
+      "error": null
+  }
+}

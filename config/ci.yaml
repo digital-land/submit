@@ -1,0 +1,15 @@
+asyncRequestApi: {
+    url: http://request-api:8000
+}
+aws: {
+    region: eu-west-2,
+    bucket: 'dluhc-data-platform-request-files-local',
+    endpoint: 'http://localstack:4566',
+    s3ForcePathStyle: true,
+}
+redis: {
+    secure: false,
+    host: 'redis',
+    port: '6379'
+}
+url: "http://localhost:8085"

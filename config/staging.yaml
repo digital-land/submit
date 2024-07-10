@@ -1,0 +1,13 @@
+asyncRequestApi: {
+    url: http://staging-pub-async-api-lb-12493311.eu-west-2.elb.amazonaws.com
+}
+aws: {
+    region: eu-west-2,
+    bucket: 'staging-pub-async-request-files',
+}
+redis: {
+    secure: true,
+    host: 'staging-pub-async-redis-kh1elu.serverless.euw2.cache.amazonaws.com',
+    port: '6379'
+}
+url: 'https://publish.staging.digital-land.info/'

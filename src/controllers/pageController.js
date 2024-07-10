@@ -1,5 +1,5 @@
 import hmpoFormWizard from 'hmpo-form-wizard'
-// import { logPageView } from '../utils/logging.js'
+import { logPageView } from '../utils/logging.js'
 const { Controller } = hmpoFormWizard
 
 class PageController extends Controller {
@@ -9,7 +9,7 @@ class PageController extends Controller {
   }
 
   get (req, res, next) {
-    // logPageView(this.options.route, req.sessionID, req.ip)
+    logPageView(this.options.route, req.sessionID, req.ip)
     super.get(req, res, next)
   }
 }

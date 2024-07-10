@@ -1,0 +1,74 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'How do you want to provide your data?' %}
+
+{% set errorMessage = 'Select how you want to provide your data' %}
+
+{% if 'upload-method' in errors %}
+  {% set error = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if error %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#upload-method"
+            }
+          ]
+        }) }}
+      {% endif %}
+      <form novalidate method="post">
+
+        {{ govukRadios({
+          name: "upload-method",
+          fieldset: {
+            legend: {
+              text: pageName,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--l"
+            }
+          },
+          value: data.check.uploadMethod,
+          items: [
+            {
+              value: "file",
+              text: "File upload"
+            },
+            {
+              value: "url",
+              text: "URL"
+            }
+          ],
+          errorMessage: {
+            text: errorMessage 
+          } if error else undefined
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <p class="govuk-!-padding-top-4 govuk-!-padding-bottom-4"><a style="color: #fff" href="/no-errors">No errors</a></p>
+      </form>
+    </div>
+  </div>
+{% endblock %}

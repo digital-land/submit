@@ -1,0 +1,36 @@
+{
+  "converted-csv": [
+    {"Name": "Camden Square", "Geometry": "POLYGON ((0 51, -1 51, -1 52, 0 51))", "Start date": "40/04/1980", "Legislation": "", "Notes": "", "Point": "POINT (-0.130484959448 51.544845663239)", "End date": "", "Document URL": "https://www.camden.gov.uk/camden-square-conservation-area-appraisal-and-management-strategy"},
+    {"Name": "Holly Lodge Estate", "Geometry": "POLYGON ((1 52, 0 52, 0 52, 1 51))", "Start date": "01/06/1992", "Legislation": "", "Notes": "", "Point": "POINT (-0.150097204178 51.564975754948)", "End date": "", "Document URL": "https://www.camden.gov.uk/holly-lodge-conservation-area"},
+    {"Name": "Dartmouth Park", "Geometry": "POLYGON ((0.2 51, 0.8 51, -0.2 52, -0.8 52, 0.2 51))", "Start date": "01/06/1992", "Legislation": "", "Notes": "", "Point": "POINT (-0.145442349961 51.559999511433)", "End date": "", "Document URL": "https://www.camden.gov.uk/dartmouth-park-conservation-area-appraisal-and-management-strategy"}
+  ],
+  "issue-log": [
+    {"dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "line-number": "2", "entry-number": "1", "field": "start-date", "issue-type": "invalid-value", "message": "invalid-value", "value": "40/04/1980", "severity": "error"},
+    {"dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "line-number": "2", "entry-number": "1", "field": "geometry", "issue-type": "OSGB", "message": "OSGB", "value": "", "severity": "info"},
+    {"dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "line-number": "2", "entry-number": "1", "field": "organisation", "issue-type": "default-value", "message": "default-value", "value": "local-authority-eng:MAL", "severity": "info"},
+    {"dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "line-number": "2", "entry-number": "1", "field": "entry-date", "issue-type": "default-value", "message": "default-value", "value": "2020-09-14", "severity": "info"}
+  ],
+  "flattened-csv": {
+    "entities": [
+      {"dataset": "conservation-area", "end-date": "", "entity": "44000001", "entry-date": "2022-04-12", "geometry": "MULTIPOLYGON (((-0.307721 51.724964,-0.307831 51.725040,-0.307919 51.725121,-0.309609 51.724308,-0.309719 51.724396)))", "name": "Shafford Mill", "organisation-entity": "16", "point": "POINT(-0.370182 51.770914)", "prefix": "conservation-area", "reference": "5071", "start-date": "1980-07-31", "typology": "geography"},
+      {"dataset": "conservation-area", "end-date": "", "entity": "44000002", "entry-date": "2022-04-12", "geometry": "MULTIPOLYGON (((-0.372417 51.774343,-0.372532 51.774138,-0.372688 51.773884,-0.372776 51.773857,-0.372692 51.773743)))", "name": "Potters Crouch", "organisation-entity": "16", "point": "POINT(-0.383726 51.734475)", "prefix": "conservation-area", "reference": "5074", "start-date": "1977-07-27", "typology": "geography"}
+    ]
+  },
+  "column-field-log": [
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Geometry", "field": "geometry"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Name", "field": "name"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Point", "field": "point"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Start date", "field": "start-date"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "End date", "field": "end-date"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Document URL", "field": "document-URL"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Legislation", "field": "legislation"},
+    {"entry-date": "2023-10-03T10:13:45Z", "dataset": "conservation-area", "resource": "0b4284077da580a6daea59ee2227f9c7c55a9a45d57ef470d82418a4391ddf9a", "column": "Notes", "field": "notes"},
+    {"field": "reference", "missing": true}
+  ],
+  "error-summary": [
+    "1 documentation URL must be a real URL",
+    "19 geometries must be in Well-Known Text (WKT) format",
+    "3 start dates must be a real date",
+    "Reference column missing"
+  ]
+}

@@ -1,0 +1,3 @@
+geometry,reference,name,area(ha),documentation-url,Layer,start-date,organisation
+"MULTIPOLYGON (((0 51, -1 51, -1 52, 0 51)))",4,South Jesmond,35.4,https://www.newcastle.gov.uk/services/planning-building-and-development/historic-enviornment-and-urban-design/conservation-areas,Conservation Area,04/04/2024,local-authority-eng:CAT
+"MULTIPOLYGON (((1 52, 0 52, 0 52, 1 51)),((0.2 51, 0.8 51, -0.2 52, -0.8 52, 0.2 51)))",6,Northumberland Gardens,6.2,https://www.newcastle.gov.uk/services/planning-building-and-development/historic-enviornment-and-urban-design/conservation-areas,Conservation Area,04/04/2024,local-authority-eng:CAT

@@ -1,0 +1,28 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Request Failed' %}
+{% set error = options.error %}
+
+{% block pageTitle %}
+    Error: {{super()}}
+{% endblock %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">
+                There was a problem with the url provided
+            </h1>
+            <p class="govuk-paragraph">We got the following error:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>Error code: {{ error.errCode}}</li>
+                <li>Error Message: {{ error.errMsg }}</li>
+            </ul>
+            <a href="/url" class="govuk-link">Try again</a>
+        </div>
+    </div>
+{% endblock %}

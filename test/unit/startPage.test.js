@@ -1,3 +1,5 @@
+// ToDo: need to duplicate this test for submit start page
+
 import { describe } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
@@ -11,7 +13,7 @@ describe('Start View', () => {
   const html = nunjucks.render('start.html', params)
 
   runGenericPageTests(html, {
-    pageTitle: `Start – ${config.serviceName}`,
+    pageTitle: 'Start - Check planning and housing data for England',
     serviceName: config.serviceName
   })
 })

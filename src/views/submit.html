@@ -1,0 +1,21 @@
+{% extends "layouts/main.html" %}
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+
+{% set pageName = 'Dataset' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h2>Submit your completed form</h2>
+        {% for key, value in options['allFields'] %}
+            <p>{{key}}: {{values[key]}}</p>
+        {% endfor %}
+        <form novalidate method="post">
+            {{ govukButton({
+            text: "Continue"
+            }) }}
+        </form>
+    </div>
+  </div>
+{% endblock %}

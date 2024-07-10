@@ -1,7 +1,9 @@
 import { getkeys, getContext } from './debuggingFilters.js'
-import toErrorList from './toErrorList.js'
-import validationMessageLookup from './validationMessageLookup.js'
 import xGovFilters from '@x-govuk/govuk-prototype-filters'
+import validationMessageLookup from './validationMessageLookup.js'
+import toErrorList from './toErrorList.js'
+import prettifyColumnName from './prettifyColumnName.js'
+import getFullServiceName from './getFullServiceName.js'
 
 const { govukMarkdown } = xGovFilters
 
@@ -21,12 +23,6 @@ function createDatasetMapping (dataSubjects) {
 }
 
 const addFilters = (nunjucksEnv, { dataSubjects }) => {
-  nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
-  nunjucksEnv.addFilter('getkeys', getkeys)
-  nunjucksEnv.addFilter('getContext', getContext)
-  nunjucksEnv.addFilter('toErrorList', toErrorList)
-  nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
-
   const datasetNameMapping = createDatasetMapping(dataSubjects)
   nunjucksEnv.addFilter('datasetSlugToReadableName', function (slug) {
     const name = datasetNameMapping.get(slug)
@@ -35,6 +31,14 @@ const addFilters = (nunjucksEnv, { dataSubjects }) => {
     }
     return name
   })
+
+  nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
+  nunjucksEnv.addFilter('getkeys', getkeys)
+  nunjucksEnv.addFilter('getContext', getContext)
+  nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
+  nunjucksEnv.addFilter('toErrorList', toErrorList)
+  nunjucksEnv.addFilter('prettifyColumnName', prettifyColumnName)
+  nunjucksEnv.addFilter('getFullServiceName', getFullServiceName)
 }
 
 export default addFilters

@@ -9,8 +9,12 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner%}
 {% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 
+{% if serviceType %}
+  {% set serviceName = serviceType | getFullServiceName  %}
+{% endif %}
+
 {% block pageTitle %}
-{{ pageName }} - {{ serviceName }}
+  {{ pageName }} - {{ serviceName }}
 {% endblock %}
 
 {% block head %}
@@ -71,11 +75,12 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
   {%block scripts %}
     <body>
       ...
-      <script type="module" src="./assets/all.js"></script>
+      <script type="module" src="/assets/all.js"></script>
       <script type="module">
         window.GOVUKPrototypeComponents.initAll()
       </script>
     </body>
     {{ super() }}
+    <script src="/public/js/application.bundle.js"></script>
   {% endblock %}
 {% endblock %}

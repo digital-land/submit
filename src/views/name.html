@@ -1,0 +1,71 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/input/macro.njk' import govukInput %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set pageName = "Your name" %}
+
+{% block pageTitle %}
+  {% if errors | length %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">
+        {{pageName}}
+      </h1>
+
+      {% if errors | length %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: errors | toErrorList
+        }) }}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {{ govukInput({
+          id: "first-name",
+          name: "first-name",
+          label: {
+            text: "First name",
+            classes: "govuk-label--m"
+          },
+          hint: {
+            text: "Or given name"
+          },
+          value: values['first-name'],
+          errorMessage: {
+            text: 'first-name' | validationMessageLookup(errors['first-name'].type) 
+          } if 'first-name' in errors
+        }) }}
+
+        {{ govukInput({
+          id: "last-name",
+          name: "last-name",
+          label: {
+            text: "Last name",
+            classes: "govuk-label--m"
+          },
+          hint: {
+            text: "Or family name"
+          },
+          value: values['last-name'],
+          errorMessage: {
+            text: 'last-name' | validationMessageLookup(errors['last-name'].type)
+          } if 'last-name' in errors
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,8 +1,24 @@
-port: 3000
+port: 5000
+asyncRequestApi: {
+    url: https://publish-api.planning.data.gov.uk,
+    port: 8082,
+    requestsEndpoint: 'requests',
+    requestTimeout: 50000
+}
 maintenance: {
     serviceUnavailable: false,
     upTime: "9am on Monday 19 November 2024"
 }
+aws: {
+    region: eu-west-2,
+    bucket: '',
+    s3ForcePathStyle: false,
+}
+redis: false
+# ToDo: url and name might need updating
+url: 'https://check-planning.data.gov.uk'
+serviceName: 'Provide planning and housing data for England'
+feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
 email: {
     templates: {
         RequestTemplateId: 'fa1c2b51-3c91-4f9d-9a18-83639164d552',
@@ -10,7 +26,4 @@ email: {
     },
     dataManagementEmail: 'fakeemail@fakemail.com'
 }
-redis: false
-url: ''
-serviceName: 'Submit your planning and housing data for England'
-feedbackLink: '#'
+

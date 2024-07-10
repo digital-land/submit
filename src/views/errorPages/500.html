@@ -1,0 +1,15 @@
+{% extends "layouts/main.html" %}
+
+{% set pageName = 'Sorry, there’s a problem with the service' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{pageName}}</h1>
+      <p>Try again later.</p>
+      <p>
+        You'll need to <a href="/">start from the beginning of the service</a>.
+      </p>
+    </div>
+  </div>
+{% endblock %}

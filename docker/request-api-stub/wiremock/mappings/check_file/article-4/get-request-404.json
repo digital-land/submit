@@ -1,0 +1,13 @@
+{
+    "request": {
+        "urlPath": "/requests/404",
+        "method": "GET"
+    },
+    "response": {
+        "status": 202,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "bodyFileName": "check_file/article-4/404.json"
+    }
+}
