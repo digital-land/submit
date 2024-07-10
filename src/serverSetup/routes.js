@@ -5,7 +5,7 @@ import polling from '../routes/api.js'
 import health from '../routes/health.js'
 import manage from '../routes/manage.js'
 
-export function setupRoutes (app, { nunjucks }) {
+export function setupRoutes (app) {
   app.use('/', checkFormWizard)
   app.use('/submit', endpointSubmissionFormFormWisard)
   app.use('/accessibility', accessibility)
