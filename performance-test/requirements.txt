@@ -24,6 +24,8 @@ click==8.1.7
     #   pip-tools
 configargparse==1.7
     # via locust
+dnspython==2.6.1
+    # via -r requirements.in
 flask==3.0.3
     # via
     #   flask-cors
