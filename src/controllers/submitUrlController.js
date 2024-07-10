@@ -73,7 +73,7 @@ class SubmitUrlController extends UploadController {
     try {
       return await axios.head(url)
     } catch (err) {
-      if (err.code === 'ENOTFOUND') {
+      if (['ENOTFOUND', 'ECONNREFUSED'].includes(err.code)) {
         return false
       } else if (err.response.status === 400) {
         return false
