@@ -7,7 +7,7 @@ import config from '../../config/index.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 import { mockDataSubjects } from './data.js'
 
-describe('check-answers View', () => {
+describe('check-answers View', async () => {
   const params = {
     values: {
       lpa: 'mockLpa',
