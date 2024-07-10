@@ -1,5 +1,5 @@
-// ToDo: Split this into two form wizards
 import chooseDatasetController from '../../../controllers/chooseDatasetController.js'
+import LpaDetailsController from '../../../controllers/lpaDetailsController.js'
 import PageController from '../../../controllers/pageController.js'
 import CheckAnswersController from '../../../controllers/CheckAnswersController.js'
 
@@ -20,6 +20,7 @@ export default {
     ...defaultParams,
     fields: ['lpa', 'name', 'email'],
     next: 'choose-dataset',
+    controller: LpaDetailsController,
     backLink: '/start'
   },
   '/choose-dataset': {
