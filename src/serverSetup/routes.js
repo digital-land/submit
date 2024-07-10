@@ -3,11 +3,13 @@ import endpointSubmissionFormFormWisard from '../routes/form-wizard/endpoint-sub
 import accessibility from '../routes/accessibility.js'
 import polling from '../routes/api.js'
 import health from '../routes/health.js'
+import manage from '../routes/manage.js'
 
-export function setupRoutes (app) {
+export function setupRoutes (app, { nunjucks }) {
   app.use('/', checkFormWizard)
   app.use('/submit', endpointSubmissionFormFormWisard)
   app.use('/accessibility', accessibility)
   app.use('/api', polling)
   app.use('/health', health)
+  app.use('/manage', manage)
 }
