@@ -1,0 +1,47 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "./checkingFileMacro.html" import checkingFileContent %}
+{% from "./fileCheckedMacro.html" import fileCheckedContent %}
+
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Status' %}
+
+{% if options.processingComplete %}
+  {% set pageContent = fileCheckedContent() %}
+  {% set buttonText = "Continue" %}
+  {% set buttonClasses = "" %}
+  {% else %}
+  {% set pageContent = checkingFileContent() %}
+  {% set buttonText = "Retrieve Latest Status" %}
+  {% set buttonClasses = "js-hidden" %}
+{% endif %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds" aria-live="assertive">
+      {{ pageContent }}
+    </div>
+
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post">
+        {{ govukButton({
+          text: buttonText,
+          classes: buttonClasses,
+          id: "js-async-continue-button"
+        }) }}
+      </form>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script>
+    window.serverContext = {
+      pollingEndpoint: "{{ options.pollingEndpoint }}"
+    }
+  </script>
+  <script src="/public/js/statusPage.bundle.js"></script>
+{% endblock %}

@@ -24,7 +24,7 @@ export default class RequestData {
       limit: request.headers['x-pagination-limit']
     }
 
-    return new ResponseDetails(request.data, pagination, this.getColumnFieldLog())
+    return new ResponseDetails(this.id, request.data, pagination, this.getColumnFieldLog())
   }
 
   getErrorSummary () {

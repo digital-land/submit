@@ -1,5 +1,5 @@
 asyncRequestApi: {
-    url: http://development-pub-async-api-lb-2117113766.eu-west-2.elb.amazonaws.com
+    url: http://development-pub-async-api-lb-69142969.eu-west-2.elb.amazonaws.com
 }
 aws: {
     region: eu-west-2,

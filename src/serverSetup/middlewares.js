@@ -17,7 +17,7 @@ export function setupMiddlewares (app) {
     next()
   })
 
-  app.use('/assets', express.static('./node_modules/govuk-frontend/govuk/assets'))
+  app.use('/assets', express.static('./node_modules/govuk-frontend/dist/govuk/assets'))
   app.use('/public', express.static('./public'))
 
   app.use(cookieParser())

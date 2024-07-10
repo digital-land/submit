@@ -1,0 +1,68 @@
+
+{% from 'govuk/components/panel/macro.njk' import govukPanel %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = "Send us your data" %}
+
+{% block content %}
+
+{% set example %}
+
+  ## About the data
+
+  This dataset shows the locations of conservation areas. Conservation areas are designated to safeguard areas of special architectural and historic interest, the character and appearance of which it is desirable to preserve or enhance. Within these areas special planning controls operate which need to be considered when undertaking development.
+
+  ## Data
+
+  [Conservations areas (CSV, 18KB)](/public/downloadable/conservationArea.csv)
+
+  ## Licensing
+
+  The data is provided under the [Open Government Licence](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+
+{% endset %}
+
+{% set content %}
+
+  ## What you need to do next
+
+  You need to send an email to [digitalland@levellingup.gov.uk](mailto:digitalland@levellingup.gov.uk).
+
+  The email must include:
+
+  - your full name
+  - the name of your local planning authority (LPA)
+  - a link to a webpage containing the data on your LPA website
+
+  The webpage must include:
+
+  - a link to the data
+  - a summary of what the data is about
+  - a statement that the data is provided under the Open Government Licence
+
+  {{ govukDetails({
+    summaryText: "Example webpage",
+    text: example | govukMarkdown(headingsStartWith="m") | safe
+  }) }}
+
+  ## Give feedback
+
+  [Give feedback about this service]({{feedbackLink}}) (takes 30 seconds).
+
+{% endset %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukPanel({
+      titleHtml: pageName
+    }) }}
+
+    {{content | govukMarkdown(headingsStartWith="l") | safe}} 
+
+  </div>
+</div>
+
+{% endblock %}

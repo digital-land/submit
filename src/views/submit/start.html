@@ -1,0 +1,79 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "x-govuk/components/related-navigation/macro.njk" import xGovukRelatedNavigation %}
+
+{% set serviceType = 'Submit' %}
+{% set pageName = 'Start' %}
+
+{% block content %}
+
+{% set content %}
+
+Use this service to submit your:
+
+- article 4 direction data
+- conservation area data
+{# - listed building data #}
+{# - tree preservation order data #}
+
+## Before you start
+
+### Publish data on your website
+
+Your data must be on a URL the public can access. We collect the latest data from there every day.
+
+You must link to that URL from a webpage about the data. This needs to be on your official planning authority website,
+usually ending in gov.uk.
+
+The webpage must include, for each dataset:
+
+- the link to the data URL
+- a summary of what the data is about
+- a statement that the data is provided under the Open Government Licence
+
+<form novalidate method="post">
+  {{ govukButton({
+      text: "Start now",
+      isStartButton: true
+    }) }}
+</form>
+ 
+{% endset %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl">
+      {{ serviceName }}
+    </h1>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{content | govukMarkdown(headingsStartWith="l") | safe}}
+  </div>
+  <div class="govuk-grid-column-one-third">
+    {{ xGovukRelatedNavigation({
+        sections: [{
+          items: [
+            {
+              text: "Prepare data to the specifications",
+              href: "https://www.planning.data.gov.uk/guidance/specifications/"
+            },
+            {
+              text: "Publish data on your website",
+              href: "https://www.planning.data.gov.uk/guidance/publish-data-on-your-website"
+            }
+          ],
+          subsections: [{
+            title: "Explore the topic",
+            items: [{
+              text: "Housing and planning",
+              href: "/browse/performing-arts"
+            }]
+          }]
+        }]
+      }) }}
+  </div>
+</div>
+{% endblock %}

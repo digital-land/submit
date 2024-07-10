@@ -1,0 +1,83 @@
+{% extends "layouts/main.html" %}
+
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Data subject' %}
+
+{% set errorMessage = 'Select a data subject' %}
+
+{% if 'data-subject' in errors %}
+  {% set dataSubjectError = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if dataSubjectError %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if dataSubjectError %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#data-subject"
+            }
+          ]
+        }) }}
+      {% endif %}
+      <form novalidate method="post">
+
+        {{ govukRadios({
+          idPrefix: "data-subject",
+          name: "data-subject",
+          fieldset: {
+            legend: {
+              text: pageName,
+              isPageHeading: true,
+              classes: "govuk-fieldset__legend--l"
+            }
+          },
+          items: [
+            {
+              value: "Article 4",
+              text: "Article 4"
+            },
+            {
+              value: "Conservation area",
+              text: "Conservation area"
+            },
+            {
+              value: "Listed building",
+              text: "Listed building"
+            },
+            {
+              value: "Tree preservation order",
+              text: "Tree preservation order"
+            }
+          ],
+          value: values['data-subject'],
+          errorMessage: {
+            text: errorMessage 
+          } if dataSubjectError else undefined
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

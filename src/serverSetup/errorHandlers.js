@@ -19,7 +19,11 @@ export function setupErrorHandlers (app) {
     }
 
     err.status = err.status || 500
-    res.status(err.status).render(err.template, { err })
+    try {
+      res.status(err.status).render(err.template, { err })
+    } catch (e) {
+      res.status(err.status).render('errorPages/500', { err })
+    }
   })
 
   app.use((req, res, next) => {
