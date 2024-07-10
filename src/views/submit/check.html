@@ -1,0 +1,130 @@
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Submit' %}
+{% set pageName = 'Check details and send your data' %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/summary-list/macro.njk' import govukSummaryList %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">
+        {{pageName}}
+      </h1>
+
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Data subject"
+            },
+            value: {
+              text: values['data-subject']
+            },
+            actions: {
+              items: [
+                {
+                  href: "/data-subject/edit",
+                  text: "Change",
+                  visuallyHiddenText: "URL"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Data set"
+            },
+            value: {
+              text: values.dataset
+            },
+            actions: {
+              items: [
+                {
+                  href: "/dataset/edit",
+                  text: "Change",
+                  visuallyHiddenText: "URL"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Data file"
+            },
+            value: {
+              text: values.datafile.originalname
+            },
+            actions: {
+              items: [
+                {
+                  href: "/upload/edit",
+                  text: "Change",
+                  visuallyHiddenText: "URL"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Your email address"
+            },
+            value: {
+              text: values['email-address']
+            },
+            actions: {
+              items: [
+                {
+                  href: "/email-address/edit",
+                  text: "Change",
+                  visuallyHiddenText: "Your email address"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Your name"
+            },
+            value: {
+              text: values['first-name'] + ' ' + values['last-name']
+            },
+            actions: {
+              items: [
+                {
+                  href: "/name/edit",
+                  text: "Change",
+                  visuallyHiddenText: "Your name"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Local planning authority"
+            },
+            value: {
+              text: values.lpa
+            },
+            actions: {
+              items: [
+                {
+                  href: "/lpa/edit",
+                  text: "Change",
+                  visuallyHiddenText: "Local planning authority"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <form novalidate method="post">
+        {{ govukButton({
+          text: "Send data"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

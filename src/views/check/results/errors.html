@@ -1,0 +1,107 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
+
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Your data has errors' %}
+
+{% block pageTitle %}
+  {% set pageTitle = super() %}
+  {% if options.pagination.totalPages > 1 %}
+    {% set pageTitleString = ' (page ' + options.pagination.currentPage + ' of ' + options.pagination.totalPages + ')'%}
+    {% set pageTitle = pageTitle + pageTitleString %}
+  {% endif %}
+
+  {{pageTitle}}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <span class="govuk-caption-l">
+        {{options.requestParams.dataset}}
+      </span>
+      <h1 class="govuk-heading-l">
+        {{pageName}}
+      </h1>
+
+      <ul class="govuk-list govuk-list--bullet">
+        {% for summaryMessage in options.errorSummary %}
+          <li>
+            {{summaryMessage}}
+          </li>
+        {% endfor %}
+      </ul>
+  </div>
+</div>
+
+{% if options.verboseRows|length > 0 %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h2 class="govuk-heading-m">
+        Check your errors
+      </h2>
+      <div class="app-scrollable-container">
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              {% for column in options.columns %}
+                <th scope="col" class="govuk-table__header">{{column}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for row in options.verboseRows %}
+              {% if row.hasErrors %}
+                <tr class="govuk-table__row">
+                  {% for field in options.fields %}
+                    {% set columnData = row.columns[field] %}
+                    <td class="govuk-table__cell app-wrap">
+                      {% if columnData.error %}
+                        {{ govukInsetText({
+                          classes: "app-inset-text---error",
+                          html: '<p class="app-inset-text__value">'+columnData.value | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | prettifyColumnName +'</p>'
+                        }) }}
+                      {% else %}
+                        {{columnData.value}}
+                      {% endif %}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endif %}
+            {% endfor %}
+
+          </tbody>
+        </table>
+      </div>
+
+      {% if options.pagination.items | length > 1 %}
+        {{ govukPagination({
+          previous: {
+            href: '/results/'+options.id+'/'+options.pagination.previousPage
+          } if options.pagination.previousPage else undefined,
+          next: {
+            href: '/results/'+options.id+'/'+options.pagination.nextPage
+          } if options.pagination.nextPage else undefined,
+          items: options.pagination.items
+        })}}
+      {% endif %}
+
+    </div>
+  </div>
+{% endif %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukButton({
+      text: "Upload a new version",
+      href: "/upload-method"
+    }) }}
+
+  </div>
+</div>
+{% endblock %}

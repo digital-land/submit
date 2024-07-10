@@ -1,0 +1,158 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Check your data before you continue' %}
+
+{% set errorMessage = 'Select if your data looks ok' %}
+
+{% if 'dataLooksCorrect' in errors %}
+  {% set dataLooksCorrectError = true %}
+{% endif %}
+
+
+{% block pageTitle %}
+  {% set pageTitle = super() %}
+  {% if dataLooksCorrectError %}
+    {% set pageTitle = "Error:" + pageTitle %}
+  {% endif %}
+  {% if options.pagination.totalPages > 1 %}
+    {% set pageTitleString = ' (page ' + options.pagination.currentPage + ' of ' + options.pagination.totalPages + ')'%}
+    {% set pageTitle = pageTitle + pageTitleString %}
+  {% endif %}
+
+  {{pageTitle}}
+{% endblock %}
+
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">
+        {{pageName}}
+      </h1>
+      <p>{{options.buttonText}}</p>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <p>{{options.pagination.totalResults}} rows can be published.</p>
+
+      <div class="app-scrollable-container" s>
+        <table class="govuk-table">
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              {% for column in options.columns %}
+                <th scope="col" class="govuk-table__header">{{column}}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for row in options.verboseRows %}
+              <tr class="govuk-table__row">
+                {% for field in options.fields %}
+                  {% set columnData = row.columns[field] %}
+                  <td class="govuk-table__cell app-wrap">
+                      {% if columnData.value %}
+                        {{columnData.value}}
+                      {% endif %}
+                  </td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+
+          </tbody>
+        </table>
+      </div>
+
+      {% if options.pagination.items | length > 1 %}
+        {{ govukPagination({
+          previous: {
+            href: '/results/'+options.id+'/'+options.pagination.previousPage
+          } if options.pagination.previousPage else undefined,
+          next: {
+            href: '/results/'+options.id+'/'+options.pagination.nextPage
+          } if options.pagination.nextPage else undefined,
+          items: options.pagination.items
+        })}}
+      {% endif %}
+
+
+
+      {% if options.geometries %}
+        <p>Here’s your data on a map:</p>
+        <div id="map" class="app-map"></div>
+      {% endif %}
+
+
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if dataLooksCorrectError %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#dataLooksCorrect"
+            }
+          ]
+        }) }}
+      {% endif %}
+      <form method="post">
+        {{ govukRadios({
+            idPrefix: "dataLooksCorrect",
+            name: "dataLooksCorrect",
+            fieldset: {
+              legend: {
+                text: "Is your data correct?",
+                isPageHeading: false,
+                classes: "govuk-fieldset__legend--m"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes"
+              },
+              {
+                value: "no",
+                text: "No, I need to fix it"
+              }
+            ],
+            errorMessage: {
+              text: errorMessage 
+            } if dataLooksCorrectError else undefined
+          }) 
+        }}
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  {% if options.geometries %}
+    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+    <script>
+      window.serverContext = {
+        containerId: 'map', 
+        geometries: {{ options.geometries | dump | safe }},
+      }
+    </script>
+    <script src="/public/js/map.bundle.js"></script>
+  {% endif %}
+{% endblock %}
+```

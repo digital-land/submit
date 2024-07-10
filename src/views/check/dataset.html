@@ -1,0 +1,64 @@
+{% extends "layouts/main.html" %}
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Dataset' %}
+
+{% set errorMessage = 'Select a dataset' %}
+
+
+{% if 'dataset' in errors %}
+  {% set datasetError = true %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if datasetError %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {% if datasetError %}
+      {{ govukErrorSummary({
+        titleText: "There’s a problem",
+        errorList: [
+          {
+            text: errorMessage,
+            href: "#dataset"
+          }
+        ]
+      }) }}
+    {% endif %}
+    <form novalidate method="post">
+
+      {{ govukRadios({
+        idPrefix: "dataset",
+        name: "dataset",
+        fieldset: {
+          legend: {
+            text: pageName,
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        items: options.datasetItems,
+        value: values.dataset,
+        errorMessage: {
+          text: errorMessage 
+        } if datasetError else undefined
+      }) }}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+    </form>
+  </div>
+</div>
+{% endblock %}
