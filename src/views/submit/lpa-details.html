@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
-
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "x-govuk/components/autocomplete/macro.njk" import xGovukAutocomplete %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 {% set serviceType = 'Submit' %}
@@ -40,22 +40,21 @@
 
     <form novalidate method="post">
 
-      {{
-        govukInput({
-          label: {
-            text: "Local planning authority",
-            classes: "govuk-label--m",
-            isPageHeading: false
-          },
-          id: "lpa",
-          name: "lpa",
-          classes: "govuk-!-width-three-quarters",
-          errorMessage: {
-            text: 'lpa' | validationMessageLookup(errors['lpa'].type) 
-          } if 'lpa' in errors,
-          value: values.lpa
-        })
-      }}
+      {{ xGovukAutocomplete({
+        id: "lpa",
+        name: "lpa",
+        allowEmpty: false,
+        label: {
+          classes: "govuk-label--m",
+          isPageHeading: false,
+          text: "Choose your local planning authority"
+        },
+        items: options.localAuthorities,
+        errorMessage: {
+          text: 'lpa' | validationMessageLookup(errors['lpa'].type) 
+        } if 'lpa' in errors,
+        value: values.lpa
+      }) }}
 
       {{ govukInput({
         label: {
