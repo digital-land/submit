@@ -1,6 +1,6 @@
-# Performance Tests for Async Request Backend
+# Performance Tests for Publish Service
 
-Uses Locust to performance test the async request backend.
+Uses Locust to performance test the Publish Service which makes use of the async request backend on the platform.
 
 ## Setup
 
