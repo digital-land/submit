@@ -14,14 +14,25 @@ class CheckAnswersController extends PageController {
    * @param {Object} req - The HTTP request object.
    * @param {Object} res - The HTTP response object.
    * @param {Function} next - The next middleware function.
-  */
-  post (req, res, next) {
-    this.sendEmails(req, res, next)
+   */
+  async post (req, res, next) {
+    const result = await this.sendEmails(req, res, next)
+    for (const err of (result.errors ?? [])) {
+      console.error(err)
+    }
 
     super.post(req, res, next)
   }
 
-  sendEmails (req, res, next) {
+  /**
+   * Attempts to send email notifications.
+   *
+   * @param {*} req
+   * @param {*} res
+   * @param {*} next
+   * @returns {Promise<{} | {errors: string[]}>}
+   */
+  async sendEmails (req, res, next) {
     const name = req.sessionModel.get('name')
     const email = req.sessionModel.get('email')
     const organisation = req.sessionModel.get('lpa')
@@ -29,39 +40,52 @@ class CheckAnswersController extends PageController {
     const documentationUrl = req.sessionModel.get('documentation-url')
     const endpoint = req.sessionModel.get('endpoint-url')
 
-    const { RequestTemplateId, AcknowledgementTemplateId } = config.email.templates
+    const { RequestTemplateId, AcknowledgementTemplateId } =
+      config.email.templates
 
-    // ToDo: handle errors when sending emails
-    notifyClient.sendEmail(
-      RequestTemplateId,
-      dataManagementEmail,
-      {
-        personalisation: {
-          name,
-          email,
-          organisation,
-          endpoint,
-          'documentation-url': documentationUrl,
-          dataset
-        }
-      }
-    )
-
-    notifyClient.sendEmail(
-      AcknowledgementTemplateId,
+    const personalisation = {
+      name,
       email,
-      {
-        personalisation: {
-          name,
-          email,
-          organisation,
-          endpoint,
-          'documentation-url': documentationUrl,
-          dataset
-        }
-      }
-    )
+      organisation,
+      endpoint,
+      'documentation-url': documentationUrl,
+      dataset
+    }
+
+    const [reqResult, ackResult] = await Promise.allSettled([
+      notifyClient.sendEmail(RequestTemplateId, dataManagementEmail, {
+        personalisation
+      }),
+      notifyClient.sendEmail(AcknowledgementTemplateId, email, {
+        personalisation
+      })
+    ])
+
+    const errors = []
+    if (reqResult.status === 'rejected') {
+      const msg = emailFailureMessage(RequestTemplateId, personalisation)
+      errors.push(msg)
+    }
+    if (ackResult.status === 'rejected') {
+      const msg = emailFailureMessage(AcknowledgementTemplateId, personalisation)
+      errors.push(msg)
+    }
+
+    if (errors.length !== 0) {
+      return { errors }
+    }
+    return {}
   }
+}
+
+/**
+ *
+ * @param {string} templateId
+ * @param {{organisation: string, name: string, email: string}} metadata
+ * @returns
+ */
+function emailFailureMessage (templateId, { organisation, name, email }) {
+  return `Failed to send email template=${templateId} to (org: ${organisation}, name: ${name}, email: ${email}):`
 }
 
 export default CheckAnswersController
