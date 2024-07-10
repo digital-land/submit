@@ -16,22 +16,28 @@ describe('StatusController', () => {
   })
 
   describe('locals', () => {
-    it('configure should make a request and attach the result of that request to the req.form.options object', async () => {
+    it('should attach the result of the request to the req.form.options.data object', async () => {
+      const mockResult = { id: 'test_id', status: 'COMPLETE', response: { test: 'test' }, hasErrors: () => false }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+
       const req = {
-        params: { id: 'test_id' },
         form: {
           options: {}
-        }
+        },
+        params: 'fake_id'
       }
-      const res = { render: vi.fn(), redirect: vi.fn() }
-      const next = vi.fn()
 
-      const mockResult = { response: { test: 'test' }, hasErrors: () => false }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      const res = {}
+      const next = vi.fn()
 
       await statusController.locals(req, res, next)
 
+      expect(req.form.options.data).toBe(mockResult)
+      expect(req.form.options.processingComplete).toBe(true)
+      expect(req.form.options.pollingEndpoint).toBe(`/api/status/${mockResult.id}`)
       expect(asyncRequestApi.getRequestData).toHaveBeenCalledWith(req.params.id)
+
+      expect(req.form.options.data).toBe(mockResult)
     })
   })
 })

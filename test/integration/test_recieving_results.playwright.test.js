@@ -118,18 +118,20 @@ const getTableValuesFromResponse = (response, details) => {
   const columnFieldLog = response.response.data['column-field-log']
 
   // Map over the details array and extract the necessary values
-  const columnHeaders = Object.keys(details[0].converted_row).map(column => {
-    const log = columnFieldLog.find(log => log.column === column)
-    if (log) { return log.field } else { return column }
+  const columnHeaders = Object.keys(details[0].converted_row)
+
+  const notUniqueHeaders = columnHeaders.map(field => {
+    const fieldLog = columnFieldLog.find(fieldLog => fieldLog.field === field)
+    return fieldLog ? fieldLog.column : field
   })
 
-  const uniqueColumnHeaders = [...new Set(columnHeaders)]
+  const uniqueHeaders = [...new Set(notUniqueHeaders)]
 
-  tableValues.unshift(uniqueColumnHeaders)
+  tableValues.unshift(uniqueHeaders)
 
   tableValues.push(...details.map(detail => {
     const convertedRow = detail.converted_row
-    return uniqueColumnHeaders.map(header => {
+    return uniqueHeaders.map(header => {
       const log = columnFieldLog.find(log => log.field === header)
       if (log) { header = log.column }
 

@@ -38,7 +38,11 @@ export default class BasePage {
       expect(await errorLink.isVisible(), 'Page should show an error summary that is a link to the problem field').toBeTruthy()
       expect(await fieldError.isVisible(), 'Page should show the error message next to the problem field').toBeTruthy()
       await errorLink.click()
-      const problemFieldIsFocused = await this.page.$eval(fieldName, (el) => el === document.activeElement)
+      let problemFieldIsFocused = await this.page.$eval(fieldName, (el) => el === document.activeElement)
+      if (problemFieldIsFocused === undefined) { // sometimes the page load is slow, so this returns nothing. if this happens. wait 0.5s and try again
+        await new Promise(resolve => setTimeout(resolve, 500))
+        problemFieldIsFocused = await this.page.$eval(fieldName, (el) => el === document.activeElement)
+      }
       expect(problemFieldIsFocused, 'The focus should be on the problem field').toBeTruthy()
     }
 

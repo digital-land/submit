@@ -1,0 +1,25 @@
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Request Failed' %}
+{% set error = options.error %}
+
+{% block pageTitle %}
+    Error: {{super()}}
+{% endblock %}
+
+{% block content %}
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-l">
+                The file you provided wasn't readable
+            </h1>
+            <p class="govuk-paragraph">Make sure:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>the file is in the right format</li>
+                <li>there is no errors in the file formatting (for example, a missing comma)</li>
+            </ul>
+            <a href="/upload" class="govuk-link">Try again</a>
+        </div>
+    </div>
+{% endblock %}

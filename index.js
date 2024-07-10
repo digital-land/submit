@@ -12,13 +12,15 @@ import { setupSession } from './src/serverSetup/session.js'
 import { setupNunjucks } from './src/serverSetup/nunjucks.js'
 import { setupSentry } from './src/serverSetup/sentry.js'
 
+import { dataSubjects } from './src/utils/utils.js'
+
 dotenv.config()
 
 const app = express()
 
 setupMiddlewares(app)
 setupSession(app)
-setupNunjucks(app)
+setupNunjucks({ app, dataSubjects })
 setupRoutes(app)
 setupSentry(app)
 setupErrorHandlers(app)
