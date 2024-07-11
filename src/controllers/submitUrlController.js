@@ -1,5 +1,5 @@
 import UploadController from './uploadController.js'
-import { postUrlRequest } from '../utils/asyncRequestApi.js'
+import { postUrlRequest } from '../services/asyncRequestApi.js'
 import { URL } from 'url'
 import logger from '../utils/logger.js'
 import axios from 'axios'

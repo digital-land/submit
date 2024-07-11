@@ -1,5 +1,5 @@
 import PageController from './pageController.js'
-import notifyClient from '../utils/mailClient.js'
+import notifyClient from '../services/mailClient.js'
 import config from '../../config/index.js'
 
 const dataManagementEmail = process.env.DATA_MANAGEMENT_EMAIL || config.email.dataManagementEmail

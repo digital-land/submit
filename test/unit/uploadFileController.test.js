@@ -6,7 +6,7 @@ describe('UploadFileController', () => {
   let uploadFileController
   let asyncRequestApi
 
-  vi.mock('@/utils/asyncRequestApi.js')
+  vi.mock('@/services/asyncRequestApi.js')
 
   vi.mock('fs', async () => {
     const actual = await vi.importActual('fs')
@@ -36,7 +36,7 @@ describe('UploadFileController', () => {
   })
 
   beforeEach(async () => {
-    asyncRequestApi = await import('@/utils/asyncRequestApi')
+    asyncRequestApi = await import('@/services/asyncRequestApi')
     asyncRequestApi.postFileRequest = vi.fn().mockResolvedValue('1234')
 
     uploadFileController = new UploadFileController({

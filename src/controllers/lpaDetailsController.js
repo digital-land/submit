@@ -1,5 +1,5 @@
 import PageController from './pageController.js'
-import { fetchLocalAuthorities } from '../utils/fetchLocalAuthorities.js'
+import { fetchLocalAuthorities } from '../services/fetchLocalAuthorities.js'
 
 class LpaDetailsController extends PageController {
   async locals (req, res, next) {
