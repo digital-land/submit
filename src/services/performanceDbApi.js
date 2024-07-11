@@ -1,5 +1,5 @@
 export default {
-    getLpaOverview: async () => {
-        return {}
-    }
+  getLpaOverview: async () => {
+    return {}
+  }
 }
