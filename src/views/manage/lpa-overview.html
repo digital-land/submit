@@ -38,17 +38,17 @@
   <div class="govuk-grid-column-full">
     <div class="dataset-status">
       <div class="dataset-status--item">
-        <span class="big-number">7/8</span>
+        <span class="big-number">{{datasetsWithEndpoints}}/{{totalDatasets}}</span>
         datasets provided
       </div>
 
       <div class="dataset-status--item">
-        <span class="big-number">2</span>
+        <span class="big-number">{{datasetsWithErrors}}</span>
         datasets with errors
       </div>
 
       <div class="dataset-status--item">
-        <span class="big-number">2</span>
+        <span class="big-number">{{datasetsWithIssues}}</span>
         datasets with issues
       </div>
     </div>
@@ -60,227 +60,78 @@
 
     <h2 class="govuk-heading-m">Datasets</h2>
     <ul class="govuk-task-list">
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link"
-              href="/overview/{{ organisation.organisation }}/dataset/article-4-direction">
-              Article 4 direction
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>Endpoint not provided</p>
 
-            <ul class="planning-data-actions">
-              <li class="planning-data-actions--item">
-                <a href="/taskLists/taskChecklist">Add endpoint</a>
-              </li>
-            </ul>
+      {% for dataset in datasets %}
+        <li class="govuk-task-list__item govuk-task-list__item--with-link">
+          <div class="govuk-task-list__name-and-hint">
+            <h2 class="govuk-heading-m">
+              <a class="govuk-link govuk-task-list__link"
+                href="/overview/{{ organisation.organisation }}/dataset/article-4-direction">
+                {{dataset.slug | datasetSlugToReadableName}}
+              </a>
+            </h2>
+            <div class="govuk-task-list__hint">
+              {% if dataset.endpoint is null %}
+                <p>Endpoint not provided</p>
+              {% elif dataset.error %}
+                <p>{{dataset.error}}</p>
+              {% elif dataset.issue %}
+                <p>{{dataset.issue}}</p>
+              {% else %}
+                <p>Endpoint provided</p>
+              {% endif %}
 
+              <ul class="planning-data-actions">
+                {% if dataset.endpoint is null %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">Add endpoint</a>
+                </li>
+                {% endif %}
+                {% if dataset.error %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">Fix Errors</a>
+                </li>
+                {% elseif dataset.issue %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">Fix issues</a>
+                </li>
+                {% endif %}
+                {% if dataset.endpoint %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">View data</a>
+                </li>
+                {% endif %}
+              </ul>
+
+            </div>
           </div>
-        </div>
-        <div class="govuk-task-list__status">
-          {{govukTag({
-            text: "Not provided",
-            classes: "govuk-tag--grey"
-          })}}
-        </div>
-      </li>
 
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link"
-              href="/overview/{{ organisation.organisation }}/dataset/article-4-direction-area">
-              Article 4 direction area
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>Your endpoint has been submitted and is being processed by the team.</p>
+          <div class="govuk-task-list__status">
+            {% if dataset.endpoint is null %}
+              {{govukTag({
+                text: "Not provided",
+                classes: "govuk-tag--grey"
+              })}}
+            {% elif dataset.error %}
+              {{govukTag({
+                text: "Error",
+                classes: "govuk-tag--red"
+              })}}
+            {% elif dataset.issue %}
+              {{govukTag({
+                text: "Issues",
+                classes: "govuk-tag--yellow"
+              })}}
+            {% else %}
+              {{govukTag({
+                text: "No issues",
+                classes: "govuk-tag--green"
+              })}}
+            {% endif %}
           </div>
-        </div>
-        <div class="govuk-task-list__status">
-          {{govukTag({
-            text: "Processing"
-          })}}
-        </div>
-      </li>
+        </li>
+      {% endfor %}
 
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link"
-              href="/overview/{{ organisation.organisation }}/dataset/conservation-area">
-              Conservation area
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>Endpoint has not been updated since 21 May 2023</p>
-
-            <ul class="planning-data-actions">
-              <li class="planning-data-actions--item">
-                <a href="/taskLists/taskChecklist">Fix issues</a>
-              </li>
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">View data</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="govuk-task-list__status">
-          {{govukTag({
-            text: "Issues",
-            classes: "govuk-tag--yellow"
-          })}}
-        </div>
-      </li>
-
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link"
-              href="/overview/{{ organisation.organisation }}/dataset/conservation-area-direction">
-              Conservation area direction
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>Endpoint provided</p>
-
-            <ul class="planning-data-actions">
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">View data</a>
-              </li>
-            </ul>
-
-          </div>
-        </div>
-
-        <div class="govuk-task-list__status">
-          {{govukTag({
-            text: "No issues",
-            classes: "govuk-tag--green"
-          })}}
-        </div>
-      </li>
-
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link"
-              href="/overview/{{ organisation.organisation }}/dataset/listed-building-outline">
-              Listed building outline
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>Endpoint provided</p>
-
-            <ul class="planning-data-actions">
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">View data</a>
-              </li>
-            </ul>
-
-          </div>
-        </div>
-
-        <div class="govuk-task-list__status">
-          {{govukTag({
-                  text: "No issues",
-                  classes: "govuk-tag--green"
-                })}}
-        </div>
-      </li>
-
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link" href="/overview/{{ organisation.organisation }}/dataset/tree">
-              Tree
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>There are 20 issues in this dataset</p>
-
-            <ul class="planning-data-actions">
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">Fix issues</a>
-              </li>
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">View data</a>
-              </li>
-            </ul>
-
-          </div>
-        </div>
-
-        <div class="govuk-task-list__status">
-          {{govukTag({
-            text: "Issues",
-            classes: "govuk-tag--yellow"
-          })}}
-        </div>
-      </li>
-
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link"
-              href="/overview/{{ organisation.organisation }}/dataset/tree-preservation-order">
-              Tree preservation order
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>Error connecting to endpoint</p>
-
-            <ul class="planning-data-actions">
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">Fix errors</a>
-              </li>
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">View data</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="govuk-task-list__status">
-          {{govukTag({
-            text: "Error",
-            classes: "govuk-tag--red"
-          })}}
-        </div>
-      </li>
-
-      <li class="govuk-task-list__item govuk-task-list__item--with-link">
-        <div class="govuk-task-list__name-and-hint">
-          <h2 class="govuk-heading-m">
-            <a class="govuk-link govuk-task-list__link"
-              href="/overview/{{ organisation.organisation }}/dataset/tree-preservation-zone">
-              Tree preservation zone
-            </a>
-          </h2>
-          <div class="govuk-task-list__hint">
-            <p>Error connecting to endpoint</p>
-
-            <ul class="planning-data-actions">
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">Fix errors</a>
-              </li>
-              <li class="planning-data-actions--item">
-                <a href="/overview/dataset-details">View data</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="govuk-task-list__status">
-          {{govukTag({
-            text: "Error",
-            classes: "govuk-tag--red"
-          })}}
-        </div>
-      </li>
     </ul>
   </div>
 </div>
@@ -288,7 +139,6 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <p>View your <a href="/taskLists/taskChecklist">task list</a> to fix and improve your datasets</p>
-
   </div>
 </div>
 
