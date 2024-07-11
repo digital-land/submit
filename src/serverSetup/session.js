@@ -14,7 +14,7 @@ export function setupSession (app) {
       url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
     const errorHandler = (err) => {
-      logger.error(`redis connection error ${err.code}`)
+      logger.error(`session/setupSession: redis connection error: ${err.code}`)
     }
     redisClient.connect().catch(errorHandler)
 

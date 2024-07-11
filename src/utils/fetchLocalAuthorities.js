@@ -1,4 +1,6 @@
 import axios from 'axios'
+import logger from './logger'
+import config from '../../config'
 
 /**
  * Fetches a list of local authority names from a specified dataset.
@@ -36,7 +38,10 @@ export const fetchLocalAuthorities = async () => {
     }).filter(name => name !== null) // Filter out null values
     return names // Return the fetched data
   } catch (error) {
-    console.error('Error fetching local authorities data:', error)
+    logger.error(`fetchLocalAuthorities: Error fetching local authorities data: ${error.message}`)
+    if (config.environment !== 'test') {
+      console.error(error)
+    }
     throw error // Rethrow the error to be handled by the caller
   }
 }

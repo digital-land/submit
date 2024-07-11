@@ -2,6 +2,7 @@ import express from 'express'
 import config from '../../config/index.js'
 import AWS from 'aws-sdk'
 import { createClient } from 'redis'
+import logger from '../utils/logger.js'
 
 const router = express.Router()
 
@@ -71,7 +72,10 @@ const checkRedis = async () => {
       return false
     }
   }).catch((err) => {
-    console.log('error:', err)
+    logger.error(`checkRedis/connect: ${err.message}`)
+    if (config.environment !== 'test') {
+      console.error(err)
+    }
     return false
   })
 }
