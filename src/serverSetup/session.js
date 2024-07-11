@@ -13,7 +13,10 @@ export function setupSession (app) {
     const redisClient = createClient({
       url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
-    redisClient.connect().catch(logger.error)
+    const errorHandler = (err) => {
+      logger.error(`redis connection error ${err.code}`)
+    }
+    redisClient.connect().catch(errorHandler)
 
     sessionStore = new RedisStore({
       client: redisClient
