@@ -17,7 +17,7 @@ class SubmitUrlController extends UploadController {
       const errors = {
         url: new SubmitUrlController.Error(error.key, error, req, res)
       }
-      logger.error('local validation failed during url submission', error)
+      logger.warn('SubmitUrlController: local validation failed during url submission', error)
       return next(errors)
     }
 
@@ -91,7 +91,7 @@ class SubmitUrlController extends UploadController {
 
       return sizeInMB <= 10
     } catch (err) {
-      console.error(err)
+      console.warn(err)
       return true // for now we will allow this file as we can't be sure
     }
   }
@@ -103,7 +103,7 @@ class SubmitUrlController extends UploadController {
     try {
       return (response.status >= 200 && response.status < 300) || response.status === 400 // need to add 400 as some servers return 400 for head requests
     } catch (err) {
-      console.error(err)
+      logger.warn(err)
       return true
     }
   }
@@ -114,7 +114,7 @@ class SubmitUrlController extends UploadController {
       const acceptedTypes = Object.values(allowedFileTypes).flat()
       return acceptedTypes.includes(contentType)
     } catch (err) {
-      console.error(err)
+      logger.warn(err)
       return false
     }
   }

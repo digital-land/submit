@@ -11,7 +11,7 @@ export default class ResponseDetails {
 
   getRows () {
     if (!this.response) {
-      logger.error('trying to get response details when there are none: request id: ' + this.id)
+      logger.warn('trying to get response details when there are none: request id: ' + this.id)
       return []
     }
     return this.response
@@ -19,7 +19,7 @@ export default class ResponseDetails {
 
   getColumnFieldLog () {
     if (!this.columnFieldLog) {
-      logger.error('trying to get column field log when there is none: request id: ' + this.id)
+      logger.warn('trying to get column field log when there is none: request id: ' + this.id)
       return []
     }
     return this.columnFieldLog
@@ -69,7 +69,7 @@ export default class ResponseDetails {
   // This function returns an array of rows with verbose columns
   getRowsWithVerboseColumns (filterNonErrors = false) {
     if (!this.response) {
-      logger.error('trying to get response details when there are none: request id: ' + this.id)
+      logger.warn('trying to get response details when there are none: request id: ' + this.id)
       return []
     }
 
@@ -105,7 +105,7 @@ export default class ResponseDetails {
 
   getGeometries () {
     if (!this.response) {
-      logger.error('trying to get response details when there are none: request id: ' + this.id)
+      logger.warn('trying to get response details when there are none: request id: ' + this.id)
       return undefined
     }
 

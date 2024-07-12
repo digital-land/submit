@@ -72,7 +72,7 @@ const checkRedis = async () => {
       return false
     }
   }).catch((err) => {
-    logger.error(`checkRedis/connect: ${err.message}`)
+    logger.warn(`checkRedis/connect: ${err.message}`)
     if (config.environment !== 'test') {
       console.error(err)
     }
