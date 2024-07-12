@@ -1,10 +1,32 @@
+/**
+ * Performance DB API service
+ */
 import datasette from './datasette.js'
 
-/*
+/**
+ * @typedef {object} Dataset
+ * @property {string} endpoint
+ * @property {?string} error
+ * @property {?string} issue
+ */
 
-*/
+/**
+ * @typedef {object} LpaOverview
+ * @property {string} name
+ * @property {{ [dataset: string]: Dataset }} datasets
+ */
 
+/**
+ * Performance DB API service
+ * @export
+ * @default
+ */
 export default {
+  /**
+   * Get LPA overview
+   * @param {string} lpa - LPA ID
+   * @returns {Promise<LpaOverview>} LPA overview
+   */
   getLpaOverview: async (lpa) => {
     const query = `
     SELECT
