@@ -25,10 +25,24 @@ const LpaOverviewController = {
       // Make API request
       const lpaOverview = await performanceDbApi.getLpaOverview(lpa)
 
-      const datasets = availableDatasets.map((dataset) => ({
-        slug: dataset,
-        ...(lpaOverview.datasets[dataset] || { endpoint: null })
-      }))
+      // restructure datasets to usable format
+      const datasets = Object.entries(lpaOverview.datasets).map(([key, value]) => {
+        return {
+          slug: key,
+          ...value
+        }
+      })
+
+      // add in any of the missing key 8 datasets
+      const keys = Object.keys(lpaOverview.datasets)
+      availableDatasets.forEach(dataset => {
+        if (!keys.includes(dataset)) {
+          datasets.push({
+            slug: dataset,
+            endpoint: null
+          })
+        }
+      })
 
       const totalDatasets = datasets.length
       const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce((accumulator, dataset) => {
