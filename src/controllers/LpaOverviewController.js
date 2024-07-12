@@ -6,10 +6,9 @@ const LpaOverviewController = {
     try {
       const lpa = req.params.lpa
 
-      const response = await performanceDbApi.getLpaOverview(lpa) // Make API request
-      const data = response.data
+      const lpaOverview = await performanceDbApi.getLpaOverview(lpa) // Make API request
 
-      const datasets = Object.entries(data.datasets).map(([key, value]) => {
+      const datasets = Object.entries(lpaOverview.datasets).map(([key, value]) => {
         return { ...value, slug: key }
       })
       const totalDatasets = datasets.length
@@ -22,7 +21,7 @@ const LpaOverviewController = {
 
       const params = {
         organisation: {
-          name: data.name
+          name: lpaOverview.name
         },
         datasets,
         totalDatasets,
