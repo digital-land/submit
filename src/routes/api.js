@@ -1,5 +1,5 @@
 import express from 'express'
-import { getRequestData } from '../utils/asyncRequestApi.js'
+import { getRequestData } from '../services/asyncRequestApi.js'
 
 const router = express.Router()
 

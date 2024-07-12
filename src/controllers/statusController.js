@@ -1,5 +1,5 @@
 import PageController from './pageController.js'
-import { getRequestData } from '../utils/asyncRequestApi.js'
+import { getRequestData } from '../services/asyncRequestApi.js'
 import { finishedProcessingStatuses } from '../utils/utils.js'
 
 class StatusController extends PageController {

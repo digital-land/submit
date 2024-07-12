@@ -2,13 +2,13 @@ import StatusController from '../../src/controllers/statusController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 describe('StatusController', () => {
-  vi.mock('@/utils/asyncRequestApi.js')
+  vi.mock('@/services/asyncRequestApi.js')
 
   let asyncRequestApi
   let statusController
 
   beforeEach(async () => {
-    asyncRequestApi = await import('@/utils/asyncRequestApi')
+    asyncRequestApi = await import('@/services/asyncRequestApi')
 
     statusController = new StatusController({
       route: '/status'

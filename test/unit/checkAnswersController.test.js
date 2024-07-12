@@ -1,10 +1,10 @@
 /* eslint-disable new-cap */
 
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import notifyClient from '../../src/utils/mailClient.js'
+import notifyClient from '../../src/services/mailClient.js'
 import config from '../../config/index.js'
 
-vi.mock('../../src/utils/mailClient.js')
+vi.mock('../../src/services/mailClient.js')
 
 function makeRequest () {
   return {
