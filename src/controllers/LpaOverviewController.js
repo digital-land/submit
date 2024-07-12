@@ -1,4 +1,5 @@
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
+import logger from '../utils/logger.js'
 
 const LpaOverviewController = {
   async getOverview (req, res, next) {
@@ -12,9 +13,12 @@ const LpaOverviewController = {
         return { ...value, slug: key }
       })
       const totalDatasets = datasets.length
-      const datasetsWithEndpoints = datasets.filter(item => item.endpoint !== null).length
-      const datasetsWithIssues = datasets.filter(item => item.issue).length
-      const datasetsWithErrors = datasets.filter(item => item.error).length
+      const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce((accumulator, dataset) => {
+        if (dataset.endpoint !== null) accumulator[0]++
+        if (dataset.issue) accumulator[1]++
+        if (dataset.error) accumulator[2]++
+        return accumulator
+      }, [0, 0, 0])
 
       const params = {
         organisation: {
@@ -29,6 +33,7 @@ const LpaOverviewController = {
 
       res.render('manage/lpa-overview.html', params)
     } catch (error) {
+      logger.error(error)
       next(error)
     }
   }
