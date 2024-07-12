@@ -4,6 +4,7 @@
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 
 {% set pageName = organisation.name + " overview" %}
+{% set serviceType = 'Manage' %}
 
 {% block beforeContent %}
 {{ super() }}
@@ -89,7 +90,7 @@
                 {% endif %}
                 {% if dataset.error %}
                 <li class="planning-data-actions--item">
-                  <a href="/taskLists/taskChecklist">Fix Errors</a>
+                  <a href="/taskLists/taskChecklist">Fix errors</a>
                 </li>
                 {% elseif dataset.issue %}
                 <li class="planning-data-actions--item">
