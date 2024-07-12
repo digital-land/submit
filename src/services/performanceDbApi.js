@@ -112,9 +112,9 @@ ORDER BY
     const columns = result.columns
     const rows = result.rows.map((row) => {
       return row.reduce((acc, val, index) => {
-        acc[columns[index]] = val;
-        return acc;
-      }, {});
+        acc[columns[index]] = val
+        return acc
+      }, {})
     })
 
     const datasets = rows.reduce((accumulator, row) => {
@@ -124,7 +124,7 @@ ORDER BY
       }
 
       let issue
-      if (row.issue_count > 0){
+      if (row.issue_count > 0) {
         issue = `There are ${row.issue_count} issues in this dataset`
       }
 
