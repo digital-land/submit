@@ -1,16 +1,35 @@
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
 import logger from '../utils/logger.js'
+import { dataSubjects } from '../utils/utils.js'
+
+// get a list of available datasets
+const availableDatasets = Object.values(dataSubjects)
+  .flatMap(dataSubject =>
+    dataSubject.dataSets
+      .filter(dataset => dataset.available)
+      .map(dataset => dataset.value)
+  )
 
 const LpaOverviewController = {
+  /**
+   * Get LPA overview data and render the overview page
+   * @param {Request} req - Express request object
+   * @param {Response} res - Express response object
+   * @param {NextFunction} next - Express next function
+   * @returns {Promise<void>} - Returns a promise that resolves when the overview page is rendered
+   */
   async getOverview (req, res, next) {
     try {
       const lpa = req.params.lpa
 
-      const lpaOverview = await performanceDbApi.getLpaOverview(lpa) // Make API request
+      // Make API request
+      const lpaOverview = await performanceDbApi.getLpaOverview(lpa)
 
-      const datasets = Object.entries(lpaOverview.datasets).map(([key, value]) => {
-        return { ...value, slug: key }
-      })
+      const datasets = availableDatasets.map((dataset) => ({
+        slug: dataset,
+        ...(lpaOverview.datasets[dataset] || { endpoint: null })
+      }))
+
       const totalDatasets = datasets.length
       const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce((accumulator, dataset) => {
         if (dataset.endpoint !== null) accumulator[0]++
