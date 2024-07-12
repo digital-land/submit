@@ -52,7 +52,7 @@ describe('Health checks', () => {
 
   test('checkRedis returns false when Redis is not reachable', async () => {
     const mockClient = {
-      connect: vi.fn().mockRejectedValue(new Error()),
+      connect: vi.fn().mockRejectedValue(new Error('redis not reachable!')),
       isOpen: false,
       quit: vi.fn()
     }
