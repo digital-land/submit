@@ -55,7 +55,9 @@ export default {
         p.organisation,
         o.name,
         p.dataset,
-        rle.endpoint
+        rle.endpoint,
+        rle.status,
+        rle.exception
     FROM
         provision p
     INNER JOIN
@@ -72,8 +74,13 @@ export default {
     const result = await datasette.runQuery(query)
 
     const datasets = result.rows.reduce((accumulator, row) => {
+      let error
+      if (row[4] !== 200 || row[5] !== '') {
+        error = row[5] !== '' ? row[5] : `endpoint returned with a status of ${row[4]}`
+      }
       accumulator[row[2]] = {
-        endpoint: row[3]
+        endpoint: row[3],
+        error
       }
       return accumulator
     }, {})
