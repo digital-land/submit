@@ -1,5 +1,5 @@
 import { createLogger, format, transports } from 'winston'
-import config from '../../config'
+import config from '../../config/index.js'
 
 const appTransports = () => [
   new transports.Console(),
