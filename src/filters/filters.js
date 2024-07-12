@@ -8,8 +8,6 @@ import { makeDatasetSlugToReadableNameFilter, createDatasetMapping } from './mak
 
 const { govukMarkdown } = xGovFilters
 
-
-
 const addFilters = (nunjucksEnv, { dataSubjects }) => {
   const datasetNameMapping = createDatasetMapping(dataSubjects)
   const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
