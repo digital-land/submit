@@ -28,16 +28,17 @@ export const makeDatasetSlugToReadableNameFilter = (datasetNameMapping) => {
 }
 
 /**
- *
- * @param {*} dataSubjects
- * @returns {Map<string,string>}
+ * Creates a mapping of dataset slugs to their corresponding readable names.
+ * 
+ * @param {Array<[string, string]>} dataSubjects - An array of tuples, where each tuple contains a dataset slug and its corresponding readable name.
+ * @returns {Map<string, string>} - A Map object where each key is a dataset slug and its value is the corresponding readable name.
  */
 export const createDatasetMapping = (dataSubjects) => {
-  const mapping = new Map()
-  for (const data of Object.values(dataSubjects)) {
-    for (const dataset of data.dataSets) {
-      mapping.set(dataset.value, dataset.text)
-    }
-  }
-  return mapping
+  const datasetMapping = new Map();
+  dataSubjects.forEach(([slug, name]) => {
+    datasetMapping.set(slug, name);
+  });
+  return datasetMapping;
 }
+
+

@@ -20,7 +20,7 @@ const app = express()
 
 setupMiddlewares(app)
 setupSession(app)
-setupNunjucks({ app, dataSubjects })
+await setupNunjucks({ app, dataSubjects })
 setupRoutes(app)
 setupSentry(app)
 setupErrorHandlers(app)
