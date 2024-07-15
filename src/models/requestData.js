@@ -29,7 +29,7 @@ export default class RequestData {
 
   getErrorSummary () {
     if (!this.response || !this.response.data || !this.response.data['error-summary']) {
-      logger.error('trying to get error summary when there is none: request id: ' + this.id)
+      logger.warn('trying to get error summary when there is none: request id: ' + this.id)
       return []
     }
     return this.response.data['error-summary']
@@ -45,7 +45,7 @@ export default class RequestData {
 
   getError () {
     if (!this.response) {
-      logger.error('trying to get error when there are none: request id: ' + this.id)
+      logger.warn('trying to get error when there are none: request id: ' + this.id)
       return { message: 'An unknown error occurred.' }
     }
 
@@ -54,11 +54,11 @@ export default class RequestData {
 
   hasErrors () {
     if (!this.response || !this.response.data) {
-      logger.error('trying to check for errors when there are none: request id: ' + this.id)
+      logger.warn('trying to check for errors when there are none: request id: ' + this.id)
       return true
     }
     if (this.response.data['error-summary'] == null) {
-      logger.error('trying to check for errors but there is no error-summary: request id: ' + this.id)
+      logger.warn('trying to check for errors but there is no error-summary: request id: ' + this.id)
       return true
     }
     return this.response.data['error-summary'].length > 0
@@ -71,7 +71,7 @@ export default class RequestData {
 
   getColumnFieldLog () {
     if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
-      logger.error('trying to get column field log when there is none: request id: ' + this.id)
+      logger.warn('trying to get column field log when there is none: request id: ' + this.id)
       return []
     }
     return this.response.data['column-field-log']

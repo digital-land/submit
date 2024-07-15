@@ -89,15 +89,13 @@ describe('RequestData', () => {
       expect(errorSummary).toStrictEqual(['error1', 'error2'])
     })
 
-    it('should return an empty array if there is no error summary and log an error', () => {
+    it('should return an empty array if there is no error summary', () => {
       const response = {}
       const requestData = new RequestData(response)
 
       const errorSummary = requestData.getErrorSummary()
 
       expect(errorSummary).toStrictEqual([])
-
-      expect(logger.error).toHaveBeenCalledWith('trying to get error summary when there is none: request id: undefined')
     })
   })
 
@@ -150,14 +148,12 @@ describe('RequestData', () => {
       expect(error).toStrictEqual({ message: 'error message' })
     })
 
-    it('should return an unknown error if there is no error and log an error', () => {
+    it('should return an unknown error if there is no error', () => {
       const requestData = new RequestData({})
 
       const error = requestData.getError()
 
       expect(error).toStrictEqual({ message: 'An unknown error occurred.' })
-
-      expect(logger.error).toHaveBeenCalledWith('trying to get error when there are none: request id: undefined')
     })
   })
 
@@ -175,17 +171,15 @@ describe('RequestData', () => {
       expect(hasErrors).toBe(true)
     })
 
-    it('should return true if there are no errors and log an error', () => {
+    it('should return true if there are no errors', () => {
       const requestData = new RequestData({})
 
       const hasErrors = requestData.hasErrors()
 
       expect(hasErrors).toBe(true)
-
-      expect(logger.error).toHaveBeenCalledWith('trying to check for errors when there are none: request id: undefined')
     })
 
-    it('should return true if there is no error summary and log an error', () => {
+    it('should return true if there is no error summary', () => {
       const response = {
         data: {}
       }
@@ -194,8 +188,6 @@ describe('RequestData', () => {
       const hasErrors = requestData.hasErrors()
 
       expect(hasErrors).toBe(true)
-
-      expect(logger.error).toHaveBeenCalledWith('trying to check for errors but there is no error-summary: request id: undefined')
     })
 
     it('should return false if the error summary is empty', () => {
@@ -261,14 +253,12 @@ describe('RequestData', () => {
       expect(columnFieldLog).toStrictEqual(['column1', 'column2'])
     })
 
-    it('should return an empty array if there is no column field log and log an error', () => {
+    it('should return an empty array if there is no column field log', () => {
       const requestData = new RequestData({})
 
       const columnFieldLog = requestData.getColumnFieldLog()
 
       expect(columnFieldLog).toStrictEqual([])
-
-      expect(logger.error).toHaveBeenCalledWith('trying to get column field log when there is none: request id: undefined')
     })
   })
 

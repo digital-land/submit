@@ -1,6 +1,7 @@
 // poll the server for the status of the job
 
 import { finishedProcessingStatuses } from '../../utils/utils.js'
+import logger from '../../utils/logger.js'
 
 export default class StatusPage {
   constructor (pollingInterval, maxPollAttempts) {
@@ -36,7 +37,7 @@ export default class StatusPage {
       fetch(statusEndpoint)
         .then(res => res.json())
         .then(data => {
-          console.log('polled request and got a status of: ' + data.status)
+          logger.info('StatusPage: polled request and got a status of: ' + data.status)
           // ToDo: handle other status' here
           if (finishedProcessingStatuses.includes(data.status)) {
             this.updatePageToComplete()
@@ -46,7 +47,7 @@ export default class StatusPage {
 
       this.pollAttempts++
       if (this.pollAttempts > this.maxPollAttempts) {
-        console.log('polling timed out')
+        logger.info('StatusPage: polling timed out')
         this.updatePageForPollingTimeout()
         clearInterval(interval)
       }

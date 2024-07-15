@@ -1,6 +1,5 @@
 import axios from 'axios'
 import logger from '../../src/utils/logger.js'
-import config from '../../config/index.js'
 
 /**
  * Fetches a list of local authority names from a specified dataset.
@@ -30,7 +29,7 @@ export const fetchLocalAuthorities = async () => {
     const response = await axios.get(url)
     const names = response.data.rows.map(row => {
       if (row[1] === null) {
-        console.log('Null value found in response:', row)
+        logger.debug('Null value found in response:', row)
         return null
       } else {
         return row[1]
@@ -38,10 +37,7 @@ export const fetchLocalAuthorities = async () => {
     }).filter(name => name !== null) // Filter out null values
     return names
   } catch (error) {
-    logger.error(`fetchLocalAuthorities: Error fetching local authorities data: ${error.message}`)
-    if (config.environment !== 'test') {
-      console.error(error)
-    }
+    logger.warn(`fetchLocalAuthorities: Error fetching local authorities data: ${error.message}`, error)
     throw error
   }
 }
