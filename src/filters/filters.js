@@ -10,7 +10,6 @@ import datasette from '../services/datasette.js'
 const { govukMarkdown } = xGovFilters
 
 const addFilters = async (nunjucksEnv) => {
-
   const datasetSlugNameTable = await datasette.runQuery('select dataset, name from dataset')
   const datasetNameMapping = createDatasetMapping(datasetSlugNameTable.rows)
   const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)

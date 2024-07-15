@@ -37,7 +37,7 @@ export default {
  * @param {any[][]} rows - A 2D array of row data, where each inner array represents a row
  * @returns {object[]} - An array of objects, where each object represents a row with column names as keys
  */
-function formatData (columns, rows){
+function formatData (columns, rows) {
   // convert the rows into an easier to access format
   return rows.map((row) => {
     return row.reduce((acc, val, index) => {
