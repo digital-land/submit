@@ -27,8 +27,8 @@
     "test:acceptance": "NODE_ENV=development playwright test --config ./test/acceptance/playwright.config.js",
     "test:acceptance:ci": "NODE_ENV=ci playwright test --config ./test/acceptance/playwright.config.js",
     "playwright-codegen": "playwright codegen http://localhost:5000",
-    "lint": "standard --ignore=src/views/common/smartlook.js",
-    "lint:fix": "standard --fix --ignore=src/views/common/smartlook.js"
+    "lint": "standard",
+    "lint:fix": "standard --fix"
   },
   "engines": {
     "node": ">=18.0.0 <20.0.0"
@@ -93,7 +93,8 @@
   },
   "standard": {
     "ignore": [
-      "performance-test/"
+      "performance-test/",
+      "src/views/common/smartlook.js"
     ]
   }
 }
