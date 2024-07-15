@@ -1,7 +1,6 @@
 import HmpoConfig from 'hmpo-config'
 import yaml from 'js-yaml'
 import fs from 'fs'
-import _ from 'lodash'
 
 const readConfig = (config) => {
   return yaml.load(fs.readFileSync(`./config/${config}.yaml`, 'utf8'))
@@ -16,7 +15,7 @@ const getConfig = () => {
 
   const customConfig = readConfig(environment)
 
-  const combinedConfig = _.merge({}, defaultConfig, customConfig)
+  const combinedConfig = Object.assign({}, defaultConfig, customConfig)
 
   const config = new HmpoConfig()
   config.addConfig(combinedConfig)
