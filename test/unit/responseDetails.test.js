@@ -78,13 +78,13 @@ describe('ResponseDetails', () => {
 
   describe('getRows', () => {
     it('returns the rows', () => {
-      const responseDetails = new ResponseDetails(mockResponse, mockPagination, mockColumnFieldLog)
+      const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
       const result = responseDetails.getRows()
       expect(result).toBe(mockResponse)
     })
 
     it('returns an empty array if there are no rows and logs an error', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getRows()
       expect(result).toStrictEqual([])
       expect(loggerErrorSpy).toHaveBeenCalled()
@@ -93,13 +93,13 @@ describe('ResponseDetails', () => {
 
   describe('getColumnFieldLog', () => {
     it('returns the column field log', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, mockColumnFieldLog)
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, mockColumnFieldLog)
       const result = responseDetails.getColumnFieldLog()
       expect(result).toStrictEqual(mockColumnFieldLog)
     })
 
     it('returns an empty array if there is no column field log and logs an error', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getColumnFieldLog()
       expect(result).toStrictEqual([])
       expect(loggerErrorSpy).toHaveBeenCalled()
@@ -108,7 +108,7 @@ describe('ResponseDetails', () => {
 
   describe('getFields', () => {
     it('returns the unique fields from the column keys', () => {
-      const responseDetails = new ResponseDetails(mockResponse, mockPagination, mockColumnFieldLog)
+      const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
       const result = responseDetails.getFields()
       const expected = ['ID', 'WKT', 'Name', 'Layer', 'Area', 'Geometry', 'Entry Date', 'Start Date', 'Documentation URL']
       expect(result).toEqual(expected)
@@ -117,21 +117,21 @@ describe('ResponseDetails', () => {
 
   describe('getColumns', () => {
     it('returns the columns', () => {
-      const responseDetails = new ResponseDetails(mockResponse, mockPagination, mockColumnFieldLog)
+      const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
       responseDetails.getFields = vi.fn(() => ['ID', 'WKT', 'Name', 'Layer', 'Area', 'Geometry', 'Entry Date', 'Start Date', 'Documentation URL'])
       const result = responseDetails.getColumns()
       expect(result).toEqual(['id', 'wkt', 'name', 'Layer', 'area(ha)', 'geometry', 'entry-date', 'start-date', 'documentation-url'])
     })
 
     it('returns an empty array if there are no rows', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getColumns()
       expect(result).toStrictEqual([])
     })
   })
 
   it('getFieldMappings', () => {
-    const responseDetails = new ResponseDetails(mockResponse, mockPagination, mockColumnFieldLog)
+    const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
     const result = responseDetails.getFieldMappings()
     const expected = {
       ID: 'id',
@@ -149,7 +149,7 @@ describe('ResponseDetails', () => {
 
   describe('getRowsWithVerboseColumns', () => {
     it('returns the rows with verbose columns', () => {
-      const responseDetails = new ResponseDetails(mockResponse, mockPagination, mockColumnFieldLog)
+      const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
       const result = responseDetails.getRowsWithVerboseColumns()
       const expected = [
         {
@@ -191,7 +191,7 @@ describe('ResponseDetails', () => {
         ...mockResponse,
         errorRow
       ]
-      const responseDetails = new ResponseDetails(_mockResponse, mockPagination, mockColumnFieldLog)
+      const responseDetails = new ResponseDetails(undefined, _mockResponse, mockPagination, mockColumnFieldLog)
       const result = responseDetails.getRowsWithVerboseColumns(true)
       const expected = [
         {
@@ -204,7 +204,7 @@ describe('ResponseDetails', () => {
     })
 
     it('returns an empty array if there are no rows and logs an error', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getRowsWithVerboseColumns()
       expect(result).toStrictEqual([])
       expect(loggerErrorSpy).toHaveBeenCalled()
@@ -213,7 +213,7 @@ describe('ResponseDetails', () => {
 
   describe('getGeometryKey', () => {
     it('returns the column for "point" field', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, [
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, [
         { column: 'id', field: 'ID' },
         { column: 'wkt', field: 'WKT' },
         { column: 'point', field: 'point' },
@@ -224,7 +224,7 @@ describe('ResponseDetails', () => {
     })
 
     it('returns the column for "geometry" field', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, [
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, [
         { column: 'id', field: 'ID' },
         { column: 'wkt', field: 'WKT' },
         { column: 'geometry', field: 'geometry' },
@@ -235,13 +235,13 @@ describe('ResponseDetails', () => {
     })
 
     it('returns null if columnFieldLog is undefined', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getGeometryKey()
       expect(result).toBeNull()
     })
 
     it('returns null if no columnFieldEntry is found', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, [
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, [
         { column: 'id', field: 'ID' },
         { column: 'wkt', field: 'WKT' },
         { column: 'name', field: 'Name' }
@@ -253,14 +253,14 @@ describe('ResponseDetails', () => {
 
   describe('getGeometries', () => {
     it('returns undefined and logs an error if there is no response', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, undefined)
+      const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getGeometries()
       expect(result).toBeUndefined()
       expect(loggerErrorSpy).toHaveBeenCalled()
     })
 
     it('returns null if there are no geometries', () => {
-      const responseDetails = new ResponseDetails([], undefined, undefined)
+      const responseDetails = new ResponseDetails(undefined, [], undefined, undefined)
       const result = responseDetails.getGeometries()
       expect(result).toBeNull()
     })
@@ -272,7 +272,7 @@ describe('ResponseDetails', () => {
         { column: 'geometry', field: 'geometry' },
         { column: 'name', field: 'Name' }
       ]
-      const responseDetails = new ResponseDetails(mockResponse, undefined, mockColumnFieldLog)
+      const responseDetails = new ResponseDetails(undefined, mockResponse, undefined, mockColumnFieldLog)
       const result = responseDetails.getGeometries()
       const expected = [
         'POINT (423432.0000000000000000 564564.0000000000000000)',

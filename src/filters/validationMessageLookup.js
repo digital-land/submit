@@ -34,6 +34,29 @@ const validationMessages = {
   },
   validationResult: {
     required: 'Unable to contact the API'
+  },
+  name: {
+    required: 'Enter your full name'
+  },
+  email: {
+    required: 'Enter an email address',
+    email: 'Enter an email address in the correct format'
+  },
+  dataset: {
+    required: 'Select a dataset'
+  },
+  'endpoint-url': {
+    required: 'Enter an endpoint URL',
+    format: 'Enter a valid endpoint URL',
+    maxlength: 'The URL must be less than 2048 characters'
+  },
+  'documentation-url': {
+    required: 'Enter a documentation URL',
+    format: 'Enter a valid documentation URL',
+    maxlength: 'The URL must be less than 2048 characters'
+  },
+  hasLicence: {
+    required: 'You need to confirm this dataset is provided under the Open Government Licence'
   }
 }
 

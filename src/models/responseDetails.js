@@ -2,7 +2,8 @@ import { getVerboseColumns } from '../utils/getVerboseColumns.js'
 import logger from '../utils/logger.js'
 
 export default class ResponseDetails {
-  constructor (response, pagination, columnFieldLog) {
+  constructor (id, response, pagination, columnFieldLog) {
+    this.id = id
     this.response = response
     this.pagination = pagination
     this.columnFieldLog = columnFieldLog

@@ -1,6 +1,7 @@
 asyncRequestApi: {
     url: http://localhost:8001,
-    port: 8001
+    port: 8001,
+    requestsEndpoint: 'requests'
 }
 aws: {
     region: eu-west-2,

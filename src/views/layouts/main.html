@@ -9,13 +9,23 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner%}
 {% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 
+{% if serviceType %}
+  {% set serviceName = serviceType | getFullServiceName  %}
+{% endif %}
+
 {% block pageTitle %}
   {{ pageName }} - {{ serviceName }}
 {% endblock %}
 
 {% block head %}
   <link rel="stylesheet" href="/public/stylesheets/index.css">
-
+  {% if smartlookKey %}
+    {% block smartlook %}
+      <script type='text/javascript'>
+      {% include "common/smartlook.js" %}
+      </script>
+    {% endblock %}
+  {% endif %}
 {% endblock %}
 
 {% block header %}
@@ -80,6 +90,13 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% block bodyEnd %}
     {{ super()}}
   {%block scripts %}
+    <body>
+      ...
+      <script type="module" src="/assets/all.js"></script>
+      <script type="module">
+        window.GOVUKPrototypeComponents.initAll()
+      </script>
+    </body>
     {{ super() }}
     <script src="/public/js/application.bundle.js"></script>
   {% endblock %}

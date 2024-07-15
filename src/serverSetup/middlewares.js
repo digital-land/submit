@@ -6,18 +6,19 @@ import hash from '../utils/hasher.js'
 import config from '../../config/index.js'
 
 export function setupMiddlewares (app) {
-  app.use(async (req, res, next) => {
+  app.use((req, res, next) => {
     logger.info({
       type: 'Request',
       method: req.method,
       endpoint: req.originalUrl,
       message: `${req.method} request made to ${req.originalUrl}`,
-      sessionId: await hash(req.sessionID)
+      sessionId: hash(req.sessionID)
     })
     next()
   })
 
-  app.use('/assets', express.static('./node_modules/govuk-frontend/govuk/assets'))
+  app.use('/assets', express.static('./node_modules/govuk-frontend/dist/govuk/assets'))
+  app.use('/assets', express.static('./node_modules/@x-govuk/govuk-prototype-components/x-govuk'))
   app.use('/public', express.static('./public'))
 
   app.use(cookieParser())

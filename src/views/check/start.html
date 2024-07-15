@@ -1,0 +1,57 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "x-govuk/components/related-navigation/macro.njk" import xGovukRelatedNavigation %}
+
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Start' %}
+
+{% block content %}
+
+
+{% set content %}
+
+  Use this service to check your:
+
+  - article 4 direction area data
+  - conservation area data
+  - listed building outline data
+  - tree preservation zone data
+
+  ## Before you start
+
+  Your data must follow the [data specification](https://www.planning.data.gov.uk/guidance/specifications/).
+
+  Your data needs to be provided as either:
+
+  - a CSV, GeoJSON, GML or GeoPackage file
+  - a URL
+
+  
+  {{ govukButton({
+    text: "Start now",
+    href: "/dataset",
+    isStartButton: true
+  }) }}
+  
+
+{% endset %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">
+        {{serviceName}}
+      </h1>
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{content | govukMarkdown(headingsStartWith="l") | safe}}
+    </div>
+    <div class="govuk-grid-column-one-third">
+      
+    </div>
+  </div>
+{% endblock %}

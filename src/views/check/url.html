@@ -1,0 +1,71 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from 'govuk/components/input/macro.njk' import govukInput %}
+{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'URL' %}
+
+{% set errorMessage = 'There\'s something wrong with your URL' %}
+
+{% if 'url' in errors %}
+  {% set error = true %}
+  {% set errorMessage = 'url' | validationMessageLookup(errors['url'].type) %}
+{% elif 'validationResult' in errors %}
+  {% set error = true %}
+
+  {% if errors['validationResult'].type == 'validationError' %}
+    {% set errorMessage = options.validationError %}
+  {% else %}
+    {% set errorMessage = 'validationResult' | validationMessageLookup(errors['validationResult'].type) %}
+  {% endif %}
+{% endif %}
+
+{% block pageTitle %}
+  {% if error %}
+    Error: {{super()}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There’s a problem",
+          errorList: [
+            {
+              text: errorMessage,
+              href: "#url"
+            }
+          ]
+        }) }}
+      {% endif %}
+      <form novalidate method="post">
+
+        {{ govukInput({
+          id: "url",
+          name: "url",
+          label: {
+            text: pageName,
+            isPageHeading: true,
+            classes: 'govuk-label--l'
+          },
+          value: data.check.url,
+          errorMessage: {
+            text: errorMessage 
+          } if error else undefined
+        }) }}
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <p class="govuk-!-padding-top-4 govuk-!-padding-bottom-4"><a style="color: #fff" href="/no-errors">No errors</a></p>
+      </form>
+    </div>
+  </div>
+{% endblock %}

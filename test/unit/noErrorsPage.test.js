@@ -11,7 +11,9 @@ import paginationTemplateTests from './paginationTemplateTests.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
-  'node_modules/govuk-frontend/',
+  'src/views/check',
+  'src/views/submit',
+  'node_modules/govuk-frontend/dist/',
   'node_modules/@x-govuk/govuk-prototype-components/'
 ], {
   dev: true,
@@ -19,12 +21,12 @@ const nunjucksEnv = nunjucks.configure([
   watch: true
 })
 
-addFilters(nunjucksEnv)
+addFilters(nunjucksEnv, { dataSubjects: {} })
 
 describe('no Errors Page', () => {
   it('renders the correct number of errors', () => {
     const requestData = new RequestData(errorResponse)
-    const responseDetails = new ResponseDetails(errorResponseDetails, { totalResults: 3, offset: 0, limit: 50 }, requestData.getColumnFieldLog())
+    const responseDetails = new ResponseDetails('id', errorResponseDetails, { totalResults: 3, offset: 0, limit: 50 }, requestData.getColumnFieldLog())
 
     requestData.response.pagination = {
       totalResults: 100,
