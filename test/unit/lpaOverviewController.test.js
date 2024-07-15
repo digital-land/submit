@@ -3,6 +3,11 @@ import LpaOverviewController from '../../src/controllers/LpaOverviewController.j
 import performanceDbApi from '../../src/services/performanceDbApi.js'
 
 vi.mock('../../src/services/performanceDbApi.js')
+vi.mock('../../src/utils/utils.js', () => {
+  return {
+    dataSubjects: {}
+  }
+})
 
 describe('LpaOverviewController', () => {
   beforeEach(() => {
