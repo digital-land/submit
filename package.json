@@ -73,7 +73,6 @@
     "hmpo-form-wizard": "^13.0.0",
     "hmpo-i18n": "^6.0.1",
     "js-yaml": "^4.1.0",
-    "lodash": "^4.17.21",
     "maplibre-gl": "^4.1.0",
     "multer": "^1.4.5-lts.1",
     "notifications-node-client": "^8.2.0",
@@ -94,7 +93,8 @@
   },
   "standard": {
     "ignore": [
-      "performance-test/"
+      "performance-test/",
+      "src/views/common/smartlook.js"
     ]
   }
 }

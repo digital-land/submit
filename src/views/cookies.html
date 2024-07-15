@@ -1,0 +1,119 @@
+{% extends "layouts/main.html" %}
+
+{% set pageName = 'Accessibility statement for check planning and housing data for England' %}
+
+{% set markdownContent %}
+
+# Check planning and housing data for England cookies notice
+
+The Check planning and housing data for England service puts cookies onto your computer to collect information about how you use the service. This helps us to:
+
+
+
+* update and improve the service based on your needs
+* remember the notifications you’ve seen so that we do not show them to you again
+
+We do not collect any personal information that could be used to identify you. Read our [privacy notice](/privacy-notice/) to see what personal information we do collect.
+
+
+## Essential cookies
+
+Essential cookies are needed for the service to work. We do not need to ask for permission to use them.
+
+
+## How cookies are used on the Check planning and housing data for England service
+
+
+### Our cookie banner (essential)
+
+When you first visit the Check planning and housing data for England service, you will see a banner asking if you accept cookies. We’ll store a cookie to remember which option you selected. You can always change your mind and change your choice on this page.
+
+Next time you visit the site, we will remember your preference and not show the banner again.
+
+To do this, the Check planning and housing data for England service sets the following cookies:
+
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Name</th>
+        <th scope="col" class="govuk-table__header">Purpose</th>
+        <th scope="col" class="govuk-table__header">Expires</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <tr class="govuk-table__row">
+        <th scope="row" class="govuk-table__header">cookies_preferences_set</th>
+        <td class="govuk-table__cell">Lets us know you've seen our cookie message</td>
+        <td class="govuk-table__cell">1 year</td>
+      </tr>
+      <tr class="govuk-table__row">
+        <th scope="row" class="govuk-table__header">cookies_policy</th>
+        <td class="govuk-table__cell">Saves your cookie choices</td>
+        <td class="govuk-table__cell">1 year</td>
+      </tr>
+    </tbody>
+</table>
+
+
+### Smartlook cookies (optional)
+
+We use Smartlook to measure how you use the Check planning and housing data for England service. This helps us to improve the service experience and make sure it’s meeting your needs. No personal data will be stored in the cookies.
+
+Smartlook sets cookies that store information about:
+
+
+
+* which parts of the service you visit
+* how long you spend on each part
+* what you click on the service
+
+The cookies do not store any information you add to the service. 
+
+
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Name</th>
+        <th scope="col" class="govuk-table__header">Purpose</th>
+        <th scope="col" class="govuk-table__header">Expires</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      <tr class="govuk-table__row">
+        <th scope="row" class="govuk-table__header">SL_C_23361dd035530_SID</th>
+        <td class="govuk-table__cell">Lets us know you’re using the service</td>
+        <td class="govuk-table__cell">13 months</td>
+      </tr>
+      <tr class="govuk-table__row">
+        <th scope="row" class="govuk-table__header">SL_L_23361dd035530_SID</th>
+        <td class="govuk-table__cell">Lets us know you’re using the service</td>
+        <td class="govuk-table__cell">13 months</td>
+      </tr>
+      <tr class="govuk-table__row">
+        <th scope="row" class="govuk-table__header">AWSELB</th>
+        <td class="govuk-table__cell">Makes Smartlook quicker to load</td>
+        <td class="govuk-table__cell">13 months</td>
+      </tr>
+      <tr class="govuk-table__row">
+        <th scope="row" class="govuk-table__header">SL_C_23361dd035530_DOMAIN</th>
+        <td class="govuk-table__cell">Temporary cookie to identify our service; it’s removed as soon as our service is detected</td>
+        <td class="govuk-table__cell">Almost immediately</td>
+      </tr>
+      <tr class="govuk-table__row">
+        <th scope="row" class="govuk-table__header">SMARTLOOK_LS_QUEUED_CHUNKS</th>
+        <td class="govuk-table__cell">Sends data to Smartlook in small chunks</td>
+        <td class="govuk-table__cell">13 months</td>
+      </tr>
+    </tbody>
+</table>
+
+You can [opt out](https://help.smartlook.com/docs/opt-out-of-smartlook) of Smartlook.
+
+
+{% endset %}
+
+{% block content %}
+
+    {{markdownContent | govukMarkdown(headingsStartWith="xl") | safe}}
+
+{% endblock content %}

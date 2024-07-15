@@ -25,6 +25,11 @@ export function setupNunjucks ({ app, dataSubjects }) {
     feedbackLink: config.feedbackLink
   }
 
+  if ('smartlook' in config) {
+    globalValues.smartlookKey = config.smartlook.key
+    globalValues.smartlookRegion = config.smartlook.region
+  }
+
   Object.keys(globalValues).forEach((key) => {
     nunjucksEnv.addGlobal(key, globalValues[key])
   })

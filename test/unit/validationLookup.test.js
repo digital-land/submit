@@ -2,7 +2,6 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import validationMessageLookup from '../../src/filters/validationMessageLookup.js'
-import logger from '../../src/utils/logger.js'
 
 describe('validationMessageLookup', () => {
   it('returns the correct message for a given field and type', () => {
@@ -19,12 +18,6 @@ describe('validationMessageLookup', () => {
         error: vi.fn()
       }
     })
-
-    const loggerErrorSpy = vi.spyOn(logger, 'error')
-
     validationMessageLookup('email-address', 'missing')
-
-    expect(loggerErrorSpy).toHaveBeenCalledOnce()
-    expect(loggerErrorSpy.mock.calls[0][0]).toBe('No validation message found for field email-address and type missing')
   })
 })

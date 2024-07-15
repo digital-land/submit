@@ -62,7 +62,7 @@ const validationMessages = {
 
 function validationMessageLookup (field, type) {
   if (!validationMessages[field] || !validationMessages[field][type]) {
-    logger.error('No validation message found for field ' + field + ' and type ' + type)
+    logger.warn('No validation message found for field ' + field + ' and type ' + type)
     return `An error occurred of type ${type} for field ${field}`
   }
   return validationMessages[field][type]

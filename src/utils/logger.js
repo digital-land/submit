@@ -1,4 +1,14 @@
 import { createLogger, format, transports } from 'winston'
+import config from '../../config/index.js'
+
+const appTransports = () => [
+  new transports.Console(),
+  new transports.File({ filename: 'combined.log' })
+]
+
+const testTransports = () => [
+  new transports.Console({ level: 'error' })
+]
 
 const logger = createLogger({
   format: format.combine(
@@ -6,10 +16,7 @@ const logger = createLogger({
     format.json()
   ),
   defaultMeta: { service: 'lpa-data-validation-frontend' },
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: 'combined.log' })
-  ]
+  transports: config.environment === 'test' ? testTransports() : appTransports()
 })
 
 export default logger

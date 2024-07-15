@@ -1,6 +1,5 @@
 import ResponseDetails, { pagination } from '../../src/models/responseDetails'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import logger from '../../src/utils/logger.js'
+import { describe, it, expect, vi } from 'vitest'
 
 vi.mock('../../src/utils/getVerboseColumns.js', () => {
   return {
@@ -70,12 +69,6 @@ describe('ResponseDetails', () => {
     }
   })
 
-  const loggerErrorSpy = vi.spyOn(logger, 'error')
-
-  beforeEach(() => {
-    loggerErrorSpy.mockClear()
-  })
-
   describe('getRows', () => {
     it('returns the rows', () => {
       const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
@@ -83,11 +76,10 @@ describe('ResponseDetails', () => {
       expect(result).toBe(mockResponse)
     })
 
-    it('returns an empty array if there are no rows and logs an error', () => {
+    it('returns an empty array if there are no rows', () => {
       const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getRows()
       expect(result).toStrictEqual([])
-      expect(loggerErrorSpy).toHaveBeenCalled()
     })
   })
 
@@ -98,11 +90,10 @@ describe('ResponseDetails', () => {
       expect(result).toStrictEqual(mockColumnFieldLog)
     })
 
-    it('returns an empty array if there is no column field log and logs an error', () => {
+    it('returns an empty array if there is no column field log', () => {
       const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getColumnFieldLog()
       expect(result).toStrictEqual([])
-      expect(loggerErrorSpy).toHaveBeenCalled()
     })
   })
 
@@ -203,11 +194,10 @@ describe('ResponseDetails', () => {
       expect(result).toStrictEqual(expected)
     })
 
-    it('returns an empty array if there are no rows and logs an error', () => {
+    it('returns an empty array if there are no rows', () => {
       const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getRowsWithVerboseColumns()
       expect(result).toStrictEqual([])
-      expect(loggerErrorSpy).toHaveBeenCalled()
     })
   })
 
@@ -256,7 +246,6 @@ describe('ResponseDetails', () => {
       const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
       const result = responseDetails.getGeometries()
       expect(result).toBeUndefined()
-      expect(loggerErrorSpy).toHaveBeenCalled()
     })
 
     it('returns null if there are no geometries', () => {

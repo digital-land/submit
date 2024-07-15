@@ -46,7 +46,7 @@ class UploadFileController extends UploadController {
       const errors = {
         datafile: new UploadFileController.Error(error.key, error, req, res)
       }
-      logger.error('local validation failed during file upload', error)
+      logger.warn('UploadFileController: local validation failed during file upload', error)
       return next(errors)
     }
 
@@ -58,8 +58,7 @@ class UploadFileController extends UploadController {
       const id = await postFileRequest({ ...this.getBaseFormData(req), originalFilename: req.file.originalname, uploadedFilename })
       req.body.request_id = id
 
-      // log the file name, type and size as an object
-      logger.info('file submitted for processing:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
+      logger.info('UploadFileController: file submitted for processing:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
 
       super.post(req, res, next)
     } catch (error) {
@@ -100,7 +99,7 @@ class UploadFileController extends UploadController {
       await s3.upload(params).promise()
       return uuid
     } catch (error) {
-      logger.error('Error uploading file to S3: ' + error.message)
+      logger.warn('Error uploading file to S3: ' + error.message)
       throw error
     }
   }

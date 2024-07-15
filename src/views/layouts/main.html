@@ -19,6 +19,13 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 
 {% block head %}
   <link rel="stylesheet" href="/public/stylesheets/index.css">
+  {% if smartlookKey %}
+    {% block smartlook %}
+      <script type='text/javascript'>
+      {% include "common/smartlook.js" %}
+      </script>
+    {% endblock %}
+  {% endif %}
 {% endblock %}
 
 {% block header %}
@@ -58,6 +65,16 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
     <li class="govuk-footer__inline-list-item">
       <a class="govuk-footer__link" href="/accessibility">
         Accessibility
+      </a>
+    </li>
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/privacy-notice">
+        Privacy
+      </a>
+    </li>
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/cookies">
+        Cookies
       </a>
     </li>
   </ul>
