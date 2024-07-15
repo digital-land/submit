@@ -1,5 +1,7 @@
 import axios from 'axios'
-import logger from '../../src/utils/logger.js'
+import logger from '../logger.js'
+
+// ToDo: update this to use datasette component
 
 /**
  * Fetches a list of local authority names from a specified dataset.

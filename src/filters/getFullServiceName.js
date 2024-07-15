@@ -1,7 +1,5 @@
 import config from '../../config/index.js'
 
-export default (service) => {
-  const serviceName = config.serviceName
+const getFullServiceName = (service) => config.serviceName.replace('Provide', service)
 
-  return serviceName.replace('Provide', service)
-}
+export default getFullServiceName
