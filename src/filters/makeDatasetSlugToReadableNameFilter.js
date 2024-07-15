@@ -1,3 +1,5 @@
+import logger from '../utils/logger.js'
+
 /**
  * Creates a filter function that takes a dataset slug as input and returns its corresponding readable name.
  * The filter function uses a provided dataset name mapping to look up the readable name.
@@ -16,7 +18,10 @@ export const makeDatasetSlugToReadableNameFilter = (datasetNameMapping) => {
   return (slug) => {
     const name = datasetNameMapping.get(slug)
     if (!name) {
-      throw new Error(`Can't find a name for ${slug}`)
+      // throw new Error(`Can't find a name for ${slug}`)
+      // ToDo: work out what to do here? potentially update it with data from datasette
+      logger.error(`can't find a name for ${slug}`)
+      return slug
     }
     return name
   }

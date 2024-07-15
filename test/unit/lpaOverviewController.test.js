@@ -3,6 +3,11 @@ import LpaOverviewController from '../../src/controllers/LpaOverviewController.j
 import performanceDbApi from '../../src/services/performanceDbApi.js'
 
 vi.mock('../../src/services/performanceDbApi.js')
+vi.mock('../../src/utils/utils.js', () => {
+  return {
+    dataSubjects: {}
+  }
+})
 
 describe('LpaOverviewController', () => {
   beforeEach(() => {
@@ -15,13 +20,11 @@ describe('LpaOverviewController', () => {
     const next = vi.fn()
 
     const expectedResponse = {
-      data: {
-        name: 'Test LPA',
-        datasets: {
-          dataset1: { endpoint: 'https://example.com', issue: false, error: false },
-          dataset2: { endpoint: null, issue: true, error: false },
-          dataset3: { endpoint: 'https://example.com', issue: false, error: true }
-        }
+      name: 'Test LPA',
+      datasets: {
+        dataset1: { endpoint: 'https://example.com', issue: false, error: false },
+        dataset2: { endpoint: null, issue: true, error: false },
+        dataset3: { endpoint: 'https://example.com', issue: false, error: true }
       }
     }
 
