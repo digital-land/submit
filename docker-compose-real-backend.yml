@@ -11,7 +11,7 @@ services:
       AWS_DEFAULT_REGION: eu-west-2
       AWS_ENDPOINT_URL: http://localstack:4566
     ports:
-      - "8085:5000"
+      - "8085:8011"
 
   redis:
     image: redis:6.0.9
