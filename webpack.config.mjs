@@ -5,6 +5,21 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 export default {
+  resolve: {
+    fallback: {
+      os: false,
+      path: false,
+      fs: false,
+      vm: false,
+      zlib: false,
+      http: false,
+      https: false,
+      tls: false,
+      net: false,
+      stream: false,
+      crypto: false
+    }
+  },
   entry: {
     map: '/src/assets/js/map.js',
     application: '/src/assets/js/application.js',
