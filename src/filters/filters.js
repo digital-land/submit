@@ -1,11 +1,36 @@
 import { getkeys, getContext } from './debuggingFilters.js'
-import xGovFilters from '@x-govuk/govuk-prototype-filters'
 import validationMessageLookup from './validationMessageLookup.js'
 import toErrorList from './toErrorList.js'
 import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
 
-const { govukMarkdown } = xGovFilters
+// import xGovFilters from '@x-govuk/govuk-prototype-filters'
+// const { govukMarkdown } = xGovFilters
+
+// govuk markdown has a bug in it, until that is resolved we will build the filter here instead
+
+import markedGovukMarkdown from 'govuk-markdown'
+import { markedSmartypants } from 'marked-smartypants'
+import { normalize } from '@x-govuk/govuk-prototype-filters/lib/utils.js'
+import { marked } from 'marked'
+
+const govukMarkdown = (string, kwargs) => {
+  string = normalize(string, '')
+
+  marked.default = {}
+
+  marked.use(
+    markedGovukMarkdown({
+      headingsStartWith: 'm',
+    })
+  )
+  
+  marked.use(markedSmartypants())
+
+  return marked(string)
+}
+
+
 
 /**
  *
