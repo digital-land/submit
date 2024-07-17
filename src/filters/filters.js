@@ -21,16 +21,14 @@ const govukMarkdown = (string, kwargs) => {
 
   marked.use(
     markedGovukMarkdown({
-      headingsStartWith: 'm',
+      headingsStartWith: 'm'
     })
   )
-  
+
   marked.use(markedSmartypants())
 
   return marked(string)
 }
-
-
 
 /**
  *
