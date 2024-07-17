@@ -3,6 +3,7 @@ import { vi, it, describe, expect } from 'vitest'
 import { fetchLocalAuthorities } from '../../src/utils/datasetteQueries/fetchLocalAuthorities'
 
 // Mock axios.get to return a fake response
+// ToDo: no longer mock axios
 vi.mock('axios')
 axios.get.mockResolvedValue({
   data: {
