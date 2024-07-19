@@ -72,7 +72,6 @@ jobs:
 
   # deploy:
   #   runs-on: ubuntu-latest
-  #   needs: [detect-environments]
   #   environment: development
   #   env:
   #     DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
