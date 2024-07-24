@@ -4,17 +4,18 @@ import RedisStore from 'connect-redis'
 import cookieParser from 'cookie-parser'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 export function setupSession (app) {
   app.use(cookieParser())
   let sessionStore
   if ('redis' in config) {
     const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
-    const redisClient = createClient({
-      url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
-    })
-    const errorHandler = (err) => {
-      logger.error(`session/setupSession: redis connection error: ${err.code}`)
+    const url = `${urlPrefix}://${config.redis.host}:${config.redis.port}`
+    const redisClient = createClient({ url })
+    const errorHandler = (error) => {
+      logger.info(`session/setupSession: failed to connect to ${url}`, { type: types.AppLifecycle })
+      logger.warn('session/setupSession: redis connection error', { type: types.External, error })
     }
     redisClient.connect().catch(errorHandler)
 

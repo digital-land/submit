@@ -29,30 +29,25 @@ export const postUrlRequest = async (formData) => {
   })
 }
 
+/**
+ * POSTs a requeset to the 'publish' API.
+ *
+ * @param {*} formData
+ * @returns {Promise<string>} uuid - unique id of the uploaded file
+ * @throws
+ */
 const postRequest = async (formData) => {
   try {
     const response = await axios.post(requestsEndpoint, { params: formData })
     return response.data.id // assuming the response contains the id
   } catch (error) {
-    let errorMessage = 'An unknown error occurred.'
-
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      errorMessage = `HTTP error! status: ${error.response.status}. Data: ${error.response.data}.`
-    } else if (error.cause) {
-      // If error has a cause property, it means the error was during axios request
-      errorMessage = `Error during request: (${error.cause.code}) ${error.cause.message}`
-    } else if (error.request) {
-      // The request was made but no response was received
-      errorMessage = 'No response received.'
-    } else if (error.message) {
-      // Something happened in setting up the request that triggered an Error
-      errorMessage = `Error in setting up the request: ${error.message}`
-    } else if (error.config) {
-      // If error has a config property, it means the error was during axios configuration
-      errorMessage = `Error in Axios configuration: ${error.config}`
-    }
+    // see: https://axios-http.com/docs/handling_errors
+    const errorMessage = `post request failed: response.status = '${error.response?.status}', ` +
+      `data: '${error.response.data}', ` +
+      `cause: '${error.cause}'` +
+      (error.request ? 'No response received, ' : '') +
+      `message: '${error.message}', ` +
+      (error.config ? `Error in Axios configuration ${error.config}` : '')
 
     throw new Error(errorMessage)
   }
