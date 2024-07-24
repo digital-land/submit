@@ -69,18 +69,24 @@ class SubmitUrlController extends UploadController {
     return url.length <= 2048
   }
 
-  static async getHeadRequest (url) {
+  static async getHeadRequest(url) {
     try {
-      return await axios.head(url)
+      return await axios.head(url);
     } catch (err) {
-      if (['ENOTFOUND', 'ECONNREFUSED'].includes(err.code)) {
-        return null
-      } else if (err.response.status === 400) {
-        return null
+      if (err.code && ['ENOTFOUND', 'ECONNREFUSED'].includes(err.code)) {
+        return null;
       }
-      return err.response
+  
+      const response = err.response;
+      if (response && response.status === 400) {
+        return null;
+      }
+  
+      // If err.response is not present or doesn't have a status property, return the entire error object
+      return err;
     }
   }
+  
 
   static urlResponseIsNotTooLarge (response) {
     try {
