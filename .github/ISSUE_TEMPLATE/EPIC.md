@@ -1,26 +1,28 @@
-What:
+### What:
 
-[short description of the objective]
+[Short description of the objective]
 
-Problem statement
+### Problem statement:
 
-[description of the user / business problem this objective is trying to solve]
+[Description of the user / business problem this objective is trying to solve]
 
-Stories
+### User stories:
 
 [List of user stories that need to be fulfilled for this EPIC] 
 
-Tech Approach
+### Tech Approach:
 
-[arcitecture, front and back end linking (e.g. API's used), third partiy tools/systems needed]
+[Architecture, front-end and back-end linking (e.g. APIs used), third-party tools/systems needed]
 ‌
-Acceptance criteria
+### Acceptance criteria:
 
-Check list of user actions and system tasks that need to verified and 
-tested as working and doing as expected, before this epic can be set to done]
+[List of user actions and system tasks that need to verified and tested as working and doing as expected, before this epic can be set to done]
+
+- []
+- []
+- []
 ‌
-
-Known Artefacts
+### Known artefacts:
 
 [Any supporting issues, documents, images, workboards, that will enable progress on this EPIC.
 E.g. designs, research findings]
