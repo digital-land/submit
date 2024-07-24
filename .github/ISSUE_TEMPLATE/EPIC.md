@@ -8,7 +8,7 @@ Problem statement
 
 Stories
 
-[Lisy of user stories that need to be fulfilled for this EPIC] 
+[List of user stories that need to be fulfilled for this EPIC] 
 
 Tech Approach
 
@@ -16,7 +16,7 @@ Tech Approach
 ‌
 Acceptance criteria
 
-List of user actions and system tasks that need to verified and 
+Check list of user actions and system tasks that need to verified and 
 tested as working and doing as expected, before this epic can be set to done]
 ‌
 
