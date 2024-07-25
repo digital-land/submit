@@ -32,7 +32,7 @@
     "lint:fix": "standard --fix"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.20.0"
   },
   "author": "",
   "license": "ISC",
