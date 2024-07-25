@@ -22,7 +22,6 @@ jobs:
     environment: development
     env:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
-      DOCKER_COMPOSE_CMD: "docker compose --progress plain"
     steps:
       - uses: actions/checkout@v4
 
@@ -48,12 +47,12 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v1
 
       - id: run-with-docker-compose
-        run: {{ env.DOCKER_COMPOSE_CMD }} -f docker-compose-real-backend.yml up -d
+        run: docker compose --progress plain -f docker-compose-real-backend.yml up -d
 
       - id: docker-compose-ps
         run: |
           sleep 30
-          {{ env.DOCKER_COMPOSE_CMD }} -f docker-compose-real-backend.yml ps
+          docker compose --progress plain -f docker-compose-real-backend.yml ps
           curl -v http://localhost:8085/
 
       - id: run-acceptance-tests
@@ -69,13 +68,13 @@ jobs:
       - id: docker-compose-logs
         if: always()
         run: |
-          {{ env.DOCKER_COMPOSE_CMD }} -f docker-compose-real-backend.yml logs --tail frontend
-          {{ env.DOCKER_COMPOSE_CMD }} -f docker-compose-real-backend.yml logs --tail request-api
+          docker compose --progress plain -f docker-compose-real-backend.yml logs --tail frontend
+          docker compose --progress plain -f docker-compose-real-backend.yml logs --tail request-api
 
 
       - id: stop-containers
         if: always()
-        run: {{ env.DOCKER_COMPOSE_CMD }} -f docker-compose-real-backend.yml down
+        run: docker compose --progress plain -f docker-compose-real-backend.yml down
 
   detect-environments:
     runs-on: ubuntu-latest
