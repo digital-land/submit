@@ -22,7 +22,7 @@ jobs:
     environment: development
     env:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
-      DOCKER_COMPOSE_CMD: $DOCKER_COMPOSE_CMD --progress plain
+      DOCKER_COMPOSE_CMD: DOCKER_COMPOSE_CMD --progress plain
     steps:
       - uses: actions/checkout@v4
 
