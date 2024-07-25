@@ -21,11 +21,11 @@ jobs:
 
       - id: install-awscli
         run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip -q awscliv2.zip
           sudo ./aws/install --update
-          sudo apt-get update
-          sudo apt-get install -y rsync
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y rsync
 
       - id: install-node-dependencies
         run: |
@@ -41,12 +41,12 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v1
 
       - id: run-with-docker-compose
-        run: docker compose -f docker-compose-real-backend.yml up -d
+        run: docker compose --quiet -f docker-compose-real-backend.yml up -d
 
       - id: docker-compose-ps
         run: |
           sleep 30
-          docker compose -f docker-compose-real-backend.yml ps
+          docker compose --quiet -f docker-compose-real-backend.yml ps
           curl -v http://localhost:8085/
 
       - id: run-acceptance-tests
@@ -62,10 +62,10 @@ jobs:
       - id: docker-compose-logs
         if: always()
         run: |
-          docker compose -f docker-compose-real-backend.yml logs --tail frontend
-          docker compose -f docker-compose-real-backend.yml logs --tail request-api
+          docker compose --quiet -f docker-compose-real-backend.yml logs --tail frontend
+          docker compose --quiet -f docker-compose-real-backend.yml logs --tail request-api
 
 
       - id: stop-containers
         if: always()
-        run: docker compose -f docker-compose-real-backend.yml down
+        run: docker compose --quiet -f docker-compose-real-backend.yml down
