@@ -1,5 +1,5 @@
 name: "Playwright Setup"
-description: "Installs Playwright and dependencies"
+description: "Installs Playwright and dependencies. Requires Node & npm"
 runs:
   using: 'composite'
   steps:
