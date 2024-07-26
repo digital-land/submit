@@ -26,7 +26,10 @@ jobs:
           sudo ./aws/install --update
           sudo apt-get -qq update
           sudo apt-get -qq install -y rsync
-
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
       - id: install-node-dependencies
         run: |
           npm ci
