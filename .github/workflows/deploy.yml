@@ -44,7 +44,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
 
-      - uses: aws-actions/amazon-ecr-login@v1
+      - uses: aws-actions/amazon-ecr-login@v2
 
       - id: run-with-docker-compose
         run: docker compose --progress plain -f docker-compose-real-backend.yml up -d
