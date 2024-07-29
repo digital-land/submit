@@ -39,13 +39,13 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
 
       - id: run-with-docker-compose
-        run: docker compose --progress plain -f docker-compose-real-backend.yml up -d
+        run: docker compose --progress quiet -f docker-compose-real-backend.yml up -d
 
       - id: docker-compose-ps
         name: Check docker compose output
         run: |
           sleep 30
-          docker compose --progress plain -f docker-compose-real-backend.yml ps
+          docker compose --progress quiet -f docker-compose-real-backend.yml ps
           curl -v http://localhost:8085/
 
       - id: run-acceptance-tests
@@ -61,12 +61,12 @@ jobs:
       - id: docker-compose-logs
         if: always()
         run: |
-          docker compose --progress plain -f docker-compose-real-backend.yml logs --tail frontend
-          docker compose --progress plain -f docker-compose-real-backend.yml logs --tail request-api
+          docker compose --progress quiet -f docker-compose-real-backend.yml logs --tail frontend
+          docker compose --progress quiet -f docker-compose-real-backend.yml logs --tail request-api
 
       - id: stop-containers
         if: always()
-        run: docker compose --progress plain -f docker-compose-real-backend.yml down
+        run: docker compose --progress quiet -f docker-compose-real-backend.yml down
 
   deploy:
     runs-on: ubuntu-latest
