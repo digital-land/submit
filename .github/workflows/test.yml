@@ -15,7 +15,7 @@ on:
       DEPLOY_AWS_ACCESS_KEY_ID:
         required: true
       DEPLOY_AWS_SECRET_ACCESS_KEY:
-        required: 
+        required: true
 
 jobs:
   test:
