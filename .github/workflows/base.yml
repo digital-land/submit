@@ -11,11 +11,7 @@ on:
 
 jobs:  
   test:
-    uses: ./.github/workflows/deploy.yml
-    strategy:
-      matrix:
-        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
-    environment: ${{ matrix.environment }}        
+    uses: ./.github/workflows/test.yml
     with:
       environment: '${{ inputs.environment }}'
     secrets: inherit

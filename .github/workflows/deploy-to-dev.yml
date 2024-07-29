@@ -14,10 +14,6 @@ on:
 jobs:  
   test:
     uses: ./.github/workflows/test.yml
-    strategy:
-      matrix:
-        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
-    environment: ${{ matrix.environment }}        
     with:
       environment: '${{ inputs.environment }}'
     secrets: inherit
