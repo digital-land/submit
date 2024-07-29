@@ -34,7 +34,6 @@ export const postUrlRequest = async (formData) => {
  *
  * @param {*} formData
  * @returns {Promise<string>} uuid - unique id of the uploaded file
- * @throws
  */
 const postRequest = async (formData) => {
   try {
@@ -43,11 +42,11 @@ const postRequest = async (formData) => {
   } catch (error) {
     // see: https://axios-http.com/docs/handling_errors
     const errorMessage = `post request failed: response.status = '${error.response?.status}', ` +
-      `data: '${error.response.data}', ` +
-      `cause: '${error.cause}'` +
+      `data: '${error.response?.data}', ` +
+      `cause: '${error?.cause}'` +
       (error.request ? 'No response received, ' : '') +
-      `message: '${error.message}', ` +
-      (error.config ? `Error in Axios configuration ${error.config}` : '')
+      `message: '${error.message ?? 'no meesage provided'}', ` +
+      (error.config ? `Error in Axios configuration ${error?.config}` : '')
 
     throw new Error(errorMessage)
   }
