@@ -54,7 +54,9 @@ jobs:
           sleep 30
           docker compose --progress quiet -f docker-compose-real-backend.yml ps
           curl -v http://localhost:8085/
-
+          
+      - id: run-unit-tests
+        run: npm run test:unit
       - id: run-acceptance-tests
         run: npm run test:acceptance:ci
       
