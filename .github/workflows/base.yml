@@ -35,7 +35,7 @@ jobs:
             return environments.map(e => e.name)
   
   deploy-changes:
-    needs: [detect-environment]
+    needs: [detect-environments]
     if: ${{ github.ref_name == 'rosado/ci_cd_v2' }} 
     uses: ./.github/workflows/deploy.yml
     with:
