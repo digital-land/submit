@@ -90,7 +90,7 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build & Push Docker images
-        uses: ./github/actions/build-and-push
+        uses: ./.github/actions/build-and-push
 
   detect-environments:
     runs-on: ubuntu-latest
