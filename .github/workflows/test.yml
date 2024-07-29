@@ -37,7 +37,6 @@ jobs:
       - id: lint
         name: Lint
         run: npm run lint
-      - uses: ./.github/actions/playwright-setup
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
@@ -54,10 +53,12 @@ jobs:
           sleep 30
           docker compose --progress quiet -f docker-compose-real-backend.yml ps
           curl -v http://localhost:8085/
-          
-      - id: run-unit-tests
+
+      - name: Run unit tests
         run: npm run test:unit
-      - id: run-acceptance-tests
+
+      - uses: ./.github/actions/playwright-setup
+      - name: Run acceptance tests
         run: npm run test:acceptance:ci
       
       - uses: actions/upload-artifact@v4
