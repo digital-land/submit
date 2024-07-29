@@ -1,10 +1,8 @@
-name: Deploy To Development
-run-name: Dev Deploy to ${{ inputs.environment }} by @${{ github.actor }}
+name: Code change pipeline
+run-name: Code change pipeline to ${{ inputs.environment }} by @${{ github.actor }}
 
 on:
   push:
-    branches:
-      - rosado/ci_cd_v2
   workflow_dispatch:
     inputs:
       environment:
@@ -13,7 +11,7 @@ on:
 
 jobs:  
   test:
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/deploy.yml
     strategy:
       matrix:
         environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
@@ -27,7 +25,7 @@ jobs:
     needs: [test]
     outputs:
       environments: ${{ steps.environments.outputs.result }}
-    #if: github.ref_name == ''
+    #if: github.ref_name == 'main'
     steps:
       - uses: actions/github-script@v6
         id: environments
@@ -39,3 +37,17 @@ jobs:
             const {data: {environments}} = 
               await github.request(`GET /repos/${process.env.GITHUB_REPOSITORY}/environments`);
             return environments.map(e => e.name)
+  
+  deploy-changes:
+    needs: [detect-environment]
+    if: gihtub.ref_name = 'rosado/ci_cd_v2'
+    uses: ./.github/workflows/deploy.yml
+    strategy:
+      matrix:
+        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
+    environment: ${{ matrix.environment }}        
+    with:
+      environment: '${{ inputs.environment }}'
+    secrets: inherit
+
+ 
