@@ -36,7 +36,7 @@ jobs:
   
   deploy-changes:
     needs: [detect-environment]
-    if: gihtub.ref_name = 'rosado/ci_cd_v2'
+    if: ${{ github.ref_name == 'rosado/ci_cd_v2' }} 
     uses: ./.github/workflows/deploy.yml
     with:
       environment: '${{ inputs.environment }}'
