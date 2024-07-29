@@ -38,10 +38,6 @@ jobs:
     needs: [detect-environment]
     if: gihtub.ref_name = 'rosado/ci_cd_v2'
     uses: ./.github/workflows/deploy.yml
-    strategy:
-      matrix:
-        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
-    environment: ${{ matrix.environment }}        
     with:
       environment: '${{ inputs.environment }}'
     secrets: inherit
