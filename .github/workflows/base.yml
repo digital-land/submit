@@ -1,5 +1,5 @@
 name: Code change pipeline
-run-name: Code change pipeline to ${{ inputs.environment }} by @${{ github.actor }}
+run-name: Code change pipeline to ${{ inputs.environment || 'development' }} by @${{ github.actor }}
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
         description: The environment to deploy to.
 
 jobs:  
-  test:
+  run-tests:
     uses: ./.github/workflows/test.yml
     with:
       environment: '${{ inputs.environment }}'
@@ -21,7 +21,6 @@ jobs:
     needs: [test]
     outputs:
       environments: ${{ steps.environments.outputs.result }}
-    #if: github.ref_name == 'main'
     steps:
       - uses: actions/github-script@v6
         id: environments
@@ -36,6 +35,7 @@ jobs:
   
   deploy-changes:
     needs: [detect-environments]
+    # NOTE: remove the below guard once ready to merge to main
     if: ${{ github.ref_name == 'rosado/ci_cd_v2' }} 
     uses: ./.github/workflows/deploy.yml
     with:

@@ -12,7 +12,7 @@ on:
         description: The environment to deploy to.
 
 jobs:  
-  test:
+  run-tests:
     uses: ./.github/workflows/test.yml
     with:
       environment: '${{ inputs.environment }}'
@@ -23,7 +23,6 @@ jobs:
     needs: [test]
     outputs:
       environments: ${{ steps.environments.outputs.result }}
-    #if: github.ref_name == ''
     steps:
       - uses: actions/github-script@v6
         id: environments
