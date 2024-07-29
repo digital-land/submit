@@ -43,7 +43,7 @@ const postRequest = async (formData) => {
     // see: https://axios-http.com/docs/handling_errors
     const errorMessage = `post request failed: response.status = '${error.response?.status}', ` +
       `data: '${error.response?.data}', ` +
-      `cause: '${error?.cause}'` +
+      `cause: '${error?.cause}' ` +
       (error.request ? 'No response received, ' : '') +
       `message: '${error.message ?? 'no meesage provided'}', ` +
       (error.config ? `Error in Axios configuration ${error?.config}` : '')
