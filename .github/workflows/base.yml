@@ -18,7 +18,6 @@ jobs:
 
   detect-environments:
     runs-on: ubuntu-latest
-    needs: [test]
     outputs:
       environments: ${{ steps.environments.outputs.result }}
     steps:
@@ -34,7 +33,7 @@ jobs:
             return environments.map(e => e.name)
   
   deploy-changes:
-    needs: [detect-environments]
+    needs: [run-tests, detect-environments]
     # NOTE: remove the below guard once ready to merge to main
     if: ${{ github.ref_name == 'rosado/ci_cd_v2' }} 
     uses: ./.github/workflows/deploy.yml
