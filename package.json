@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "start": "node index.js",
     "start:watch": "concurrently \"nodemon --exec 'npm run build && npm run start'\" \"npm run scss:watch\"",
     "start:test": "NODE_ENV=test node index.js",
@@ -26,12 +26,13 @@
     "test:integration": "NODE_ENV=test playwright test --config ./test/integration/playwright.config.js",
     "test:acceptance": "NODE_ENV=development playwright test --config ./test/acceptance/playwright.config.js",
     "test:acceptance:ci": "NODE_ENV=ci playwright test --config ./test/acceptance/playwright.config.js",
+    "test:acceptance:local": "NODE_ENV=local playwright test --config ./test/acceptance/playwright.config.js",
     "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
     "lint:fix": "standard --fix"
   },
   "engines": {
-    "node": ">=18.0.0 <20.0.0"
+    "node": ">=18.20.0"
   },
   "author": "",
   "license": "ISC",

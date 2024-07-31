@@ -1,0 +1,9 @@
+name: "Playwright Setup"
+description: "Installs Playwright and dependencies. Requires Node & npm"
+runs:
+  using: 'composite'
+  steps:
+    - id: install-playwright
+      shell:  bash
+      run: |
+        npx playwright install --with-deps
