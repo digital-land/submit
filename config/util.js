@@ -1,7 +1,7 @@
-import fs from "fs"
-import _ from "lodash"
-import yaml from "js-yaml"
-import * as v from "valibot"
+import fs from 'fs'
+import _ from 'lodash'
+import yaml from 'js-yaml'
+import * as v from 'valibot'
 
 export const ConfigSchema = v.object({
   port: v.pipe(v.integer(), v.minValue(1)),
@@ -9,22 +9,22 @@ export const ConfigSchema = v.object({
     url: v.url(),
     port: v.pipe(v.integer(), v.minValue(1)),
     requestsEndpoint: v.pipe(v.string(), v.nonEmpty()),
-    requestTimeout: v.number(),
+    requestTimeout: v.number()
   }),
   maintenance: v.object({
     serviceUnavailable: v.boolean(),
-    upTime: v.pipe(v.string(), v.nonEmpty()),
+    upTime: v.pipe(v.string(), v.nonEmpty())
   }),
   aws: v.object({
     region: v.string(),
     bucket: v.string(),
-    s3ForcePathStyle: v.boolean(),
+    s3ForcePathStyle: v.boolean()
   }),
   redis: v.optional(
     v.object({
       secure: v.boolean(),
       host: v.pipe(v.string(), v.nonEmpty()),
-      port: v.number(),
+      port: v.number()
     })
   ),
   url: v.url(),
@@ -33,15 +33,15 @@ export const ConfigSchema = v.object({
   email: v.object({
     templates: v.object({
       RequesetTemplateId: v.uuid(),
-      AcknowledgementTemplateId: v.uuid(),
+      AcknowledgementTemplateId: v.uuid()
     }),
-    dataManagementEmail: v.pipe(v.string(), v.email()),
-  }),
+    dataManagementEmail: v.pipe(v.string(), v.email())
+  })
 })
 
 const readConfig = (config) => {
-  console.assert(config, "config not specified")
-  return yaml.load(fs.readFileSync(`./config/${config}.yaml`, "utf8"))
+  console.assert(config, 'config not specified')
+  return yaml.load(fs.readFileSync(`./config/${config}.yaml`, 'utf8'))
 }
 
 /**
@@ -50,9 +50,9 @@ const readConfig = (config) => {
  *
  * @returns {Object}
  */
-export function combineConfigs(environment) {
-  console.assert(environment, "environment not specified")
-  const defaultConfig = readConfig("default")
+export function combineConfigs (environment) {
+  console.assert(environment, 'environment not specified')
+  const defaultConfig = readConfig('default')
   const customConfig = readConfig(environment)
   return _.merge({}, defaultConfig, customConfig)
 }
@@ -61,10 +61,10 @@ export const validateConfig = (config) => {
   try {
     return v.parse(ConfigSchema, config)
   } catch (error) {
-    console.error("invalid config", error.message)
-    for (let issue of error.issues) {
+    console.error('invalid config', error.message)
+    for (const issue of error.issues) {
       console.info(
-        `issue under path: [${issue.path.map((elem) => elem.key).join(", ")}]`
+        `issue under path: [${issue.path.map((elem) => elem.key).join(', ')}]`
       )
     }
     throw error
