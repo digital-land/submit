@@ -1,4 +1,4 @@
-import { checkS3Bucket, checkRequestApi, checkRedis } from '../../src/routes/health.js'
+import { checkS3Bucket, checkRequestApi } from '../../src/routes/health.js'
 import AWS from 'aws-sdk'
 import { describe, test, expect, vi } from 'vitest'
 
