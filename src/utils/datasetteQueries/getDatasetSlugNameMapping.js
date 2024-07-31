@@ -1,6 +1,6 @@
 import datasette from '../../services/datasette.js'
 
-const getDatasetSlugNameMapping = async () => {
+export const getDatasetSlugNameMapping = async () => {
   const datasetSlugNameTable = await datasette.runQuery('select dataset, name from dataset')
 
   const datasetMapping = new Map()
@@ -9,5 +9,3 @@ const getDatasetSlugNameMapping = async () => {
   })
   return datasetMapping
 }
-
-export default getDatasetSlugNameMapping

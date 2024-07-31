@@ -11,7 +11,7 @@ import { setupErrorHandlers } from './src/serverSetup/errorHandlers.js'
 import { setupSession } from './src/serverSetup/session.js'
 import { setupNunjucks } from './src/serverSetup/nunjucks.js'
 import { setupSentry } from './src/serverSetup/sentry.js'
-import getDatasetSlugNameMapping from './src/utils/datasetteQueries/getDatasetSlugNameMapping.js'
+import { getDatasetSlugNameMapping } from './src/utils/datasetteQueries/getDatasetSlugNameMapping.js'
 
 dotenv.config()
 
