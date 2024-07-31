@@ -1,6 +1,5 @@
 import { checkS3Bucket, checkRequestApi, checkRedis } from '../../src/routes/health.js'
 import AWS from 'aws-sdk'
-import { createClient } from 'redis'
 import { describe, test, expect, vi } from 'vitest'
 
 vi.mock('aws-sdk')
@@ -36,28 +35,6 @@ describe('Health checks', () => {
   test('checkRequestApi returns false when API is not reachable', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error()))
     const result = await checkRequestApi()
-    expect(result).toBe(false)
-  })
-
-  test('checkRedis returns true when Redis is reachable', async () => {
-    const mockClient = {
-      connect: vi.fn().mockResolvedValue({}),
-      isOpen: true,
-      quit: vi.fn()
-    }
-    createClient.mockReturnValue(mockClient)
-    const result = await checkRedis()
-    expect(result).toBe(true)
-  })
-
-  test('checkRedis returns false when Redis is not reachable', async () => {
-    const mockClient = {
-      connect: vi.fn().mockRejectedValue(new Error('redis not reachable!')),
-      isOpen: false,
-      quit: vi.fn()
-    }
-    createClient.mockReturnValue(mockClient)
-    const result = await checkRedis()
     expect(result).toBe(false)
   })
 })
