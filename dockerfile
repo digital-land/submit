@@ -1,18 +1,16 @@
 # Stage 1: Build
-FROM node:20-alpine as build
+FROM node:22.5.1-alpine as build
 
-RUN npm install -g npm@10.3.0
+COPY package.json package-lock.json .
 
-COPY package.json .
-
-RUN npm install
+RUN npm ci
 
 COPY . .
 
 RUN npm run build
 
 # Stage 2: Production
-FROM node:20-alpine
+FROM node:22.5.1-alpine
 
 WORKDIR /app
 
@@ -21,7 +19,7 @@ COPY --from=build node_modules node_modules
 COPY --from=build src src
 COPY --from=build public public
 COPY --from=build index.js .
-COPY --from=build package.json .
+COPY --from=build package.json .    
 
 ARG GIT_COMMIT
 ENV GIT_COMMIT=$GIT_COMMIT

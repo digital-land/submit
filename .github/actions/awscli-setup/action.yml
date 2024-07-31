@@ -1,0 +1,26 @@
+name: "AWS CLI setup"
+description: "Installs AWS CLI tools"
+inputs:
+  file-url:
+    description: "URL of the awscli zip file."
+    required: false
+    default: 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip'
+  include-rsync: 
+    description: "Should also install rsync?"
+    required: false
+    default: true
+runs:
+  using: 'composite'
+  steps:
+    - id: install-awscli
+      shell: bash
+      run: |
+        curl --silent "${{ inputs.file-url }}" -o "awscli.zip"
+        unzip -q awscli.zip
+        sudo ./aws/install --update
+    - id: install-rsync
+      shell: bash
+      if: ${{ inputs.include-rsync }}
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get -qq install -y rsync
