@@ -20,7 +20,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: development
+    environment:  ${{ inputs.environment }}
     env:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
     steps:
