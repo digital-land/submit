@@ -23,15 +23,17 @@ describe('datasette', () => {
     const query = 'SELECT * FROM table_name'
     const result = await datasette.runQuery(query)
 
-    expect(result).toHaveProperty('columns')
-    expect(result).toHaveProperty('formattedData')
-    expect(result).toHaveProperty('rows')
-    expect(result.formattedData).toHaveLength(2)
-    expect(result.formattedData[0]).toEqual({ column1: 'value1', column2: 'value2' })
-    expect(result.formattedData[1]).toEqual({ column1: 'value3', column2: 'value4' })
-    expect(result.columns).toEqual(['column1', 'column2'])
-    expect(result.rows[0]).toEqual(['value1', 'value2'])
-    expect(result.rows[1]).toEqual(['value3', 'value4'])
+    expect(result).toEqual({
+      columns: ['column1', 'column2'],
+      formattedData: [
+        { column1: 'value1', column2: 'value2' },
+        { column1: 'value3', column2: 'value4' }
+      ],
+      rows: [
+        ['value1', 'value2'],
+        ['value3', 'value4']
+      ]
+    })
   })
 
   it('throws an error if the query fails', async () => {
@@ -45,8 +47,9 @@ describe('datasette', () => {
     const rows = [['value1', 'value2'], ['value3', 'value4']]
     const formattedData = formatData(columns, rows)
 
-    expect(formattedData).toHaveLength(2)
-    expect(formattedData[0]).toEqual({ column1: 'value1', column2: 'value2' })
-    expect(formattedData[1]).toEqual({ column1: 'value3', column2: 'value4' })
+    expect(formattedData).toEqual([
+      { column1: 'value1', column2: 'value2' },
+      { column1: 'value3', column2: 'value4' }
+    ])
   })
 })
