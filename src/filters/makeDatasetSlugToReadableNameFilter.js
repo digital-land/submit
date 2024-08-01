@@ -20,7 +20,7 @@ export const makeDatasetSlugToReadableNameFilter = (datasetNameMapping) => {
     if (!name) {
       // throw new Error(`Can't find a name for ${slug}`)
       // ToDo: work out what to do here? potentially update it with data from datasette
-      logger.error(`can't find a name for ${slug}`)
+      logger.warn(`can't find a name for ${slug}`)
       return slug
     }
     return name

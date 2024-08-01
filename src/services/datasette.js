@@ -24,7 +24,7 @@ export default {
         formattedData: formatData(response.data.columns, response.data.rows)
       }
     } catch (error) {
-      logger.error(error)
+      logger.warn(error)
       throw error
     }
   }
