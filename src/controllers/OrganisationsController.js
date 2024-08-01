@@ -10,7 +10,7 @@ const availableDatasets = Object.values(dataSubjects)
       .map(dataset => dataset.value)
   )
 
-const LpaOverviewController = {
+const organisationsController = {
   /**
    * Get LPA overview data and render the overview page
    * @param {Request} req - Express request object
@@ -63,12 +63,16 @@ const LpaOverviewController = {
         datasetsWithErrors
       }
 
-      res.render('manage/lpa-overview.html', params)
+      res.render('organisations/overview.html', params)
     } catch (error) {
       logger.error(error)
       next(error)
     }
+  },
+
+  async getOrganisations (req, res, next) {
+    res.render('organisations/find.html')
   }
 }
 
-export default LpaOverviewController
+export default organisationsController
