@@ -13,25 +13,29 @@ AWS.config.update({
 })
 
 router.get('/', async (req, res) => {
+  const dependencies = [
+    {
+      name: 's3-bucket',
+      status: await checkS3Bucket() ? 'ok' : 'unreachable'
+    },
+    {
+      name: 'request-api',
+      status: await checkRequestApi() ? 'ok' : 'unreachable'
+    }
+  ]
+  if (config.redis) {
+    dependencies.push({
+      name: 'redis',
+      status: await checkRedis() ? 'ok' : 'unreachable'
+    })
+  }
+
   const toReturn = {
     name: config.serviceName,
     environment: config.environment,
     version: process.env.GIT_COMMIT || 'unknown',
     maintenance: config.maintenance.serviceUnavailable,
-    dependencies: [
-      {
-        name: 's3-bucket',
-        status: await checkS3Bucket() ? 'ok' : 'unreachable'
-      },
-      {
-        name: 'request-api',
-        status: await checkRequestApi() ? 'ok' : 'unreachable'
-      },
-      {
-        name: 'redis',
-        status: await checkRedis() ? 'ok' : 'unreachable'
-      }
-    ]
+    dependencies
   }
 
   const isAnyServiceUnreachable = toReturn.dependencies.some(service => service.status === 'unreachable')

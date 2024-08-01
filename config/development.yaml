@@ -8,6 +8,6 @@ aws: {
 redis: {
     secure: true,
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
-    port: '6379'
+    port: 6379
 }
 url: 'https://publish.development.digital-land.info/'
