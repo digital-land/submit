@@ -30,10 +30,10 @@ jobs:
     strategy:
       matrix:
         environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
-    if: ${{ inputs.environment != 'production' }}
+    if: ${{ matrix.environment != 'production' }}
     uses: ./.github/workflows/deploy.yml
     with:
-      environment: '${{ inputs.environment }}'
+      environment: '${{ matrix.environment }}'
     secrets: inherit
 
  
