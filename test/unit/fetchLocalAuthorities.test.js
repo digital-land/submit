@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { vi, it, describe, expect } from 'vitest'
-import { fetchLocalAuthorities } from '../../src/utils/fetchLocalAuthorities'
+import { fetchLocalAuthorities } from '../../src/services/fetchLocalAuthorities'
 
 // Mock axios.get to return a fake response
 vi.mock('axios')

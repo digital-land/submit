@@ -1,5 +1,5 @@
 import PageController from './pageController.js'
-import { getRequestData } from '../utils/asyncRequestApi.js'
+import { getRequestData } from '../services/asyncRequestApi.js'
 
 const failedFileRequestTemplate = 'results/failedFileRequest'
 const failedUrlRequestTemplate = 'results/failedUrlRequest'

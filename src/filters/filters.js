@@ -4,33 +4,14 @@ import validationMessageLookup from './validationMessageLookup.js'
 import toErrorList from './toErrorList.js'
 import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
+import { makeDatasetSlugToReadableNameFilter, createDatasetMapping } from './makeDatasetSlugToReadableNameFilter.js'
 
 const { govukMarkdown } = xGovFilters
 
-/**
- *
- * @param {*} dataSubjects
- * @returns {Map<string,string>}
- */
-function createDatasetMapping (dataSubjects) {
-  const mapping = new Map()
-  for (const data of Object.values(dataSubjects)) {
-    for (const dataset of data.dataSets) {
-      mapping.set(dataset.value, dataset.text)
-    }
-  }
-  return mapping
-}
-
 const addFilters = (nunjucksEnv, { dataSubjects }) => {
   const datasetNameMapping = createDatasetMapping(dataSubjects)
-  nunjucksEnv.addFilter('datasetSlugToReadableName', function (slug) {
-    const name = datasetNameMapping.get(slug)
-    if (!name) {
-      throw new Error(`Can't find a name for ${slug}`)
-    }
-    return name
-  })
+  const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
+  nunjucksEnv.addFilter('datasetSlugToReadableName', datasetSlugToReadableName)
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
   nunjucksEnv.addFilter('getkeys', getkeys)

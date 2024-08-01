@@ -44,3 +44,61 @@ $govuk-global-styles: true;
   height: 500px;
   @include govuk-responsive-margin(6, $direction: "bottom");
 }
+
+.task-div {
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.dataset-summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: govuk-spacing(3);
+  row-gap: govuk-spacing(6);
+  align-items: stretch;
+}
+
+.dataset-summary-grid .govuk-summary-card {
+  width: calc((100% / 3) - govuk-spacing(3));
+}
+
+.dataset-summary-grid .govuk-summary-card__title-wrapper {
+  align-items: flex-start;
+}
+
+.dataset-status {
+  margin-bottom: govuk-spacing(6);
+
+  display: flex;
+  column-gap: govuk-spacing(6);
+}
+
+.dataset-status--item {
+  background-color: $govuk-brand-colour;
+  color: govuk-colour("white");
+
+  padding: govuk-spacing(2) govuk-spacing(3);
+  flex-grow: 1;
+  flex-basis: 0;
+
+  @include govuk-font($size: 24, $weight: bold);
+}
+
+.big-number {
+  @include govuk-font($size: 80, $weight: bold);
+  display: block;
+}
+
+.planning-data-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  column-gap: govuk-spacing(2);
+}
+
+code,
+code * {
+  font-family: monospace;
+}

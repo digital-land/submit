@@ -1,0 +1,146 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% set pageName = organisation.name + " overview" %}
+{% set serviceType = 'Manage' %}
+
+{% block beforeContent %}
+{{ super() }}
+
+{{ govukBreadcrumbs({
+  items: [
+    {
+      text: "Home",
+      href: "/overview/start"
+    },
+    {
+      text: "Organisations",
+      href: "/overview/organisations"
+    }
+  ]
+}) }}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-xl">
+      {{ pageName }}
+    </h1>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <div class="dataset-status">
+      <div class="dataset-status--item">
+        <span class="big-number">{{datasetsWithEndpoints}}/{{totalDatasets}}</span>
+        datasets provided
+      </div>
+
+      <div class="dataset-status--item">
+        <span class="big-number">{{datasetsWithErrors}}</span>
+        datasets with errors
+      </div>
+
+      <div class="dataset-status--item">
+        <span class="big-number">{{datasetsWithIssues}}</span>
+        datasets with issues
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h2 class="govuk-heading-m">Datasets</h2>
+    <ul class="govuk-task-list">
+
+      {% for dataset in datasets %}
+        <li class="govuk-task-list__item govuk-task-list__item--with-link">
+          <div class="govuk-task-list__name-and-hint">
+            <h2 class="govuk-heading-m">
+              <a class="govuk-link govuk-task-list__link"
+                href="/overview/{{ organisation.organisation }}/dataset/article-4-direction">
+                {{dataset.slug | datasetSlugToReadableName}}
+              </a>
+            </h2>
+            <div class="govuk-task-list__hint">
+              {% if dataset.endpoint is null %}
+                <p>Endpoint not provided</p>
+              {% elif dataset.error %}
+                <p>{{dataset.error}}</p>
+              {% elif dataset.issue %}
+                <p>{{dataset.issue}}</p>
+              {% else %}
+                <p>Endpoint provided</p>
+              {% endif %}
+
+              <ul class="planning-data-actions">
+                {% if dataset.endpoint is null %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">Add endpoint</a>
+                </li>
+                {% endif %}
+                {% if dataset.error %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">Fix errors</a>
+                </li>
+                {% elseif dataset.issue %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">Fix issues</a>
+                </li>
+                {% endif %}
+                {% if dataset.endpoint %}
+                <li class="planning-data-actions--item">
+                  <a href="/taskLists/taskChecklist">View data</a>
+                </li>
+                {% endif %}
+              </ul>
+
+            </div>
+          </div>
+
+          <div class="govuk-task-list__status">
+            {% if dataset.endpoint is null %}
+              {{govukTag({
+                text: "Not provided",
+                classes: "govuk-tag--grey"
+              })}}
+            {% elif dataset.error %}
+              {{govukTag({
+                text: "Error",
+                classes: "govuk-tag--red"
+              })}}
+            {% elif dataset.issue %}
+              {{govukTag({
+                text: "Issues",
+                classes: "govuk-tag--yellow"
+              })}}
+            {% else %}
+              {{govukTag({
+                text: "No issues",
+                classes: "govuk-tag--green"
+              })}}
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+
+    </ul>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <p>View your <a href="/taskLists/taskChecklist">task list</a> to fix and improve your datasets</p>
+  </div>
+</div>
+
+{% endblock %}
