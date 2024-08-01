@@ -20,12 +20,12 @@ describe('makeDatasetSlugToReadableNameFilter', () => {
     expect(filter('unknown-slug')).toBe('unknown-slug')
   })
 
-  it('logs an error if the provided slug is not found in the dataset name mapping', () => {
-    const loggerErrorSpy = vi.spyOn(logger, 'error')
+  it('logs an warn if the provided slug is not found in the dataset name mapping', () => {
+    const loggerWarningSpy = vi.spyOn(logger, 'warn')
 
     filter('unknown-slug')
 
-    expect(loggerErrorSpy).toHaveBeenCalledTimes(1)
-    expect(loggerErrorSpy).toHaveBeenCalledWith('can\'t find a name for unknown-slug')
+    expect(loggerWarningSpy).toHaveBeenCalledTimes(1)
+    expect(loggerWarningSpy).toHaveBeenCalledWith('can\'t find a name for unknown-slug')
   })
 })
