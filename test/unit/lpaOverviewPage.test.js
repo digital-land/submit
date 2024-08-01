@@ -78,7 +78,7 @@ describe('LPA Overview Page', () => {
       }
     ]
   }
-  const html = nunjucks.render('manage/lpa-overview.html', params)
+  const html = nunjucks.render('organisations/overview.html', params)
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document

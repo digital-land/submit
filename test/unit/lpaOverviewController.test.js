@@ -33,7 +33,7 @@ describe('LpaOverviewController', () => {
     await LpaOverviewController.getOverview(req, res, next)
 
     expect(res.render).toHaveBeenCalledTimes(1)
-    expect(res.render).toHaveBeenCalledWith('manage/lpa-overview.html', expect.objectContaining({
+    expect(res.render).toHaveBeenCalledWith('organisations/overview.html', expect.objectContaining({
       organisation: { name: 'Test LPA' },
       datasets: expect.arrayContaining([
         { endpoint: 'https://example.com', issue: false, error: false, slug: 'dataset1' },
