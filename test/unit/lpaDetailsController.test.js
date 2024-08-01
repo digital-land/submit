@@ -4,14 +4,14 @@
 import PageController from '../../src/controllers/pageController.js'
 import { vi, it, describe, expect, beforeEach, afterEach } from 'vitest'
 
-vi.mock('../../src/services/fetchLocalAuthorities.js')
+vi.mock('../../src/utils/datasetteQueries/fetchLocalAuthorities.js')
 
 describe('lpaDetailsController', async () => {
   let fetchLocalAuthorities
   let controller
 
   beforeEach(async () => {
-    fetchLocalAuthorities = await import('../../src/services/fetchLocalAuthorities')
+    fetchLocalAuthorities = await import('../../src/utils/datasetteQueries/fetchLocalAuthorities')
     const LpaDetailsController = await import('../../src/controllers/lpaDetailsController.js')
     controller = new LpaDetailsController.default({
       route: '/lpa-details'

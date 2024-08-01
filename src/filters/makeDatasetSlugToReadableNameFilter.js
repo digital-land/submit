@@ -20,24 +20,9 @@ export const makeDatasetSlugToReadableNameFilter = (datasetNameMapping) => {
     if (!name) {
       // throw new Error(`Can't find a name for ${slug}`)
       // ToDo: work out what to do here? potentially update it with data from datasette
-      logger.warning(`can't find a name for ${slug}`)
+      logger.warn(`can't find a name for ${slug}`)
       return slug
     }
     return name
   }
-}
-
-/**
- *
- * @param {*} dataSubjects
- * @returns {Map<string,string>}
- */
-export const createDatasetMapping = (dataSubjects) => {
-  const mapping = new Map()
-  for (const data of Object.values(dataSubjects)) {
-    for (const dataset of data.dataSets) {
-      mapping.set(dataset.value, dataset.text)
-    }
-  }
-  return mapping
 }

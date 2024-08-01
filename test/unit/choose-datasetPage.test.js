@@ -4,7 +4,7 @@ import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 
-const nunjucks = setupNunjucks({ dataSubjects: {} })
+const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 describe('choose dataset View', () => {
   const params = {
