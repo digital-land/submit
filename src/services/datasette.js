@@ -12,7 +12,7 @@ export default {
       const response = await axios.get(url)
       return response.data
     } catch (error) {
-      logger.error(error)
+      logger.warn(error)
       throw error
     }
   }
