@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import SubmitUrlController from '../../src/controllers/submitUrlController.js'
 
 describe('SubmitUrlController', async () => {
-  vi.mock('@/utils/asyncRequestApi.js')
+  vi.mock('@/services/asyncRequestApi.js')
 
   let submitUrlController
   let asyncRequestApi
@@ -23,7 +23,7 @@ describe('SubmitUrlController', async () => {
   })
 
   beforeEach(async () => {
-    asyncRequestApi = await import('@/utils/asyncRequestApi')
+    asyncRequestApi = await import('@/services/asyncRequestApi')
     asyncRequestApi.postUrlRequest = vi.fn()
 
     submitUrlController = new SubmitUrlController({

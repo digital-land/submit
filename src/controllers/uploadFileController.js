@@ -8,7 +8,7 @@ import multer from 'multer'
 import { promises as fs, createReadStream } from 'fs'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
-import { postFileRequest } from '../utils/asyncRequestApi.js'
+import { postFileRequest } from '../services/asyncRequestApi.js'
 import { allowedFileTypes } from '../utils/utils.js'
 
 AWS.config.update({

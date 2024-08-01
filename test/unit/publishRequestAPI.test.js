@@ -1,5 +1,5 @@
 import { it, describe, expect, afterEach, vi } from 'vitest'
-import { postFileRequest, postUrlRequest, getRequestData } from '../../src/utils/asyncRequestApi.js'
+import { postFileRequest, postUrlRequest, getRequestData } from '../../src/services/asyncRequestApi.js'
 import axios from 'axios'
 import RequestData from '../../src/models/requestData.js'
 import config from '../../config/index.js'
