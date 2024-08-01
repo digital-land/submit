@@ -19,7 +19,7 @@ describe('OrganisationsController.js', () => {
       const req = { params: { lpa: 'test-lpa' } }
       const res = { render: vi.fn() }
       const next = vi.fn()
-  
+
       const expectedResponse = {
         name: 'Test LPA',
         datasets: {
@@ -28,11 +28,11 @@ describe('OrganisationsController.js', () => {
           dataset3: { endpoint: 'https://example.com', issue: false, error: true }
         }
       }
-  
+
       performanceDbApi.getLpaOverview = vi.fn().mockResolvedValue(expectedResponse)
-  
+
       await LpaOverviewController.getOverview(req, res, next)
-  
+
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/overview.html', expect.objectContaining({
         organisation: { name: 'Test LPA' },
@@ -47,18 +47,18 @@ describe('OrganisationsController.js', () => {
         datasetsWithErrors: 1
       }))
     })
-  
+
     it('should catch and pass errors to the next function', async () => {
       const req = { params: { lpa: 'test-lpa' } }
       const res = { }
       const next = vi.fn()
-  
+
       const error = new Error('Test error')
-  
+
       vi.mocked(performanceDbApi.getLpaOverview).mockRejectedValue(error)
-  
+
       await LpaOverviewController.getOverview(req, res, next)
-  
+
       expect(next).toHaveBeenCalledTimes(1)
       expect(next).toHaveBeenCalledWith(error)
     })
@@ -71,5 +71,4 @@ describe('OrganisationsController.js', () => {
 
     it.todo('should catch errors and pass them onto the next function')
   })
-
 })
