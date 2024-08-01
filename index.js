@@ -11,8 +11,7 @@ import { setupErrorHandlers } from './src/serverSetup/errorHandlers.js'
 import { setupSession } from './src/serverSetup/session.js'
 import { setupNunjucks } from './src/serverSetup/nunjucks.js'
 import { setupSentry } from './src/serverSetup/sentry.js'
-
-import { dataSubjects } from './src/utils/utils.js'
+import { getDatasetSlugNameMapping } from './src/utils/datasetteQueries/getDatasetSlugNameMapping.js'
 
 dotenv.config()
 
@@ -20,7 +19,10 @@ const app = express()
 
 setupMiddlewares(app)
 setupSession(app)
-setupNunjucks({ app, dataSubjects })
+setupNunjucks({
+  app,
+  datasetNameMapping: await getDatasetSlugNameMapping()
+})
 setupRoutes(app)
 setupSentry(app)
 setupErrorHandlers(app)

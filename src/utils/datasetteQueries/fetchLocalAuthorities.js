@@ -1,5 +1,5 @@
-import axios from 'axios'
-import logger from '../../src/utils/logger.js'
+import datasette from '../../services/datasette.js'
+import logger from '../logger.js'
 
 /**
  * Fetches a list of local authority names from a specified dataset.
@@ -24,15 +24,14 @@ export const fetchLocalAuthorities = async () => {
     order by
       provision.organisation`
 
-  const url = `https://datasette.planning.data.gov.uk/digital-land.json?sql=${encodeURIComponent(sql)}`
   try {
-    const response = await axios.get(url)
-    const names = response.data.rows.map(row => {
-      if (row[1] === null) {
+    const response = await datasette.runQuery(sql)
+    const names = response.formattedData.map(row => {
+      if (row.name == null) {
         logger.debug('Null value found in response:', row)
         return null
       } else {
-        return row[1]
+        return row.name
       }
     }).filter(name => name !== null) // Filter out null values
     return names
