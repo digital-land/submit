@@ -71,4 +71,10 @@ describe('OrganisationsController.js', () => {
 
     it.todo('should catch errors and pass them onto the next function')
   })
+
+  describe('get-started', () => {
+    it.todo('should render the get-started template with the correct params')
+
+    it.todo('should catch and pass errors to the next function')
+  })
 })
