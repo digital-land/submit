@@ -76,7 +76,7 @@ const organisationsController = {
 
   async getGetStarted (req, res, next) {
     res.render('organisations/get-started.html')
-  },
+  }
 }
 
 export default organisationsController
