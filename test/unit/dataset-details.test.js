@@ -8,7 +8,7 @@ import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 import { mockDataSubjects } from './data.js'
 
-const nunjucks = setupNunjucks({ dataSubjects: mockDataSubjects })
+const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 function errorTestFn ({
   params,
@@ -41,7 +41,7 @@ describe('dataset details View', () => {
     errors: {}
   }
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
-  const datasetName = mockDataSubjects.mockDataset.dataSets[0].text
+  const datasetName = mockDataSubjects.mockDataset.dataSets[0].value
   runGenericPageTests(html, {
     pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit planning and housing data for England`,
     serviceName: config.serviceName

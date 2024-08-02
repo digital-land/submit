@@ -4,12 +4,11 @@ import validationMessageLookup from './validationMessageLookup.js'
 import toErrorList from './toErrorList.js'
 import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
-import { makeDatasetSlugToReadableNameFilter, createDatasetMapping } from './makeDatasetSlugToReadableNameFilter.js'
+import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadableNameFilter.js'
 
 const { govukMarkdown } = xGovFilters
 
-const addFilters = (nunjucksEnv, { dataSubjects }) => {
-  const datasetNameMapping = createDatasetMapping(dataSubjects)
+const addFilters = (nunjucksEnv, { datasetNameMapping }) => {
   const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
   nunjucksEnv.addFilter('datasetSlugToReadableName', datasetSlugToReadableName)
 

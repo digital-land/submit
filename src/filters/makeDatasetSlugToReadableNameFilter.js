@@ -26,18 +26,3 @@ export const makeDatasetSlugToReadableNameFilter = (datasetNameMapping) => {
     return name
   }
 }
-
-/**
- *
- * @param {*} dataSubjects
- * @returns {Map<string,string>}
- */
-export const createDatasetMapping = (dataSubjects) => {
-  const mapping = new Map()
-  for (const data of Object.values(dataSubjects)) {
-    for (const dataset of data.dataSets) {
-      mapping.set(dataset.value, dataset.text)
-    }
-  }
-  return mapping
-}

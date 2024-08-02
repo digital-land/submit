@@ -5,7 +5,6 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
-import { mockDataSubjects } from './data.js'
 
 describe('check-answers View', async () => {
   const params = {
@@ -19,7 +18,7 @@ describe('check-answers View', async () => {
       hasLicence: 'true'
     }
   }
-  const nunjucks = setupNunjucks({ dataSubjects: mockDataSubjects })
+  const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
   const html = stripWhitespace(nunjucks.render('check-answers.html', params))
 
   runGenericPageTests(html, {
@@ -43,7 +42,7 @@ describe('check-answers View', async () => {
   })
 
   it('should render the dataset entered', () => {
-    const datasetRegex = new RegExp('<div class="govuk-summary-list__row">.*Dataset.*A Mock dataset.*Change.*</div>', 'g')
+    const datasetRegex = new RegExp('<div class="govuk-summary-list__row">.*Dataset.*mockDataset.*Change.*</div>', 'g')
     expect(html).toMatch(datasetRegex)
   })
 

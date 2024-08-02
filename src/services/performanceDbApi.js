@@ -86,19 +86,10 @@ ORDER BY
 
     const result = await datasette.runQuery(query)
 
-    // convert the rows into an easier to access format
-    const columns = result.columns
-    const rows = result.rows.map((row) => {
-      return row.reduce((acc, val, index) => {
-        acc[columns[index]] = val
-        return acc
-      }, {})
-    })
-
-    const datasets = rows.reduce((accumulator, row) => {
+    const datasets = result.formattedData.reduce((accumulator, row) => {
       let error
-      if (row.http_status !== '200' || row.exception !== '') {
-        error = row.exception !== '' ? row.exception : `endpoint returned with a status of ${row.http_status}`
+      if (row.http_status !== '200' || row.exception) {
+        error = row.exception ? row.exception : `endpoint returned with a status of ${row.http_status}`
       }
 
       let issue
@@ -115,7 +106,7 @@ ORDER BY
     }, {})
 
     return {
-      name: result.rows[0][1],
+      name: result.formattedData[0].name,
       datasets
     }
   }
