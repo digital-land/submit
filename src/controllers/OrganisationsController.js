@@ -71,7 +71,44 @@ const organisationsController = {
   },
 
   async getOrganisations (req, res, next) {
-    res.render('organisations/find.html')
+
+    const alphabetisedOrgs = {
+      A: [
+        {
+          name: 'ant'
+        }, 
+        {
+          name: 'aber'
+        }, 
+        {
+          name: 'arrot'
+        }
+      ],
+      B: [
+        {
+          name: 'barnsly'
+        }, 
+        {
+          name: 'big ben'
+        }, 
+        {
+          name: 'butter'
+        }
+      ],
+      C: [
+        {
+          name: 'cec'
+        }, 
+        {
+          name: 'cing'
+        }, 
+        {
+          name: 'cheltnham'
+        }
+      ]
+    }
+
+    res.render('organisations/find.html', { alphabetisedOrgs })
   }
 }
 
