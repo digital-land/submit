@@ -71,15 +71,14 @@ const organisationsController = {
   },
 
   async getOrganisations (req, res, next) {
-
     const alphabetisedOrgs = {
       A: [
         {
           name: 'ant'
-        }, 
+        },
         {
           name: 'aber'
-        }, 
+        },
         {
           name: 'arrot'
         }
@@ -87,10 +86,10 @@ const organisationsController = {
       B: [
         {
           name: 'barnsly'
-        }, 
+        },
         {
           name: 'big ben'
-        }, 
+        },
         {
           name: 'butter'
         }
@@ -98,10 +97,10 @@ const organisationsController = {
       C: [
         {
           name: 'cec'
-        }, 
+        },
         {
           name: 'cing'
-        }, 
+        },
         {
           name: 'cheltnham'
         }
