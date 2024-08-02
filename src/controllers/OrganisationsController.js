@@ -79,21 +79,26 @@ const organisationsController = {
    * @param {NextFunction} next
    */
   async getOrganisations (req, res, next) {
-    const sql = 'select name, organisation from organisation'
-    const result = await datasette.runQuery(sql)
+    try {
+      const sql = 'select name, organisation from organisation'
+      const result = await datasette.runQuery(sql)
 
-    const sortedResults = result.formattedData.sort((a, b) => {
-      return a.name.localeCompare(b.name)
-    })
+      const sortedResults = result.formattedData.sort((a, b) => {
+        return a.name.localeCompare(b.name)
+      })
 
-    const alphabetisedOrgs = sortedResults.reduce((acc, current) => {
-      const firstLetter = current.name.charAt(0).toUpperCase()
-      acc[firstLetter] = acc[firstLetter] || []
-      acc[firstLetter].push(current)
-      return acc
-    }, {})
+      const alphabetisedOrgs = sortedResults.reduce((acc, current) => {
+        const firstLetter = current.name.charAt(0).toUpperCase()
+        acc[firstLetter] = acc[firstLetter] || []
+        acc[firstLetter].push(current)
+        return acc
+      }, {})
 
-    res.render('organisations/find.html', { alphabetisedOrgs })
+      res.render('organisations/find.html', { alphabetisedOrgs })
+    } catch (err) {
+      logger.error(err)
+      next(err)
+    }
   }
 
 }
