@@ -1,3 +1,7 @@
+/**
+ * This file is taken from https://github.com/alphagov/collections/blob/main/app/assets/javascripts/modules/list-filter.js
+ */
+
 /* eslint-disable no-var */
 //= require govuk_publishing_components/vendor/polyfills/closest
 
