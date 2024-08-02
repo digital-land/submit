@@ -74,35 +74,75 @@ const organisationsController = {
     const alphabetisedOrgs = {
       A: [
         {
-          name: 'ant'
+          name: 'Aberdeen'
         },
         {
-          name: 'aber'
+          name: 'Aylesbury'
         },
         {
-          name: 'arrot'
+          name: 'Ashford'
         }
       ],
       B: [
         {
-          name: 'barnsly'
+          name: 'Bath'
         },
         {
-          name: 'big ben'
+          name: 'Birmingham'
         },
         {
-          name: 'butter'
+          name: 'Brighton'
         }
       ],
       C: [
         {
-          name: 'cec'
+          name: 'Cambridge'
         },
         {
-          name: 'cing'
+          name: 'Cardiff'
         },
         {
-          name: 'cheltnham'
+          name: 'Cheltenham'
+        },
+        {
+          name: 'Chester'
+        }
+      ],
+      D: [
+        {
+          name: 'Derby'
+        },
+        {
+          name: 'Dundee'
+        }
+      ],
+      E: [
+        {
+          name: 'Edinburgh'
+        },
+        {
+          name: 'Epsom'
+        }
+      ],
+      G: [
+        {
+          name: 'Glasgow'
+        },
+        {
+          name: 'Gloucester'
+        }
+      ],
+      H: [
+        {
+          name: 'Hull'
+        }
+      ],
+      L: [
+        {
+          name: 'Leeds'
+        },
+        {
+          name: 'London'
         }
       ]
     }
