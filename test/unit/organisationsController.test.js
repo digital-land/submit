@@ -1,6 +1,7 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import LpaOverviewController from '../../src/controllers/OrganisationsController.js'
+import organisationsController from '../../src/controllers/OrganisationsController.js'
 import performanceDbApi from '../../src/services/performanceDbApi.js'
+import datasette from '../../src/services/datasette.js'
 
 vi.mock('../../src/services/performanceDbApi.js')
 vi.mock('../../src/utils/utils.js', () => {
@@ -8,6 +9,11 @@ vi.mock('../../src/utils/utils.js', () => {
     dataSubjects: {}
   }
 })
+vi.mock('../../src/services/datasette.js', () => ({
+  default: {
+    runQuery: vi.fn()
+  }
+}))
 
 describe('OrganisationsController.js', () => {
   beforeEach(() => {
@@ -31,7 +37,7 @@ describe('OrganisationsController.js', () => {
 
       performanceDbApi.getLpaOverview = vi.fn().mockResolvedValue(expectedResponse)
 
-      await LpaOverviewController.getOverview(req, res, next)
+      await organisationsController.getOverview(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/overview.html', expect.objectContaining({
@@ -57,7 +63,7 @@ describe('OrganisationsController.js', () => {
 
       vi.mocked(performanceDbApi.getLpaOverview).mockRejectedValue(error)
 
-      await LpaOverviewController.getOverview(req, res, next)
+      await organisationsController.getOverview(req, res, next)
 
       expect(next).toHaveBeenCalledTimes(1)
       expect(next).toHaveBeenCalledWith(error)
@@ -73,8 +79,50 @@ describe('OrganisationsController.js', () => {
   })
 
   describe('get-started', () => {
-    it.todo('should render the get-started template with the correct params')
+    it('should render the get-started template with the correct params', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = { render: vi.fn() }
+      const next = vi.fn()
 
-    it.todo('should catch and pass errors to the next function')
+      datasette.runQuery.mockImplementation((query) => {
+        if (query.includes('example-lpa')) {
+          return {
+            formattedData: [
+              { name: 'Example LPA' }
+            ]
+          }
+        } else if (query.includes('example-dataset')) {
+          return {
+            formattedData: [
+              { name: 'Example Dataset' }
+            ]
+          }
+        }
+      })
+
+      await organisationsController.getGetStarted(req, res, next)
+
+      expect(res.render).toHaveBeenCalledTimes(1)
+      expect(res.render).toHaveBeenCalledWith('organisations/get-started.html', {
+        organisation: { name: 'Example LPA' },
+        dataset: { name: 'Example Dataset' }
+      })
+    })
+
+    it('should catch and pass errors to the next function', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = { render: vi.fn() }
+      const next = vi.fn()
+
+      // Mock the datasette.runQuery method to throw an error
+      datasette.runQuery.mockImplementation(() => {
+        throw new Error('example error')
+      })
+
+      await organisationsController.getGetStarted(req, res, next)
+
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
   })
 })
