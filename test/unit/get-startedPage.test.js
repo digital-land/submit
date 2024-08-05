@@ -47,43 +47,9 @@ describe('Get Started Page', () => {
     serviceName: config.serviceName
   })
 
-  it(' Renders the correct heading', () => {
-    expect(document.querySelector('h1').textContent).toContain('Get started with submitting your data')
-  })
-
-  it('Renders the correct step-by-step navigation', () => {
-    const stepNav = document.querySelector('.gem-c-step-nav')
-    expect(stepNav).not.toBeNull()
-    const steps = stepNav.querySelectorAll('.gem-c-step-nav__step')
-    expect(steps.length).toEqual(5) // 5 steps in the navigation
-
-    steps.forEach((step, i) => {
-      const expectedStepTitle = [
-        'Prepare your data',
-        'Create a data endpoint',
-        'Test your data',
-        'Submit your data',
-        'Update your data'
-      ][i]
-
-      expect(step.querySelector('.js-step-title').textContent).toContain(expectedStepTitle)
-    })
-  })
-
-  it('Renders the correct step content', () => {
-    const stepPanels = document.querySelectorAll('.gem-c-step-nav__panel')
-    expect(stepPanels.length).toEqual(5) // 5 step panels
-
-    stepPanels.forEach((stepPanel, i) => {
-      const expectedStepContent = [
-        'Prepare your data by following our guidance on data format and schema.',
-        'Create a data endpoint where we can access your data.',
-        'Test your data to ensure it meets our requirements.',
-        'Submit your data using our submission service.',
-        'Update your data regularly to ensure it remains accurate and up-to-date.'
-      ][i]
-
-      expect(stepPanel.querySelector('.gem-c-step-nav__paragraph').textContent).toContain(expectedStepContent)
-    })
+  it('Renders the correct headings', () => {
+    expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual('mock org')
+    expect(document.querySelector('h1').textContent).toContain('World heritage site buffer zone')
+    expect(document.querySelector('h2').textContent).toContain('How to prepare and submit your World heritage site buffer zone data')
   })
 })
