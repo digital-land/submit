@@ -76,22 +76,27 @@ const organisationsController = {
   },
 
   async getGetStarted (req, res, next) {
-    // get the organisation name
-    const lpa = req.params.lpa
-    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
-    const organisation = organisationResult.formattedData[0]
+    try {
+      // get the organisation name
+      const lpa = req.params.lpa
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
 
-    // get the dataset name
-    const datasetId = req.params.dataset
-    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-    const dataset = datasetResult.formattedData[0]
+      // get the dataset name
+      const datasetId = req.params.dataset
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
 
-    const params = {
-      organisation,
-      dataset
+      const params = {
+        organisation,
+        dataset
+      }
+
+      res.render('organisations/get-started.html', params)
+    } catch (err) {
+      logger.error(err)
+      next(err)
     }
-
-    res.render('organisations/get-started.html', params)
   }
 }
 
