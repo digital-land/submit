@@ -1,6 +1,9 @@
 {% extends "layouts/main.html" %}
 
-{% set pageName %}{{organisation.name}} — {{dataset}} — Get started{% endset %}
+{% set serviceType = 'Submit' %}
+{% set pageName %}
+    {{organisation.name}} - {{dataset.name}} - Get started
+{% endset %}
 
 {% block beforeContent %}
 
