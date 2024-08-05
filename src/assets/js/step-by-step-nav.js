@@ -400,11 +400,13 @@ window.GOVUK.Modules = window.GOVUK.Modules || {};
         this.stepContent.classList.remove('js-hidden')
         toggleLinkText.innerHTML = this.hideText
         stepChevron.classList.remove('gem-c-step-nav__chevron--down')
+        this.stepContent.style.display = 'block'
       } else {
         this.stepElement.classList.remove('step-is-shown')
         this.stepContent.classList.add('js-hidden')
         toggleLinkText.innerHTML = this.showText
         stepChevron.classList.add('gem-c-step-nav__chevron--down')
+        this.stepContent.style.display = 'none'
       }
       this.titleButton.setAttribute('aria-expanded', isShown)
     }

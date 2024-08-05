@@ -23,7 +23,8 @@ export default {
   entry: {
     map: '/src/assets/js/map.js',
     application: '/src/assets/js/application.js',
-    statusPage: '/src/assets/js/statusPage.js'
+    statusPage: '/src/assets/js/statusPage.js',
+    'step-by-step-nav': '/src/assets/js/step-by-step-nav.js'
   },
   output: {
     filename: '[name].bundle.js',
