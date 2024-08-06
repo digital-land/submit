@@ -138,4 +138,10 @@ describe('OrganisationsController.js', () => {
       expect(next).toHaveBeenCalledWith(error)
     })
   })
+
+  describe('get-started', () => {
+    it.todo('should render the get-started template with the correct params')
+
+    it.todo('should catch and pass errors to the next function')
+  })
 })

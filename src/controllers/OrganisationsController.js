@@ -99,6 +99,10 @@ const organisationsController = {
       logger.warn(err)
       next(err)
     }
+  },
+
+  async getGetStarted (req, res, next) {
+    res.render('organisations/get-started.html')
   }
 
 }

@@ -7,4 +7,6 @@ router.get('/', OrganisationsController.getOrganisations)
 
 router.get('/:lpa/overview', OrganisationsController.getOverview)
 
+router.get('/:lpa/dataset/:dataset/get-started', OrganisationsController.getGetStarted)
+
 export default router
