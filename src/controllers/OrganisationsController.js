@@ -102,7 +102,42 @@ const organisationsController = {
   },
 
   async getGetStarted (req, res, next) {
-    res.render('organisations/get-started.html')
+    const params = {
+      organisation: {
+        organisation: 'local-authority:ADU',
+        name: 'Adur District Council',
+        dataset: 'local-authority'
+      },
+      dataset: {
+        attribution: 'historic-england',
+        collection: 'historic-england',
+        consideration: 'world-heritage-sites',
+        dataset: 'world-heritage-site-buffer-zone',
+        description: '',
+        end_date: '',
+        entry_date: '',
+        github_discussion: '',
+        key_field: '',
+        entity_minimum: 16110000,
+        entity_maximum: 16129999,
+        licence: 'ogl3',
+        name: 'World heritage site buffer zone',
+        paint_options: '{ "colour": "#EB1EE5", "opacity": 0.2 }',
+        plural: 'World heritage site buffer zones',
+        phase: 'beta',
+        prefix: '',
+        realm: 'dataset',
+        replacement_dataset: '',
+        start_date: '',
+        text: 'A [World Heritage Site](/dataset/world-heritage-site) may have a [buffer zone](https://whc.unesco.org/en/series/25/) with implications for planning.',
+        typology: 'geography',
+        version: '1.0',
+        wikidata: 'Q9259',
+        wikipedia: 'World_Heritage_Site'
+      }
+    }
+
+    res.render('organisations/get-started.html', params)
   }
 
 }
