@@ -1,5 +1,13 @@
 /* globals MutationObserver, document */
 
+/**
+ * Initiates checks for elements with the class 'js-hidden' and updates their display and visibility styles accordingly.
+ *
+ * When an element gains the 'js-hidden' class, its display and visibility styles are set to 'none' and 'hidden', respectively.
+ * When an element loses the 'js-hidden' class, its display and visibility styles are reset to their default values.
+ *
+ * This function also hides any elements that already have the 'js-hidden' class when it is called.
+ */
 const initiateJsHiddenChecks = () => {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
