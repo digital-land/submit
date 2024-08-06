@@ -148,6 +148,10 @@ const organisationsController = {
     }
 
     res.render('organisations/find.html', { alphabetisedOrgs })
+  },
+
+  async getDatasetTaskList (req, res, next) {
+    res.render('organisations/datasetTaskList.html')
   }
 }
 
