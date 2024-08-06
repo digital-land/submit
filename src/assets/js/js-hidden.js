@@ -1,7 +1,8 @@
 const hideElementsWithJsHidden = () => {
   document.querySelectorAll('.js-hidden').forEach((el, i) => {
-    console.log(el)
+    console.log('Hiding element', el)
     el.style.display = 'none'
+    el.style.visibility = 'none'
   })
 }
 
