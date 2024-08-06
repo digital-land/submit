@@ -5,6 +5,8 @@
 /* eslint-disable no-var */
 //= require govuk_publishing_components/vendor/polyfills/closest
 
+const keyPauseTime = 20
+
 window.GOVUK = window.GOVUK || {}
 window.GOVUK.Modules = window.GOVUK.Modules || {};
 
@@ -34,7 +36,7 @@ window.GOVUK.Modules = window.GOVUK.Modules || {};
       clearTimeout(this.filterTimeout)
       this.filterTimeout = setTimeout(function () {
         this.$module.filterList(searchTerm)
-      }.bind(this), 200)
+      }.bind(this), keyPauseTime)
     }.bind(this))
   }
 
