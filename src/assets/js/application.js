@@ -3,8 +3,8 @@
     as it will be loaded into the base nunjucks template.
 */
 
-import hideElementsWithJsHidden from './js-hidden.js'
+import initiateJsHiddenChecks from './js-hidden.js'
 
 window.addEventListener('load', () => {
-  hideElementsWithJsHidden()
+  initiateJsHiddenChecks()
 })
