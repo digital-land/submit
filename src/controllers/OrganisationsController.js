@@ -96,7 +96,7 @@ const organisationsController = {
 
       res.render('organisations/find.html', { alphabetisedOrgs })
     } catch (err) {
-      logger.error(err)
+      logger.warn(err)
       next(err)
     }
   }
