@@ -1,3 +1,4 @@
+import datasette from '../services/datasette.js'
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
 import logger from '../utils/logger.js'
 import { dataSubjects } from '../utils/utils.js'
@@ -70,9 +71,60 @@ const organisationsController = {
     }
   },
 
+  /**
+   * Handles the GET /organisations request
+   *
+   * @param {Request} req
+   * @param {Response} res
+   * @param {NextFunction} next
+   */
   async getOrganisations (req, res, next) {
-    res.render('organisations/find.html')
+    try {
+      const sql = 'select name, organisation from organisation'
+      const result = await datasette.runQuery(sql)
+
+      const sortedResults = result.formattedData.sort((a, b) => {
+        return a.name.localeCompare(b.name)
+      })
+
+      const alphabetisedOrgs = sortedResults.reduce((acc, current) => {
+        const firstLetter = current.name.charAt(0).toUpperCase()
+        acc[firstLetter] = acc[firstLetter] || []
+        acc[firstLetter].push(current)
+        return acc
+      }, {})
+
+      res.render('organisations/find.html', { alphabetisedOrgs })
+    } catch (err) {
+      logger.warn(err)
+      next(err)
+    }
+  },
+
+  async getGetStarted (req, res, next) {
+    try {
+      // get the organisation name
+      const lpa = req.params.lpa
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
+
+      // get the dataset name
+      const datasetId = req.params.dataset
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
+
+      const params = {
+        organisation,
+        dataset
+      }
+
+      res.render('organisations/get-started.html', params)
+    } catch (err) {
+      logger.error(err)
+      next(err)
+    }
   }
+
 }
 
 export default organisationsController
