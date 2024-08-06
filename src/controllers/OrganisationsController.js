@@ -79,7 +79,7 @@ const organisationsController = {
    * @param {NextFunction} next
    */
   async getOrganisations (req, res, next) {
-    try{
+    try {
       const sql = 'select name, organisation from organisation'
       const result = await datasette.runQuery(sql)
 
