@@ -6,7 +6,7 @@ import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 
-export function setupSession (app) {
+export async function setupSession (app) {
   app.use(cookieParser())
   let sessionStore
   if ('redis' in config) {
@@ -17,7 +17,7 @@ export function setupSession (app) {
       logger.info(`session/setupSession: failed to connect to ${url}`, { type: types.AppLifecycle })
       logger.warn('session/setupSession: redis connection error', { type: types.External, error })
     }
-    redisClient.connect().catch(errorHandler)
+    await redisClient.connect().catch(errorHandler)
 
     sessionStore = new RedisStore({
       client: redisClient
