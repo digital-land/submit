@@ -1,7 +1,7 @@
 import chooseDatasetController from '../../../controllers/chooseDatasetController.js'
 import LpaDetailsController from '../../../controllers/lpaDetailsController.js'
 import PageController from '../../../controllers/pageController.js'
-import CheckAnswersController from '../../../controllers/CheckAnswersController.js'
+import confirmationController from '../../../controllers/confirmationController.js'
 
 const defaultParams = {
   entryPoint: false,
@@ -38,12 +38,12 @@ export default {
   },
   '/check-answers': {
     ...defaultParams,
-    controller: CheckAnswersController,
     next: 'confirmation',
     backLink: '/dataset-details'
   },
   '/confirmation': {
     ...defaultParams,
+    controller: confirmationController,
     template: 'submit/confirmation.html'
   }
 }

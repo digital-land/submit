@@ -1,0 +1,15 @@
+subject: "${organisation} submitted a ${dataset} endpoint"
+
+body: |
+  Hello data management team,
+
+  A new endpoint has been submitted with these details and is ready to check:
+
+  Name: ${name}
+  Organisation: ${organisation}
+  Email: ${email}
+  Endpoint URL: ${endpoint}
+  Documentation URL: ${documentationUrl}
+  Dataset Type: ${dataset}
+
+  I confirm this dataset is provided under the Open Government Licence

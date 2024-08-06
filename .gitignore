@@ -143,3 +143,4 @@ uploads/*
 .idea
 
 .DS_Store
+volume/cache/*
