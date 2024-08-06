@@ -71,7 +71,83 @@ const organisationsController = {
   },
 
   async getOrganisations (req, res, next) {
-    res.render('organisations/find.html')
+    const alphabetisedOrgs = {
+      A: [
+        {
+          name: 'Aberdeen'
+        },
+        {
+          name: 'Aylesbury'
+        },
+        {
+          name: 'Ashford'
+        }
+      ],
+      B: [
+        {
+          name: 'Bath'
+        },
+        {
+          name: 'Birmingham'
+        },
+        {
+          name: 'Brighton'
+        }
+      ],
+      C: [
+        {
+          name: 'Cambridge'
+        },
+        {
+          name: 'Cardiff'
+        },
+        {
+          name: 'Cheltenham'
+        },
+        {
+          name: 'Chester'
+        }
+      ],
+      D: [
+        {
+          name: 'Derby'
+        },
+        {
+          name: 'Dundee'
+        }
+      ],
+      E: [
+        {
+          name: 'Edinburgh'
+        },
+        {
+          name: 'Epsom'
+        }
+      ],
+      G: [
+        {
+          name: 'Glasgow'
+        },
+        {
+          name: 'Gloucester'
+        }
+      ],
+      H: [
+        {
+          name: 'Hull'
+        }
+      ],
+      L: [
+        {
+          name: 'Leeds'
+        },
+        {
+          name: 'London'
+        }
+      ]
+    }
+
+    res.render('organisations/find.html', { alphabetisedOrgs })
   }
 }
 
