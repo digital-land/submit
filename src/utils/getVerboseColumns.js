@@ -2,12 +2,17 @@
     This file is a utility function that processes a row and returns verbose rows using the column field log and row data.
 */
 import logger from './logger.js'
+import { types } from './logging.js'
 
 const getVerboseColumns = (row, columnFieldLog) => {
   if (!columnFieldLog || !row.issue_logs) {
-    // Log an error if the["column-field-log"] or issue_logs are missing, and return what we can
-    logger.error('Invalid row data, missing["column-field-log"] or issue_logs')
-    return Object.entries(row.converted_row).map(([key, value]) => [key, { value, column: key, field: key, error: 'missing["column-field-log"] or issue_logs' }])
+    // if the["column-field-log"] or issue_logs are missing, return what we can
+    const message = `missing row data: ${columnFieldLog ? '' : 'column-field-log'} ${row.issue_logs ? '' : 'row.issue_logs'}`
+    logger.warn({ message, type: types.DataValidation })
+    const validator = ([key, value]) => {
+      return [key, { value, column: key, field: key, error: message }]
+    }
+    return Object.entries(row.converted_row).map(validator)
   }
   // Process the row and return verbose columns
 
@@ -35,11 +40,11 @@ const reduceVerboseValues = (verboseValuesAsArray) => {
       // If both the existing and new values are not null and they are different, log a message
       if (value.value && acc[key].value && value.value !== acc[key].value) {
         // ToDo: we need to handle this case
-        logger.error(`Duplicate keys with different values: ${key}`)
+        logger.warn(`Duplicate keys with different values: ${key}`, { type: types.DataValidation })
         // If the new value is not null, replace the existing value and log a message
       } else if (value.value) {
         acc[key] = value
-        logger.log(`Duplicate key found, keeping the one with value: ${key}`)
+        logger.debug(`Duplicate key found, keeping the one with value: ${key}`)
       }
       // If the key does not exist in the accumulator, add it
     } else {

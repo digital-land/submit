@@ -1,10 +1,7 @@
 'use strict'
 import PageController from './pageController.js'
-import config from '../../config/index.js'
 
 class UploadController extends PageController {
-  apiRoute = config.asyncRequestApi.url + config.asyncRequestApi.requestsEndpoint
-
   async post (req, res, next) {
     super.post(req, res, next)
   }

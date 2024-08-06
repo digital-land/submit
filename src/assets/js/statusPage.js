@@ -42,10 +42,13 @@ export default class StatusPage {
             this.updatePageToComplete()
             clearInterval(interval)
           }
+        }).catch((reason) => {
+          console.warn(`polling ${statusEndpoint} failed, attempts=${this.pollAttempts}, reason=${reason}`)
+          clearInterval(interval)
         })
 
       this.pollAttempts++
-      if (this.pollAttempts > this.maxPollAttempts) {
+      if (this.pollAttempts >= this.maxPollAttempts) {
         console.info('StatusPage: polling timed out')
         this.updatePageForPollingTimeout()
         clearInterval(interval)
