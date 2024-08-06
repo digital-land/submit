@@ -19,7 +19,7 @@ dotenv.config()
 const app = express()
 
 setupMiddlewares(app)
-setupSession(app)
+await setupSession(app)
 setupNunjucks({ app, dataSubjects })
 setupRoutes(app)
 setupSentry(app)

@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 
-export function setupSession (app) {
+export async function setupSession (app) {
   app.use(cookieParser())
   let sessionStore
   if ('redis' in config) {
@@ -16,7 +16,7 @@ export function setupSession (app) {
     const errorHandler = (err) => {
       logger.error(`session/setupSession: redis connection error: ${err.code}`)
     }
-    redisClient.connect().catch(errorHandler)
+    await redisClient.connect().catch(errorHandler)
 
     sessionStore = new RedisStore({
       client: redisClient
