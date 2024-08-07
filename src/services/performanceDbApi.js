@@ -110,5 +110,55 @@ ORDER BY
       organisation: result.formattedData[0].organisation,
       datasets
     }
+  },
+
+  getLpaDatasetIssues: async (lpa, datasetId) => {
+    const sql = `
+      SELECT
+        rle.endpoint,
+        rle.resource,
+        rle.exception,
+
+        i.field,
+        i.issue_type,
+        i.line_number,
+        i.value,
+        i.message,
+
+        CASE
+          WHEN COUNT(
+            CASE
+              WHEN it.severity == 'error' THEN 1
+              ELSE null
+            END
+          ) > 0 THEN 'Needs fixing'
+          ELSE 'Live'
+        END AS status,
+        COUNT(i.issue_type) as num_issues
+      FROM
+          provision p
+      LEFT JOIN
+          reporting_latest_endpoints rle
+          ON REPLACE(rle.organisation, '-eng', '') = p.organisation
+          AND rle.pipeline = p.dataset
+      LEFT JOIN
+          issue i ON rle.resource = i.resource AND rle.pipeline = i.dataset
+      LEFT JOIN
+          issue_type it ON i.issue_type = it.issue_type
+      WHERE
+          p.organisation = '${lpa}' AND p.dataset = '${datasetId}'
+          AND (it.severity == 'error' OR it.severity == 'warning')
+      GROUP BY i.issue_type
+      ORDER BY it.severity`
+
+    const result = await datasette.runQuery(sql)
+    return result.formattedData.map((row) => {
+      return {
+        num_issues: row.num_issues,
+        issue_type: row.issue_type,
+        resource: row.resource,
+        status: row.status
+      }
+    })
   }
 }
