@@ -9,20 +9,26 @@
 
 {% set content %}
 
+Use this service to submit or update:
+
+- Article 4 direction data
+- conservation area data
+- listed building data
+- tree preservation order data
+
 ## Before you start
 
-### Publish data on your website
+Your data must follow the [data specification](https://www.planning.data.gov.uk/guidance/specifications/).
 
-Your data must be on a URL the public can access. We collect the latest data from there every day.
+You need to choose to provide your data in one of these file formats:
 
-You must link to that URL from a webpage about the data. This needs to be on your official planning authority website,
-usually ending in gov.uk.
+- CSV
+- GeoJSON
+- GML
+- GeoPackage
 
-The webpage must include, for each dataset:
+Alternatively you can provide us with a URL.
 
-- the link to the data URL
-- a summary of what the data is about
-- a statement that the data is provided under the Open Government Licence
 
 <form novalidate method="post">
   {{ govukButton({
