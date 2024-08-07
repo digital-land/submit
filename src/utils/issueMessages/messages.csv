@@ -1,4 +1,4 @@
-issue_type, singular_message, plural_message
+issue_type,singular_message,plural_message
 "future entry date", one field has a future entry date, {num_issues} fields have future entry dates
 "invalid coordinates", one field has invalid coordinates, {num_issues} fields have invalid coordinates
 "invalid date", one field has an invalid date, {num_issues} fields have invalid dates
