@@ -30,7 +30,8 @@ function getStatusTag (status) {
   const statusToTagClass = {
     Error: 'govuk-tag--red',
     'Needs fixing': 'govuk-tag--yellow',
-    Warning: 'govuk-tag--blue'
+    Warning: 'govuk-tag--blue',
+    Issue: 'govuk-tag--blue'
   }
 
   return {

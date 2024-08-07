@@ -2,7 +2,9 @@
 
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
 
-{% set pageName %}{{organisation.name}} — {{dataset.name}} — Task list{% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
+
+{% set serviceType = 'Submit' %}
 
 {% block beforeContent %}
 
