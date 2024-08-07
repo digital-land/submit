@@ -43,6 +43,7 @@ describe('performanceDbApi', () => {
       expect(datasette.runQuery).toHaveBeenCalledWith(expect.stringContaining(lpa))
       expect(result).toEqual({
         name: 'Some Organisation',
+        organisation: 'some-organisation',
         datasets: {
           'dataset-slug-1': { endpoint: 'https://example.com/endpoint-1', error: 'endpoint returned with a status of 404', issue: undefined },
           'dataset-slug-2': { endpoint: 'https://example.com/endpoint-2', error: 'resource not found', issue: undefined },
