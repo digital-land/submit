@@ -1,5 +1,6 @@
 import datasette from '../services/datasette.js'
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
+import getTaskList from '../utils/issueMessages/getDatasetTaskList.js'
 import logger from '../utils/logger.js'
 import { dataSubjects } from '../utils/utils.js'
 
@@ -55,7 +56,8 @@ const organisationsController = {
 
       const params = {
         organisation: {
-          name: lpaOverview.name
+          name: lpaOverview.name,
+          organisation: lpaOverview.organisation
         },
         datasets,
         totalDatasets,
@@ -126,7 +128,44 @@ const organisationsController = {
   },
 
   async getDatasetTaskList (req, res, next) {
-    res.render('organisations/datasetTaskList.html')
+    const issues = [
+      {
+        num_issues: 2,
+        issue_type: 'future entry date',
+        resource: 'resource1',
+        status: 'Error'
+      },
+      {
+        num_issues: 3,
+        issue_type: 'invalid coordinates',
+        resource: 'resource2',
+        status: 'Issue'
+      },
+      {
+        num_issues: 1,
+        issue_type: 'invalid decimal',
+        resource: 'resource3',
+        status: 'Warning'
+      }
+    ]
+
+    const taskList = getTaskList(issues)
+
+    const organisation = {
+      name: "George's fake organisation"
+    }
+
+    const dataset = {
+      name: 'Article 4 direction area'
+    }
+
+    const params = {
+      taskList,
+      organisation,
+      dataset
+    }
+
+    res.render('organisations/datasetTaskList.html', params)
   }
 
 }
