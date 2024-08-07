@@ -3,7 +3,6 @@
  */
 import datasette from './datasette.js'
 
-
 // ===========================================
 
 // for now we are using a csv for these messages but we will probably end up moving to a table, so for now this can sit in the fake performance db api
@@ -51,7 +50,6 @@ function getStatusTag (status) {
 }
 
 // ===========================================
-
 
 /**
  * @typedef {object} Dataset
