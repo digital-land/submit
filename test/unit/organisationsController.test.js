@@ -15,6 +15,7 @@ vi.mock('../../src/services/datasette.js', () => ({
     runQuery: vi.fn()
   }
 }))
+vi.mock('../../src/utils/issueMessages/getDatasetTaskList.js')
 
 describe('OrganisationsController.js', () => {
   beforeEach(() => {
@@ -193,10 +194,81 @@ describe('OrganisationsController.js', () => {
   })
 
   describe('dataset task list', () => {
-    it.todo('should call render with the datasetTaskList page')
+    it('should call render with the datasetTaskList page', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = { render: vi.fn() }
+      const next = vi.fn()
 
-    it.todo('should fetch the dataset tasks and correctly pass them on to the dataset task list page')
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({
+        formattedData: [{ name: 'Example Organisation' }]
+      }).mockResolvedValueOnce({
+        formattedData: [{ name: 'Example Dataset' }]
+      })
 
-    it.todo('should catch errors and pass them on to the next function')
+      vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
+        { issue: 'Example issue' }
+      ])
+
+      vi.mocked(performanceDbApi.getTaskList).mockReturnValue([{ task: 'Example task' }])
+
+      await organisationsController.getDatasetTaskList(req, res, next)
+
+      expect(res.render).toHaveBeenCalledTimes(1)
+      expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
+        taskList: [{ task: 'Example task' }],
+        organisation: { name: 'Example Organisation' },
+        dataset: { name: 'Example Dataset' }
+      })
+    })
+
+    it('should fetch the dataset tasks and correctly pass them on to the dataset task list page', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = { render: vi.fn() }
+      const next = vi.fn()
+
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({
+        formattedData: [{ name: 'Example Organisation' }]
+      }).mockResolvedValueOnce({
+        formattedData: [{ name: 'Example Dataset' }]
+      })
+
+      vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
+        { issue: 'Example issue 1' },
+        { issue: 'Example issue 2' }
+      ])
+
+      vi.mocked(performanceDbApi.getTaskList).mockReturnValue([
+        { task: 'Example task 1' },
+        { task: 'Example task 2' }
+      ])
+
+      await organisationsController.getDatasetTaskList(req, res, next)
+
+      expect(res.render).toHaveBeenCalledTimes(1)
+      expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
+        taskList: [
+          { task: 'Example task 1' },
+          { task: 'Example task 2' }
+        ],
+        organisation: { name: 'Example Organisation' },
+        dataset: { name: 'Example Dataset' }
+      })
+    })
+
+    it('should catch errors and pass them on to the next function', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = {}
+      const next = vi.fn()
+
+      // Mock the datasette.runQuery method to throw an error
+      datasette.runQuery.mockImplementation(() => {
+        throw new Error('example error')
+      })
+
+      await organisationsController.getDatasetTaskList(req, res, next)
+
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
   })
 })
