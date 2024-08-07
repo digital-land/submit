@@ -1,6 +1,5 @@
 import datasette from '../services/datasette.js'
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
-import getTaskList from '../utils/issueMessages/getDatasetTaskList.js'
 import logger from '../utils/logger.js'
 import { dataSubjects } from '../utils/utils.js'
 
@@ -128,26 +127,31 @@ const organisationsController = {
   },
 
   async getDatasetTaskList (req, res, next) {
-    const lpa = req.params.lpa
-    const datasetId = req.params.dataset
+    try {
+      const lpa = req.params.lpa
+      const datasetId = req.params.dataset
 
-    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
-    const organisation = organisationResult.formattedData[0]
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
 
-    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-    const dataset = datasetResult.formattedData[0]
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
 
-    const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
+      const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
 
-    const taskList = getTaskList(issues)
+      const taskList = performanceDbApi.getTaskList(issues)
 
-    const params = {
-      taskList,
-      organisation,
-      dataset
+      const params = {
+        taskList,
+        organisation,
+        dataset
+      }
+
+      res.render('organisations/datasetTaskList.html', params)
+    } catch (e) {
+      logger.error(e)
+      next(e)
     }
-
-    res.render('organisations/datasetTaskList.html', params)
   }
 
 }
