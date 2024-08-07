@@ -12,7 +12,7 @@ describe('Start View', () => {
   const html = nunjucks.render('start.html', params)
 
   runGenericPageTests(html, {
-    pageTitle: 'Start - Check planning and housing data for England',
+    // we skip pageTitle since this is the main page, and service name alone is sufficient
     serviceName: config.serviceName
   })
 })

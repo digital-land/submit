@@ -13,7 +13,7 @@ describe('Lpa-details View', () => {
   const htmlNoErrors = nunjucks.render('lpa-details.html', params)
 
   runGenericPageTests(htmlNoErrors, {
-    pageTitle: 'Enter LPA details - Submit planning and housing data for England',
+    pageTitle: 'Enter LPA details - Submit and update your planning data',
     serviceName: config.serviceName
   })
 

@@ -13,7 +13,7 @@ describe('choose dataset View', () => {
   const html = nunjucks.render('choose-dataset.html', params)
 
   runGenericPageTests(html, {
-    pageTitle: 'Choose dataset - Submit planning and housing data for England',
+    pageTitle: 'Choose dataset - Submit and update your planning data',
     serviceName: config.serviceName
   })
 
