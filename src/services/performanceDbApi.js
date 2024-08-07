@@ -3,6 +3,56 @@
  */
 import datasette from './datasette.js'
 
+
+// ===========================================
+
+// for now we are using a csv for these messages but we will probably end up moving to a table, so for now this can sit in the fake performance db api
+
+import csv from 'csv-parser' // ToDo: remember to remove this from package.json when we move away from csv
+import fs from 'fs'
+
+const messages = {}
+
+fs.createReadStream('src/content/issueMessages.csv')
+  .pipe(csv())
+  .on('data', (row) => {
+    messages[row.issue_type] = {
+      singular: row.singular_message,
+      plural: row.plural_message.replace('{num_issues}', '{}')
+    }
+  })
+  .on('end', () => {
+    // Messages object is now populated
+  })
+
+function getTaskMessage (issueType, issueCount) {
+  if (!messages[issueType]) {
+    throw new Error(`Unknown issue type: ${issueType}`)
+  }
+
+  const message = issueCount === 1 ? messages[issueType].singular : messages[issueType].plural
+  return message.replace('{}', issueCount)
+}
+
+function getStatusTag (status) {
+  const statusToTagClass = {
+    Error: 'govuk-tag--red',
+    'Needs fixing': 'govuk-tag--yellow',
+    Warning: 'govuk-tag--blue',
+    Issue: 'govuk-tag--blue'
+  }
+
+  return {
+    tag: {
+      text: status,
+      classes: statusToTagClass[status]
+    }
+  }
+}
+
+// ===========================================
+
+
 /**
  * @typedef {object} Dataset
  * @property {string} endpoint
@@ -158,6 +208,18 @@ ORDER BY
         issue_type: row.issue_type,
         resource: row.resource,
         status: row.status
+      }
+    })
+  },
+
+  getTaskList: (issues) => {
+    return issues.map((issue) => {
+      return {
+        title: {
+          text: getTaskMessage(issue.issue_type, issue.num_issues)
+        },
+        href: 'toDo',
+        status: getStatusTag(issue.status)
       }
     })
   }
