@@ -1,1 +1,56 @@
-<h1>Under Construction</h1>
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
+
+{% set pageName %}{{organisation.name}} — {{dataset.name}} — Task list{% endset %}
+
+{% block beforeContent %}
+
+{{ super() }}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  {% include "includes/_dataset-page-header.html" %}
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h2 class="govuk-heading-l">
+      {{ organisation.name }}’s task list
+    </h2>
+
+    {% if tasks.length == 0 %}
+    <p>There are no issues with {{ organisation.name }}’s {{ dataset }} dataset.</p>
+
+    <p><a
+        href="https://www.planning.data.gov.uk/entity/?dataset=brownfield-land&geometry_curie=statistical-geography:E07000091">View
+        the dataset on the Planning Data platform</a></p>
+
+    {% else %}
+
+
+    {{ govukTaskList({
+      idPrefix: "dataset-tasklist",
+      items: taskList
+    }) }}
+
+    <h3 class="govuk-heading-m">
+      How to improve {{ organisation.name }}’s data
+    </h3>
+
+    <ol class="govuk-list govuk-list--number">
+      <li>Fix the errors indicated</li>
+      <li>Use the <a href="https://check.staging.digital-land.info/">check service</a> to make sure the data meets
+        the standard</li>
+      <li>Publish the updated data on the data URL</li>
+    </ol>
+
+    {% endif %}
+  </div>
+</div>
+
+
+{% endblock %}
