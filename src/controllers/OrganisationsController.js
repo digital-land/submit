@@ -123,6 +123,10 @@ const organisationsController = {
       logger.error(err)
       next(err)
     }
+  },
+
+  async getDatasetTaskList (req, res, next) {
+    res.render('organisations/datasetTaskList.html')
   }
 
 }
