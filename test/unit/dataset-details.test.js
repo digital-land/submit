@@ -44,7 +44,7 @@ describe('dataset details View', () => {
   const datasetName = mockDataSubjects.mockDataset.dataSets[0].value
   runGenericPageTests(html, {
     pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit and update your planning data`,
-    serviceName: config.serviceName
+    serviceName: config.serviceNames.submit
   })
 
   it('should render the correct header', () => {

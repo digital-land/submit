@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
-import config from '../../config/index.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 
 describe('check-answers View', async () => {
@@ -22,8 +21,7 @@ describe('check-answers View', async () => {
   const html = stripWhitespace(nunjucks.render('check-answers.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: 'Check your answers - Check planning and housing data for England',
-    serviceName: config.serviceName
+    pageTitle: 'Check your answers - Check planning and housing data for England'
   })
 
   it('should render the lpa selected', () => {

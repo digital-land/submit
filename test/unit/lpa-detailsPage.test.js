@@ -1,7 +1,6 @@
 import { describe, it } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
-import config from '../../config/index.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
@@ -13,8 +12,7 @@ describe('Lpa-details View', () => {
   const htmlNoErrors = nunjucks.render('lpa-details.html', params)
 
   runGenericPageTests(htmlNoErrors, {
-    pageTitle: 'Enter LPA details - Submit and update your planning data',
-    serviceName: config.serviceName
+    pageTitle: 'Enter LPA details - Submit and update your planning data'
   })
 
   describe('validation errors', () => {

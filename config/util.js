@@ -3,17 +3,19 @@ import _ from 'lodash'
 import yaml from 'js-yaml'
 import * as v from 'valibot'
 
+const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
+
 export const ConfigSchema = v.object({
   port: v.pipe(v.integer(), v.minValue(1)),
   asyncRequestApi: v.object({
     url: v.url(),
     port: v.pipe(v.integer(), v.minValue(1)),
-    requestsEndpoint: v.pipe(v.string(), v.nonEmpty()),
+    requestsEndpoint: NonEmptyString,
     requestTimeout: v.number()
   }),
   maintenance: v.object({
     serviceUnavailable: v.boolean(),
-    upTime: v.pipe(v.string(), v.nonEmpty())
+    upTime: NonEmptyString
   }),
   aws: v.object({
     region: v.string(),
@@ -23,12 +25,17 @@ export const ConfigSchema = v.object({
   redis: v.optional(
     v.object({
       secure: v.boolean(),
-      host: v.pipe(v.string(), v.nonEmpty()),
+      host: NonEmptyString,
       port: v.number()
     })
   ),
   url: v.url(),
-  serviceName: v.pipe(v.string(), v.nonEmpty()),
+  serviceName: NonEmptyString,
+  serviceNames: v.object({
+    provide: NonEmptyString,
+    submit: NonEmptyString,
+    manage: NonEmptyString
+  }),
   feedbackLink: v.url(),
   email: v.object({
     templates: v.object({

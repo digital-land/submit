@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest'
 import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from '../generic-page.js'
-import config from '../../../config/index.js'
 import { stripWhitespace } from '../../utils/stripWhiteSpace.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
@@ -18,7 +17,6 @@ describe('Check confirmation View', () => {
 
   runGenericPageTests(html, {
     pageTitle: 'mockDataset submitted - Submit planning and housing data for England',
-    serviceName: config.serviceName
   })
 
   it('should render the gov uk panel', () => {

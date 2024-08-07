@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import config from '../../config/index.js'
 import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 import { runGenericPageTests } from './generic-page.js'
@@ -29,7 +28,6 @@ describe('LPA Overview Page', () => {
     organisation: {
       name: 'mock org'
     },
-    serviceName: config.serviceName,
     datasetsWithEndpoints: 2,
     totalDatasets: 8,
     datasetsWithErrors: 2,
@@ -87,8 +85,7 @@ describe('LPA Overview Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org overview - Manage planning and housing data for England',
-    serviceName: config.serviceName
+    pageTitle: 'mock org overview - Manage planning and housing data for England'
   })
 
   const statsBoxes = document.querySelector('.dataset-status').children

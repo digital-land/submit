@@ -1,10 +1,18 @@
 import config from '../../config/index.js'
 
-const getFullServiceName = (service) => {
+/*
+  * Get the full service name from the short service name.
+  *
+  * The names should be specified in the config under 'serviceNames'.
+  *
+  * @param {string} service
+  * @returns {string}
+  */
+export default (service) => {
   if (!service || typeof service !== 'string') {
-    throw new Error('Service name must be a non-empty string')
+    throw new TypeError('Service must be a string')
   }
-  return config.serviceName.replace('Provide', service)
+  return config.serviceNames[service.toLowerCase()] || service
 }
 
 export default getFullServiceName
