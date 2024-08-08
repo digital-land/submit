@@ -3,6 +3,54 @@
  */
 import datasette from './datasette.js'
 
+// ===========================================
+
+// for now we are using a csv for these messages but we will probably end up moving to a table, so for now this can sit in the fake performance db api
+
+import csv from 'csv-parser' // ToDo: remember to remove this from package.json when we move away from csv
+import fs from 'fs'
+
+const messages = {}
+
+fs.createReadStream('src/content/issueMessages.csv')
+  .pipe(csv())
+  .on('data', (row) => {
+    messages[row.issue_type] = {
+      singular: row.singular_message,
+      plural: row.plural_message.replace('{num_issues}', '{}')
+    }
+  })
+  .on('end', () => {
+    // Messages object is now populated
+  })
+
+function getTaskMessage (issueType, issueCount) {
+  if (!messages[issueType]) {
+    throw new Error(`Unknown issue type: ${issueType}`)
+  }
+
+  const message = issueCount === 1 ? messages[issueType].singular : messages[issueType].plural
+  return message.replace('{}', issueCount)
+}
+
+function getStatusTag (status) {
+  const statusToTagClass = {
+    Error: 'govuk-tag--red',
+    'Needs fixing': 'govuk-tag--yellow',
+    Warning: 'govuk-tag--blue',
+    Issue: 'govuk-tag--blue'
+  }
+
+  return {
+    tag: {
+      text: status,
+      classes: statusToTagClass[status]
+    }
+  }
+}
+
+// ===========================================
+
 /**
  * @typedef {object} Dataset
  * @property {string} endpoint
@@ -110,5 +158,67 @@ ORDER BY
       organisation: result.formattedData[0].organisation,
       datasets
     }
+  },
+
+  getLpaDatasetIssues: async (lpa, datasetId) => {
+    const sql = `
+      SELECT
+        rle.endpoint,
+        rle.resource,
+        rle.exception,
+
+        i.field,
+        i.issue_type,
+        i.line_number,
+        i.value,
+        i.message,
+
+        CASE
+          WHEN COUNT(
+            CASE
+              WHEN it.severity == 'error' THEN 1
+              ELSE null
+            END
+          ) > 0 THEN 'Needs fixing'
+          ELSE 'Live'
+        END AS status,
+        COUNT(i.issue_type) as num_issues
+      FROM
+          provision p
+      LEFT JOIN
+          reporting_latest_endpoints rle
+          ON REPLACE(rle.organisation, '-eng', '') = p.organisation
+          AND rle.pipeline = p.dataset
+      LEFT JOIN
+          issue i ON rle.resource = i.resource AND rle.pipeline = i.dataset
+      LEFT JOIN
+          issue_type it ON i.issue_type = it.issue_type
+      WHERE
+          p.organisation = '${lpa}' AND p.dataset = '${datasetId}'
+          AND (it.severity == 'error' OR it.severity == 'warning')
+      GROUP BY i.issue_type
+      ORDER BY it.severity`
+
+    const result = await datasette.runQuery(sql)
+    return result.formattedData.map((row) => {
+      return {
+        num_issues: row.num_issues,
+        issue_type: row.issue_type,
+        resource: row.resource,
+        status: row.status
+      }
+    })
+  },
+
+  getTaskList: (issues) => {
+    return issues.map((issue) => {
+      return {
+        title: {
+          text: getTaskMessage(issue.issue_type, issue.num_issues)
+        },
+        href: 'toDo',
+        status: getStatusTag(issue.status)
+      }
+    })
   }
 }
