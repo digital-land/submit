@@ -14,5 +14,3 @@ export default (service) => {
   }
   return config.serviceNames[service.toLowerCase()] || service
 }
-
-export default getFullServiceName

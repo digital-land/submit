@@ -16,7 +16,7 @@ describe('Check confirmation View', () => {
   const html = stripWhitespace(nunjucks.render('submit/confirmation.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: 'mockDataset submitted - Submit planning and housing data for England',
+    pageTitle: 'mockDataset submitted - Submit planning and housing data for England'
   })
 
   it('should render the gov uk panel', () => {
