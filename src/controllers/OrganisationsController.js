@@ -168,7 +168,7 @@ const organisationsController = {
     res.render('organisations/datasetTaskList.html', params)
   },
 
-  async getIssueDetails(req, res, next) {
+  async getIssueDetails (req, res, next) {
     const params = {}
     res.render('organisations/issueDetails.html', params)
   }
