@@ -1,7 +1,7 @@
 import datasette from '../services/datasette.js'
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
-import getTaskList from '../utils/issueMessages/getDatasetTaskList.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import { dataSubjects } from '../utils/utils.js'
 
 // get a list of available datasets
@@ -128,44 +128,31 @@ const organisationsController = {
   },
 
   async getDatasetTaskList (req, res, next) {
-    const issues = [
-      {
-        num_issues: 2,
-        issue_type: 'future entry date',
-        resource: 'resource1',
-        status: 'Error'
-      },
-      {
-        num_issues: 3,
-        issue_type: 'invalid coordinates',
-        resource: 'resource2',
-        status: 'Issue'
-      },
-      {
-        num_issues: 1,
-        issue_type: 'invalid decimal',
-        resource: 'resource3',
-        status: 'Warning'
+    const lpa = req.params.lpa
+    const datasetId = req.params.dataset
+
+    try {
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
+
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
+
+      const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
+
+      const taskList = performanceDbApi.getTaskList(issues)
+
+      const params = {
+        taskList,
+        organisation,
+        dataset
       }
-    ]
 
-    const taskList = getTaskList(issues)
-
-    const organisation = {
-      name: "George's fake organisation"
+      res.render('organisations/datasetTaskList.html', params)
+    } catch (e) {
+      logger.warn(`getDAtasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
+      next(e)
     }
-
-    const dataset = {
-      name: 'Article 4 direction area'
-    }
-
-    const params = {
-      taskList,
-      organisation,
-      dataset
-    }
-
-    res.render('organisations/datasetTaskList.html', params)
   }
 
 }

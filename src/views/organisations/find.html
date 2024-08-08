@@ -38,7 +38,7 @@
             <ul class="govuk-list govuk-!-margin-bottom-0">
               {% for org in orgs %}
               <li class="govuk-!-margin-bottom-1 js-filter-item" data-filter="item" data-filter-terms="{{org.name}}">
-                <a href="/organisations/{{ org.organisation }}/overview" class="govuk-link">{{ org.name }}</a>
+                <a href="/organisations/{{ org.organisation }}" class="govuk-link">{{ org.name }}</a>
               </li>
               {% endfor %}
             </ul>
