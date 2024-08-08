@@ -10,7 +10,7 @@ import config from '../../config/index.js'
   */
 export default (service) => {
   if (!service || typeof service !== 'string') {
-    throw new TypeError('Service must be a string')
+    throw new TypeError('Service name must be a non-empty string')
   }
   return config.serviceNames[service.toLowerCase()] || service
 }
