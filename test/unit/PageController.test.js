@@ -3,6 +3,7 @@ import PageController from '../../src/controllers/pageController.js'
 import { describe, it, vi, expect } from 'vitest'
 
 import logger from '../../src/utils/logger.js'
+import { types } from '../../src/utils/logging.js'
 
 import hash from '../../src/utils/hasher.js'
 
@@ -24,16 +25,15 @@ describe('PageController', () => {
     const pageController = new PageController({
       route: '/dataset'
     })
-    // pageController.super.get = vi.fn();
-    await pageController.get(req, {}, vi.fn())
+    pageController.get(req, {}, vi.fn())
     expect(loggerInfoSpy).toHaveBeenCalledOnce()
 
     const callArgs = loggerInfoSpy.mock.calls[0][0]
 
-    expect(callArgs.type).toEqual('PageView')
-    expect(callArgs.pageRoute).toEqual('/dataset')
-    expect(callArgs.message).toEqual('page view occurred for page: /dataset')
-    expect(callArgs.sessionId).toEqual(await hash('123'))
+    expect(callArgs.type).toEqual(types.PageView)
+    expect(callArgs.endpoint).toEqual('/dataset')
+    expect(callArgs.message).toEqual('page view')
+    expect(callArgs.sessionId).toEqual(hash('123'))
     expect(callArgs.ipAddress).toBeUndefined()
     expect(callArgs.level).toEqual('info')
     expect(callArgs.service).toEqual('lpa-data-validation-frontend')
