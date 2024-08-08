@@ -15,7 +15,6 @@ class DatasetController extends PageController {
     // const availableDatasets = dataSets.filter(dataSet => dataSet.available)
     // availableDatasets.sort((a, b) => a.text.localeCompare(b.text))
 
-
     const datasets = await datasette.runQuery(`select DISTINCT p.dataset, d.name
                         from provision p
                         LEFT JOIN dataset d ON p.dataset = d.dataset`)
@@ -25,16 +24,15 @@ class DatasetController extends PageController {
 
       let text
 
-      if(dataset.name && dataset.name.trim()){
+      if (dataset.name && dataset.name.trim()) {
         text = dataset.name
-      }else{
+      } else {
         text = dataset.dataset
         logger.warn(`Missing name value for the dataset ${dataset.dataset}`)
       }
 
       return { text, value }
     })
-
 
     req.form.options.datasetItems = availableDatasets
 
@@ -49,7 +47,6 @@ class DatasetController extends PageController {
 
     req.body['data-subject'] = result.formattedData[0].collection
 
-
     super.post(req, res, next)
   }
 
@@ -61,7 +58,7 @@ class DatasetController extends PageController {
     }
 
     const dataSubject = Object.values(dataSubjects).find(dataSubject => dataSubject.dataSets.find(dataSet => dataSet.value === dataset))
-    if(!dataSubject){
+    if (!dataSubject) {
       return false
     }
     const dataSet = dataSubject.dataSets.find(dataSet => dataSet.value === dataset)
