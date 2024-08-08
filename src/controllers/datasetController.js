@@ -15,9 +15,21 @@ class DatasetController extends PageController {
     // const availableDatasets = dataSets.filter(dataSet => dataSet.available)
     // availableDatasets.sort((a, b) => a.text.localeCompare(b.text))
 
-    const datasets = await datasette.runQuery(`select DISTINCT p.dataset, d.name
-                        from provision p
-                        LEFT JOIN dataset d ON p.dataset = d.dataset`)
+    const datasets = await datasette.runQuery(`select
+        d.name,
+        d.dataset,
+        s.specification,
+        specification_status
+      from
+        dataset d
+        LEFT JOIN specification_dataset sd ON d.dataset = sd.dataset
+        LEFT JOIN specification s ON sd.specification = s.specification
+      WHERE
+        specification_status in (
+          'candidate-standard',
+          'open-standard',
+          'piloting'
+        )`)
 
     const availableDatasets = datasets.formattedData.map((dataset) => {
       const value = dataset.dataset
