@@ -1,7 +1,6 @@
 // getStartedPage.test.js
 
 import { describe, it, expect } from 'vitest'
-import config from '../../config/index.js'
 import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 import { runGenericPageTests } from './generic-page.js'
