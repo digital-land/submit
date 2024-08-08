@@ -32,7 +32,7 @@ export const ConfigSchema = v.object({
   url: v.url(),
   serviceName: NonEmptyString,
   serviceNames: v.object({
-    provide: NonEmptyString,
+    check: NonEmptyString,
     submit: NonEmptyString,
     manage: NonEmptyString
   }),

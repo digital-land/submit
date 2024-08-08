@@ -74,8 +74,7 @@ describe('Dataset Task List Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'fake organisation - Article 4 direction area - Task list - Submit planning and housing data for England',
-    serviceName: config.serviceName
+    pageTitle: 'fake organisation - Article 4 direction area - Task list - Submit and update your planning data'
   })
 
   it('Renders the correct headings', () => {
