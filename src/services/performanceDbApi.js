@@ -12,7 +12,7 @@ import fs from 'fs'
 
 const messages = {}
 
-fs.createReadStream('src/content/issueMessages.csv')
+fs.createReadStream('src/content/fieldIssueMessages.csv')
   .pipe(csv())
   .on('data', (row) => {
     messages[row.issue_type] = {
@@ -24,14 +24,18 @@ fs.createReadStream('src/content/issueMessages.csv')
     // Messages object is now populated
   })
 
-function getTaskMessage (issueType, issueCount) {
-  if (!messages[issueType]) {
-    throw new Error(`Unknown issue type: ${issueType}`)
-  }
-
-  const message = issueCount === 1 ? messages[issueType].singular : messages[issueType].plural
-  return message.replace('{}', issueCount)
-}
+fs.createReadStream('src/content/entityIssueMessages.csv')
+  .pipe(csv())
+  .on('data', (row) => {
+    messages[row.issue_type] = {
+      ...messages[row.issue_type],
+      entities_singular: row.singular_message.replace('{num_entities}', '{}'),
+      entities_plural: row.plural_message.replace('{num_entities}', '{}')
+    }
+  })
+  .on('end', () => {
+    // Messages object is now populated
+  })
 
 function getStatusTag (status) {
   const statusToTagClass = {
@@ -214,11 +218,25 @@ ORDER BY
     return issues.map((issue) => {
       return {
         title: {
-          text: getTaskMessage(issue.issue_type, issue.num_issues)
+          text: this.getTaskMessage(issue.issue_type, issue.num_issues)
         },
         href: 'toDo',
         status: getStatusTag(issue.status)
       }
     })
+  },
+
+  getTaskMessage (issueType, issueCount, entityLevel = false) {
+    if (!messages[issueType]) {
+      throw new Error(`Unknown issue type: ${issueType}`)
+    }
+  
+    let message
+    if(entityLevel){
+      message = issueCount === 1 ? messages[issueType].entities_singular : messages[issueType].entities_plural
+    }else{
+      message = issueCount === 1 ? messages[issueType].singular : messages[issueType].plural
+    }
+    return message.replace('{}', issueCount)
   }
 }
