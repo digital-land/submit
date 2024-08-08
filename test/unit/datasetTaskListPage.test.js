@@ -81,7 +81,6 @@ describe('Dataset Task List Page', () => {
   it('Renders the correct headings', () => {
     expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual(params.organisation.name)
     expect(document.querySelector('h1').textContent).toContain(params.dataset.name)
-    // expect(document.querySelector('h2').textContent).toContain('How to prepare and submit your World heritage site buffer zone data')
   })
 
   const taskListItems = document.querySelectorAll('.govuk-task-list__item')
@@ -100,5 +99,21 @@ describe('Dataset Task List Page', () => {
         expect(statusStrong.classList.contains(task.status.tag.classes)).toBe(true)
       }
     })
+  })
+
+  it('renders correctly when no taskList items are passed in', () => {
+    const organisation = { name: 'Test Organisation' }
+    const dataset = { name: 'Test Dataset' }
+    const taskList = []
+
+    const html = nunjucks.render('organisations/datasetTaskList.html', {
+      organisation,
+      dataset,
+      taskList
+    })
+
+    const paragraphText = `There are no issues with ${organisation.name}'s ${dataset.name} dataset.`
+
+    expect(html).toContain(paragraphText)
   })
 })
