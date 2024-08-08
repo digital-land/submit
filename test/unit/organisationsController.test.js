@@ -199,4 +199,12 @@ describe('OrganisationsController.js', () => {
 
     it.todo('should catch errors and pass them on to the next function')
   })
+
+  describe('issue details', () => {
+    it.todo('should call render with the issue details page')
+
+    it.todo('should fetch the issue details and pass the on to the template')
+
+    it.todo('should catch errors and pass them onto the next function ')
+  })
 })
