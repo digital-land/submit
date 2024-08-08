@@ -155,7 +155,6 @@ const organisationsController = {
     }
   },
 
-
   async getIssueDetails (req, res, next) {
     const params = {}
     res.render('organisations/issueDetails.html', params)
