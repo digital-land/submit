@@ -1,6 +1,7 @@
 import datasette from '../services/datasette.js'
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import { dataSubjects } from '../utils/utils.js'
 
 // get a list of available datasets
@@ -127,10 +128,10 @@ const organisationsController = {
   },
 
   async getDatasetTaskList (req, res, next) {
-    try {
-      const lpa = req.params.lpa
-      const datasetId = req.params.dataset
+    const lpa = req.params.lpa
+    const datasetId = req.params.dataset
 
+    try {
       const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
 
@@ -149,7 +150,7 @@ const organisationsController = {
 
       res.render('organisations/datasetTaskList.html', params)
     } catch (e) {
-      logger.error(e)
+      logger.warn(`getDAtasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
       next(e)
     }
   },
