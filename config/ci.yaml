@@ -10,6 +10,6 @@ aws: {
 redis: {
     secure: false,
     host: 'redis',
-    port: '6379'
+    port: 6379
 }
 url: "http://localhost:8085"

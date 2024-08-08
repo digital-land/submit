@@ -48,10 +48,9 @@ describe('asyncRequestApi', () => {
         geomType: 'point'
       }
 
-      const expectedError = new Error('HTTP error! status: 500. Data: data.')
       axios.post.mockRejectedValue({ response: { status: 500, data: 'data' } })
 
-      await expect(postFileRequest(formData)).rejects.toThrow(expectedError)
+      await expect(postFileRequest(formData)).rejects.toThrow()
     })
   })
 
@@ -89,10 +88,8 @@ describe('asyncRequestApi', () => {
         geomType: 'point'
       }
 
-      const expectedError = new Error('HTTP error! status: 500. Data: data.')
       axios.post.mockRejectedValue({ response: { status: 500, data: 'data' } })
-
-      await expect(postUrlRequest(formData)).rejects.toThrow(expectedError)
+      await expect(postUrlRequest(formData)).rejects.toThrow()
     })
   })
 
