@@ -156,7 +156,70 @@ const organisationsController = {
   },
 
   async getIssueDetails (req, res, next) {
-    const params = {}
+    const { lpa, dataset: datasetId, issue_type } = req.params
+
+    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+    const organisation = organisationResult.formattedData[0]
+
+    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+    const dataset = datasetResult.formattedData[0]
+
+    const issue_count = 5
+
+    const error_heading = performanceDbApi.getTaskMessage(issue_type, issue_count, true)
+
+    const issue_items = [
+      {
+        html: '2 fields are missing values in entry 949',
+        href: 'todo'
+      },
+      {
+        html: '3 fields are missing values in entry 950',
+        href: 'todo'
+      }
+    ]
+
+    const entry = {
+      title: '20 and 20A Whitbourne Springs',
+      fields: [
+        {
+          key: {
+            text: 'description'
+          },
+          value: {
+            html: '20 and 20A Whitbourne Springs'
+          },
+          classes: ''
+        },
+        {
+          key: {
+            text: 'document-url'
+          },
+          value: {
+            html: '<p class="govuk-error-message">document-url missing</p>'
+          },
+          classes: 'dl-summary-card-list__row--error'
+        },
+        {
+          key: {
+            text: 'documentation-url'
+          },
+          value: {
+            html: '<p class="govuk-error-message">documentation-url missing</p>'
+          },
+          classes: 'dl-summary-card-list__row--error'
+        }
+      ]
+    }
+
+    const params = {
+      organisation,
+      dataset,
+      error_heading,
+      issue_items,
+      entry
+    }
+
     res.render('organisations/issueDetails.html', params)
   }
 

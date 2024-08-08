@@ -230,11 +230,11 @@ ORDER BY
     if (!messages[issueType]) {
       throw new Error(`Unknown issue type: ${issueType}`)
     }
-  
+
     let message
-    if(entityLevel){
+    if (entityLevel) {
       message = issueCount === 1 ? messages[issueType].entities_singular : messages[issueType].entities_plural
-    }else{
+    } else {
       message = issueCount === 1 ? messages[issueType].singular : messages[issueType].plural
     }
     return message.replace('{}', issueCount)
