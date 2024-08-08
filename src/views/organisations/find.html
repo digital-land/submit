@@ -1,0 +1,70 @@
+{% extends "layouts/main.html" %}
+
+{% set pageName = "Find your organisation" %}
+
+{% block beforeContent %}
+
+{{ super() }}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-5">{{ pageName }}</h1>
+  </div>
+</div>
+
+<div id="list-filter">
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form class="govuk-!-margin-bottom-6" data-filter="form">
+        <label class="govuk-label" for="filter-organisations-list">Search for an organisation</label>
+        <input class="govuk-input" type="text" id="filter-organisations-list">
+      </form>
+    </div>
+  </div>
+  
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full" id="search_results">
+      {% for letter, orgs in alphabetisedOrgs %}
+        <div class="govuk-grid-row js-filter-item" data-filter="block">
+          <div class="govuk-grid-column-one-third">
+            <h2 class="blockHeading govuk-heading-xl">{{ letter }}</h2>
+          </div>
+          <div class="govuk-grid-column-two-thirds" data-filter="inner-block">
+            <ul class="govuk-list govuk-!-margin-bottom-0">
+              {% for org in orgs %}
+              <li class="govuk-!-margin-bottom-1 js-filter-item" data-filter="item" data-filter-terms="{{org.name}}">
+                <a href="/organisations/{{ org.organisation }}/overview" class="govuk-link">{{ org.name }}</a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="govuk-grid-column-full">
+            <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+          </div>
+        </div>
+      {% endfor %}
+
+
+  
+    </div>
+  </div>
+
+</div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="/public/js/list-filter.bundle.js"></script>
+  <script>
+    const listFilterSearchBox = document.getElementById('list-filter')
+    new GOVUK.Modules.ListFilter(listFilterSearchBox).init()
+  </script>
+{% endblock %}

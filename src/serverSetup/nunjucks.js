@@ -2,7 +2,7 @@ import nunjucks from 'nunjucks'
 import config from '../../config/index.js'
 import addFilters from '../filters/filters.js'
 
-export function setupNunjucks ({ app, dataSubjects }) {
+export function setupNunjucks ({ app, datasetNameMapping }) {
   if (app) {
     app.set('view engine', 'html')
   }
@@ -33,7 +33,7 @@ export function setupNunjucks ({ app, dataSubjects }) {
   Object.keys(globalValues).forEach((key) => {
     nunjucksEnv.addGlobal(key, globalValues[key])
   })
-  addFilters(nunjucksEnv, { dataSubjects })
+  addFilters(nunjucksEnv, { datasetNameMapping })
 
   return nunjucks
 }

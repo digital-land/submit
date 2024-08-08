@@ -4,8 +4,7 @@ import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 import { runGenericPageTests } from './generic-page.js'
 import jsdom from 'jsdom'
-import { dataSubjects } from '../../src/utils/utils.js'
-import { makeDatasetSlugToReadableNameFilter, createDatasetMapping } from '../../src/filters/makeDatasetSlugToReadableNameFilter.js'
+import { makeDatasetSlugToReadableNameFilter } from '../../src/filters/makeDatasetSlugToReadableNameFilter.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -19,7 +18,11 @@ const nunjucksEnv = nunjucks.configure([
   watch: true
 })
 
-addFilters(nunjucksEnv, { dataSubjects })
+const datasetNameMapping = new Map([
+
+])
+
+addFilters(nunjucksEnv, { datasetNameMapping })
 
 describe('LPA Overview Page', () => {
   const params = {
@@ -78,7 +81,7 @@ describe('LPA Overview Page', () => {
       }
     ]
   }
-  const html = nunjucks.render('manage/lpa-overview.html', params)
+  const html = nunjucks.render('organisations/overview.html', params)
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
@@ -108,8 +111,7 @@ describe('LPA Overview Page', () => {
   it('The correct number of dataset cards are rendered with the correct titles', () => {
     expect(datasetCards.length).toEqual(params.datasets.length)
 
-    const datasetMapping = createDatasetMapping(dataSubjects)
-    const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetMapping)
+    const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
 
     params.datasets.forEach((dataset, i) => {
       expect(datasetCards[i].querySelector('.govuk-heading-m').textContent).toContain(datasetSlugToReadableName(dataset.slug))
