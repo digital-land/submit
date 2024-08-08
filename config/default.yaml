@@ -14,7 +14,6 @@ aws: {
     bucket: '',
     s3ForcePathStyle: false,
 }
-redis: false
 # ToDo: url and name might need updating
 url: 'https://check-planning.data.gov.uk'
 serviceName: 'Provide planning and housing data for England'

@@ -8,6 +8,7 @@ import multer from 'multer'
 import { promises as fs, createReadStream } from 'fs'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import { postFileRequest } from '../services/asyncRequestApi.js'
 import { allowedFileTypes } from '../utils/utils.js'
 
@@ -99,7 +100,7 @@ class UploadFileController extends UploadController {
       await s3.upload(params).promise()
       return uuid
     } catch (error) {
-      logger.warn('Error uploading file to S3: ' + error.message)
+      logger.warn({ message: 'Error uploading file to S3', type: types.External })
       throw error
     }
   }

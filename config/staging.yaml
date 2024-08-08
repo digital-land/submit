@@ -8,6 +8,6 @@ aws: {
 redis: {
     secure: true,
     host: 'staging-pub-async-redis-kh1elu.serverless.euw2.cache.amazonaws.com',
-    port: '6379'
+    port: 6379
 }
 url: 'https://publish.staging.digital-land.info/'
