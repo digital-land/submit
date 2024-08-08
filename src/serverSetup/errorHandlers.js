@@ -1,12 +1,13 @@
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 export function setupErrorHandlers (app) {
   app.use((err, req, res, next) => {
     logger.error({
-      type: 'Request error',
+      type: types.Response,
       method: req.method,
       endpoint: req.originalUrl,
-      message: `${req.method} request made to ${req.originalUrl} but an error occurred`,
+      message: 'error occurred',
       error: JSON.stringify(err),
       errorMessage: err.message,
       errorStack: err.stack
@@ -28,10 +29,10 @@ export function setupErrorHandlers (app) {
 
   app.use((req, res, next) => {
     logger.info({
-      type: 'File not found',
+      type: types.Response,
       method: req.method,
       endpoint: req.originalUrl,
-      message: `${req.method} request made to ${req.originalUrl} but the file/endpoint was not found`
+      message: 'not found'
     })
     res.status(404).render('errorPages/404')
   })
