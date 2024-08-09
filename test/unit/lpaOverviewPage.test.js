@@ -85,7 +85,7 @@ describe('LPA Overview Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org overview - Manage planning and housing data for England'
+    pageTitle: 'mock org overview - Submit and update your planning data'
   })
 
   const statsBoxes = document.querySelector('.dataset-status').children
