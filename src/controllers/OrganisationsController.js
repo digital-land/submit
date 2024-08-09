@@ -153,6 +153,11 @@ const organisationsController = {
       logger.warn(`getDAtasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
       next(e)
     }
+  },
+
+  async getIssueDetails (req, res, next) {
+    const params = {}
+    res.render('organisations/issueDetails.html', params)
   }
 
 }
