@@ -132,7 +132,7 @@ ORDER BY
     const datasets = result.formattedData.reduce((accumulator, row) => {
       let error
       if (row.http_status !== '200' || row.exception) {
-        error = row.exception ? row.exception : `endpoint returned with a status of ${row.http_status}`
+        error = row.exception ? row.exception : `There was a ${row.http_status} error accessing the data URL`
       }
 
       let issue

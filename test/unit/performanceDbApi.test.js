@@ -45,7 +45,7 @@ describe('performanceDbApi', () => {
         name: 'Some Organisation',
         organisation: 'some-organisation',
         datasets: {
-          'dataset-slug-1': { endpoint: 'https://example.com/endpoint-1', error: 'endpoint returned with a status of 404', issue: undefined },
+          'dataset-slug-1': { endpoint: 'https://example.com/endpoint-1', error: 'There was a 404 error accessing the data URL', issue: undefined },
           'dataset-slug-2': { endpoint: 'https://example.com/endpoint-2', error: 'resource not found', issue: undefined },
           'dataset-slug-3': { endpoint: 'https://example.com/endpoint-3', error: undefined, issue: 'There are 4 issues in this dataset' }
         }
