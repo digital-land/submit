@@ -4,7 +4,13 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 
-{% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{page_num}} of {{num_entries}}){% endset %}
+{% set serviceType = 'Submit'%}
+
+{% if num_entries > 1 %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{page_num}} of {{num_entries}}){% endset %}
+{% else %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
+{%endif%}
 
 {% block content %}
 <div class="govuk-grid-row">
