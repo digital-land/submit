@@ -91,17 +91,17 @@ describe('LPA Overview Page', () => {
   const statsBoxes = document.querySelector('.dataset-status').children
   it('Datasets provided gives the correct value', () => {
     expect(statsBoxes[0].textContent).toContain('2/8')
-    expect(statsBoxes[0].textContent).toContain('datasets provided')
+    expect(statsBoxes[0].textContent).toContain('datasets submitted')
   })
 
   it('Datasets with errors gives the correct value', () => {
     expect(statsBoxes[1].textContent).toContain('2')
-    expect(statsBoxes[1].textContent).toContain('datasets with errors')
+    expect(statsBoxes[1].textContent).toContain('data URL with errors')
   })
 
   it('Datasets with issues gives the correct value', () => {
     expect(statsBoxes[2].textContent).toContain('2')
-    expect(statsBoxes[2].textContent).toContain('datasets with issues')
+    expect(statsBoxes[2].textContent).toContain('datasets need fixing')
   })
 
   const datasetCards = document.querySelector('.govuk-task-list').children
