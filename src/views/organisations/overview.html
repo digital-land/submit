@@ -81,36 +81,14 @@
               {% else %}
                 <p>Endpoint provided</p>
               {% endif %}
-
-              <ul class="planning-data-actions">
-                {% if dataset.endpoint is null %}
-                <li class="planning-data-actions--item">
-                  <a href="/taskLists/taskChecklist">Add endpoint</a>
-                </li>
-                {% endif %}
-                {% if dataset.error %}
-                <li class="planning-data-actions--item">
-                  <a href="/taskLists/taskChecklist">Fix errors</a>
-                </li>
-                {% elseif dataset.issue %}
-                <li class="planning-data-actions--item">
-                  <a href="/taskLists/taskChecklist">Fix issues</a>
-                </li>
-                {% endif %}
-                {% if dataset.endpoint %}
-                <li class="planning-data-actions--item">
-                  <a href="/taskLists/taskChecklist">View data</a>
-                </li>
-                {% endif %}
-              </ul>
-
+              
             </div>
           </div>
 
           <div class="govuk-task-list__status">
             {% if dataset.endpoint is null %}
               {{govukTag({
-                text: "Not provided",
+                text: "Not submitted",
                 classes: "govuk-tag--grey"
               })}}
             {% elif dataset.error %}
@@ -120,12 +98,12 @@
               })}}
             {% elif dataset.issue %}
               {{govukTag({
-                text: "Issues",
+                text: "Needs fixing",
                 classes: "govuk-tag--yellow"
               })}}
             {% else %}
               {{govukTag({
-                text: "No issues",
+                text: "Live",
                 classes: "govuk-tag--green"
               })}}
             {% endif %}

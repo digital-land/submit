@@ -136,19 +136,12 @@ describe('LPA Overview Page', () => {
       if (dataset.endpoint) {
         expectedActions.push({ text: 'View data', href: '/taskLists/taskChecklist' })
       }
-
-      const actions = datasetCards[i].querySelector('.planning-data-actions').children
-      expectedActions.forEach((expectedAction, j) => {
-        expect(actions[j].textContent, `expect action ${expectedAction.text} for dataset ${dataset.slug}`).toContain(expectedAction.text)
-        const actionLink = actions[j].querySelector('a')
-        expect(actionLink.href).toBe(expectedAction.href)
-      })
     })
   })
 
   it('Renders the correct status on each dataset card', () => {
     params.datasets.forEach((dataset, i) => {
-      const expectedHint = !dataset.endpoint ? 'Not provided' : dataset.error ? 'Error' : dataset.issue ? 'Issues' : 'No issues'
+      const expectedHint = !dataset.endpoint ? 'Not submitted' : dataset.error ? 'Error' : dataset.issue ? 'Needs fixing' : 'Live'
 
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
       expect(statusIndicator.textContent).toContain(expectedHint)
