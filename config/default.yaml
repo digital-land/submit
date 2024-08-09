@@ -1,4 +1,4 @@
-port: 5000
+port: 8085
 asyncRequestApi: {
     url: https://publish-api.planning.data.gov.uk,
     port: 8082,
@@ -22,7 +22,7 @@ serviceName: 'Submit and update your planning data'
 serviceNames: {
     submit: 'Submit and update your planning data',
     check: 'Check planning and housing data for England',
-    manage: 'Manage planning and housing data for England'
+    manage: 'Submit and update your planning data'
 }
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
 email: {
