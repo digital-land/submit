@@ -156,7 +156,7 @@ const organisationsController = {
   },
 
   async getIssueDetails (req, res, next) {
-    const { lpa, dataset: datasetId, issue_type } = req.params
+    const { lpa, dataset: datasetId, issue_type: issueType } = req.params
 
     const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
     const organisation = organisationResult.formattedData[0]
@@ -164,11 +164,11 @@ const organisationsController = {
     const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
     const dataset = datasetResult.formattedData[0]
 
-    const issue_count = 5
+    const issueCount = 5
 
-    const error_heading = performanceDbApi.getTaskMessage(issue_type, issue_count, true)
+    const errorHeading = performanceDbApi.getTaskMessage(issueType, issueCount, true)
 
-    const issue_items = [
+    const issueItems = [
       {
         html: '2 fields are missing values in entry 949',
         href: 'todo'
@@ -215,8 +215,8 @@ const organisationsController = {
     const params = {
       organisation,
       dataset,
-      error_heading,
-      issue_items,
+      errorHeading,
+      issueItems,
       entry
     }
 

@@ -6,8 +6,8 @@
 
 {% set serviceType = 'Submit'%}
 
-{% if num_entries > 1 %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{page_num}} of {{num_entries}}){% endset %}
+{% if numEntries > 1 %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNum}} of {{numEntries}}){% endset %}
 {% else %}
   {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
 {%endif%}
@@ -20,8 +20,8 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukErrorSummary({
-      titleText: error_heading,
-      errorList: issue_items
+      titleText: errorHeading,
+      errorList: issueItems
     }) }}
 
     {{ govukSummaryList({
