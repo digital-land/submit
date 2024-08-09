@@ -66,10 +66,14 @@
         <li class="govuk-task-list__item govuk-task-list__item--with-link">
           <div class="govuk-task-list__name-and-hint">
             <h2 class="govuk-heading-m">
-              <a class="govuk-link govuk-task-list__link"
-                href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}">
+              {% if dataset.endpoint %}
+                <a class="govuk-link govuk-task-list__link"
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}">
+                  {{dataset.slug | datasetSlugToReadableName}}
+                </a>
+              {% else %}
                 {{dataset.slug | datasetSlugToReadableName}}
-              </a>
+              {% endif %}
             </h2>
             <div class="govuk-task-list__hint">
               {% if dataset.endpoint is null %}
