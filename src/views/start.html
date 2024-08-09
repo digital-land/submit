@@ -1,0 +1,77 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "x-govuk/components/related-navigation/macro.njk" import xGovukRelatedNavigation %}
+
+{% set serviceType = 'Manage' %}
+{% set pageName = '' %}
+
+{% block content %}
+
+{% set content %}
+
+Use this service to submit or update:
+
+- Article 4 direction data
+- conservation area data
+- listed building data
+- tree preservation order data
+
+## Before you start
+
+Your data must follow the [data specification](https://www.planning.data.gov.uk/guidance/specifications/).
+
+You need to choose to provide your data in one of these file formats:
+
+- CSV
+- GeoJSON
+- GML
+- GeoPackage
+
+Alternatively you can provide us with a URL.
+
+
+{{ govukButton({
+    text: "Start now",
+    href: "/organisations",
+    isStartButton: true
+  }) }}
+ 
+{% endset %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl">
+      {{ serviceName }}
+    </h1>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{content | govukMarkdown(headingsStartWith="l") | safe}}
+  </div>
+  <div class="govuk-grid-column-one-third">
+    {{ xGovukRelatedNavigation({
+        sections: [{
+          items: [
+            {
+              text: "Prepare data to the specifications",
+              href: "https://www.planning.data.gov.uk/guidance/specifications/"
+            },
+            {
+              text: "Publish data on your website",
+              href: "https://www.planning.data.gov.uk/guidance/publish-data-on-your-website"
+            }
+          ],
+          subsections: [{
+            title: "Explore the topic",
+            items: [{
+              text: "Housing and planning",
+              href: "/browse/performing-arts"
+            }]
+          }]
+        }]
+      }) }}
+  </div>
+</div>
+{% endblock %}
