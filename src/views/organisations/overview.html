@@ -73,15 +73,15 @@
             </h2>
             <div class="govuk-task-list__hint">
               {% if dataset.endpoint is null %}
-                <p>Endpoint not provided</p>
+                <p>Data URL not submitted</p>
               {% elif dataset.error %}
                 <p>{{dataset.error}}</p>
               {% elif dataset.issue %}
                 <p>{{dataset.issue}}</p>
               {% else %}
-                <p>Endpoint provided</p>
+                <p>Data URL submitted</p>
               {% endif %}
-              
+
             </div>
           </div>
 

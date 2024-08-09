@@ -117,7 +117,7 @@ describe('LPA Overview Page', () => {
 
   it('The dataset cards are rendered with the correct hints', () => {
     params.datasets.forEach((dataset, i) => {
-      const expectedHint = !dataset.endpoint ? 'Endpoint not provided' : dataset.error ? dataset.error : dataset.issue ? dataset.issue : 'Endpoint provided'
+      const expectedHint = !dataset.endpoint ? 'Data URL not submitted' : dataset.error ? dataset.error : dataset.issue ? dataset.issue : 'Data URL submitted'
       expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent).toContain(expectedHint)
     })
   })
