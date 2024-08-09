@@ -87,8 +87,7 @@ describe('issueDetails.html', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'Test Organisation - Test Dataset - Issues - Submit planning and housing data for England',
-    serviceName: config.serviceName
+    pageTitle: `Test Organisation - Test Dataset - Issues - ${config.serviceNames.submit}`
   })
 
   it('Renders the correct headings', () => {
@@ -128,8 +127,7 @@ describe('issueDetails.html', () => {
     // const multiPageDom = new JSDOM(multiPageHtml)
     // const multiPageDocument = multiPageDom.window.document
     runGenericPageTests(multiPageHtml, {
-      pageTitle: 'Test Organisation - Test Dataset - Issues (Page 2 of 3) - Submit planning and housing data for England',
-      serviceName: config.serviceName
+      pageTitle: `Test Organisation - Test Dataset - Issues (Page 2 of 3) - ${config.serviceNames.submit}`
     })
 
     it.todo('correctly renders the pagination', () => {

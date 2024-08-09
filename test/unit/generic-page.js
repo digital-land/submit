@@ -7,8 +7,7 @@ import jsdom from 'jsdom'
     Params:
         html: string
         options: {
-            pageTitle: string,
-            serviceName: string
+            pageTitle: string
         }
 */
 export const runGenericPageTests = (html, options) => {
