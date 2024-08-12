@@ -111,6 +111,10 @@ export default class ResponseDetails {
 
     const geometryKey = this.getGeometryKey()
 
+    if(!geometryKey){
+      return null
+    }
+
     const geometries = this.response.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
     if (geometries.length === 0) {
       return null
