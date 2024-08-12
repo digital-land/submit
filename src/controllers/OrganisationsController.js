@@ -182,106 +182,111 @@ const organisationsController = {
   async getIssueDetails (req, res, next) {
     const { lpa, dataset: datasetId, issue_type: issueType } = req.params
     let { resourceId, entityNumber } = req.params
-
-    entityNumber = entityNumber ? parseInt(entityNumber) : 1
-
-    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
-    const organisation = organisationResult.formattedData[0]
-
-    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-    const dataset = datasetResult.formattedData[0]
-
-    if (!resourceId) {
-      const resource = await performanceDbApi.getLatestResource(lpa, datasetId)
-      resourceId = resource.resource
-    }
-
-    const issues = await performanceDbApi.getIssues(resourceId, issueType, datasetId)
-
-    const issuesByEntryNumber = issues.reduce((acc, current) => {
-      acc[current.entry_number] = acc[current.entry_number] || []
-      acc[current.entry_number].push(current)
-      return acc
-    }, {})
-
-    const errorHeading = performanceDbApi.getTaskMessage(issueType, Object.keys(issuesByEntryNumber).length, true)
-
-    const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues]) => {
-      return {
-        html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
-        href: `/organisations/${lpa}/${datasetId}/${issueType}/${entryNumber}`
+    
+    try{
+      entityNumber = entityNumber ? parseInt(entityNumber) : 1
+  
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
+  
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
+  
+      if (!resourceId) {
+        const resource = await performanceDbApi.getLatestResource(lpa, datasetId)
+        resourceId = resource.resource
       }
-    })
-
-    const entryData = await performanceDbApi.getEntry(resourceId, entityNumber, datasetId)
-
-    const title = `entry: ${entityNumber}`
-
-    const fields = entryData.map((row) => {
-      let hasError = false
-      let issueIndex
-      if (issuesByEntryNumber[entityNumber]) {
-        issueIndex = issuesByEntryNumber[entityNumber].findIndex(issue => issue.field === row.field)
-        if (issueIndex >= 0) {
-          hasError = true
-        }
-      }
-
-      let valueHtml = ''
-      let classes = ''
-      if (hasError) {
-        const message = issuesByEntryNumber[entityNumber][issueIndex].message || issueType
-        valueHtml += `<p class="govuk-error-message">${message}</p>`
-        classes += 'dl-summary-card-list__row--error'
-      }
-      valueHtml += row.value
-
-      return {
-        key: {
-          text: row.field
-        },
-        value: {
-          html: valueHtml
-        },
-        classes
-      }
-    })
-
-    if (issuesByEntryNumber[entityNumber]) {
-      issuesByEntryNumber[entityNumber].forEach((issue) => {
-        if (!fields.find(field => field.key.text === issue.field)) {
-          const errorMessage = issue.message || issueType
-
-          const valueHtml = `<p class="govuk-error-message">${errorMessage}</p>${issue.value}`
-          const classes = 'dl-summary-card-list__row--error'
-
-          fields.push({
-            key: {
-              text: issue.field
-            },
-            value: {
-              html: valueHtml
-            },
-            classes
-          })
+  
+      const issues = await performanceDbApi.getIssues(resourceId, issueType, datasetId)
+  
+      const issuesByEntryNumber = issues.reduce((acc, current) => {
+        acc[current.entry_number] = acc[current.entry_number] || []
+        acc[current.entry_number].push(current)
+        return acc
+      }, {})
+  
+      const errorHeading = performanceDbApi.getTaskMessage(issueType, Object.keys(issuesByEntryNumber).length, true)
+  
+      const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues]) => {
+        return {
+          html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
+          href: `/organisations/${lpa}/${datasetId}/${issueType}/${entryNumber}`
         }
       })
+  
+      const entryData = await performanceDbApi.getEntry(resourceId, entityNumber, datasetId)
+  
+      const title = `entry: ${entityNumber}`
+  
+      const fields = entryData.map((row) => {
+        let hasError = false
+        let issueIndex
+        if (issuesByEntryNumber[entityNumber]) {
+          issueIndex = issuesByEntryNumber[entityNumber].findIndex(issue => issue.field === row.field)
+          if (issueIndex >= 0) {
+            hasError = true
+          }
+        }
+  
+        let valueHtml = ''
+        let classes = ''
+        if (hasError) {
+          const message = issuesByEntryNumber[entityNumber][issueIndex].message || issueType
+          valueHtml += `<p class="govuk-error-message">${message}</p>`
+          classes += 'dl-summary-card-list__row--error'
+        }
+        valueHtml += row.value
+  
+        return {
+          key: {
+            text: row.field
+          },
+          value: {
+            html: valueHtml
+          },
+          classes
+        }
+      })
+  
+      if (issuesByEntryNumber[entityNumber]) {
+        issuesByEntryNumber[entityNumber].forEach((issue) => {
+          if (!fields.find(field => field.key.text === issue.field)) {
+            const errorMessage = issue.message || issueType
+  
+            const valueHtml = `<p class="govuk-error-message">${errorMessage}</p>${issue.value}`
+            const classes = 'dl-summary-card-list__row--error'
+  
+            fields.push({
+              key: {
+                text: issue.field
+              },
+              value: {
+                html: valueHtml
+              },
+              classes
+            })
+          }
+        })
+      }
+  
+      const entry = {
+        title,
+        fields
+      }
+  
+      const params = {
+        organisation,
+        dataset,
+        errorHeading,
+        issueItems,
+        entry
+      }
+  
+      res.render('organisations/issueDetails.html', params)
+    }catch(e){
+      logger.warn(`getIssueDetails() failed for lpa='${lpa}', datasetId='${datasetId}', issue=${issueType}, entityNumber=${entityNumber}, resourceId=${resourceId}`, { type: types.App })
+      next(e)
     }
-
-    const entry = {
-      title,
-      fields
-    }
-
-    const params = {
-      organisation,
-      dataset,
-      errorHeading,
-      issueItems,
-      entry
-    }
-
-    res.render('organisations/issueDetails.html', params)
   }
 
 }
