@@ -228,7 +228,7 @@ ORDER BY
 
   async getIssues (resource, issueType, database = 'digital-land') {
     const sql = `
-      SELECT i.field, i.line_number, entry_number, message, issue_type
+      SELECT i.field, i.line_number, entry_number, message, issue_type, value
       FROM issue i
       WHERE i.resource = '${resource}'
       AND issue_type = '${issueType}'
