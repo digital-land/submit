@@ -12,6 +12,22 @@ const availableDatasets = Object.values(dataSubjects)
       .map(dataset => dataset.value)
   )
 
+function getStatusTag (status) {
+  const statusToTagClass = {
+    Error: 'govuk-tag--red',
+    'Needs fixing': 'govuk-tag--yellow',
+    Warning: 'govuk-tag--blue',
+    Issue: 'govuk-tag--blue'
+  }
+
+  return {
+    tag: {
+      text: status,
+      classes: statusToTagClass[status]
+    }
+  }
+}
+
 const organisationsController = {
   /**
    * Get LPA overview data and render the overview page
@@ -140,7 +156,15 @@ const organisationsController = {
 
       const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
 
-      const taskList = performanceDbApi.getTaskList(issues)
+      const taskList = issues.map((issue) => {
+        return {
+          title: {
+            text: performanceDbApi.getTaskMessage(issue.issue_type, issue.num_issues)
+          },
+          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
+          status: getStatusTag(issue.status)
+        }
+      })
 
       const params = {
         taskList,
@@ -157,9 +181,9 @@ const organisationsController = {
 
   async getIssueDetails (req, res, next) {
     const { lpa, dataset: datasetId, issue_type: issueType } = req.params
-    let { resourceId, pageNumber } = req.params
+    let { resourceId, entityNumber } = req.params
 
-    const entityNumber = pageNumber || 1
+    entityNumber = entityNumber ? parseInt(entityNumber) : 1
 
     const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
     const organisation = organisationResult.formattedData[0]
@@ -172,20 +196,20 @@ const organisationsController = {
       resourceId = resource.resource
     }
 
-    const issues = await performanceDbApi.getIssues(resourceId, issueType)
+    const issues = await performanceDbApi.getIssues(resourceId, issueType, datasetId)
 
     const errorHeading = performanceDbApi.getTaskMessage(issueType, issues.length, true)
 
-    const issuesByLineNumber = issues.reduce((acc, current) => {
-      acc[current.line_number] = acc[current.line_number] || []
-      acc[current.line_number].push(current.field)
+    const issuesByEntryNumber = issues.reduce((acc, current) => {
+      acc[current.entry_number] = acc[current.entry_number] || []
+      acc[current.entry_number].push(current)
       return acc
     }, {})
 
-    const issueItems = Object.entries(issuesByLineNumber).map(([lineNumber, fields]) => {
+    const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues]) => {
       return {
-        html: performanceDbApi.getTaskMessage(issueType, fields.length) + ` in record ${lineNumber}`,
-        href: 'todo'
+        html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
+        href: `/organisations/${lpa}/${datasetId}/${issueType}/${entryNumber}#govuk-summary-card`
       }
     })
 
@@ -195,8 +219,10 @@ const organisationsController = {
 
     const fields = entryData.map((row) => {
       let hasError = false
-      if (issuesByLineNumber[entityNumber]) {
-        if (issuesByLineNumber[entityNumber].includes(row.field)) {
+      let issueIndex
+      if (issuesByEntryNumber[entityNumber]) {
+        issueIndex = issuesByEntryNumber[entityNumber].findIndex(issue => issue.field === row.field)
+        if (issueIndex >= 0) {
           hasError = true
         }
       }
@@ -204,7 +230,8 @@ const organisationsController = {
       let valueHtml = ''
       let classes = ''
       if (hasError) {
-        valueHtml += '<p class="govuk-error-message">Error</p>'
+        const message = issuesByEntryNumber[entityNumber][issueIndex].message || issueType
+        valueHtml += `<p class="govuk-error-message">${message}</p>`
         classes += 'dl-summary-card-list__row--error'
       }
       valueHtml += row.value
@@ -219,6 +246,27 @@ const organisationsController = {
         classes
       }
     })
+
+    if (issuesByEntryNumber[entityNumber]) {
+      issuesByEntryNumber[entityNumber].forEach((issue) => {
+        if (!fields.find(field => field.key.text === issue.field)) {
+          const errorMessage = issue.message || issueType
+
+          const valueHtml = `<p class="govuk-error-message">${errorMessage}</p>${issue.value}`
+          const classes = 'dl-summary-card-list__row--error'
+
+          fields.push({
+            key: {
+              text: issue.field
+            },
+            value: {
+              html: valueHtml
+            },
+            classes
+          })
+        }
+      })
+    }
 
     const entry = {
       title,

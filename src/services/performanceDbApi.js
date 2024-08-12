@@ -29,29 +29,13 @@ fs.createReadStream('src/content/entityIssueMessages.csv')
   .on('data', (row) => {
     messages[row.issue_type] = {
       ...messages[row.issue_type],
-      entities_singular: row.singular_message.replace('{num_entities}', '{}'),
-      entities_plural: row.plural_message.replace('{num_entities}', '{}')
+      entities_singular: row.singular_message.replace('{num_entries}', '{}'),
+      entities_plural: row.plural_message.replace('{num_entries}', '{}')
     }
   })
   .on('end', () => {
     // Messages object is now populated
   })
-
-function getStatusTag (status) {
-  const statusToTagClass = {
-    Error: 'govuk-tag--red',
-    'Needs fixing': 'govuk-tag--yellow',
-    Warning: 'govuk-tag--blue',
-    Issue: 'govuk-tag--blue'
-  }
-
-  return {
-    tag: {
-      text: status,
-      classes: statusToTagClass[status]
-    }
-  }
-}
 
 // ===========================================
 
@@ -214,18 +198,6 @@ ORDER BY
     })
   },
 
-  getTaskList: function (issues) {
-    return issues.map((issue) => {
-      return {
-        title: {
-          text: this.getTaskMessage(issue.issue_type, issue.num_issues)
-        },
-        href: 'toDo',
-        status: getStatusTag(issue.status)
-      }
-    })
-  },
-
   getTaskMessage (issueType, issueCount, entityLevel = false) {
     if (!messages[issueType]) {
       throw new Error(`Unknown issue type: ${issueType}`)
@@ -254,20 +226,20 @@ ORDER BY
     return result.formattedData[0]
   },
 
-  async getIssues (resource, issueType) {
+  async getIssues (resource, issueType, database = 'digital-land') {
     const sql = `
-      SELECT i.field, i.line_number
+      SELECT i.field, i.line_number, entry_number, message, issue_type
       FROM issue i
       WHERE i.resource = '${resource}'
       AND issue_type = '${issueType}'
     `
 
-    const result = await datasette.runQuery(sql)
+    const result = await datasette.runQuery(sql, database)
 
     return result.formattedData
   },
 
-  async getEntry (resourceId, lineNumber, dataset) {
+  async getEntry (resourceId, entryNumber, dataset) {
     const sql = `
       select
         fr.rowid,
@@ -287,7 +259,7 @@ ORDER BY
         left join fact ft on fr.fact = ft.fact
       where
         fr.resource = '${resourceId}'
-        and fr.entry_number = ${lineNumber}
+        and fr.entry_number = ${entryNumber}
       order by
         fr.rowid`
 
