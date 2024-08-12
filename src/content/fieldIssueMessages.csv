@@ -1,36 +1,36 @@
 issue_type,singular_message,plural_message
-"future entry date", one field has a future entry date, {num_issues} fields have future entry dates
-"invalid coordinates", one field has invalid coordinates, {num_issues} fields have invalid coordinates
-"invalid date", one field has an invalid date, {num_issues} fields have invalid dates
-"invalid decimal", one field has an invalid decimal, {num_issues} fields have invalid decimals
-"invalid flag", one field has an invalid flag, {num_issues} fields have invalid flags
-"invalid geometry - not fixable", one field has an invalid geometry that cannot be fixed, {num_issues} fields have invalid geometries that cannot be fixed
-"invalid integer", one field has an invalid integer, {num_issues} fields have invalid integers
-"invalid organisation", one field has an invalid organisation, {num_issues} fields have invalid organisations
-"invalid URI", one field has an invalid URI, {num_issues} fields have invalid URIs
-"invalid WKT", one field has invalid WKT, {num_issues} fields have invalid WKT
-"missing value", one field is missing a value, {num_issues} fields are missing values
-"OSGB out of bounds of custom boundary", one field has OSGB coordinates that are out of bounds of the custom boundary, {num_issues} fields have OSGB coordinates that are out of bounds of the custom boundary
-"OSGB out of bounds of England", one field has OSGB coordinates that are out of bounds of England, {num_issues} fields have OSGB coordinates that are out of bounds of England
-"too large", one field is too large, {num_issues} fields are too large
-"too small", one field is too small, {num_issues} fields are too small
-"Unexpected geom type", one field has an unexpected geometry type, {num_issues} fields have unexpected geometry types
-"Unexpected geom type within GeometryCollection", one field has an unexpected geometry type within a GeometryCollection, {num_issues} fields have unexpected geometry types within GeometryCollections
-"unknown entity - missing reference", one field has an unknown entity with a missing reference, {num_issues} fields have unknown entities with missing references
-"WGS84 out of bounds", one field has WGS84 coordinates that are out of bounds, {num_issues} fields have WGS84 coordinates that are out of bounds
-"WGS84 out of bounds of custom boundary", one field has WGS84 coordinates that are out of bounds of the custom boundary, {num_issues} fields have WGS84 coordinates that are out of bounds of the custom boundary
-"WGS84 out of bounds of England", one field has WGS84 coordinates that are out of bounds of England, {num_issues} fields have WGS84 coordinates that are out of bounds of England
-"invalid geometry - fixed", one field has an invalid geometry that has been fixed, {num_issues} fields have invalid geometries that have been fixed
-"invalid type geojson", one field has an invalid GeoJSON type, {num_issues} fields have invalid GeoJSON types
-"Mercator", one field uses Mercator coordinates, {num_issues} fields use Mercator coordinates
-"Mercator flipped", one field uses flipped Mercator coordinates, {num_issues} fields use flipped Mercator coordinates
-"OSGB", one field uses OSGB coordinates, {num_issues} fields use OSGB coordinates
-"OSGB flipped", one field uses flipped OSGB coordinates, {num_issues} fields use flipped OSGB coordinates
-"WGS84 flipped", one field uses flipped WGS84 coordinates, {num_issues} fields use flipped WGS84 coordinates
-"combined-value", one field has a combined value, {num_issues} fields have combined values
-"default-field", one field has a default value from another field, {num_issues} fields have default values from other fields
-"default-value", one field has a default value, {num_issues} fields have default values
-"patch", one field has been patched, {num_issues} fields have been patched
-"removed URI prefix", one field has a URI prefix that has been removed, {num_issues} fields have URI prefixes that have been removed
-"unknown entity", one field has an unknown entity, {num_issues} fields have unknown entities
-"reference values are not unique", one field has reference values that are not unique, {num_issues} fields have reference values that are not unique
+"future entry date", 1 field has a future entry date, {num_issues} fields have future entry dates
+"invalid coordinates", 1 field has invalid coordinates, {num_issues} fields have invalid coordinates
+"invalid date", 1 field has an invalid date, {num_issues} fields have invalid dates
+"invalid decimal", 1 field has an invalid decimal, {num_issues} fields have invalid decimals
+"invalid flag", 1 field has an invalid flag, {num_issues} fields have invalid flags
+"invalid geometry - not fixable", 1 field has an invalid geometry that cannot be fixed, {num_issues} fields have invalid geometries that cannot be fixed
+"invalid integer", 1 field has an invalid integer, {num_issues} fields have invalid integers
+"invalid organisation", 1 field has an invalid organisation, {num_issues} fields have invalid organisations
+"invalid URI", 1 field has an invalid URI, {num_issues} fields have invalid URIs
+"invalid WKT", 1 field has invalid WKT, {num_issues} fields have invalid WKT
+"missing value", 1 field is missing a value, {num_issues} fields are missing values
+"OSGB out of bounds of custom boundary", 1 field has OSGB coordinates that are out of bounds of the custom boundary, {num_issues} fields have OSGB coordinates that are out of bounds of the custom boundary
+"OSGB out of bounds of England", 1 field has OSGB coordinates that are out of bounds of England, {num_issues} fields have OSGB coordinates that are out of bounds of England
+"too large", 1 field is too large, {num_issues} fields are too large
+"too small", 1 field is too small, {num_issues} fields are too small
+"Unexpected geom type", 1 field has an unexpected geometry type, {num_issues} fields have unexpected geometry types
+"Unexpected geom type within GeometryCollection", 1 field has an unexpected geometry type within a GeometryCollection, {num_issues} fields have unexpected geometry types within GeometryCollections
+"unknown entity - missing reference", 1 field has an unknown entity with a missing reference, {num_issues} fields have unknown entities with missing references
+"WGS84 out of bounds", 1 field has WGS84 coordinates that are out of bounds, {num_issues} fields have WGS84 coordinates that are out of bounds
+"WGS84 out of bounds of custom boundary", 1 field has WGS84 coordinates that are out of bounds of the custom boundary, {num_issues} fields have WGS84 coordinates that are out of bounds of the custom boundary
+"WGS84 out of bounds of England", 1 field has WGS84 coordinates that are out of bounds of England, {num_issues} fields have WGS84 coordinates that are out of bounds of England
+"invalid geometry - fixed", 1 field has an invalid geometry that has been fixed, {num_issues} fields have invalid geometries that have been fixed
+"invalid type geojson", 1 field has an invalid GeoJSON type, {num_issues} fields have invalid GeoJSON types
+"Mercator", 1 field uses Mercator coordinates, {num_issues} fields use Mercator coordinates
+"Mercator flipped", 1 field uses flipped Mercator coordinates, {num_issues} fields use flipped Mercator coordinates
+"OSGB", 1 field uses OSGB coordinates, {num_issues} fields use OSGB coordinates
+"OSGB flipped", 1 field uses flipped OSGB coordinates, {num_issues} fields use flipped OSGB coordinates
+"WGS84 flipped", 1 field uses flipped WGS84 coordinates, {num_issues} fields use flipped WGS84 coordinates
+"combined-value", 1 field has a combined value, {num_issues} fields have combined values
+"default-field", 1 field has a default value from another field, {num_issues} fields have default values from other fields
+"default-value", 1 field has a default value, {num_issues} fields have default values
+"patch", 1 field has been patched, {num_issues} fields have been patched
+"removed URI prefix", 1 field has a URI prefix that has been removed, {num_issues} fields have URI prefixes that have been removed
+"unknown entity", 1 field has an unknown entity, {num_issues} fields have unknown entities
+"reference values are not unique", 1 field has reference values that are not unique, {num_issues} fields have reference values that are not unique
