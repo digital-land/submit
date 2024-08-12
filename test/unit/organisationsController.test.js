@@ -206,16 +206,32 @@ describe('OrganisationsController.js', () => {
       })
 
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        { issue: 'Example issue' }
+        { 
+          issue: 'Example issue 1',
+          issue_type: 'Example issue type 1',
+          num_issues: 1,
+          status: 'Error'
+        },
       ])
 
-      vi.mocked(performanceDbApi.getTaskList).mockReturnValue([{ task: 'Example task' }])
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1')
 
       await organisationsController.getDatasetTaskList(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
-        taskList: [{ task: 'Example task' }],
+        taskList: [{ 
+          title: {
+            text: 'task message 1',
+          },
+          href: "/organisations/example-lpa/example-dataset/Example issue type 1",
+          status: {
+            tag: {
+              classes: 'govuk-tag--red',
+              text: 'Error'
+            }
+          }
+        },],
         organisation: { name: 'Example Organisation' },
         dataset: { name: 'Example Dataset' }
       })
@@ -233,22 +249,51 @@ describe('OrganisationsController.js', () => {
       })
 
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        { issue: 'Example issue 1' },
-        { issue: 'Example issue 2' }
+        { 
+          issue: 'Example issue 1',
+          issue_type: 'Example issue type 1',
+          num_issues: 1,
+          status: 'Error'
+        },
+        { 
+          issue: 'Example issue 2',
+          issue_type: 'Example issue type 2',
+          num_issues: 1,
+          status: 'Needs fixing'
+        }
       ])
 
-      vi.mocked(performanceDbApi.getTaskList).mockReturnValue([
-        { task: 'Example task 1' },
-        { task: 'Example task 2' }
-      ])
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1').mockReturnValueOnce('task message 2')
 
       await organisationsController.getDatasetTaskList(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
         taskList: [
-          { task: 'Example task 1' },
-          { task: 'Example task 2' }
+          { 
+            title: {
+              text: 'task message 1',
+            },
+            href: "/organisations/example-lpa/example-dataset/Example issue type 1",
+            status: {
+              tag: {
+                classes: 'govuk-tag--red',
+                text: 'Error'
+              }
+            }
+          },
+          { 
+            title: {
+              text: 'task message 2',
+            },
+            href: "/organisations/example-lpa/example-dataset/Example issue type 2",
+            status: {
+              tag: {
+                classes: 'govuk-tag--yellow',
+                text: 'Needs fixing'
+              }
+            }
+          }
         ],
         organisation: { name: 'Example Organisation' },
         dataset: { name: 'Example Dataset' }
