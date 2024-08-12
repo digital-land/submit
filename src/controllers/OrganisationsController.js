@@ -198,7 +198,6 @@ const organisationsController = {
 
     const issues = await performanceDbApi.getIssues(resourceId, issueType, datasetId)
 
-    
     const issuesByEntryNumber = issues.reduce((acc, current) => {
       acc[current.entry_number] = acc[current.entry_number] || []
       acc[current.entry_number].push(current)
