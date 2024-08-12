@@ -2,7 +2,8 @@
 
 {% extends "layouts/main.html" %}
 
-{% set pageName %}{{organisation.name}} — {{dataset.name}} — Task list{% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
+{% set serviceType = 'manage' %}
 
 {% block content %}
 
@@ -58,8 +59,7 @@
       ]
     }) }}
 
-    <p>If your data URL has changed you can <a href="https://check.staging.digital-land.info/submit">resubmit your
-        data URL</a>.</p>
+    <p>If your data URL has changed you can <a href="https://check.staging.digital-land.info/submit">resubmit your data URL</a>.</p>
 
     <p>You should try to make sure your data URLs stay the same when you update your data so we can collect your data
       each night.</p>
