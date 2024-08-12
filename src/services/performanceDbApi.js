@@ -203,7 +203,8 @@ ORDER BY
       ORDER BY it.severity`
 
     const result = await datasette.runQuery(sql)
-    return result.formattedData.map(({num_issues, issue_type, resource, status}) => {
+    /* eslint camelcase: "off" */
+    return result.formattedData.map(({ num_issues, issue_type, resource, status }) => {
       return { num_issues, issue_type, resource, status }
     })
   },

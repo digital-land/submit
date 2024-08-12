@@ -158,7 +158,6 @@ describe('LPA Overview Page', () => {
     })
   })
 
-
   params.datasets.forEach((dataset, i) => {
     it(`Renders the correct status on each dataset card for dataset='${dataset.slug}'`, () => {
       let expectedHint = 'Live'
@@ -169,7 +168,7 @@ describe('LPA Overview Page', () => {
       } else if (dataset.status === 'Need fixing') {
         expectedHint = 'Need fixing'
       }
-  
+
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
       expect(statusIndicator.textContent.trim()).toContain(expectedHint)
     })
