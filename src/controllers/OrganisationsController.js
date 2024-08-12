@@ -12,6 +12,12 @@ const availableDatasets = Object.values(dataSubjects)
       .map(dataset => dataset.value)
   )
 
+/**
+ * Returns a status tag object with a text label and a CSS class based on the status.
+ * 
+ * @param {string} status - The status to generate a tag for (e.g. "Error", "Needs fixing", etc.)
+ * @returns {object} - An object with a `tag` property containing the text label and CSS class.
+ */
 function getStatusTag (status) {
   const statusToTagClass = {
     Error: 'govuk-tag--red',
@@ -119,66 +125,98 @@ const organisationsController = {
     }
   },
 
-  async getGetStarted (req, res, next) {
-    try {
-      // get the organisation name
-      const lpa = req.params.lpa
-      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
-      const organisation = organisationResult.formattedData[0]
-
-      // get the dataset name
-      const datasetId = req.params.dataset
-      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-      const dataset = datasetResult.formattedData[0]
-
-      const params = {
-        organisation,
-        dataset
-      }
-
-      res.render('organisations/get-started.html', params)
-    } catch (err) {
-      logger.error(err)
-      next(err)
-    }
-  },
-
-  async getDatasetTaskList (req, res, next) {
+/**
+ * Handles GET requests for the "Get Started" page.
+ * 
+ * @param {Express.Request} req - The incoming request object.
+ * @param {Express.Response} res - The response object to send back to the client.
+ * @param {Express.NextFunction} next - The next function in the middleware chain.
+ * 
+ * Retrieves the organisation and dataset names from the database and renders the "Get Started" page with the organisation and dataset details.
+ */
+async getGetStarted (req, res, next) {
+  try {
+    // get the organisation name
     const lpa = req.params.lpa
+    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+    const organisation = organisationResult.formattedData[0]
+
+    // get the dataset name
     const datasetId = req.params.dataset
+    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+    const dataset = datasetResult.formattedData[0]
 
-    try {
-      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
-      const organisation = organisationResult.formattedData[0]
-
-      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-      const dataset = datasetResult.formattedData[0]
-
-      const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
-
-      const taskList = issues.map((issue) => {
-        return {
-          title: {
-            text: performanceDbApi.getTaskMessage(issue.issue_type, issue.num_issues)
-          },
-          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
-          status: getStatusTag(issue.status)
-        }
-      })
-
-      const params = {
-        taskList,
-        organisation,
-        dataset
-      }
-
-      res.render('organisations/datasetTaskList.html', params)
-    } catch (e) {
-      logger.warn(`getDAtasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
-      next(e)
+    const params = {
+      organisation,
+      dataset
     }
-  },
 
+    res.render('organisations/get-started.html', params)
+  } catch (err) {
+    logger.error(err)
+    next(err)
+  }
+},
+
+
+/**
+ * Handles GET requests for the dataset task list page.
+ * 
+ * @param {Express.Request} req - The incoming request object.
+ * @param {Express.Response} res - The response object to send back to the client.
+ * @param {Express.NextFunction} next - The next function in the middleware chain.
+ * 
+ * Retrieves the organisation and dataset names from the database, fetches the issues for the given LPA and dataset,
+ * and renders the dataset task list page with the list of tasks and organisation and dataset details.
+ */
+async getDatasetTaskList (req, res, next) {
+  const lpa = req.params.lpa
+  const datasetId = req.params.dataset
+
+  try {
+    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+    const organisation = organisationResult.formattedData[0]
+
+    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+    const dataset = datasetResult.formattedData[0]
+
+    const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
+
+    const taskList = issues.map((issue) => {
+      return {
+        title: {
+          text: performanceDbApi.getTaskMessage(issue.issue_type, issue.num_issues)
+        },
+        href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
+        status: getStatusTag(issue.status)
+      }
+    })
+
+    const params = {
+      taskList,
+      organisation,
+      dataset
+    }
+
+    res.render('organisations/datasetTaskList.html', params)
+  } catch (e) {
+    logger.warn(`getDAtasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
+    next(e)
+  }
+},
+
+/**
+ * Handles GET requests for the issue details page.
+ * 
+ * @param {Express.Request} req - The incoming request object.
+ * @param {Express.Response} res - The response object to send back to the client.
+ * @param {Express.NextFunction} next - The next function in the middleware chain.
+ * 
+ * Retrieves the organisation, dataset, and issue details from the database, and renders the issue details page
+ * with the list of issues, entry data, and organisation and dataset details.
+ * 
+ * @throws {Error} If there is an error fetching the data or rendering the page.
+ */
   async getIssueDetails (req, res, next) {
     const { lpa, dataset: datasetId, issue_type: issueType } = req.params
     let { resourceId, entityNumber } = req.params
