@@ -1,7 +1,6 @@
 // getStartedPage.test.js
 
 import { describe, it, expect } from 'vitest'
-import config from '../../config/index.js'
 import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 import { runGenericPageTests } from './generic-page.js'
@@ -34,8 +33,7 @@ describe('Get Started Page', () => {
     },
     dataset: {
       name: 'World heritage site buffer zone'
-    },
-    serviceName: config.serviceName
+    }
   }
   const html = nunjucks.render('organisations/get-started.html', params)
 
@@ -43,8 +41,7 @@ describe('Get Started Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org - World heritage site buffer zone - Get started - Submit planning and housing data for England',
-    serviceName: config.serviceName
+    pageTitle: 'mock org - World heritage site buffer zone - Get started - Submit and update your planning data'
   })
 
   it('Renders the correct headings', () => {

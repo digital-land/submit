@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
   }
 
   const toReturn = {
-    name: config.serviceName,
+    name: config.serviceNames.submit,
     environment: config.environment,
     version: process.env.GIT_COMMIT || 'unknown',
     maintenance: config.maintenance.serviceUnavailable,
