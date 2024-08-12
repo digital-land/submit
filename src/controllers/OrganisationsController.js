@@ -213,10 +213,10 @@ const organisationsController = {
     const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
     const dataset = datasetResult.formattedData[0]
 
-    const daysSince200 = resourceStatus.days_since_200;
-    const today = new Date();
-    const last200Date = new Date(today.getTime() - (daysSince200 * 24 * 60 * 60 * 1000));
-    const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z';
+    const daysSince200 = resourceStatus.days_since_200
+    const today = new Date()
+    const last200Date = new Date(today.getTime() - (daysSince200 * 24 * 60 * 60 * 1000))
+    const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
 
     const params = {
       organisation: {
