@@ -14,7 +14,11 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% endif %}
 
 {% block pageTitle %}
-  {{ pageName }} - {{ serviceName }}
+  {% if pageName == "" %}
+    {{ serviceName }}
+  {% else %}
+    {{ pageName }} - {{ serviceName }}
+  {% endif %}
 {% endblock %}
 
 {% block head %}

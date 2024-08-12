@@ -1,0 +1,36 @@
+issue_type,singular_message,plural_message
+"future entry date", one entry has a future entry date, {num_entries} entries have a future entry date
+"invalid coordinates", one entry has invalid coordinates, {num_entries} entries have invalid coordinates
+"invalid date", one entry has an invalid date, {num_entries} entries have invalid dates
+"invalid decimal", one entry has an invalid decimal, {num_entries} entries have invalid decimals
+"invalid flag", one entry has an invalid flag, {num_entries} entries have invalid flags
+"invalid geometry - not fixable", one entry has an invalid geometry that cannot be fixed, {num_entries} entries have invalid geometries that cannot be fixed
+"invalid integer", one entry has an invalid integer, {num_entries} entries have invalid integers
+"invalid organisation", one entry has an invalid organisation, {num_entries} entries have invalid organisations
+"invalid URI", one entry has an invalid URI, {num_entries} entries have invalid URIs
+"invalid WKT", one entry has invalid WKT, {num_entries} entries have invalid WKT
+"missing value", one entry is missing a value, {num_entities} entities have missing values
+"OSGB out of bounds of custom boundary", one entry has OSGB coordinates that are out of bounds of the custom boundary, {num_entries} entries have OSGB coordinates that are out of bounds of the custom boundary
+"OSGB out of bounds of England", one entry has OSGB coordinates that are out of bounds of England, {num_entries} entries have OSGB coordinates that are out of bounds of England
+"too large", one entry is too large, {num_entries} entries are too large
+"too small", one entry is too small, {num_entries} entries are too small
+"Unexpected geom type", one entry has an unexpected geometry type, {num_entries} entries have unexpected geometry types
+"Unexpected geom type within GeometryCollection", one entry has an unexpected geometry type within a GeometryCollection, {num_entries} entries have unexpected geometry types within GeometryCollections
+"unknown entity - missing reference", one entry has an unknown entity with a missing reference, {num_entries} entries have unknown entities with missing references
+"WGS84 out of bounds", one entry has WGS84 coordinates that are out of bounds, {num_entries} entries have WGS84 coordinates that are out of bounds
+"WGS84 out of bounds of custom boundary", one entry has WGS84 coordinates that are out of bounds of the custom boundary, {num_entries} entries have WGS84 coordinates that are out of bounds of the custom boundary
+"WGS84 out of bounds of England", one entry has WGS84 coordinates that are out of bounds of England, {num_entries} entries have WGS84 coordinates that are out of bounds of England
+"invalid geometry - fixed", one entry has an invalid geometry that has been fixed, {num_entries} entries have invalid geometries that have been fixed
+"invalid type geojson", one entry has an invalid GeoJSON type, {num_entries} entries have invalid GeoJSON types
+"Mercator", one entry uses Mercator coordinates, {num_entries} entries use Mercator coordinates
+"Mercator flipped", one entry uses flipped Mercator coordinates, {num_entries} entries use flipped Mercator coordinates
+"OSGB", one entry uses OSGB coordinates, {num_entries} entries use OSGB coordinates
+"OSGB flipped", one entry uses flipped OSGB coordinates, {num_entries} entries use flipped OSGB coordinates
+"WGS84 flipped", one entry uses flipped WGS84 coordinates, {num_entries} entries use flipped WGS84 coordinates
+"combined-value", one entry has a combined value, {num_entries} entries have combined values
+"default-field", one entry has a default value from another field, {num_entries} entries have default values from other fields
+"default-value", one entry has a default value, {num_entries} entries have default values
+"patch", one entry has been patched, {num_entries} entries have been patched
+"removed URI prefix", one entry has a URI prefix that has been removed, {num_entries} entries have URI prefixes that have been removed
+"unknown entity", one entry has an unknown entity, {num_entries} entries have unknown entities
+"reference values are not unique", one entry has reference values that are not unique, {num_entries} entries have reference values that are not unique

@@ -1,14 +1,13 @@
 // getFullServiceName.test.js
 import { vi, it, describe, expect } from 'vitest'
 
-vi.mock('../../config/index.js', () => ({ default: { serviceName: 'Provide Example' } }))
+vi.mock('../../config/index.js', () => ({ default: { serviceNames: { myservice: 'MyService Example' } } }))
 
 describe('getFullServiceName', async () => {
   const getFullServiceName = (await vi.importActual('../../src/filters/getFullServiceName.js')).default
 
-  it('returns the full service name by replacing "Provide" with the service name', () => {
-    const serviceName = 'MyService'
-    const result = getFullServiceName(serviceName)
+  it('returns the full service name for a shorthand name', () => {
+    const result = getFullServiceName('myservice')
 
     expect(result).toBe('MyService Example')
   })

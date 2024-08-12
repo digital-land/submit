@@ -3,6 +3,7 @@ import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 import jsdom from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
+import config from '../../config/index.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -43,8 +44,7 @@ describe('Organisations Find Page', () => {
           name: 'Brighton'
         }
       ]
-    },
-    serviceName: 'mock service name'
+    }
   }
 
   const html = nunjucks.render('organisations/find.html', params)
@@ -53,8 +53,7 @@ describe('Organisations Find Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'Find your organisation - mock service name',
-    serviceName: 'mock service name'
+    pageTitle: `Find your organisation - ${config.serviceNames.submit}`
   })
 
   it('correct has a form element with the correct data-filter attribute', () => {

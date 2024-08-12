@@ -1,7 +1,6 @@
 import { describe, it } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
-import config from '../../config/index.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
@@ -13,8 +12,7 @@ describe('choose dataset View', () => {
   const html = nunjucks.render('choose-dataset.html', params)
 
   runGenericPageTests(html, {
-    pageTitle: 'Choose dataset - Submit planning and housing data for England',
-    serviceName: config.serviceName
+    pageTitle: 'Choose dataset - Submit and update your planning data'
   })
 
   it('should display an error message when the dataset field is empty', () => {

@@ -43,8 +43,8 @@ describe('dataset details View', () => {
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
   const datasetName = mockDataSubjects.mockDataset.dataSets[0].value
   runGenericPageTests(html, {
-    pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit planning and housing data for England`,
-    serviceName: config.serviceName
+    pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit and update your planning data`,
+    serviceName: config.serviceNames.submit
   })
 
   it('should render the correct header', () => {

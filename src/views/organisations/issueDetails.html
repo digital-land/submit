@@ -1,0 +1,60 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% set serviceType = 'Submit'%}
+
+{% if numEntries > 1 %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNum}} of {{numEntries}}){% endset %}
+{% else %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
+{%endif%}
+
+{% block content %}
+<div class="govuk-grid-row">
+  {% include "includes/_dataset-page-header.html" %}
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukErrorSummary({
+      titleText: errorHeading,
+      errorList: issueItems
+    }) }}
+
+    {{ govukSummaryList({
+      card: {
+        title: {
+          text: entry.title
+        }
+      },
+      rows: entry.fields
+    }) }}
+
+    {% if num_entries > 1 %}
+      {{ govukPagination({
+        previous: pagination_obj.prevObj,
+        next: pagination_obj.nextObj,
+        items: pagination_obj.items
+      }) }}
+    {% endif %}
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h3 class="govuk-heading-m">
+      How to improve {{ organisation.name }}’s data
+    </h3>
+
+    <ol class="govuk-list govuk-list--number">
+      <li>Fix the errors indicated</li>
+      <li>Use the <a href="https://check.staging.digital-land.info/">check service</a> to make sure the data meets
+        the standard</li>
+      <li>Publish the updated data on the data URL</li>
+    </ol>
+  </div>
+</div>
+{% endblock %}
