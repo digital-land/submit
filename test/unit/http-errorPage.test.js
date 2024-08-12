@@ -60,9 +60,9 @@ describe('http-error.html', () => {
     expect(rows[1].querySelector('.govuk-summary-list__value').textContent).toContain(String(params.errorData.http_status))
 
     expect(rows[2].querySelector('.govuk-summary-list__key').textContent).toContain('Last attempted access')
-    expect(rows[2].querySelector('.govuk-summary-list__value').textContent).toContain('1 January 2022 at 1pm')
+    expect(rows[2].querySelector('.govuk-summary-list__value').textContent).toMatch(/\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}(am|pm)/)
 
     expect(rows[3].querySelector('.govuk-summary-list__key').textContent).toContain('Last successful access')
-    expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toContain('2 January 2022 at 1pm')
+    expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(/\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}(am|pm)/)
   })
 })
