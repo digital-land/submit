@@ -206,12 +206,12 @@ describe('OrganisationsController.js', () => {
       })
 
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        { 
+        {
           issue: 'Example issue 1',
           issue_type: 'Example issue type 1',
           num_issues: 1,
           status: 'Error'
-        },
+        }
       ])
 
       vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1')
@@ -220,18 +220,18 @@ describe('OrganisationsController.js', () => {
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
-        taskList: [{ 
+        taskList: [{
           title: {
-            text: 'task message 1',
+            text: 'task message 1'
           },
-          href: "/organisations/example-lpa/example-dataset/Example issue type 1",
+          href: '/organisations/example-lpa/example-dataset/Example issue type 1',
           status: {
             tag: {
               classes: 'govuk-tag--red',
               text: 'Error'
             }
           }
-        },],
+        }],
         organisation: { name: 'Example Organisation' },
         dataset: { name: 'Example Dataset' }
       })
@@ -249,13 +249,13 @@ describe('OrganisationsController.js', () => {
       })
 
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        { 
+        {
           issue: 'Example issue 1',
           issue_type: 'Example issue type 1',
           num_issues: 1,
           status: 'Error'
         },
-        { 
+        {
           issue: 'Example issue 2',
           issue_type: 'Example issue type 2',
           num_issues: 1,
@@ -270,11 +270,11 @@ describe('OrganisationsController.js', () => {
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
         taskList: [
-          { 
+          {
             title: {
-              text: 'task message 1',
+              text: 'task message 1'
             },
-            href: "/organisations/example-lpa/example-dataset/Example issue type 1",
+            href: '/organisations/example-lpa/example-dataset/Example issue type 1',
             status: {
               tag: {
                 classes: 'govuk-tag--red',
@@ -282,11 +282,11 @@ describe('OrganisationsController.js', () => {
               }
             }
           },
-          { 
+          {
             title: {
-              text: 'task message 2',
+              text: 'task message 2'
             },
-            href: "/organisations/example-lpa/example-dataset/Example issue type 2",
+            href: '/organisations/example-lpa/example-dataset/Example issue type 2',
             status: {
               tag: {
                 classes: 'govuk-tag--yellow',
