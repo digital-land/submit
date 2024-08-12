@@ -2,7 +2,6 @@ import axios from 'axios'
 import logger from '../utils/logger.js'
 
 const datasetteUrl = 'https://datasette.planning.data.gov.uk'
-const database = 'digital-land'
 
 export default {
   /**
@@ -14,7 +13,7 @@ export default {
  *   - `formattedData`: The formatted data, with columns and rows parsed into a usable format.
  * @throws {Error} If the query fails or there is an error communicating with Datasette.
  */
-  runQuery: async (query) => {
+  runQuery: async (query, database = 'digital-land') => {
     const encodedQuery = encodeURIComponent(query)
     const url = `${datasetteUrl}/${database}.json?sql=${encodedQuery}`
     try {

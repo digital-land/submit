@@ -206,16 +206,32 @@ describe('OrganisationsController.js', () => {
       })
 
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        { issue: 'Example issue' }
+        {
+          issue: 'Example issue 1',
+          issue_type: 'Example issue type 1',
+          num_issues: 1,
+          status: 'Error'
+        }
       ])
 
-      vi.mocked(performanceDbApi.getTaskList).mockReturnValue([{ task: 'Example task' }])
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1')
 
       await organisationsController.getDatasetTaskList(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
-        taskList: [{ task: 'Example task' }],
+        taskList: [{
+          title: {
+            text: 'task message 1'
+          },
+          href: '/organisations/example-lpa/example-dataset/Example issue type 1',
+          status: {
+            tag: {
+              classes: 'govuk-tag--red',
+              text: 'Error'
+            }
+          }
+        }],
         organisation: { name: 'Example Organisation' },
         dataset: { name: 'Example Dataset' }
       })
@@ -233,22 +249,51 @@ describe('OrganisationsController.js', () => {
       })
 
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        { issue: 'Example issue 1' },
-        { issue: 'Example issue 2' }
+        {
+          issue: 'Example issue 1',
+          issue_type: 'Example issue type 1',
+          num_issues: 1,
+          status: 'Error'
+        },
+        {
+          issue: 'Example issue 2',
+          issue_type: 'Example issue type 2',
+          num_issues: 1,
+          status: 'Needs fixing'
+        }
       ])
 
-      vi.mocked(performanceDbApi.getTaskList).mockReturnValue([
-        { task: 'Example task 1' },
-        { task: 'Example task 2' }
-      ])
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1').mockReturnValueOnce('task message 2')
 
       await organisationsController.getDatasetTaskList(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
         taskList: [
-          { task: 'Example task 1' },
-          { task: 'Example task 2' }
+          {
+            title: {
+              text: 'task message 1'
+            },
+            href: '/organisations/example-lpa/example-dataset/Example issue type 1',
+            status: {
+              tag: {
+                classes: 'govuk-tag--red',
+                text: 'Error'
+              }
+            }
+          },
+          {
+            title: {
+              text: 'task message 2'
+            },
+            href: '/organisations/example-lpa/example-dataset/Example issue type 2',
+            status: {
+              tag: {
+                classes: 'govuk-tag--yellow',
+                text: 'Needs fixing'
+              }
+            }
+          }
         ],
         organisation: { name: 'Example Organisation' },
         dataset: { name: 'Example Dataset' }
@@ -273,10 +318,101 @@ describe('OrganisationsController.js', () => {
   })
 
   describe('issue details', () => {
-    it.todo('should call render with the issue details page')
+    it('should call render with the issue details page and the correct params', async () => {
+      const req = {
+        params: {
+          lpa: 'test-lpa',
+          dataset: 'test-dataset',
+          issue_type: 'test-issue-type',
+          resourceId: 'test-resource-id',
+          entityNumber: '1'
+        }
+      }
+      const res = {
+        render: vi.fn()
+      }
+      const next = vi.fn()
 
-    it.todo('should fetch the issue details and pass the on to the template')
+      vi.mocked(datasette.runQuery)
+        .mockReturnValueOnce({ formattedData: [{ name: 'mock lpa' }] })
+        .mockReturnValueOnce({ formattedData: [{ name: 'mock dataset' }] })
 
-    it.todo('should catch errors and pass them onto the next function ')
+      vi.mocked(performanceDbApi.getLatestResource).mockResolvedValueOnce({ resource: 'mockResourceId' })
+
+      const issues = [
+        {
+          entry_number: 0,
+          field: 'start-date',
+          value: '02-02-2022'
+        }
+      ]
+
+      vi.mocked(performanceDbApi.getIssues).mockResolvedValueOnce(issues)
+
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
+
+      issues.forEach(issue => {
+        vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
+      })
+
+      vi.mocked(performanceDbApi.getEntry).mockResolvedValueOnce([
+        {
+          field: 'start-date',
+          value: '02-02-2022'
+        }
+      ])
+
+      await organisationsController.getIssueDetails(req, res, next)
+
+      expect(res.render).toHaveBeenCalledTimes(1)
+      expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', {
+        organisation: {
+          name: 'mock lpa'
+        },
+        dataset: {
+          name: 'mock dataset'
+        },
+        errorHeading: 'mock task message 1',
+        issueItems: [
+          {
+            html: 'mockMessageFor: 0 in record 0',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/0'
+          }
+        ],
+        entry: {
+          title: 'entry: 1',
+          fields: [
+            {
+              key: { text: 'start-date' },
+              value: { html: '02-02-2022' },
+              classes: ''
+            }
+          ]
+        }
+      })
+    })
+
+    it('should catch errors and pass them onto the next function', async () => {
+      const req = {
+        params: {
+          lpa: 'test-lpa',
+          dataset: 'test-dataset',
+          issue_type: 'test-issue-type',
+          resourceId: 'test-resource-id',
+          entityNumber: '1'
+        }
+      }
+      const res = {
+        render: vi.fn()
+      }
+      const next = vi.fn()
+
+      vi.mocked(performanceDbApi.getLatestResource).mockRejectedValue(new Error('Test error'))
+
+      await organisationsController.getIssueDetails(req, res, next)
+
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
   })
 })

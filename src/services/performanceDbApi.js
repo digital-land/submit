@@ -29,29 +29,13 @@ fs.createReadStream('src/content/entityIssueMessages.csv')
   .on('data', (row) => {
     messages[row.issue_type] = {
       ...messages[row.issue_type],
-      entities_singular: row.singular_message.replace('{num_entities}', '{}'),
-      entities_plural: row.plural_message.replace('{num_entities}', '{}')
+      entities_singular: row.singular_message.replace('{num_entries}', '{}'),
+      entities_plural: row.plural_message.replace('{num_entries}', '{}')
     }
   })
   .on('end', () => {
     // Messages object is now populated
   })
-
-function getStatusTag (status) {
-  const statusToTagClass = {
-    Error: 'govuk-tag--red',
-    'Needs fixing': 'govuk-tag--yellow',
-    Warning: 'govuk-tag--blue',
-    Issue: 'govuk-tag--blue'
-  }
-
-  return {
-    tag: {
-      text: status,
-      classes: statusToTagClass[status]
-    }
-  }
-}
 
 // ===========================================
 
@@ -214,18 +198,6 @@ ORDER BY
     })
   },
 
-  getTaskList: (issues) => {
-    return issues.map((issue) => {
-      return {
-        title: {
-          text: this.getTaskMessage(issue.issue_type, issue.num_issues)
-        },
-        href: 'toDo',
-        status: getStatusTag(issue.status)
-      }
-    })
-  },
-
   getTaskMessage (issueType, issueCount, entityLevel = false) {
     if (!messages[issueType]) {
       throw new Error(`Unknown issue type: ${issueType}`)
@@ -238,5 +210,61 @@ ORDER BY
       message = issueCount === 1 ? messages[issueType].singular : messages[issueType].plural
     }
     return message.replace('{}', issueCount)
+  },
+
+  async getLatestResource (lpa, dataset) {
+    const sql = `
+      SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
+      FROM reporting_latest_endpoints rle
+      LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
+      LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
+      WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
+      AND rle.pipeline = '${dataset}'`
+
+    const result = await datasette.runQuery(sql)
+
+    return result.formattedData[0]
+  },
+
+  async getIssues (resource, issueType, database = 'digital-land') {
+    const sql = `
+      SELECT i.field, i.line_number, entry_number, message, issue_type, value
+      FROM issue i
+      WHERE i.resource = '${resource}'
+      AND issue_type = '${issueType}'
+    `
+
+    const result = await datasette.runQuery(sql, database)
+
+    return result.formattedData
+  },
+
+  async getEntry (resourceId, entryNumber, dataset) {
+    const sql = `
+      select
+        fr.rowid,
+        fr.end_date,
+        fr.fact,
+        fr.entry_date,
+        fr.entry_number,
+        fr.resource,
+        fr.start_date,
+        ft.entity,
+        ft.field,
+        ft.entry_date,
+        ft.start_date,
+        ft.value
+      from
+        fact_resource fr
+        left join fact ft on fr.fact = ft.fact
+      where
+        fr.resource = '${resourceId}'
+        and fr.entry_number = ${entryNumber}
+      order by
+        fr.rowid`
+
+    const result = await datasette.runQuery(sql, dataset)
+
+    return result.formattedData
   }
 }
