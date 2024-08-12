@@ -216,8 +216,6 @@ const organisationsController = {
 
       const entryData = await performanceDbApi.getEntry(resourceId, entityNumber, datasetId)
 
-      const title = `entry: ${entityNumber}`
-
       const fields = entryData.map((row) => {
         let hasError = false
         let issueIndex
@@ -270,7 +268,7 @@ const organisationsController = {
       }
 
       const entry = {
-        title,
+        title: `entry: ${entityNumber}`,
         fields
       }
 
