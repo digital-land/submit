@@ -6,7 +6,7 @@ const router = express.Router()
 router.get('/:lpa/:dataset/get-started', OrganisationsController.getGetStarted)
 router.get('/:lpa/:dataset/:issue_type/:entityNumber', OrganisationsController.getIssueDetails)
 router.get('/:lpa/:dataset/:issue_type', OrganisationsController.getIssueDetails)
-router.get('/:lpa/:dataset', OrganisationsController.getDatasetTaskList)
+router.get('/:lpa/:dataset', OrganisationsController.getEndpointError)
 router.get('/:lpa', OrganisationsController.getOverview)
 router.get('/', OrganisationsController.getOrganisations)
 

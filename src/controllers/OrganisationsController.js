@@ -322,6 +322,24 @@ const organisationsController = {
       logger.warn(`getIssueDetails() failed for lpa='${lpa}', datasetId='${datasetId}', issue=${issueType}, entityNumber=${entityNumber}, resourceId=${resourceId}`, { type: types.App })
       next(e)
     }
+  },
+
+  async getEndpointError (req, res, next) {
+    const params = {
+      organisation: {
+        name: 'mock org'
+      },
+      dataset: {
+        name: 'mock dataset'
+      },
+      errorData: {
+        endpoint_url: 'http://fakeUrl.com',
+        http_status: '404',
+        latest_log_entry_date: '2024-08-11T00:15:32Z',
+        latest_200_date: '2024-08-11T00:15:32Z'
+      }
+    }
+    res.render('organisations/http-error.html', params)
   }
 
 }
