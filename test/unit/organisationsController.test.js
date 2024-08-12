@@ -317,104 +317,102 @@ describe('OrganisationsController.js', () => {
     })
   })
 
-describe('issue details', () => {
-  it('should call render with the issue details page and the correct params', async () => {
-    const req = {
-      params: {
-        lpa: 'test-lpa',
-        dataset: 'test-dataset',
-        issue_type: 'test-issue-type',
-        resourceId: 'test-resource-id',
-        entityNumber: '1'
+  describe('issue details', () => {
+    it('should call render with the issue details page and the correct params', async () => {
+      const req = {
+        params: {
+          lpa: 'test-lpa',
+          dataset: 'test-dataset',
+          issue_type: 'test-issue-type',
+          resourceId: 'test-resource-id',
+          entityNumber: '1'
+        }
       }
-    };
-    const res = {
-      render: vi.fn()
-    };
-    const next = vi.fn();
-
-    vi.mocked(datasette.runQuery)
-      .mockReturnValueOnce({formattedData: [{ name: 'mock lpa'}]})
-      .mockReturnValueOnce({formattedData: [{ name: 'mock dataset'}]})
-
-    vi.mocked(performanceDbApi.getLatestResource).mockResolvedValueOnce({resource: 'mockResourceId'})
-
-    const issues = [
-      {
-        entry_number: 0,
-        field: 'start-date',
-        value: '02-02-2022'
+      const res = {
+        render: vi.fn()
       }
-    ]
+      const next = vi.fn()
 
-    vi.mocked(performanceDbApi.getIssues).mockResolvedValueOnce(issues)
+      vi.mocked(datasette.runQuery)
+        .mockReturnValueOnce({ formattedData: [{ name: 'mock lpa' }] })
+        .mockReturnValueOnce({ formattedData: [{ name: 'mock dataset' }] })
 
-    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
+      vi.mocked(performanceDbApi.getLatestResource).mockResolvedValueOnce({ resource: 'mockResourceId' })
 
-    issues.forEach(issue => {
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
+      const issues = [
+        {
+          entry_number: 0,
+          field: 'start-date',
+          value: '02-02-2022'
+        }
+      ]
+
+      vi.mocked(performanceDbApi.getIssues).mockResolvedValueOnce(issues)
+
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
+
+      issues.forEach(issue => {
+        vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
+      })
+
+      vi.mocked(performanceDbApi.getEntry).mockResolvedValueOnce([
+        {
+          field: 'start-date',
+          value: '02-02-2022'
+        }
+      ])
+
+      await organisationsController.getIssueDetails(req, res, next)
+
+      expect(res.render).toHaveBeenCalledTimes(1)
+      expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', {
+        organisation: {
+          name: 'mock lpa'
+        },
+        dataset: {
+          name: 'mock dataset'
+        },
+        errorHeading: 'mock task message 1',
+        issueItems: [
+          {
+            html: 'mockMessageFor: 0 in record 0',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/0'
+          }
+        ],
+        entry: {
+          title: 'entry: 1',
+          fields: [
+            {
+              key: { text: 'start-date' },
+              value: { html: '02-02-2022' },
+              classes: ''
+            }
+          ]
+        }
+      })
     })
 
-    vi.mocked(performanceDbApi.getEntry).mockResolvedValueOnce([
-      {
-        field: 'start-date',
-        value: '02-02-2022'
-      }
-    ])
-
-
-    await organisationsController.getIssueDetails(req, res, next);
-
-    expect(res.render).toHaveBeenCalledTimes(1);
-    expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', {
-      organisation: {
-        name: 'mock lpa',
-      },
-      dataset: {
-        name: 'mock dataset'
-      },
-      errorHeading: 'mock task message 1',
-      issueItems: [
-        {
-          html: 'mockMessageFor: 0 in record 0',
-          href: '/organisations/test-lpa/test-dataset/test-issue-type/0'
+    it('should catch errors and pass them onto the next function', async () => {
+      const req = {
+        params: {
+          lpa: 'test-lpa',
+          dataset: 'test-dataset',
+          issue_type: 'test-issue-type',
+          resourceId: 'test-resource-id',
+          entityNumber: '1'
         }
-      ],
-      entry: {
-        title: 'entry: 1',
-        fields: [
-          {
-            key: { text: 'start-date' },
-            value: { html: '02-02-2022' },
-            classes: ""
-          }
-        ]
       }
-    });
-  });
-
-  it('should catch errors and pass them onto the next function', async () => {
-    const req = {
-      params: {
-        lpa: 'test-lpa',
-        dataset: 'test-dataset',
-        issue_type: 'test-issue-type',
-        resourceId: 'test-resource-id',
-        entityNumber: '1'
+      const res = {
+        render: vi.fn()
       }
-    };
-    const res = {
-      render: vi.fn()
-    };
-    const next = vi.fn();
+      const next = vi.fn()
 
-    vi.mocked(performanceDbApi.getLatestResource).mockRejectedValue(new Error('Test error'));
+      vi.mocked(performanceDbApi.getLatestResource).mockRejectedValue(new Error('Test error'))
 
-    await organisationsController.getIssueDetails(req, res, next);
+      await organisationsController.getIssueDetails(req, res, next)
 
-    expect(next).toHaveBeenCalledTimes(1);
-    expect(next).toHaveBeenCalledWith(expect.any(Error));
-  });
-});
-
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
+  })
 })
