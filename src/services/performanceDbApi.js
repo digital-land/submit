@@ -83,7 +83,7 @@ export default {
   case
       when (rle.status is null) then 'Not Submitted'
       when (rle.status != '200') then 'Error'
-      when (it.severity = 'error') then 'Need fixing'
+      when (it.severity = 'error') then 'Needs fixing'
       when (it.severity = 'warning') then 'Warning'
       else 'Live'
     end as status,

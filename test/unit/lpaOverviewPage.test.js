@@ -47,7 +47,7 @@ describe('LPA Overview Page', () => {
       {
         slug: 'conservation-area',
         endpoint: 'http://conservation-area.json',
-        status: 'Need fixing',
+        status: 'Needs fixing',
         error: null,
         issue: 'Endpoint has not been updated since 21 May 2023',
         issue_count: 1
@@ -70,7 +70,7 @@ describe('LPA Overview Page', () => {
         slug: 'tree',
         endpoint: 'http://tree.json',
         error: null,
-        status: 'Need fixing',
+        status: 'Needs fixing',
         issue: 'There are 20 issues in this dataset',
         issue_count: 1
       },
@@ -165,8 +165,8 @@ describe('LPA Overview Page', () => {
         expectedHint = 'Not submitted'
       } else if (dataset.status === 'Error') {
         expectedHint = dataset.status
-      } else if (dataset.status === 'Need fixing') {
-        expectedHint = 'Need fixing'
+      } else if (dataset.status === 'Needs fixing') {
+        expectedHint = 'Needs fixing'
       }
 
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
