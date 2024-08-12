@@ -157,6 +157,9 @@ const organisationsController = {
 
   async getIssueDetails (req, res, next) {
     const { lpa, dataset: datasetId, issue_type: issueType } = req.params
+    let { resourceId, pageNumber } = req.params
+
+    const entityNumber = pageNumber || 1
 
     const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
     const organisation = organisationResult.formattedData[0]
@@ -164,52 +167,62 @@ const organisationsController = {
     const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
     const dataset = datasetResult.formattedData[0]
 
-    const issueCount = 5
+    if (!resourceId) {
+      const resource = await performanceDbApi.getLatestResource(lpa, datasetId)
+      resourceId = resource.resource
+    }
 
-    const errorHeading = performanceDbApi.getTaskMessage(issueType, issueCount, true)
+    const issues = await performanceDbApi.getIssues(resourceId, issueType)
 
-    const issueItems = [
-      {
-        html: '2 fields are missing values in entry 949',
-        href: 'todo'
-      },
-      {
-        html: '3 fields are missing values in entry 950',
+    const errorHeading = performanceDbApi.getTaskMessage(issueType, issues.length, true)
+
+    const issuesByLineNumber = issues.reduce((acc, current) => {
+      acc[current.line_number] = acc[current.line_number] || []
+      acc[current.line_number].push(current.field)
+      return acc
+    }, {})
+
+    const issueItems = Object.entries(issuesByLineNumber).map(([lineNumber, fields]) => {
+      return {
+        html: performanceDbApi.getTaskMessage(issueType, fields.length) + ` in record ${lineNumber}`,
         href: 'todo'
       }
-    ]
+    })
+
+    const entryData = await performanceDbApi.getEntry(resourceId, entityNumber, datasetId)
+
+    const title = `entry: ${entityNumber}`
+
+    const fields = entryData.map((row) => {
+      let hasError = false
+      if (issuesByLineNumber[entityNumber]) {
+        if (issuesByLineNumber[entityNumber].includes(row.field)) {
+          hasError = true
+        }
+      }
+
+      let valueHtml = ''
+      let classes = ''
+      if (hasError) {
+        valueHtml += '<p class="govuk-error-message">Error</p>'
+        classes += 'dl-summary-card-list__row--error'
+      }
+      valueHtml += row.value
+
+      return {
+        key: {
+          text: row.field
+        },
+        value: {
+          html: valueHtml
+        },
+        classes
+      }
+    })
 
     const entry = {
-      title: '20 and 20A Whitbourne Springs',
-      fields: [
-        {
-          key: {
-            text: 'description'
-          },
-          value: {
-            html: '20 and 20A Whitbourne Springs'
-          },
-          classes: ''
-        },
-        {
-          key: {
-            text: 'document-url'
-          },
-          value: {
-            html: '<p class="govuk-error-message">document-url missing</p>'
-          },
-          classes: 'dl-summary-card-list__row--error'
-        },
-        {
-          key: {
-            text: 'documentation-url'
-          },
-          value: {
-            html: '<p class="govuk-error-message">documentation-url missing</p>'
-          },
-          classes: 'dl-summary-card-list__row--error'
-        }
-      ]
+      title,
+      fields
     }
 
     const params = {
