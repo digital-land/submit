@@ -6,6 +6,18 @@
 {% set pageName = organisation.name + " overview" %}
 {% set serviceType = 'Manage' %}
 
+{% macro tagCardClass(status) %}
+  {% if status == 'Not submitted' %}
+    {% set statusCardClasses = 'govuk-tag--grey' %}
+  {% elif status == 'Error' %}
+    {% set statusCardClasses = 'govuk-tag--red' %}
+  {% elif status == 'Need fixing' %}
+    {% set statusCardClasses = 'govuk-tag--yellow' %}
+  {% else %}
+    {% set statusCardClasses = 'govuk-tag--green' %}
+  {% endif %}
+{% endmacro %}
+
 {% block beforeContent %}
 {{ super() }}
 
@@ -80,8 +92,8 @@
                 <p>Data URL not submitted</p>
               {% elif dataset.error %}
                 <p>{{dataset.error}}</p>
-              {% elif dataset.issue %}
-                <p>{{dataset.issue}}</p>
+              {% elif dataset.issue_count > 0 %}
+                <p>There are {{ dataset.issue_count }} issues in this dataset</p>
               {% else %}
                 <p>Data URL submitted</p>
               {% endif %}
@@ -90,27 +102,10 @@
           </div>
 
           <div class="govuk-task-list__status">
-            {% if dataset.endpoint is null %}
-              {{govukTag({
-                text: "Not submitted",
-                classes: "govuk-tag--grey"
-              })}}
-            {% elif dataset.error %}
-              {{govukTag({
-                text: "Error",
-                classes: "govuk-tag--red"
-              })}}
-            {% elif dataset.issue %}
-              {{govukTag({
-                text: "Needs fixing",
-                classes: "govuk-tag--yellow"
-              })}}
-            {% else %}
-              {{govukTag({
-                text: "Live",
-                classes: "govuk-tag--green"
-              })}}
-            {% endif %}
+            {{govukTag({
+              text: dataset.status,
+              classes: tagCardClass(dataset.status)
+            })}}
           </div>
         </li>
       {% endfor %}

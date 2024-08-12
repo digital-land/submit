@@ -35,47 +35,59 @@ describe('LPA Overview Page', () => {
     datasets: [
       {
         slug: 'article-4-direction',
-        endpoint: null
+        endpoint: null,
+        status: 'Not submitted',
+        issue_count: 0
       },
       {
         slug: 'article-4-direction-area',
-        endpoint: null
+        endpoint: null,
+        status: 'Not submitted'
       },
       {
         slug: 'conservation-area',
         endpoint: 'http://conservation-area.json',
+        status: 'Need fixing',
         error: null,
-        issue: 'Endpoint has not been updated since 21 May 2023'
+        issue: 'Endpoint has not been updated since 21 May 2023',
+        issue_count: 1
       },
       {
         slug: 'conservation-area-document',
         endpoint: 'http://conservation-area-document.json',
+        status: 'Live',
         error: null,
-        issue: null
+        issue_count: 0
       },
       {
         slug: 'listed-building-outline',
         endpoint: 'http://listed-building-outline.json',
+        status: 'Live',
         error: null,
-        issue: null
+        issue_count: 0
       },
       {
         slug: 'tree',
         endpoint: 'http://tree.json',
         error: null,
-        issue: 'There are 20 issues in this dataset'
+        status: 'Need fixing',
+        issue: 'There are 20 issues in this dataset',
+        issue_count: 1
       },
       {
         slug: 'tree-preservation-order',
         endpoint: 'http://tree-preservation-order.json',
-        error: 'Error connecting to endpoint',
-        issue: null
+        http_error: '404',
+        error: 'There was 404 error accessing the data URL',
+        status: 'Error',
+        issue_count: 0
       },
       {
         slug: 'tree-preservation-zone',
         endpoint: 'http://tree-preservation-zone.json',
-        error: 'Error connecting to endpoint',
-        issue: null
+        status: 'Error',
+        error: '400',
+        issue_count: 0
       }
     ]
   }
@@ -115,10 +127,17 @@ describe('LPA Overview Page', () => {
     })
   })
 
-  it('The dataset cards are rendered with the correct hints', () => {
-    params.datasets.forEach((dataset, i) => {
-      const expectedHint = !dataset.endpoint ? 'Data URL not submitted' : dataset.error ? dataset.error : dataset.issue ? dataset.issue : 'Data URL submitted'
-      expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent).toContain(expectedHint)
+  params.datasets.forEach((dataset, i) => {
+    it(`dataset cards are rendered with correct hints for dataset='${dataset.slug}'`, () => {
+      let expectedHint = 'Data URL submitted'
+      if (dataset.status === 'Not submitted') {
+        expectedHint = 'Data URL not submitted'
+      } else if (dataset.error) {
+        expectedHint = dataset.error
+      } else if (dataset.issue_count > 0) {
+        expectedHint = `There are ${dataset.issue_count} issues in this dataset`
+      }
+      expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent.trim()).toContain(expectedHint)
     })
   })
 
@@ -139,12 +158,20 @@ describe('LPA Overview Page', () => {
     })
   })
 
-  it('Renders the correct status on each dataset card', () => {
-    params.datasets.forEach((dataset, i) => {
-      const expectedHint = !dataset.endpoint ? 'Not submitted' : dataset.error ? 'Error' : dataset.issue ? 'Needs fixing' : 'Live'
 
+  params.datasets.forEach((dataset, i) => {
+    it(`Renders the correct status on each dataset card for dataset='${dataset.slug}'`, () => {
+      let expectedHint = 'Live'
+      if (dataset.status === 'Not submitted') {
+        expectedHint = 'Not submitted'
+      } else if (dataset.status === 'Error') {
+        expectedHint = dataset.status
+      } else if (dataset.status === 'Need fixing') {
+        expectedHint = 'Need fixing'
+      }
+  
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
-      expect(statusIndicator.textContent).toContain(expectedHint)
+      expect(statusIndicator.textContent.trim()).toContain(expectedHint)
     })
   })
 })

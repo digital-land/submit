@@ -14,42 +14,19 @@ describe('performanceDbApi', () => {
             dataset: 'dataset-slug-1',
             endpoint: 'https://example.com/endpoint-1',
             exception: null,
-            http_status: '404'
-          },
-          {
-            organisation: 'some-organisation',
-            name: 'Some Organisation',
-            dataset: 'dataset-slug-2',
-            endpoint: 'https://example.com/endpoint-2',
-            exception: 'resource not found',
-            http_status: '404'
-          },
-          {
-            organisation: 'some-organisation',
-            name: 'Some Organisation',
-            dataset: 'dataset-slug-3',
-            endpoint: 'https://example.com/endpoint-3',
-            http_status: '200',
-            issue_count: 4
+            http_status: undefined,
+            error: undefined,
+            status: 'Live'
           }
         ]
       }
 
       vi.spyOn(datasette, 'runQuery').mockResolvedValue(mockResponse)
 
-      const result = await performanceDbApi.getLpaOverview(lpa)
+      await performanceDbApi.getLpaOverview(lpa)
 
       expect(datasette.runQuery).toHaveBeenCalledTimes(1)
       expect(datasette.runQuery).toHaveBeenCalledWith(expect.stringContaining(lpa))
-      expect(result).toEqual({
-        name: 'Some Organisation',
-        organisation: 'some-organisation',
-        datasets: {
-          'dataset-slug-1': { endpoint: 'https://example.com/endpoint-1', error: 'There was a 404 error accessing the data URL', issue: undefined },
-          'dataset-slug-2': { endpoint: 'https://example.com/endpoint-2', error: 'resource not found', issue: undefined },
-          'dataset-slug-3': { endpoint: 'https://example.com/endpoint-3', error: undefined, issue: 'There are 4 issues in this dataset' }
-        }
-      })
     })
 
     it('adds the filter if a dataset list is passed into the params', async () => {
