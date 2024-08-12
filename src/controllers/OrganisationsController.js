@@ -198,18 +198,19 @@ const organisationsController = {
 
     const issues = await performanceDbApi.getIssues(resourceId, issueType, datasetId)
 
-    const errorHeading = performanceDbApi.getTaskMessage(issueType, issues.length, true)
-
+    
     const issuesByEntryNumber = issues.reduce((acc, current) => {
       acc[current.entry_number] = acc[current.entry_number] || []
       acc[current.entry_number].push(current)
       return acc
     }, {})
 
+    const errorHeading = performanceDbApi.getTaskMessage(issueType, Object.keys(issuesByEntryNumber).length, true)
+
     const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues]) => {
       return {
         html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
-        href: `/organisations/${lpa}/${datasetId}/${issueType}/${entryNumber}#govuk-summary-card`
+        href: `/organisations/${lpa}/${datasetId}/${issueType}/${entryNumber}`
       }
     })
 
