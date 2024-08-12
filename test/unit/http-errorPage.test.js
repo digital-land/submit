@@ -62,10 +62,7 @@ describe('http-error.html', () => {
     expect(rows[2].querySelector('.govuk-summary-list__key').textContent).toContain('Last attempted access')
     expect(rows[2].querySelector('.govuk-summary-list__value').textContent).toMatch(/\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}(am|pm)/)
 
-
-
-expect(rows[3].querySelector('.govuk-summary-list__key').textContent).toContain('Last successful access')
-expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(/\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}(am|pm)/)
-
+    expect(rows[3].querySelector('.govuk-summary-list__key').textContent).toContain('Last successful access')
+    expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(/\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}(am|pm)/)
   })
 })
