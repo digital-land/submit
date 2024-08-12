@@ -111,7 +111,7 @@ export default class ResponseDetails {
 
     const geometryKey = this.getGeometryKey()
 
-    if(!geometryKey){
+    if (!geometryKey) {
       return null
     }
 
