@@ -16,7 +16,14 @@ aws: {
 }
 # ToDo: url and name might need updating
 url: 'https://check-planning.data.gov.uk'
-serviceName: 'Provide planning and housing data for England'
+# NOTE: this property is deprecated, use serviceNames instead
+serviceName: 'Submit and update your planning data'
+# NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
+serviceNames: {
+    submit: 'Submit and update your planning data',
+    check: 'Check planning and housing data for England',
+    manage: 'Submit and update your planning data'
+}
 feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
 email: {
     templates: {

@@ -21,7 +21,7 @@ export function setupNunjucks ({ app, datasetNameMapping }) {
   })
 
   const globalValues = {
-    serviceName: config.serviceName,
+    serviceName: config.serviceNames.submit,
     feedbackLink: config.feedbackLink
   }
 

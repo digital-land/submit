@@ -2,8 +2,8 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "x-govuk/components/related-navigation/macro.njk" import xGovukRelatedNavigation %}
 
-{% set serviceType = 'Submit' %}
-{% set pageName = 'Start' %}
+{% set serviceType = 'Manage' %}
+{% set pageName = '' %}
 
 {% block content %}
 
@@ -30,12 +30,11 @@ You need to choose to provide your data in one of these file formats:
 Alternatively you can provide us with a URL.
 
 
-<form novalidate method="post">
-  {{ govukButton({
-      text: "Start now",
-      isStartButton: true
-    }) }}
-</form>
+{{ govukButton({
+    text: "Start now",
+    href: "/organisations",
+    isStartButton: true
+  }) }}
  
 {% endset %}
 
