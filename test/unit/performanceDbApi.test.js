@@ -52,6 +52,15 @@ describe('performanceDbApi', () => {
       })
     })
 
+    it('adds the filter if a dataset list is passed into the params', async () => {
+      vi.spyOn(datasette, 'runQuery').mockResolvedValue({ formattedData: [{ name: '' }] })
+
+      await performanceDbApi.getLpaOverview('lpa', { datasetsFilter: ['mock1', 'mock2', 'mock3'] })
+
+      expect(datasette.runQuery).toHaveBeenCalledTimes(1)
+      expect(datasette.runQuery).toHaveBeenCalledWith(expect.stringContaining('AND rle.pipeline in (\'mock1\',\'mock2\',\'mock3\')'))
+    })
+
     it('returns an error if the query fails', async () => {
       const lpa = 'some-lpa-id'
       const error = new Error('query failed')
