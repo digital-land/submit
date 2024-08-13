@@ -6,8 +6,8 @@ import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
 import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadableNameFilter.js'
 
-/** maps dataset status (as returned by performanceDbApi/getLpaOverview()) to a 
- * CSS class used by the govuk-tag component 
+/** maps dataset status (as returned by performanceDbApi/getLpaOverview()) to a
+ * CSS class used by the govuk-tag component
  */
 const statusToTagClassMapping = {
   Error: 'govuk-tag--red',
@@ -18,7 +18,7 @@ const statusToTagClassMapping = {
   Live: 'govuk-tag--green'
 }
 
-export function statusToTagClass(status) {
+export function statusToTagClass (status) {
   console.assert(status in statusToTagClassMapping, `statusToTagClass: unknown status ${status}`)
   return statusToTagClassMapping[status]
 }
@@ -36,7 +36,7 @@ const addFilters = (nunjucksEnv, { datasetNameMapping }) => {
   nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
   nunjucksEnv.addFilter('toErrorList', toErrorList)
   nunjucksEnv.addFilter('prettifyColumnName', prettifyColumnName)
-  nunjucksEnv.addFilter('getFullServiceName', getFullServiceName),
+  nunjucksEnv.addFilter('getFullServiceName', getFullServiceName)
   nunjucksEnv.addFilter('statusToTagClass', statusToTagClass)
 }
 
