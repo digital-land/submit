@@ -8,7 +8,7 @@ export default {
  * Executes a SQL query on the Datasette instance and returns the results.
  *
  * @param {string} query - The SQL query to execute.
- * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to an object with the following properties:
+ * @returns {Promise<{data: object, formattedData: object}>} - A promise that resolves to an object with the following properties:
  *   - `data`: The raw data returned by Datasette.
  *   - `formattedData`: The formatted data, with columns and rows parsed into a usable format.
  * @throws {Error} If the query fails or there is an error communicating with Datasette.

@@ -36,59 +36,47 @@ describe('LPA Overview Page', () => {
     datasets: [
       {
         slug: 'article-4-direction',
-        endpoint: null,
-        status: 'Not submitted',
-        issue_count: 0
+        endpoint: null
       },
       {
         slug: 'article-4-direction-area',
-        endpoint: null,
-        status: 'Not submitted'
+        endpoint: null
       },
       {
         slug: 'conservation-area',
         endpoint: 'http://conservation-area.json',
-        status: 'Needs fixing',
         error: null,
-        issue: 'Endpoint has not been updated since 21 May 2023',
-        issue_count: 1
+        issue: 'Endpoint has not been updated since 21 May 2023'
       },
       {
         slug: 'conservation-area-document',
         endpoint: 'http://conservation-area-document.json',
-        status: 'Live',
         error: null,
-        issue_count: 0
+        issue: null
       },
       {
         slug: 'listed-building-outline',
         endpoint: 'http://listed-building-outline.json',
-        status: 'Live',
         error: null,
-        issue_count: 0
+        issue: null
       },
       {
         slug: 'tree',
         endpoint: 'http://tree.json',
         error: null,
-        status: 'Needs fixing',
-        issue: 'There are 20 issues in this dataset',
-        issue_count: 1
+        issue: 'There are 20 issues in this dataset'
       },
       {
         slug: 'tree-preservation-order',
         endpoint: 'http://tree-preservation-order.json',
-        http_error: '404',
-        error: 'There was 404 error accessing the data URL',
-        status: 'Error',
-        issue_count: 0
+        error: 'Error connecting to endpoint',
+        issue: null
       },
       {
         slug: 'tree-preservation-zone',
         endpoint: 'http://tree-preservation-zone.json',
-        status: 'Error',
-        error: '400',
-        issue_count: 0
+        error: 'Error connecting to endpoint',
+        issue: null
       }
     ]
   }
@@ -105,17 +93,17 @@ describe('LPA Overview Page', () => {
   const statsBoxes = document.querySelector('.dataset-status').children
   it('Datasets provided gives the correct value', () => {
     expect(statsBoxes[0].textContent).toContain('2/8')
-    expect(statsBoxes[0].textContent).toContain('datasets submitted')
+    expect(statsBoxes[0].textContent).toContain('datasets provided')
   })
 
   it('Datasets with errors gives the correct value', () => {
     expect(statsBoxes[1].textContent).toContain('2')
-    expect(statsBoxes[1].textContent).toContain('data URL with errors')
+    expect(statsBoxes[1].textContent).toContain('datasets with errors')
   })
 
   it('Datasets with issues gives the correct value', () => {
     expect(statsBoxes[2].textContent).toContain('2')
-    expect(statsBoxes[2].textContent).toContain('datasets need fixing')
+    expect(statsBoxes[2].textContent).toContain('datasets with issues')
   })
 
   const datasetCards = document.querySelector('.govuk-task-list').children
@@ -129,17 +117,10 @@ describe('LPA Overview Page', () => {
     })
   })
 
-  params.datasets.forEach((dataset, i) => {
-    it(`dataset cards are rendered with correct hints for dataset='${dataset.slug}'`, () => {
-      let expectedHint = 'Data URL submitted'
-      if (dataset.status === 'Not submitted') {
-        expectedHint = 'Data URL not submitted'
-      } else if (dataset.error) {
-        expectedHint = dataset.error
-      } else if (dataset.issue_count > 0) {
-        expectedHint = `There are ${dataset.issue_count} issues in this dataset`
-      }
-      expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent.trim()).toContain(expectedHint)
+  it('The dataset cards are rendered with the correct hints', () => {
+    params.datasets.forEach((dataset, i) => {
+      const expectedHint = !dataset.endpoint ? 'Endpoint not provided' : dataset.error ? dataset.error : dataset.issue ? dataset.issue : 'Endpoint provided'
+      expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent).toContain(expectedHint)
     })
   })
 
@@ -157,22 +138,22 @@ describe('LPA Overview Page', () => {
       if (dataset.endpoint) {
         expectedActions.push({ text: 'View data', href: '/taskLists/taskChecklist' })
       }
+
+      const actions = datasetCards[i].querySelector('.planning-data-actions').children
+      expectedActions.forEach((expectedAction, j) => {
+        expect(actions[j].textContent, `expect action ${expectedAction.text} for dataset ${dataset.slug}`).toContain(expectedAction.text)
+        const actionLink = actions[j].querySelector('a')
+        expect(actionLink.href).toBe(expectedAction.href)
+      })
     })
   })
 
-  params.datasets.forEach((dataset, i) => {
-    it(`Renders the correct status on each dataset card for dataset='${dataset.slug}'`, () => {
-      let expectedHint = 'Live'
-      if (dataset.status === 'Not submitted') {
-        expectedHint = 'Not submitted'
-      } else if (dataset.status === 'Error') {
-        expectedHint = dataset.status
-      } else if (dataset.status === 'Needs fixing') {
-        expectedHint = 'Needs fixing'
-      }
+  it('Renders the correct status on each dataset card', () => {
+    params.datasets.forEach((dataset, i) => {
+      const expectedHint = !dataset.endpoint ? 'Not provided' : dataset.error ? 'Error' : dataset.issue ? 'Issues' : 'No issues'
 
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
-      expect(statusIndicator.textContent.trim()).toContain(expectedHint)
+      expect(statusIndicator.textContent).toContain(expectedHint)
     })
   })
 })
