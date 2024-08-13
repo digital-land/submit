@@ -46,8 +46,18 @@ const organisationsController = {
     try {
       const lpa = req.params.lpa
 
+      const datasetsFilter = ['article-4-direction',
+        'article-4-direction-area',
+        'conservation-area',
+        'conservation-area-document',
+        'tree-preservation-order',
+        'tree-preservation-zone',
+        'tree',
+        'listed-building',
+        'listed-building-outline']
+
       // Make API request
-      const lpaOverview = await performanceDbApi.getLpaOverview(lpa)
+      const lpaOverview = await performanceDbApi.getLpaOverview(lpa, { datasetsFilter })
 
       // restructure datasets to usable format
       const datasets = Object.entries(lpaOverview.datasets).map(([key, value]) => {

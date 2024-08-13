@@ -63,7 +63,14 @@ export default {
    * @param {string} lpa - LPA ID
    * @returns {Promise<LpaOverview>} LPA overview
    */
-  getLpaOverview: async (lpa) => {
+  getLpaOverview: async (lpa, { datasetsFilter }) => {
+    
+    let datasetClause = ''
+    if(datasetsFilter){
+      const datasetString = datasetsFilter.map(dataset => `'${dataset}'`).join(',')
+      datasetClause = `AND rle.pipeline in (${datasetString})`
+    }
+
     const query = `
     SELECT
     p.organisation,
@@ -109,6 +116,7 @@ LEFT JOIN
     issue_type it ON i.issue_type = it.issue_type AND it.severity != 'info'
 WHERE
     p.organisation = '${lpa}'
+    ${datasetClause}
 GROUP BY
     p.organisation,
     p.dataset,
