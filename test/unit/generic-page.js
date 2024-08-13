@@ -31,20 +31,19 @@ export const runGenericPageTests = (html, options) => {
     })
   }
 
-  if(options.breadcrumbs) {
+  if (options.breadcrumbs) {
     it('has the correct breadcrumbs', () => {
       const breadcrumbs = document.querySelector('.govuk-breadcrumbs__list')
       const breadcrumbsChildren = breadcrumbs.children
-  
+
       options.breadcrumbs.forEach((breadcrumb, i) => {
         expect(breadcrumbsChildren[i].textContent).toContain(breadcrumb.text)
 
-        if(breadcrumb.href){
+        if (breadcrumb.href) {
           const breadcrumbLink = breadcrumbsChildren[i].children[0]
           expect(breadcrumbLink.getAttribute('href')).toEqual(breadcrumb.href)
         }
-
-      });
+      })
     })
   }
 }
