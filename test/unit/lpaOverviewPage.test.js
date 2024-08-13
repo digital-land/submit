@@ -26,7 +26,8 @@ addFilters(nunjucksEnv, { datasetNameMapping })
 describe('LPA Overview Page', () => {
   const params = {
     organisation: {
-      name: 'mock org'
+      name: 'mock org',
+      organisation: 'mock-org'
     },
     datasetsWithEndpoints: 2,
     totalDatasets: 8,
@@ -85,7 +86,8 @@ describe('LPA Overview Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org overview - Submit and update your planning data'
+    pageTitle: 'mock org overview - Submit and update your planning data',
+    breadcrumbs: [{ text: 'Home', href: '/manage' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org' }]
   })
 
   const statsBoxes = document.querySelector('.dataset-status').children

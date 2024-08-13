@@ -22,11 +22,13 @@ addFilters(nunjucksEnv, { datasetNameMapping })
 
 describe('issueDetails.html', () => {
   const organisation = {
-    name: 'Test Organisation'
+    name: 'mock org',
+    organisation: 'mock-org'
   }
 
   const dataset = {
-    name: 'Test Dataset'
+    name: 'mock Dataset',
+    dataset: 'mock-dataset'
   }
 
   const errorHeading = 'Example error heading'
@@ -74,12 +76,15 @@ describe('issueDetails.html', () => {
     ]
   }
 
+  const issueType = 'mock issue'
+
   const params = {
     organisation,
     dataset,
     errorHeading,
     issueItems,
-    entry
+    entry,
+    issueType
   }
 
   const html = nunjucks.render('organisations/issueDetails.html', params)
@@ -87,7 +92,14 @@ describe('issueDetails.html', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `Test Organisation - Test Dataset - Issues - ${config.serviceNames.submit}`
+    pageTitle: `mock org - mock Dataset - Issues - ${config.serviceNames.submit}`,
+    breadcrumbs: [
+      { text: 'Home', href: '/manage' },
+      { text: 'Organisations', href: '/organisations' },
+      { text: 'mock org', href: '/organisations/mock-org' },
+      { text: 'mock dataset', href: 'mock-dataset' },
+      { text: 'mock issue' }
+    ]
   })
 
   it('Renders the correct headings', () => {
@@ -127,7 +139,14 @@ describe('issueDetails.html', () => {
     // const multiPageDom = new JSDOM(multiPageHtml)
     // const multiPageDocument = multiPageDom.window.document
     runGenericPageTests(multiPageHtml, {
-      pageTitle: `Test Organisation - Test Dataset - Issues (Page 2 of 3) - ${config.serviceNames.submit}`
+      pageTitle: `mock org - mock Dataset - Issues (Page 2 of 3) - ${config.serviceNames.submit}`,
+      breadcrumbs: [
+        { text: 'Home', href: '/manage' },
+        { text: 'Organisations', href: '/organisations' },
+        { text: 'mock org', href: '/organisations/mock-org' },
+        { text: 'mock dataset', href: 'mock-dataset' },
+        { text: 'mock issue' }
+      ]
     })
 
     it.todo('correctly renders the pagination', () => {
