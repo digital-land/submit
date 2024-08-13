@@ -100,7 +100,7 @@ const organisationsController = {
 
       res.render('organisations/overview.html', params)
     } catch (error) {
-      logger.warn('organisationsController.getOverview(): ' + error.message ?? error.errorMessage, {type: types.App})
+      logger.warn('organisationsController.getOverview(): ' + error.message ?? error.errorMessage, { type: types.App })
       next(error)
     }
   },
@@ -130,7 +130,7 @@ const organisationsController = {
 
       res.render('organisations/find.html', { alphabetisedOrgs })
     } catch (err) {
-      logger.warn('organisationsController.getOrganisations(): ' + err.message ?? err.errorMessage, {type: types.App})
+      logger.warn('organisationsController.getOrganisations(): ' + err.message ?? err.errorMessage, { type: types.App })
       next(err)
     }
   },
