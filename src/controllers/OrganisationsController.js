@@ -207,43 +207,53 @@ const organisationsController = {
   async getEndpointError (req, res, next, { resourceStatus }) {
     const { lpa, dataset: datasetId } = req.params
 
-    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
-    const organisation = organisationResult.formattedData[0]
+    try {
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
 
-    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-    const dataset = datasetResult.formattedData[0]
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
 
-    const daysSince200 = resourceStatus.days_since_200
-    const today = new Date()
-    const last200Date = new Date(today.getTime() - (daysSince200 * 24 * 60 * 60 * 1000))
-    const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
+      const daysSince200 = resourceStatus.days_since_200
+      const today = new Date()
+      const last200Date = new Date(today.getTime() - (daysSince200 * 24 * 60 * 60 * 1000))
+      const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
 
-    const params = {
-      organisation: {
-        name: organisation.name
-      },
-      dataset: {
-        name: dataset.name
-      },
-      errorData: {
-        endpoint_url: resourceStatus.endpoint_url,
-        http_status: resourceStatus.status,
-        latest_log_entry_date: resourceStatus.latest_log_entry_date,
-        latest_200_date: last200Datetime
+      const params = {
+        organisation: {
+          name: organisation.name
+        },
+        dataset: {
+          name: dataset.name
+        },
+        errorData: {
+          endpoint_url: resourceStatus.endpoint_url,
+          http_status: resourceStatus.status,
+          latest_log_entry_date: resourceStatus.latest_log_entry_date,
+          latest_200_date: last200Datetime
+        }
       }
+      res.render('organisations/http-error.html', params)
+    } catch (e) {
+      logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
+      next(e)
     }
-    res.render('organisations/http-error.html', params)
   },
 
   async conditionalTaskListHandler (req, res, next) {
-    const { lpa, dataset } = req.params
+    const { lpa, dataset: datasetId } = req.params
 
-    const resourceStatus = await performanceDbApi.getResourceStatus(lpa, dataset)
+    try {
+      const resourceStatus = await performanceDbApi.getResourceStatus(lpa, datasetId)
 
-    if (resourceStatus.status !== '200') {
-      return organisationsController.getEndpointError(req, res, next, { resourceStatus })
-    } else {
-      return organisationsController.getDatasetTaskList(req, res, next)
+      if (resourceStatus.status !== '200') {
+        return await organisationsController.getEndpointError(req, res, next, { resourceStatus })
+      } else {
+        return await organisationsController.getDatasetTaskList(req, res, next)
+      }
+    } catch (e) {
+      logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
+      next(e)
     }
   },
 
