@@ -31,9 +31,9 @@ describe('OrganisationsController.js', () => {
       const expectedResponse = {
         name: 'test LPA',
         datasets: {
-          dataset1: { endpoint: 'https://example.com', issue: false, error: false },
-          dataset2: { endpoint: null, issue: true, error: false },
-          dataset3: { endpoint: 'https://example.com', issue: false, error: true }
+          dataset1: { endpoint: 'https://example.com', status: 'Live' },
+          dataset2: { endpoint: null, status: 'Needs fixing' },
+          dataset3: { endpoint: 'https://example.com', status: 'Error' }
         }
       }
 
@@ -47,9 +47,9 @@ describe('OrganisationsController.js', () => {
       expect(res.render).toHaveBeenCalledWith('organisations/overview.html', expect.objectContaining({
         organisation: { name: 'Test lpa', organisation: 'test-lpa' },
         datasets: expect.arrayContaining([
-          { endpoint: 'https://example.com', issue: false, error: false, slug: 'dataset1' },
-          { endpoint: null, issue: true, error: false, slug: 'dataset2' },
-          { endpoint: 'https://example.com', issue: false, error: true, slug: 'dataset3' }
+          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
+          { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
+          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3' }
         ]),
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
