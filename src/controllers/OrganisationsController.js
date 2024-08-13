@@ -45,6 +45,10 @@ const organisationsController = {
   async getOverview (req, res, next) {
     try {
       const lpa = req.params.lpa
+      
+      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
+
 
       const datasetsFilter = ['article-4-direction',
         'article-4-direction-area',
@@ -87,10 +91,7 @@ const organisationsController = {
       }, [0, 0, 0])
 
       const params = {
-        organisation: {
-          name: lpaOverview.name,
-          organisation: lpaOverview.organisation
-        },
+        organisation,
         datasets,
         totalDatasets,
         datasetsWithEndpoints,

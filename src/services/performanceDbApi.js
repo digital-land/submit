@@ -81,26 +81,25 @@ export default {
     rle.exception,
     rle.status as http_status,
     case 
-           when (rle.status != '200') then 'Error'
-           when (it.severity = 'error') then 'Issue'
-           when (it.severity = 'warning') then 'Warning'
-           else 'No issues'
-           end as status,
+      when (rle.status != '200') then 'Error'
+      when (it.severity = 'error') then 'Issue'
+      else 'No issues'
+    end as status,
     case
-            when (it.severity = 'info') then ''
-            else i.issue_type
-        end as issue_type,
-        case
-            when (it.severity = 'info') then ''
-            else it.severity
-        end as severity,
-        it.responsibility,
-        COUNT(
-            case
-            when it.severity != 'info' then 1
-            else null
-            end
-        ) as issue_count
+      when (it.severity = 'info') then ''
+      else i.issue_type
+    end as issue_type,
+    case
+      when (it.severity = 'info') then ''
+      else it.severity
+    end as severity,
+    it.responsibility,
+    COUNT(
+      case
+      when it.severity != 'info' then 1
+      else null
+      end
+    ) as issue_count
 FROM
     provision p
 LEFT JOIN
@@ -115,6 +114,7 @@ LEFT JOIN
     issue_type it ON i.issue_type = it.issue_type AND it.severity != 'info'
 WHERE
     p.organisation = '${lpa}'
+    AND it.severity = 'error'
     ${datasetClause}
 GROUP BY
     p.organisation,
@@ -149,8 +149,6 @@ ORDER BY
     }, {})
 
     return {
-      name: result.formattedData[0].name,
-      organisation: result.formattedData[0].organisation,
       datasets
     }
   },
@@ -201,7 +199,7 @@ ORDER BY
           issue_type it ON i.issue_type = it.issue_type
       WHERE
           p.organisation = '${lpa}' AND p.dataset = '${datasetId}'
-          AND (it.severity == 'error' OR it.severity == 'warning')
+          AND it.severity == 'error'
       GROUP BY i.issue_type
       ORDER BY it.severity`
 
