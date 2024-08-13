@@ -97,7 +97,7 @@ describe('issueDetails.html', () => {
       { text: 'Home', href: '/manage' },
       { text: 'Organisations', href: '/organisations' },
       { text: 'mock org', href: '/organisations/mock-org' },
-      { text: 'mock dataset', href: 'mock-dataset' },
+      { text: 'mock Dataset', href: '/organisations/mock-org/mock-dataset' },
       { text: 'mock issue' }
     ]
   })
@@ -144,7 +144,7 @@ describe('issueDetails.html', () => {
         { text: 'Home', href: '/manage' },
         { text: 'Organisations', href: '/organisations' },
         { text: 'mock org', href: '/organisations/mock-org' },
-        { text: 'mock dataset', href: 'mock-dataset' },
+        { text: 'mock Dataset', href: '/organisations/mock-org/mock-dataset' },
         { text: 'mock issue' }
       ]
     })
