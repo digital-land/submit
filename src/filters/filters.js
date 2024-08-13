@@ -6,13 +6,14 @@ import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
 import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadableNameFilter.js'
 
-const { govukMarkdown } = xGovFilters
+const { govukMarkdown, govukDateTime } = xGovFilters
 
 const addFilters = (nunjucksEnv, { datasetNameMapping }) => {
   const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
   nunjucksEnv.addFilter('datasetSlugToReadableName', datasetSlugToReadableName)
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
+  nunjucksEnv.addFilter('govukDateTime', govukDateTime)
   nunjucksEnv.addFilter('getkeys', getkeys)
   nunjucksEnv.addFilter('getContext', getContext)
   nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
