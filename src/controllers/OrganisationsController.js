@@ -12,6 +12,28 @@ const availableDatasets = Object.values(dataSubjects)
       .map(dataset => dataset.value)
   )
 
+/**
+ * Returns a status tag object with a text label and a CSS class based on the status.
+ *
+ * @param {string} status - The status to generate a tag for (e.g. "Error", "Needs fixing", etc.)
+ * @returns {object} - An object with a `tag` property containing the text label and CSS class.
+ */
+function getStatusTag (status) {
+  const statusToTagClass = {
+    Error: 'govuk-tag--red',
+    'Needs fixing': 'govuk-tag--yellow',
+    Warning: 'govuk-tag--blue',
+    Issue: 'govuk-tag--blue'
+  }
+
+  return {
+    tag: {
+      text: status,
+      classes: statusToTagClass[status]
+    }
+  }
+}
+
 const organisationsController = {
   /**
    * Get LPA overview data and render the overview page
@@ -103,9 +125,18 @@ const organisationsController = {
     }
   },
 
+  /**
+ * Handles GET requests for the "Get Started" page.
+ *
+ * @param {Express.Request} req - The incoming request object.
+ * @param {Express.Response} res - The response object to send back to the client.
+ * @param {Express.NextFunction} next - The next function in the middleware chain.
+ *
+ * Retrieves the organisation and dataset names from the database and renders the "Get Started" page with the organisation and dataset details.
+ */
   async getGetStarted (req, res, next) {
     try {
-      // get the organisation name
+    // get the organisation name
       const lpa = req.params.lpa
       const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
@@ -127,6 +158,16 @@ const organisationsController = {
     }
   },
 
+  /**
+ * Handles GET requests for the dataset task list page.
+ *
+ * @param {Express.Request} req - The incoming request object.
+ * @param {Express.Response} res - The response object to send back to the client.
+ * @param {Express.NextFunction} next - The next function in the middleware chain.
+ *
+ * Retrieves the organisation and dataset names from the database, fetches the issues for the given LPA and dataset,
+ * and renders the dataset task list page with the list of tasks and organisation and dataset details.
+ */
   async getDatasetTaskList (req, res, next) {
     const lpa = req.params.lpa
     const datasetId = req.params.dataset
@@ -140,7 +181,15 @@ const organisationsController = {
 
       const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
 
-      const taskList = performanceDbApi.getTaskList(issues)
+      const taskList = issues.map((issue) => {
+        return {
+          title: {
+            text: performanceDbApi.getTaskMessage(issue.issue_type, issue.num_issues)
+          },
+          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
+          status: getStatusTag(issue.status)
+        }
+      })
 
       const params = {
         taskList,
@@ -155,72 +204,124 @@ const organisationsController = {
     }
   },
 
+  /**
+ * Handles GET requests for the issue details page.
+ *
+ * @param {Express.Request} req - The incoming request object.
+ * @param {Express.Response} res - The response object to send back to the client.
+ * @param {Express.NextFunction} next - The next function in the middleware chain.
+ *
+ * Retrieves the organisation, dataset, and issue details from the database, and renders the issue details page
+ * with the list of issues, entry data, and organisation and dataset details.
+ *
+ * @throws {Error} If there is an error fetching the data or rendering the page.
+ */
   async getIssueDetails (req, res, next) {
     const { lpa, dataset: datasetId, issue_type: issueType } = req.params
+    let { resourceId, entityNumber } = req.params
 
-    const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
-    const organisation = organisationResult.formattedData[0]
+    try {
+      entityNumber = entityNumber ? parseInt(entityNumber) : 1
 
-    const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-    const dataset = datasetResult.formattedData[0]
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
 
-    const issueCount = 5
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
 
-    const errorHeading = performanceDbApi.getTaskMessage(issueType, issueCount, true)
-
-    const issueItems = [
-      {
-        html: '2 fields are missing values in entry 949',
-        href: 'todo'
-      },
-      {
-        html: '3 fields are missing values in entry 950',
-        href: 'todo'
+      if (!resourceId) {
+        const resource = await performanceDbApi.getLatestResource(lpa, datasetId)
+        resourceId = resource.resource
       }
-    ]
 
-    const entry = {
-      title: '20 and 20A Whitbourne Springs',
-      fields: [
-        {
-          key: {
-            text: 'description'
-          },
-          value: {
-            html: '20 and 20A Whitbourne Springs'
-          },
-          classes: ''
-        },
-        {
-          key: {
-            text: 'document-url'
-          },
-          value: {
-            html: '<p class="govuk-error-message">document-url missing</p>'
-          },
-          classes: 'dl-summary-card-list__row--error'
-        },
-        {
-          key: {
-            text: 'documentation-url'
-          },
-          value: {
-            html: '<p class="govuk-error-message">documentation-url missing</p>'
-          },
-          classes: 'dl-summary-card-list__row--error'
+      const issues = await performanceDbApi.getIssues(resourceId, issueType, datasetId)
+
+      const issuesByEntryNumber = issues.reduce((acc, current) => {
+        acc[current.entry_number] = acc[current.entry_number] || []
+        acc[current.entry_number].push(current)
+        return acc
+      }, {})
+
+      const errorHeading = performanceDbApi.getTaskMessage(issueType, Object.keys(issuesByEntryNumber).length, true)
+
+      const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues]) => {
+        return {
+          html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
+          href: `/organisations/${lpa}/${datasetId}/${issueType}/${entryNumber}`
         }
-      ]
-    }
+      })
 
-    const params = {
-      organisation,
-      dataset,
-      errorHeading,
-      issueItems,
-      entry
-    }
+      const entryData = await performanceDbApi.getEntry(resourceId, entityNumber, datasetId)
 
-    res.render('organisations/issueDetails.html', params)
+      const fields = entryData.map((row) => {
+        let hasError = false
+        let issueIndex
+        if (issuesByEntryNumber[entityNumber]) {
+          issueIndex = issuesByEntryNumber[entityNumber].findIndex(issue => issue.field === row.field)
+          if (issueIndex >= 0) {
+            hasError = true
+          }
+        }
+
+        let valueHtml = ''
+        let classes = ''
+        if (hasError) {
+          const message = issuesByEntryNumber[entityNumber][issueIndex].message || issueType
+          valueHtml += `<p class="govuk-error-message">${message}</p>`
+          classes += 'dl-summary-card-list__row--error'
+        }
+        valueHtml += row.value
+
+        return {
+          key: {
+            text: row.field
+          },
+          value: {
+            html: valueHtml
+          },
+          classes
+        }
+      })
+
+      if (issuesByEntryNumber[entityNumber]) {
+        issuesByEntryNumber[entityNumber].forEach((issue) => {
+          if (!fields.find(field => field.key.text === issue.field)) {
+            const errorMessage = issue.message || issueType
+
+            const valueHtml = `<p class="govuk-error-message">${errorMessage}</p>${issue.value}`
+            const classes = 'dl-summary-card-list__row--error'
+
+            fields.push({
+              key: {
+                text: issue.field
+              },
+              value: {
+                html: valueHtml
+              },
+              classes
+            })
+          }
+        })
+      }
+
+      const entry = {
+        title: `entry: ${entityNumber}`,
+        fields
+      }
+
+      const params = {
+        organisation,
+        dataset,
+        errorHeading,
+        issueItems,
+        entry
+      }
+
+      res.render('organisations/issueDetails.html', params)
+    } catch (e) {
+      logger.warn(`getIssueDetails() failed for lpa='${lpa}', datasetId='${datasetId}', issue=${issueType}, entityNumber=${entityNumber}, resourceId=${resourceId}`, { type: types.App })
+      next(e)
+    }
   }
 
 }
