@@ -53,7 +53,8 @@ describe('Organisations Find Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `Find your organisation - ${config.serviceNames.submit}`
+    pageTitle: `Find your organisation - ${config.serviceNames.submit}`,
+    breadcrumbs: [{ text: 'Home', href: '/manage' }, { text: 'Organisations' }]
   })
 
   it('correct has a form element with the correct data-filter attribute', () => {

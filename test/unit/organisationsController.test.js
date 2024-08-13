@@ -29,7 +29,7 @@ describe('OrganisationsController.js', () => {
       const next = vi.fn()
 
       const expectedResponse = {
-        name: 'Test LPA',
+        name: 'test LPA',
         datasets: {
           dataset1: { endpoint: 'https://example.com', status: 'Live' },
           dataset2: { endpoint: null, status: 'Needs fixing' },
@@ -37,13 +37,15 @@ describe('OrganisationsController.js', () => {
         }
       }
 
+      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{ name: 'Test lpa', organisation: 'test-lpa' }] })
+
       performanceDbApi.getLpaOverview = vi.fn().mockResolvedValue(expectedResponse)
 
       await organisationsController.getOverview(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/overview.html', expect.objectContaining({
-        organisation: { name: 'Test LPA' },
+        organisation: { name: 'Test lpa', organisation: 'test-lpa' },
         datasets: expect.arrayContaining([
           { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
           { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
@@ -63,6 +65,7 @@ describe('OrganisationsController.js', () => {
 
       const error = new Error('Test error')
 
+      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{ name: 'Test lpa', organisation: 'test-lpa' }] })
       vi.mocked(performanceDbApi.getLpaOverview).mockRejectedValue(error)
 
       await organisationsController.getOverview(req, res, next)
@@ -388,7 +391,8 @@ describe('OrganisationsController.js', () => {
               classes: ''
             }
           ]
-        }
+        },
+        issueType: 'test-issue-type'
       })
     })
 
