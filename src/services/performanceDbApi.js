@@ -83,7 +83,6 @@ export default {
     case 
            when (rle.status != '200') then 'Error'
            when (it.severity = 'error') then 'Issue'
-           when (it.severity = 'warning') then 'Warning'
            else 'No issues'
            end as status,
     case
@@ -199,7 +198,7 @@ ORDER BY
           issue_type it ON i.issue_type = it.issue_type
       WHERE
           p.organisation = '${lpa}' AND p.dataset = '${datasetId}'
-          AND (it.severity == 'error' OR it.severity == 'warning')
+          AND it.severity == 'error'
       GROUP BY i.issue_type
       ORDER BY it.severity`
 
