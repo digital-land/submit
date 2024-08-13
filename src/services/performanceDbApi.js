@@ -64,9 +64,8 @@ export default {
    * @returns {Promise<LpaOverview>} LPA overview
    */
   getLpaOverview: async (lpa, { datasetsFilter }) => {
-    
     let datasetClause = ''
-    if(datasetsFilter){
+    if (datasetsFilter) {
       const datasetString = datasetsFilter.map(dataset => `'${dataset}'`).join(',')
       datasetClause = `AND rle.pipeline in (${datasetString})`
     }
