@@ -75,7 +75,7 @@ const organisationsController = {
 
       const totalDatasets = datasets.length
       const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce((accumulator, dataset) => {
-        if (dataset.status === 'Live' || dataset.status === 'Warning') accumulator[0]++
+        if (dataset.endpoint) accumulator[0]++
         if (dataset.status === 'Needs fixing') accumulator[1]++
         if (dataset.status === 'Error') accumulator[2]++
         return accumulator
