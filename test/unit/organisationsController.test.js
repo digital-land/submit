@@ -36,8 +36,8 @@ describe('OrganisationsController.js', () => {
           dataset3: { endpoint: 'https://example.com', issue: false, error: true }
         }
       }
-      
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{name: 'Test lpa', organisation: 'test-lpa'}] })
+
+      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{ name: 'Test lpa', organisation: 'test-lpa' }] })
 
       performanceDbApi.getLpaOverview = vi.fn().mockResolvedValue(expectedResponse)
 
@@ -65,7 +65,7 @@ describe('OrganisationsController.js', () => {
 
       const error = new Error('Test error')
 
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{name: 'Test lpa', organisation: 'test-lpa'}] })
+      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{ name: 'Test lpa', organisation: 'test-lpa' }] })
       vi.mocked(performanceDbApi.getLpaOverview).mockRejectedValue(error)
 
       await organisationsController.getOverview(req, res, next)
@@ -392,7 +392,7 @@ describe('OrganisationsController.js', () => {
             }
           ]
         },
-        issueType: "test-issue-type",
+        issueType: 'test-issue-type'
       })
     })
 
