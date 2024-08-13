@@ -41,9 +41,9 @@ fs.createReadStream('src/content/entityIssueMessages.csv')
 
 /**
  * @typedef {object} Dataset
+ * @property {'Not submitted' | 'Error' | 'Needs fixing' | 'Warning' | 'Live' } status
  * @property {string} endpoint
  * @property {?string} error
- * @property {?string} issue
  */
 
 /**
@@ -86,26 +86,26 @@ export default {
       when (it.severity = 'error') then 'Needs fixing'
       when (it.severity = 'warning') then 'Warning'
       else 'Live'
-    end as status,
+  end as status,
     case
         when ((cast(rle.status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.status)
         else null
-    end as error,
-    case
-            when (it.severity = 'info') then ''
-            else i.issue_type
-        end as issue_type,
-        case
-            when (it.severity = 'info') then ''
-            else it.severity
-        end as severity,
-        it.responsibility,
-        COUNT(
-            case
-            when it.severity != 'info' then 1
-            else null
-            end
-        ) as issue_count
+  end as error,
+  case
+      when (it.severity = 'info') then ''
+      else i.issue_type
+  end as issue_type,
+  case
+      when (it.severity = 'info') then ''
+      else it.severity
+  end as severity,
+  it.responsibility,
+  COUNT(
+      case
+      when it.severity != 'info' then 1
+      else null
+      end
+  ) as issue_count
 FROM
     provision p
 LEFT JOIN
@@ -136,7 +136,8 @@ ORDER BY
 
     const datasets = result.formattedData.reduce((accumulator, row) => {
       accumulator[row.dataset] = {
-        endpoint: row.endpoint
+        endpoint: row.endpoint,
+        status: row.status
       }
       return accumulator
     }, {})

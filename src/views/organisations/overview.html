@@ -6,18 +6,6 @@
 {% set pageName = organisation.name + " overview" %}
 {% set serviceType = 'Manage' %}
 
-{% macro tagCardClass(status) %}
-  {% if status == 'Not submitted' %}
-    {% set statusCardClasses = 'govuk-tag--grey' %}
-  {% elif status == 'Error' %}
-    {% set statusCardClasses = 'govuk-tag--red' %}
-  {% elif status == 'Needs fixing' %}
-    {% set statusCardClasses = 'govuk-tag--yellow' %}
-  {% else %}
-    {% set statusCardClasses = 'govuk-tag--green' %}
-  {% endif %}
-{% endmacro %}
-
 {% block beforeContent %}
 {{ super() }}
 
@@ -104,7 +92,7 @@
           <div class="govuk-task-list__status">
             {{govukTag({
               text: dataset.status,
-              classes: tagCardClass(dataset.status)
+              classes: dataset.status | statusToTagClass
             })}}
           </div>
         </li>
