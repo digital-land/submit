@@ -204,6 +204,59 @@ const organisationsController = {
     }
   },
 
+  async getEndpointError (req, res, next, { resourceStatus }) {
+    const { lpa, dataset: datasetId } = req.params
+
+    try {
+      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
+
+      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const dataset = datasetResult.formattedData[0]
+
+      const daysSince200 = resourceStatus.days_since_200
+      const today = new Date()
+      const last200Date = new Date(today.getTime() - (daysSince200 * 24 * 60 * 60 * 1000))
+      const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
+
+      const params = {
+        organisation: {
+          name: organisation.name
+        },
+        dataset: {
+          name: dataset.name
+        },
+        errorData: {
+          endpoint_url: resourceStatus.endpoint_url,
+          http_status: resourceStatus.status,
+          latest_log_entry_date: resourceStatus.latest_log_entry_date,
+          latest_200_date: last200Datetime
+        }
+      }
+      res.render('organisations/http-error.html', params)
+    } catch (e) {
+      logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
+      next(e)
+    }
+  },
+
+  async conditionalTaskListHandler (req, res, next) {
+    const { lpa, dataset: datasetId } = req.params
+
+    try {
+      const resourceStatus = await performanceDbApi.getResourceStatus(lpa, datasetId)
+
+      if (resourceStatus.status !== '200') {
+        return await organisationsController.getEndpointError(req, res, next, { resourceStatus })
+      } else {
+        return await organisationsController.getDatasetTaskList(req, res, next)
+      }
+    } catch (e) {
+      logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
+      next(e)
+    }
+  },
+
   /**
  * Handles GET requests for the issue details page.
  *
@@ -322,26 +375,7 @@ const organisationsController = {
       logger.warn(`getIssueDetails() failed for lpa='${lpa}', datasetId='${datasetId}', issue=${issueType}, entityNumber=${entityNumber}, resourceId=${resourceId}`, { type: types.App })
       next(e)
     }
-  },
-
-  async getEndpointError (req, res, next) {
-    const params = {
-      organisation: {
-        name: 'mock org'
-      },
-      dataset: {
-        name: 'mock dataset'
-      },
-      errorData: {
-        endpoint_url: 'http://fakeUrl.com',
-        http_status: '404',
-        latest_log_entry_date: '2024-08-11T00:15:32Z',
-        latest_200_date: '2024-08-11T00:15:32Z'
-      }
-    }
-    res.render('organisations/http-error.html', params)
   }
-
 }
 
 export default organisationsController

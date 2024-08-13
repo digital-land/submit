@@ -148,6 +148,17 @@ ORDER BY
     }
   },
 
+  getResourceStatus: async (lpa, datasetId) => {
+    const sql = `
+      select endpoint_url, status, latest_log_entry_date, days_since_200 from reporting_latest_endpoints
+      WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
+      AND pipeline = '${datasetId}'`
+
+    const result = await datasette.runQuery(sql)
+
+    return result.formattedData[0]
+  },
+
   getLpaDatasetIssues: async (lpa, datasetId) => {
     const sql = `
       SELECT
