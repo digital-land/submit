@@ -1,3 +1,5 @@
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
 {% extends "layouts/main.html" %}
 
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
@@ -9,6 +11,26 @@
 {% block beforeContent %}
 
 {{ super() }}
+
+{{ govukBreadcrumbs({
+  items: [
+    {
+      text: "Home",
+      href: "/manage"
+    },
+    {
+      text: "Organisations",
+      href: '/organisations'
+    },
+    {
+      text: organisation.name,
+      href: '/organisations/' + organisation.organisation
+    },
+    {
+      text: dataset.name
+    }
+  ]
+}) }}
 
 {% endblock %}
 

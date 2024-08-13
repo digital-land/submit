@@ -149,8 +149,6 @@ ORDER BY
     }, {})
 
     return {
-      name: result.formattedData[0].name,
-      organisation: result.formattedData[0].organisation,
       datasets
     }
   },
