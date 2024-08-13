@@ -415,4 +415,91 @@ describe('OrganisationsController.js', () => {
       expect(next).toHaveBeenCalledWith(expect.any(Error))
     })
   })
+
+  describe('getEndpointError', () => {
+    it('should render http-error.html template with correct params', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = { render: vi.fn() }
+      const next = vi.fn()
+      const resourceStatus = { status: '404', days_since_200: 3, endpoint_url: 'https://example.com', latest_log_entry_date: '2022-01-01T12:00:00.000Z' }
+
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [{ name: 'Example Organisation' }] })
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [{ name: 'Example Dataset' }] })
+
+      await organisationsController.getEndpointError(req, res, next, { resourceStatus })
+
+      const dataTimeRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z/
+
+      expect(res.render).toHaveBeenCalledTimes(1)
+      const renderArgs = res.render.mock.calls[0]
+      expect(renderArgs[0]).toEqual('organisations/http-error.html')
+      expect(renderArgs[1].organisation).toEqual({ name: 'Example Organisation' })
+      expect(renderArgs[1].dataset).toEqual({ name: 'Example Dataset' })
+      expect(renderArgs[1].errorData.endpoint_url).toEqual('https://example.com')
+      expect(renderArgs[1].errorData.http_status).toEqual('404')
+      expect(renderArgs[1].errorData.latest_log_entry_date).toMatch(dataTimeRegex)
+      expect(renderArgs[1].errorData.latest_200_date).toMatch(dataTimeRegex)
+    })
+
+    it('should catch errors and pass them to the next function', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = {}
+      const next = vi.fn()
+      const resourceStatus = { status: '404' }
+
+      vi.mocked(datasette.runQuery).mockRejectedValueOnce(new Error('example error'))
+
+      await organisationsController.getEndpointError(req, res, next, { resourceStatus })
+
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
+  })
+
+  describe('conditionalTaskListHandler', () => {
+    it('should call getEndpointError if resource status is not 200', async () => {
+      const getResourceStatusSpy = vi.spyOn(organisationsController, 'getEndpointError')
+      getResourceStatusSpy.mockResolvedValue({})
+
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = { render: vi.fn() }
+      const next = vi.fn()
+
+      vi.mocked(performanceDbApi.getResourceStatus).mockResolvedValueOnce({ status: '404' })
+
+      await organisationsController.conditionalTaskListHandler(req, res, next)
+
+      expect(organisationsController.getEndpointError).toHaveBeenCalledTimes(1)
+      expect(organisationsController.getEndpointError).toHaveBeenCalledWith(req, res, next, { resourceStatus: { status: '404' } })
+    })
+
+    it('should call getDatasetTaskList if resource status is 200', async () => {
+      const getDatasetTaskListSpy = vi.spyOn(organisationsController, 'getDatasetTaskList')
+      getDatasetTaskListSpy.mockResolvedValue({})
+
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = { render: vi.fn() }
+      const next = vi.fn()
+
+      vi.mocked(performanceDbApi.getResourceStatus).mockResolvedValueOnce({ status: '200' })
+
+      await organisationsController.conditionalTaskListHandler(req, res, next)
+
+      expect(organisationsController.getDatasetTaskList).toHaveBeenCalledTimes(1)
+      expect(organisationsController.getDatasetTaskList).toHaveBeenCalledWith(req, res, next)
+    })
+
+    it('should catch errors and pass them to the next function', async () => {
+      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const res = {}
+      const next = vi.fn()
+
+      vi.mocked(performanceDbApi.getResourceStatus).mockRejectedValueOnce(new Error('example error'))
+
+      await organisationsController.conditionalTaskListHandler(req, res, next)
+
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
+  })
 })
