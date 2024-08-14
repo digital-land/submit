@@ -71,6 +71,7 @@ const organisationsController = {
           datasets.push({
             slug: dataset,
             endpoint: null,
+            issue_count: 0,
             status: 'Not submitted'
           })
         }
