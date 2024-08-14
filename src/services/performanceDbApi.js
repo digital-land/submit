@@ -134,22 +134,22 @@ ORDER BY
 
     const result = await datasette.runQuery(query)
 
-    const datasets = result.formattedData.reduce((accumulator, row) => {
-      accumulator[row.dataset] = {
-        endpoint: row.endpoint,
-        status: row.status,
-        issue_count: row.issue_count,
-        error: row.error
-      }
-      return accumulator
-    }, {})
+    // const datasets = result.formattedData.reduce((accumulator, row) => {
+    //   accumulator[row.dataset] = {
+    //     endpoint: row.endpoint,
+    //     status: row.status,
+    //     issue_count: row.issue_count,
+    //     error: row.error
+    //   }
+    //   return accumulator
+    // }, {})
 
-    if (result.formattedData.length === 0) {
-      throw new Error(`No records found for LPA=${lpa}`)
-    }
+    // if (result.formattedData.length === 0) {
+    //   throw new Error(`No records found for LPA=${lpa}`)
+    // }
 
     return {
-      datasets
+      datasets: result.formattedData
     }
   },
 

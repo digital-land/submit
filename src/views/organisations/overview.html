@@ -71,11 +71,11 @@
             <h2 class="govuk-heading-m">
               {% if dataset.endpoint %}
                 <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}">
-                  {{dataset.slug | datasetSlugToReadableName}}
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}">
+                  {{dataset.dataset | datasetSlugToReadableName}}
                 </a>
               {% else %}
-                {{dataset.slug | datasetSlugToReadableName}}
+                {{dataset.dataset | datasetSlugToReadableName}}
               {% endif %}
             </h2>
             <div class="govuk-task-list__hint">

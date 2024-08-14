@@ -57,19 +57,14 @@ const organisationsController = {
       const lpaOverview = await performanceDbApi.getLpaOverview(lpa, { datasetsFilter })
 
       // restructure datasets to usable format
-      const datasets = Object.entries(lpaOverview.datasets).map(([key, value]) => {
-        return {
-          slug: key,
-          ...value
-        }
-      })
+      const datasets = Object.values(lpaOverview.datasets)
 
       // add in any of the missing key 8 datasets
-      const keys = Object.keys(lpaOverview.datasets)
+      const keys = Object.values(lpaOverview.datasets).map(dataset => dataset.dataset)
       availableDatasets.forEach(dataset => {
         if (!keys.includes(dataset)) {
           datasets.push({
-            slug: dataset,
+            dataset,
             endpoint: null,
             issue_count: 0,
             status: 'Not submitted'
