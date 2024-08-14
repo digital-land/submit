@@ -49,7 +49,6 @@ fs.createReadStream('src/content/entityIssueMessages.csv')
 
 /**
  * @typedef {object} LpaOverview
- * @property {string} name
  * @property {{ [dataset: string]: Dataset }} datasets
  */
 
@@ -132,10 +131,12 @@ ORDER BY
     p.organisation,
     o.name;
 `
-
     const result = await datasette.runQuery(query)
+    if (result.formattedData.length === 0) {
+      logger.info(`No records found for LPA=${lpa}`)
+    }
 
-    const datasets = result.formattedData.reduce((accumulator, row) => {
+    let datasets = result.formattedData.reduce((accumulator, row) => {
       accumulator[row.dataset] = {
         endpoint: row.endpoint,
         status: row.status
@@ -143,13 +144,7 @@ ORDER BY
       return accumulator
     }, {})
 
-    if (result.formattedData.length === 0) {
-      throw new Error(`No records found for LPA=${lpa}`)
-    }
-
-    return {
-      datasets
-    }
+    return { datasets }
   },
 
   getResourceStatus: async (lpa, datasetId) => {
