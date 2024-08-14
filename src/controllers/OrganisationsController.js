@@ -3,6 +3,7 @@ import performanceDbApi from '../services/performanceDbApi.js' // Assume you hav
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { dataSubjects } from '../utils/utils.js'
+import { statusToTagClass } from '../filters/filters.js'
 
 // get a list of available datasets
 const availableDatasets = Object.values(dataSubjects)
@@ -19,17 +20,10 @@ const availableDatasets = Object.values(dataSubjects)
  * @returns {object} - An object with a `tag` property containing the text label and CSS class.
  */
 function getStatusTag (status) {
-  const statusToTagClass = {
-    Error: 'govuk-tag--red',
-    'Needs fixing': 'govuk-tag--yellow',
-    Warning: 'govuk-tag--blue',
-    Issue: 'govuk-tag--blue'
-  }
-
   return {
     tag: {
       text: status,
-      classes: statusToTagClass[status]
+      classes: statusToTagClass(status)
     }
   }
 }
@@ -45,6 +39,9 @@ const organisationsController = {
   async getOverview (req, res, next) {
     try {
       const lpa = req.params.lpa
+
+      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
+      const organisation = organisationResult.formattedData[0]
 
       const datasetsFilter = ['article-4-direction',
         'article-4-direction-area',
@@ -73,24 +70,23 @@ const organisationsController = {
         if (!keys.includes(dataset)) {
           datasets.push({
             slug: dataset,
-            endpoint: null
+            endpoint: null,
+            issue_count: 0,
+            status: 'Not submitted'
           })
         }
       })
 
       const totalDatasets = datasets.length
       const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce((accumulator, dataset) => {
-        if (dataset.endpoint !== null) accumulator[0]++
-        if (dataset.issue) accumulator[1]++
-        if (dataset.error) accumulator[2]++
+        if (dataset.endpoint) accumulator[0]++
+        if (dataset.status === 'Needs fixing') accumulator[1]++
+        if (dataset.status === 'Error') accumulator[2]++
         return accumulator
       }, [0, 0, 0])
 
       const params = {
-        organisation: {
-          name: lpaOverview.name,
-          organisation: lpaOverview.organisation
-        },
+        organisation,
         datasets,
         totalDatasets,
         datasetsWithEndpoints,
@@ -100,7 +96,7 @@ const organisationsController = {
 
       res.render('organisations/overview.html', params)
     } catch (error) {
-      logger.error(error)
+      logger.warn('organisationsController.getOverview(): ' + error.message ?? error.errorMessage, { type: types.App })
       next(error)
     }
   },
@@ -130,7 +126,7 @@ const organisationsController = {
 
       res.render('organisations/find.html', { alphabetisedOrgs })
     } catch (err) {
-      logger.warn(err)
+      logger.warn('organisationsController.getOrganisations(): ' + err.message ?? err.errorMessage, { type: types.App })
       next(err)
     }
   },
@@ -183,7 +179,7 @@ const organisationsController = {
     const datasetId = req.params.dataset
 
     try {
-      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
 
       const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
@@ -377,7 +373,8 @@ const organisationsController = {
         dataset,
         errorHeading,
         issueItems,
-        entry
+        entry,
+        issueType
       }
 
       res.render('organisations/issueDetails.html', params)

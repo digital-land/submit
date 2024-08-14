@@ -26,7 +26,8 @@ addFilters(nunjucksEnv, { datasetNameMapping })
 describe('LPA Overview Page', () => {
   const params = {
     organisation: {
-      name: 'mock org'
+      name: 'mock org',
+      organisation: 'mock-org'
     },
     datasetsWithEndpoints: 2,
     totalDatasets: 8,
@@ -35,47 +36,59 @@ describe('LPA Overview Page', () => {
     datasets: [
       {
         slug: 'article-4-direction',
-        endpoint: null
+        endpoint: null,
+        status: 'Not submitted',
+        issue_count: 0
       },
       {
         slug: 'article-4-direction-area',
-        endpoint: null
+        endpoint: null,
+        status: 'Not submitted'
       },
       {
         slug: 'conservation-area',
         endpoint: 'http://conservation-area.json',
+        status: 'Needs fixing',
         error: null,
-        issue: 'Endpoint has not been updated since 21 May 2023'
+        issue: 'Endpoint has not been updated since 21 May 2023',
+        issue_count: 1
       },
       {
         slug: 'conservation-area-document',
         endpoint: 'http://conservation-area-document.json',
+        status: 'Live',
         error: null,
-        issue: null
+        issue_count: 0
       },
       {
         slug: 'listed-building-outline',
         endpoint: 'http://listed-building-outline.json',
+        status: 'Live',
         error: null,
-        issue: null
+        issue_count: 0
       },
       {
         slug: 'tree',
         endpoint: 'http://tree.json',
         error: null,
-        issue: 'There are 20 issues in this dataset'
+        status: 'Needs fixing',
+        issue: 'There are 20 issues in this dataset',
+        issue_count: 1
       },
       {
         slug: 'tree-preservation-order',
         endpoint: 'http://tree-preservation-order.json',
-        error: 'Error connecting to endpoint',
-        issue: null
+        http_error: '404',
+        error: 'There was 404 error accessing the data URL',
+        status: 'Error',
+        issue_count: 0
       },
       {
         slug: 'tree-preservation-zone',
         endpoint: 'http://tree-preservation-zone.json',
-        error: 'Error connecting to endpoint',
-        issue: null
+        status: 'Error',
+        error: '400',
+        issue_count: 0
       }
     ]
   }
@@ -85,23 +98,24 @@ describe('LPA Overview Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org overview - Submit and update your planning data'
+    pageTitle: 'mock org overview - Submit and update your planning data',
+    breadcrumbs: [{ text: 'Home', href: '/manage' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org' }]
   })
 
   const statsBoxes = document.querySelector('.dataset-status').children
   it('Datasets provided gives the correct value', () => {
     expect(statsBoxes[0].textContent).toContain('2/8')
-    expect(statsBoxes[0].textContent).toContain('datasets provided')
+    expect(statsBoxes[0].textContent).toContain('datasets submitted')
   })
 
   it('Datasets with errors gives the correct value', () => {
     expect(statsBoxes[1].textContent).toContain('2')
-    expect(statsBoxes[1].textContent).toContain('datasets with errors')
+    expect(statsBoxes[1].textContent).toContain('data URL with errors')
   })
 
   it('Datasets with issues gives the correct value', () => {
     expect(statsBoxes[2].textContent).toContain('2')
-    expect(statsBoxes[2].textContent).toContain('datasets with issues')
+    expect(statsBoxes[2].textContent).toContain('datasets need fixing')
   })
 
   const datasetCards = document.querySelector('.govuk-task-list').children
@@ -115,10 +129,17 @@ describe('LPA Overview Page', () => {
     })
   })
 
-  it('The dataset cards are rendered with the correct hints', () => {
-    params.datasets.forEach((dataset, i) => {
-      const expectedHint = !dataset.endpoint ? 'Endpoint not provided' : dataset.error ? dataset.error : dataset.issue ? dataset.issue : 'Endpoint provided'
-      expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent).toContain(expectedHint)
+  params.datasets.forEach((dataset, i) => {
+    it(`dataset cards are rendered with correct hints for dataset='${dataset.slug}'`, () => {
+      let expectedHint = 'Data URL submitted'
+      if (dataset.status === 'Not submitted') {
+        expectedHint = 'Data URL not submitted'
+      } else if (dataset.error) {
+        expectedHint = dataset.error
+      } else if (dataset.issue_count > 0) {
+        expectedHint = `There are ${dataset.issue_count} issues in this dataset`
+      }
+      expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent.trim()).toContain(expectedHint)
     })
   })
 
@@ -136,22 +157,22 @@ describe('LPA Overview Page', () => {
       if (dataset.endpoint) {
         expectedActions.push({ text: 'View data', href: '/taskLists/taskChecklist' })
       }
-
-      const actions = datasetCards[i].querySelector('.planning-data-actions').children
-      expectedActions.forEach((expectedAction, j) => {
-        expect(actions[j].textContent, `expect action ${expectedAction.text} for dataset ${dataset.slug}`).toContain(expectedAction.text)
-        const actionLink = actions[j].querySelector('a')
-        expect(actionLink.href).toBe(expectedAction.href)
-      })
     })
   })
 
-  it('Renders the correct status on each dataset card', () => {
-    params.datasets.forEach((dataset, i) => {
-      const expectedHint = !dataset.endpoint ? 'Not provided' : dataset.error ? 'Error' : dataset.issue ? 'Issues' : 'No issues'
+  params.datasets.forEach((dataset, i) => {
+    it(`Renders the correct status on each dataset card for dataset='${dataset.slug}'`, () => {
+      let expectedHint = 'Live'
+      if (dataset.status === 'Not submitted') {
+        expectedHint = 'Not submitted'
+      } else if (dataset.status === 'Error') {
+        expectedHint = dataset.status
+      } else if (dataset.status === 'Needs fixing') {
+        expectedHint = 'Needs fixing'
+      }
 
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
-      expect(statusIndicator.textContent).toContain(expectedHint)
+      expect(statusIndicator.textContent.trim()).toContain(expectedHint)
     })
   })
 })

@@ -1,3 +1,5 @@
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
 {% extends "layouts/main.html" %}
 
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
@@ -9,6 +11,26 @@
 {% block beforeContent %}
 
 {{ super() }}
+
+{{ govukBreadcrumbs({
+  items: [
+    {
+      text: "Home",
+      href: "/manage"
+    },
+    {
+      text: "Organisations",
+      href: '/organisations'
+    },
+    {
+      text: organisation.name,
+      href: '/organisations/' + organisation.organisation
+    },
+    {
+      text: dataset.name
+    }
+  ]
+}) }}
 
 {% endblock %}
 
@@ -45,7 +67,7 @@
 
     <ol class="govuk-list govuk-list--number">
       <li>Fix the errors indicated</li>
-      <li>Use the <a href="https://check.staging.digital-land.info/">check service</a> to make sure the data meets
+      <li>Use the <a href="/">check service</a> to make sure the data meets
         the standard</li>
       <li>Publish the updated data on the data URL</li>
     </ol>

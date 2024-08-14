@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
-import config from '../../config/index.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 import { mockDataSubjects } from './data.js'
@@ -35,6 +34,14 @@ function errorTestFn ({
 
 describe('dataset details View', () => {
   const params = {
+    organisation: {
+      name: 'mock org',
+      organisation: 'mock-org'
+    },
+    dataset: {
+      name: 'mock dataset',
+      dataset: 'mock-dataset'
+    },
     values: {
       dataset: 'mockDataset'
     },
@@ -42,9 +49,9 @@ describe('dataset details View', () => {
   }
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
   const datasetName = mockDataSubjects.mockDataset.dataSets[0].value
+
   runGenericPageTests(html, {
-    pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit and update your planning data`,
-    serviceName: config.serviceNames.submit
+    pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit and update your planning data`
   })
 
   it('should render the correct header', () => {

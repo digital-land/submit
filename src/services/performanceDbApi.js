@@ -2,6 +2,7 @@
  * Performance DB API service
  */
 import datasette from './datasette.js'
+import logger from '../utils/logger.js'
 
 // ===========================================
 
@@ -41,14 +42,14 @@ fs.createReadStream('src/content/entityIssueMessages.csv')
 
 /**
  * @typedef {object} Dataset
+ * @property {'Not submitted' | 'Error' | 'Needs fixing' | 'Warning' | 'Live' } status
  * @property {string} endpoint
+ * @property {number} issue_count
  * @property {?string} error
- * @property {?string} issue
  */
 
 /**
  * @typedef {object} LpaOverview
- * @property {string} name
  * @property {{ [dataset: string]: Dataset }} datasets
  */
 
@@ -80,27 +81,32 @@ export default {
     rle.resource,
     rle.exception,
     rle.status as http_status,
-    case 
-           when (rle.status != '200') then 'Error'
-           when (it.severity = 'error') then 'Issue'
-           when (it.severity = 'warning') then 'Warning'
-           else 'No issues'
-           end as status,
+  case
+      when (rle.status is null) then 'Not Submitted'
+      when (rle.status != '200') then 'Error'
+      when (it.severity = 'error') then 'Needs fixing'
+      when (it.severity = 'warning') then 'Warning'
+      else 'Live'
+  end as status,
     case
-            when (it.severity = 'info') then ''
-            else i.issue_type
-        end as issue_type,
-        case
-            when (it.severity = 'info') then ''
-            else it.severity
-        end as severity,
-        it.responsibility,
-        COUNT(
-            case
-            when it.severity != 'info' then 1
-            else null
-            end
-        ) as issue_count
+        when ((cast(rle.status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.status)
+        else null
+  end as error,
+  case
+      when (it.severity = 'info') then ''
+      else i.issue_type
+  end as issue_type,
+  case
+      when (it.severity = 'info') then ''
+      else it.severity
+  end as severity,
+  it.responsibility,
+  COUNT(
+      case
+      when it.severity != 'info' then 1
+      else null
+      end
+  ) as issue_count
 FROM
     provision p
 LEFT JOIN
@@ -126,33 +132,22 @@ ORDER BY
     p.organisation,
     o.name;
 `
-
     const result = await datasette.runQuery(query)
+    if (result.formattedData.length === 0) {
+      logger.info(`No records found for LPA=${lpa}`)
+    }
 
     const datasets = result.formattedData.reduce((accumulator, row) => {
-      let error
-      if (row.http_status !== '200' || row.exception) {
-        error = row.exception ? row.exception : `endpoint returned with a status of ${row.http_status}`
-      }
-
-      let issue
-      if (row.issue_count > 0) {
-        issue = `There are ${row.issue_count} issues in this dataset`
-      }
-
       accumulator[row.dataset] = {
         endpoint: row.endpoint,
-        error,
-        issue
+        status: row.status,
+        issue_count: row.issue_count,
+        error: row.error
       }
       return accumulator
     }, {})
 
-    return {
-      name: result.formattedData[0].name,
-      organisation: result.formattedData[0].organisation,
-      datasets
-    }
+    return { datasets }
   },
 
   getResourceStatus: async (lpa, datasetId) => {
@@ -206,13 +201,9 @@ ORDER BY
       ORDER BY it.severity`
 
     const result = await datasette.runQuery(sql)
-    return result.formattedData.map((row) => {
-      return {
-        num_issues: row.num_issues,
-        issue_type: row.issue_type,
-        resource: row.resource,
-        status: row.status
-      }
+    /* eslint camelcase: "off" */
+    return result.formattedData.map(({ num_issues, issue_type, resource, status }) => {
+      return { num_issues, issue_type, resource, status }
     })
   },
 

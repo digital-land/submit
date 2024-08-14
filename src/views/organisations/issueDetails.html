@@ -3,6 +3,7 @@
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% set serviceType = 'Submit'%}
 
@@ -12,7 +13,39 @@
   {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
 {%endif%}
 
+{% block beforeContent %}
+
+{{ super() }}
+
+{{ govukBreadcrumbs({
+  items: [
+    {
+      text: "Home",
+      href: "/manage"
+    },
+    {
+      text: "Organisations",
+      href: '/organisations'
+    },
+    {
+      text: organisation.name,
+      href: '/organisations/' + organisation.organisation
+    },
+    {
+      text: dataset.name,
+      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
+    },
+    {
+      text: issueType
+    }
+  ]
+}) }}
+
+{% endblock %}
+
 {% block content %}
+
+
 <div class="govuk-grid-row">
   {% include "includes/_dataset-page-header.html" %}
 </div>
@@ -51,7 +84,7 @@
 
     <ol class="govuk-list govuk-list--number">
       <li>Fix the errors indicated</li>
-      <li>Use the <a href="https://check.staging.digital-land.info/">check service</a> to make sure the data meets
+      <li>Use the <a href="/">check service</a> to make sure the data meets
         the standard</li>
       <li>Publish the updated data on the data URL</li>
     </ol>
