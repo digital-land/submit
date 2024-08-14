@@ -43,6 +43,7 @@ fs.createReadStream('src/content/entityIssueMessages.csv')
  * @typedef {object} Dataset
  * @property {'Not submitted' | 'Error' | 'Needs fixing' | 'Warning' | 'Live' } status
  * @property {string} endpoint
+ * @property {number} issue_count
  * @property {?string} error
  */
 
