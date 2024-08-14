@@ -2,6 +2,7 @@
  * Performance DB API service
  */
 import datasette from './datasette.js'
+import logger from '../utils/logger.js'
 
 // ===========================================
 
