@@ -136,7 +136,7 @@ ORDER BY
       logger.info(`No records found for LPA=${lpa}`)
     }
 
-    let datasets = result.formattedData.reduce((accumulator, row) => {
+    const datasets = result.formattedData.reduce((accumulator, row) => {
       accumulator[row.dataset] = {
         endpoint: row.endpoint,
         status: row.status
