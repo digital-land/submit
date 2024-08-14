@@ -140,7 +140,9 @@ ORDER BY
     const datasets = result.formattedData.reduce((accumulator, row) => {
       accumulator[row.dataset] = {
         endpoint: row.endpoint,
-        status: row.status
+        status: row.status,
+        issue_count: row.issue_count,
+        error: row.error
       }
       return accumulator
     }, {})
