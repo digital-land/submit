@@ -139,7 +139,7 @@ ORDER BY
         endpoint: row.endpoint,
         status: row.status,
         issue_count: row.issue_count,
-        error: row.http_status !== '200' ? (row.exception || `The endpoint returned a status of: ${row.http_status}`) : undefined
+        error: row.error
       }
       return accumulator
     }, {})
