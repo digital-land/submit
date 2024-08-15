@@ -5,6 +5,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import hash from '../utils/hasher.js'
 import config from '../../config/index.js'
+import { render, UptimeParams } from '../routes/schemas.js'
 
 export function setupMiddlewares (app) {
   app.use((req, res, next) => {
@@ -31,7 +32,7 @@ export function setupMiddlewares (app) {
   app.use((req, res, next) => {
     const serviceDown = config.maintenance.serviceUnavailable || false
     if (serviceDown) {
-      res.status(503).render('errorPages/503', { upTime: config.maintenance.upTime })
+      render(res.status(503), 'errorPages/503', UptimeParams, { upTime: config.maintenance.upTime })
     } else {
       next()
     }

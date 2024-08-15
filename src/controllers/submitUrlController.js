@@ -2,6 +2,7 @@ import UploadController from './uploadController.js'
 import { postUrlRequest } from '../services/asyncRequestApi.js'
 import { URL } from 'url'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import axios from 'axios'
 import { allowedFileTypes } from '../utils/utils.js'
 import config from '../../config/index.js'
@@ -18,7 +19,12 @@ class SubmitUrlController extends UploadController {
       const errors = {
         url: new SubmitUrlController.Error(error.key, error, req, res)
       }
-      logger.warn('SubmitUrlController: local validation failed during url submission', error)
+      logger.warn({
+        message: 'SubmitUrlController: local validation failed during url submission',
+        error: JSON.stringify(error),
+        submittedUrl: `${req.body.url ?? '<no url provided>'}`,
+        type: types.DataValidation
+      })
       return next(errors)
     }
 
