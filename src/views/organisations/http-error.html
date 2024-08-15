@@ -21,11 +21,11 @@
       href: '/organisations'
     },
     {
-      text: organisation.name,
+      text: organisation.name | capitalize,
       href: '/organisations/' + organisation.organisation
     },
     {
-      text: dataset.name
+      text: dataset.name | capitalize
     }
   ]
 }) }}
