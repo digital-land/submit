@@ -20,7 +20,7 @@
       href: "/organisations"
     },
     {
-      text: organisation.name
+      text: organisation.name | capitalize
     }
   ]
 }) }}
@@ -75,7 +75,10 @@
                   {{dataset.slug | datasetSlugToReadableName}}
                 </a>
               {% else %}
-                {{dataset.slug | datasetSlugToReadableName}}
+                <a class="govuk-link govuk-task-list__link"
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/get-started">
+                  {{dataset.slug | datasetSlugToReadableName}}
+                </a>
               {% endif %}
             </h2>
             <div class="govuk-task-list__hint">
