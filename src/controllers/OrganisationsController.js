@@ -214,7 +214,7 @@ const organisationsController = {
     const { lpa, dataset: datasetId } = req.params
 
     try {
-      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
 
       const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
@@ -226,12 +226,8 @@ const organisationsController = {
       const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
 
       const params = {
-        organisation: {
-          name: organisation.name
-        },
-        dataset: {
-          name: dataset.name
-        },
+        organisation,
+        dataset,
         errorData: {
           endpoint_url: resourceStatus.endpoint_url,
           http_status: resourceStatus.status,
@@ -282,10 +278,10 @@ const organisationsController = {
     try {
       entityNumber = entityNumber ? parseInt(entityNumber) : 1
 
-      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
 
-      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const datasetResult = await datasette.runQuery(`SELECT name, dataset FROM dataset WHERE dataset = '${datasetId}'`)
       const dataset = datasetResult.formattedData[0]
 
       if (!resourceId) {

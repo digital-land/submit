@@ -1,9 +1,36 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
 {% extends "layouts/main.html" %}
 
 {% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
 {% set serviceType = 'manage' %}
+
+{% block beforeContent %}
+
+{{ super() }}
+
+{{ govukBreadcrumbs({
+  items: [
+    {
+      text: "Home",
+      href: "/manage"
+    },
+    {
+      text: "Organisations",
+      href: '/organisations'
+    },
+    {
+      text: organisation.name,
+      href: '/organisations/' + organisation.organisation
+    },
+    {
+      text: dataset.name
+    }
+  ]
+}) }}
+
+{% endblock %}
 
 {% block content %}
 
