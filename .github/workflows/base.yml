@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
         environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
-    if: ${{ github.ref_name == 'main' }}
+    if: ${{ github.ref_name == 'main' && matrix.environment != 'development' }}
     uses: ./.github/workflows/deploy.yml
     with:
       environment: '${{ matrix.environment }}'
