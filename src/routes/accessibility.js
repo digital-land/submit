@@ -1,11 +1,10 @@
 import express from 'express'
 import nunjucks from 'nunjucks'
-import { render, EmptyParams } from './schemas.js'
 
 const router = express.Router()
 
 router.get('/', (req, res) => {
-  const accessibilityPage = render(nunjucks, 'accessibility.html', EmptyParams, {})
+  const accessibilityPage = nunjucks.render('accessibility.html', {})
   res.send(accessibilityPage)
 })
 

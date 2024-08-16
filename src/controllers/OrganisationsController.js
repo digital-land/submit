@@ -4,7 +4,6 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { dataSubjects } from '../utils/utils.js'
 import { statusToTagClass } from '../filters/filters.js'
-import { render, OrgGetStarted, OrgOverviewPage, OrgFindPage, OrgDatasetTaskList, OrgEndpointError, OrgIssueDetails } from '../routes/schemas.js'
 
 // get a list of available datasets
 const availableDatasets = Object.values(dataSubjects)
@@ -95,7 +94,7 @@ const organisationsController = {
         datasetsWithErrors
       }
 
-      render(res, 'organisations/overview.html', OrgOverviewPage, params)
+      res.render('organisations/overview.html', params)
     } catch (error) {
       logger.warn('organisationsController.getOverview(): ' + error.message ?? error.errorMessage, { type: types.App })
       next(error)
@@ -125,7 +124,7 @@ const organisationsController = {
         return acc
       }, {})
 
-      render(res, 'organisations/find.html', OrgFindPage, { alphabetisedOrgs })
+      res.render('organisations/find.html', { alphabetisedOrgs })
     } catch (err) {
       logger.warn('organisationsController.getOrganisations(): ' + err.message ?? err.errorMessage, { type: types.App })
       next(err)
@@ -158,7 +157,7 @@ const organisationsController = {
         dataset
       }
 
-      render(res, 'organisations/get-started.html', OrgGetStarted, params)
+      res.render('organisations/get-started.html', params)
     } catch (err) {
       logger.warn({
         message: `OrganisationsController.getStarted(): ${err.message}`,
@@ -209,7 +208,8 @@ const organisationsController = {
         organisation,
         dataset
       }
-      render(res, 'organisations/datasetTaskList.html', OrgDatasetTaskList, params)
+
+      res.render('organisations/datasetTaskList.html', params)
     } catch (e) {
       logger.warn(`getDAtasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
       next(e)
@@ -241,7 +241,7 @@ const organisationsController = {
           latest_200_date: last200Datetime
         }
       }
-      render(res, 'organisations/http-error.html', OrgEndpointError, params)
+      res.render('organisations/http-error.html', params)
     } catch (e) {
       logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
       next(e)
@@ -379,7 +379,7 @@ const organisationsController = {
         issueType
       }
 
-      render(res, 'organisations/issueDetails.html', OrgIssueDetails, params)
+      res.render('organisations/issueDetails.html', params)
     } catch (e) {
       logger.warn(`getIssueDetails() failed for lpa='${lpa}', datasetId='${datasetId}', issue=${issueType}, entityNumber=${entityNumber}, resourceId=${resourceId}`, { type: types.App })
       next(e)
