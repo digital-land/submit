@@ -1,13 +1,9 @@
 /**
- * This module provides code a 'render()' method wrapper that enforces
- * a schema on the parameters passed to a template.
+ * This module provides code a set of schemas for params passed to
+ * the nunjuck templates in `./src/views`
  */
 
 import * as v from 'valibot'
-import config from '../../config/index.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
-import { ValiError } from 'valibot'
 
 export const EmptyParams = v.object({})
 export const UptimeParams = v.object({
@@ -21,9 +17,9 @@ export const ErrorParams = v.strictObject({
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
 
 export const Base = v.object({
+  // serviceName: NonEmptyString,
   // pageTitle: NonEmptyString,
   pageName: v.optional(NonEmptyString)
-  // serviceName: NonEmptyString,
 })
 
 export const StartPage = v.object({
@@ -51,9 +47,13 @@ export const OrgOverviewPage = v.strictObject({
     organisation: NonEmptyString
   }),
   datasets: v.array(v.strictObject({
-    endpoint: v.url(),
+    endpoint: v.optional(v.url()),
     status: v.enum(datasetStatusEnum),
-    slug: NonEmptyString
+    slug: NonEmptyString,
+    issue_count: v.optional(v.number()),
+    error: v.optional(v.nullable(NonEmptyString)),
+    http_error: v.optional(NonEmptyString),
+    issue: v.optional(NonEmptyString)
   })),
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),
@@ -76,9 +76,14 @@ export const OrgGetStarted = v.strictObject({
 
 export const OrgDatasetTaskList = v.strictObject({
   taskList: v.array(v.strictObject({
-    title: { text: NonEmptyString },
+    title: v.strictObject({ text: NonEmptyString }),
     href: v.url(),
-    status: NonEmptyString
+    status: v.strictObject({
+      tag: v.strictObject({
+        classes: NonEmptyString,
+        text: NonEmptyString
+      })
+    })
   })),
   organisation: OrgNameField,
   dataset: DatasetNameField
@@ -114,41 +119,68 @@ export const OrgIssueDetails = v.strictObject({
   })
 })
 
-/**
- * @param {ValiError} error
- * @returns {[]}
- */
-export const invalidSchemaPaths = (error) => {
-  if (error instanceof ValiError) {
-    return error.issues.map(issue => issue.path.flatMap(p => p.key))
-  }
-  throw new TypeError(`error is not a validation error: ${error.name}`)
-}
+export const CheckAnswers = v.strictObject({
+  values: v.strictObject({
+    lpa: NonEmptyString,
+    name: NonEmptyString,
+    email: v.pipe(v.string(), v.email()),
+    dataset: NonEmptyString,
+    'endpoint-url': v.url(),
+    'documentation-url': v.url(),
+    hasLicence: NonEmptyString
+  })
+})
+
+export const ChooseDataset = v.strictObject({
+  errors: v.strictObject({
+    dataset: v.optional(v.strictObject({
+      type: v.enum({
+        required: 'required'
+      })
+    }))
+  })
+})
+
+export const DatasetDetails = v.strictObject({
+  organisation: v.strictObject({
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  }),
+  dataset: v.strictObject({
+    name: NonEmptyString,
+    dataset: NonEmptyString
+  }),
+  values: v.strictObject({
+    dataset: NonEmptyString
+  }),
+  errors: v.record(NonEmptyString, v.strictObject({
+    type: NonEmptyString
+  }))
+})
 
 /**
- *
- * Note: Relies on {@link config.environment}
- *
- * @param {Response | { render: (template: string, params: object) => void} } renderer
- * @param {string} template path to template
- * @param {object} schema valibot schema
- * @param {object} params
+ * This acts as a registry of template -> schema for convenience.
  */
-export const render = (renderer, template, schema, params) => {
-  let parsed = params
-  try {
-    parsed = v.parse(schema, params)
-  } catch (error) {
-    if (error instanceof v.ValiError && config.environment !== 'production') {
-      // console.debug({ params, message: 'failed validation input' })
-      const numIssues = error.issues.length
-      logger.warn(`Found ${numIssues} validation issue${numIssues === 1 ? '' : 's'} in template params for '${template}'`, {
-        errorMessage: `${error.message}`,
-        pathsWithIssues: invalidSchemaPaths(error),
-        type: types.App
-      })
-      throw error
-    }
-  }
-  renderer.render(template, parsed)
-}
+export const templateSchema = new Map([
+  ['dataset-details.html', DatasetDetails],
+  ['check-answers.html', CheckAnswers],
+  ['choose-dataset.html', ChooseDataset],
+  ['lpa-details.html', v.any()],
+
+  ['submit/confirmation.html', v.any()],
+
+  ['organisations/overview.html', OrgOverviewPage],
+  ['organisations/find.html', OrgFindPage],
+  ['organisations/get-started.html', OrgGetStarted],
+  ['organisations/datasetTaskList.html', OrgDatasetTaskList],
+  ['organisations/http-error.html', OrgEndpointError],
+  ['organisations/issueDetails.html', OrgIssueDetails],
+
+  ['errorPages/503', UptimeParams],
+  ['errorPages/500', ErrorParams],
+  ['errorPages/404', EmptyParams],
+  ['privacy-notice.html', EmptyParams],
+  ['start.html', EmptyParams],
+  ['cookies.html', EmptyParams],
+  ['accessibility.html', EmptyParams]
+])

@@ -1,24 +1,49 @@
 import nunjucks from 'nunjucks'
 import config from '../../config/index.js'
 import addFilters from '../filters/filters.js'
+import logger from '../utils/logger.js'
+import * as customRenderer from '../utils/custom-renderer.js'
+import * as schemas from '../routes/schemas.js'
+import * as v from 'valibot'
 
+/**
+ * We wanto to override nunjucks.render() with a function that
+ * validates the params against a schema.
+ */
+const proto = {
+  render (name, context) {
+    const schema = schemas.templateSchema.get(name)
+    logger.info(`rendering: ${name} with schema=<${schema ? 'defined' : 'any'}>`)
+    return customRenderer.render(nunjucks, name, schema ?? v.any(), context)
+  },
+  configure (paths, options) {
+    return nunjucks.configure(paths, options)
+  }
+}
+
+/**
+ *
+ * @param {{datasetNameMapping, app: object?}} param0
+ * @returns
+ */
 export function setupNunjucks ({ app, datasetNameMapping }) {
+  const options = { dev: true, noCache: true, watch: true }
   if (app) {
-    app.set('view engine', 'html')
+    options.express = app
   }
 
-  const nunjucksEnv = nunjucks.configure([
+  const customNunjucks = Object.create(proto)
+  const nunjucksEnv = customNunjucks.configure([
     'src/views',
     'src/views/check',
     'src/views/submit',
     'node_modules/govuk-frontend/dist/',
     'node_modules/@x-govuk/govuk-prototype-components/'
-  ], {
-    express: app,
-    dev: true,
-    noCache: true,
-    watch: true
-  })
+  ], options)
+
+  if (app) {
+    app.set('view engine', 'html')
+  }
 
   const globalValues = {
     serviceName: config.serviceNames.submit,
@@ -35,5 +60,5 @@ export function setupNunjucks ({ app, datasetNameMapping }) {
   })
   addFilters(nunjucksEnv, { datasetNameMapping })
 
-  return nunjucks
+  return customNunjucks
 }

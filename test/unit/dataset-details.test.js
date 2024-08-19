@@ -6,6 +6,8 @@ import { runGenericPageTests } from './generic-page.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 import { mockDataSubjects } from './data.js'
+import { render } from '../../src/utils/custom-renderer.js'
+import * as v from 'valibot'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
@@ -18,6 +20,8 @@ function errorTestFn ({
 }) {
   return () => {
     const errorParams = {
+      dataset: params.dataset,
+      organisation: params.organisation,
       values: params.values,
       errors: {
         [fieldId]: {
@@ -26,7 +30,9 @@ function errorTestFn ({
       }
     }
 
-    const html = nunjucks.render(template, errorParams)
+    // NOTE(rosdo): we're using `any` schema here because we
+    // want to test output for incomplete data
+    const html = render(nunjucks, template, v.any(), errorParams)
 
     testValidationErrorMessage(html, fieldId, expectedMessage)
   }

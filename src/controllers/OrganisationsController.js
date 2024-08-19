@@ -4,6 +4,9 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { dataSubjects } from '../utils/utils.js'
 import { statusToTagClass } from '../filters/filters.js'
+import { render } from '../utils/custom-renderer.js'
+import { templateSchema } from '../routes/schemas.js'
+import * as v from 'valibot'
 
 // get a list of available datasets
 const availableDatasets = Object.values(dataSubjects)
@@ -12,6 +15,12 @@ const availableDatasets = Object.values(dataSubjects)
       .filter(dataset => dataset.available)
       .map(dataset => dataset.value)
   )
+
+function validateAndRender (res, name, params) {
+  const schema = templateSchema.get(name) ?? v.any()
+  logger.info(`rendering '${name}' with schema=<${schema ? 'defined' : 'any'}>`, { type: types.App })
+  return render(res, name, schema, params)
+}
 
 /**
  * Returns a status tag object with a text label and a CSS class based on the status.
@@ -94,7 +103,7 @@ const organisationsController = {
         datasetsWithErrors
       }
 
-      res.render('organisations/overview.html', params)
+      validateAndRender(res, 'organisations/overview.html', params)
     } catch (error) {
       logger.warn('organisationsController.getOverview(): ' + error.message ?? error.errorMessage, { type: types.App })
       next(error)
@@ -124,7 +133,7 @@ const organisationsController = {
         return acc
       }, {})
 
-      res.render('organisations/find.html', { alphabetisedOrgs })
+      validateAndRender(res, 'organisations/find.html', { alphabetisedOrgs })
     } catch (err) {
       logger.warn('organisationsController.getOrganisations(): ' + err.message ?? err.errorMessage, { type: types.App })
       next(err)
@@ -157,7 +166,7 @@ const organisationsController = {
         dataset
       }
 
-      res.render('organisations/get-started.html', params)
+      validateAndRender(res, 'organisations/get-started.html', params)
     } catch (err) {
       logger.warn({
         message: `OrganisationsController.getStarted(): ${err.message}`,
@@ -209,9 +218,14 @@ const organisationsController = {
         dataset
       }
 
-      res.render('organisations/datasetTaskList.html', params)
+      validateAndRender(res, 'organisations/datasetTaskList.html', params)
     } catch (e) {
-      logger.warn(`getDAtasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
+      logger.warn(`getDatasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`,
+        {
+          type: types.App,
+          errorMessage: e.message,
+          errorStack: e.stack
+        })
       next(e)
     }
   },
@@ -241,7 +255,7 @@ const organisationsController = {
           latest_200_date: last200Datetime
         }
       }
-      res.render('organisations/http-error.html', params)
+      validateAndRender(res, 'organisations/http-error.html', params)
     } catch (e) {
       logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
       next(e)
@@ -379,7 +393,7 @@ const organisationsController = {
         issueType
       }
 
-      res.render('organisations/issueDetails.html', params)
+      validateAndRender(res, 'organisations/issueDetails.html', params)
     } catch (e) {
       logger.warn(`getIssueDetails() failed for lpa='${lpa}', datasetId='${datasetId}', issue=${issueType}, entityNumber=${entityNumber}, resourceId=${resourceId}`, { type: types.App })
       next(e)
