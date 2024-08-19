@@ -124,7 +124,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
     await uploadMethodPage.clickContinue()
 
-    await checkRouteResponse(page, '/url', [200, 304])
+    await checkRouteResponse(page, '/check/url', [200, 304])
   })
 })
 
