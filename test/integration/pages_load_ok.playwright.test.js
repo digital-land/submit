@@ -24,23 +24,23 @@ const checkSessionExpired = async (page, route) => {
 }
 
 test.describe('without a valid session, the user can not access the later form pages', () => {
-  test('/dataset', async ({ page }) => {
+  test('/check/dataset', async ({ page }) => {
     await checkSessionExpired(page, '/dataset')
   })
 
-  test('/geometry-type', async ({ page }) => {
+  test('/check/geometry-type', async ({ page }) => {
     await checkSessionExpired(page, '/geometry-type')
   })
 
-  test('/upload-method', async ({ page }) => {
+  test('/check/upload-method', async ({ page }) => {
     await checkSessionExpired(page, '/upload-method')
   })
 
-  test('/upload', async ({ page }) => {
+  test('/check/upload', async ({ page }) => {
     await checkSessionExpired(page, '/upload')
   })
 
-  test('/url', async ({ page }) => {
+  test('/check/url', async ({ page }) => {
     await checkSessionExpired(page, '/url')
   })
 })
