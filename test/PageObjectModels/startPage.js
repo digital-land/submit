@@ -3,7 +3,7 @@ import DatasetPage from './datasetPage'
 
 export default class StartPage extends BasePage {
   constructor (page) {
-    super(page, '/')
+    super(page, '/check/')
   }
 
   async clickStartNow (skipVerification) {
