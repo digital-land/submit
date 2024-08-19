@@ -70,7 +70,7 @@ export default {
     controller: statusController,
     checkJourney: false,
     entryPoint: true,
-    next: (req, res) => `/results/${req.params.id}/0`
+    next: (req, res) => `results/${req.params.id}/0`
   },
   '/results/:id/:pageNumber': {
     ...baseSettings,
