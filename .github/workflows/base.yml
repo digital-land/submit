@@ -31,16 +31,18 @@ jobs:
             const {data: {environments}} = 
               await github.request(`GET /repos/${process.env.GITHUB_REPOSITORY}/environments`);
             return environments.map(e => e.name)
-  
+
   deploy-changes:
     needs: [run-tests, detect-environments]
     strategy:
       matrix:
-        environment: ['production', 'staging']
+        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     if: ${{ github.ref_name == 'main'}}
     uses: ./.github/workflows/deploy.yml
     with:
       environment: '${{ matrix.environment }}'
     secrets: inherit
+    exclude:
+      - environment: 'development' # hardcoded as we dont want to overwrite development so that anyone using dev for testing a feature branch have their changes reverted back to main branch
 
  
