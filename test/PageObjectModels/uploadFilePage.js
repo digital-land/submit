@@ -3,7 +3,7 @@ import StatusPage from './statusPage'
 
 export default class UploadFilePage extends BasePage {
   constructor (page) {
-    super(page, '/upload')
+    super(page, '/check/upload')
   }
 
   async uploadFile (filePath) {

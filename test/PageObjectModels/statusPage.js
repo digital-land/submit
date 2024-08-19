@@ -3,7 +3,7 @@ import ResultsPage from './resultsPage'
 
 export default class StatusPage extends BasePage {
   constructor (page) {
-    super(page, '/status')
+    super(page, '/check/status')
   }
 
   async waitForContinueButton () {
