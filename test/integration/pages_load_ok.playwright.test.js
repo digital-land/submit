@@ -25,23 +25,23 @@ const checkSessionExpired = async (page, route) => {
 
 test.describe('without a valid session, the user can not access the later form pages', () => {
   test('/check/dataset', async ({ page }) => {
-    await checkSessionExpired(page, '/dataset')
+    await checkSessionExpired(page, '/check/dataset')
   })
 
   test('/check/geometry-type', async ({ page }) => {
-    await checkSessionExpired(page, '/geometry-type')
+    await checkSessionExpired(page, '/check/geometry-type')
   })
 
   test('/check/upload-method', async ({ page }) => {
-    await checkSessionExpired(page, '/upload-method')
+    await checkSessionExpired(page, '/check/upload-method')
   })
 
   test('/check/upload', async ({ page }) => {
-    await checkSessionExpired(page, '/upload')
+    await checkSessionExpired(page, '/check/upload')
   })
 
   test('/check/url', async ({ page }) => {
-    await checkSessionExpired(page, '/url')
+    await checkSessionExpired(page, '/check/url')
   })
 })
 
@@ -52,7 +52,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await startPage.navigateHere()
     await startPage.clickStartNow()
 
-    await checkRouteResponse(page, '/dataset', [200, 304])
+    await checkRouteResponse(page, '/check/dataset', [200, 304])
   })
 
   test('/geometry-type', async ({ page }) => {
@@ -65,7 +65,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await datasetPage.selectDataset(datasets.Tree)
     await datasetPage.clickContinue()
 
-    await checkRouteResponse(page, '/geometry-type', [200, 304])
+    await checkRouteResponse(page, '/check/geometry-type', [200, 304])
   })
 
   test('/upload-method', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await geometryTypePage.selectGeometryType(geometryTypes.point)
     await geometryTypePage.clickContinue()
 
-    await checkRouteResponse(page, '/upload-method', [200, 304])
+    await checkRouteResponse(page, '/check/upload-method', [200, 304])
   })
 
   test('/upload', async ({ page }) => {
@@ -103,7 +103,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await uploadMethodPage.selectUploadMethod(uploadMethods.File)
     await uploadMethodPage.clickContinue()
 
-    await checkRouteResponse(page, '/upload', [200, 304])
+    await checkRouteResponse(page, '/check/upload', [200, 304])
   })
 
   test('/url', async ({ page }) => {
