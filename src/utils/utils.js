@@ -88,6 +88,7 @@ export const allowedFileTypes = {
   csv: ['text/csv', 'text/plain', 'application/octet-stream', 'binary/octet-stream'],
   xls: ['application/vnd.ms-excel', 'application/octet-stream', 'binary/octet-stream'],
   xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/octet-stream', 'binary/octet-stream'],
+  xml: ['application/xml', 'text/xml'],
   json: ['application/json', 'application/octet-stream', 'binary/octet-stream'],
   geojson: ['application/vnd.geo+json', 'application/octet-stream', 'binary/octet-stream', 'application/geo+json'],
   gml: ['application/gml+xml', 'application/octet-stream', 'binary/octet-stream'],
