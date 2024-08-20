@@ -85,13 +85,13 @@ export const OrgDatasetTaskList = v.strictObject({
       })
     })
   })),
-  organisation:  v.strictObject({
+  organisation: v.strictObject({
     name: NonEmptyString,
     organisation: NonEmptyString
   }),
-  dataset:  v.strictObject({
+  dataset: v.strictObject({
     name: NonEmptyString
-  }),
+  })
 })
 
 export const OrgEndpointError = v.strictObject({
@@ -109,11 +109,11 @@ export const OrgEndpointError = v.strictObject({
 })
 
 export const OrgIssueDetails = v.strictObject({
-  organisation:  v.strictObject({
+  organisation: v.strictObject({
     name: NonEmptyString,
     organisation: NonEmptyString
   }),
-  dataset:  v.object({
+  dataset: v.object({
     name: NonEmptyString,
     dataset: v.string()
   }),
