@@ -17,7 +17,7 @@ const validationMessages = {
   datafile: {
     required: 'Select a file',
     fileType: 'The selected file must be a CSV, GeoJSON, GML or GeoPackage file',
-    fileSize: 'The selected file must be smaller than 10MB',
+    fileSize: 'The selected file must be smaller than 100MB',
     fileNameTooLong: 'The selected file name must be less than 100 characters',
     fileNameInvalidCharacters: 'The selected file name must not contain any of the following characters: / \\ : * ? " < > |',
     fileNameDoubleExtension: 'The selected file name must not contain two file extensions',
@@ -30,7 +30,7 @@ const validationMessages = {
     length: 'The URL must be less than 2048 characters',
     exists: 'The URL does not exist',
     filetype: 'The file referenced by URL must be a CSV, GeoJSON, GML or GeoPackage file',
-    size: 'The file referenced by URL must be smaller than 10MB'
+    size: 'The file referenced by URL must be smaller than 100MB'
   },
   validationResult: {
     required: 'Unable to contact the API'

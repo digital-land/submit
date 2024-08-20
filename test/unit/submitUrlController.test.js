@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import SubmitUrlController from '../../src/controllers/submitUrlController.js'
+import config from '../../config/index.js'
 
 describe('SubmitUrlController', async () => {
   vi.mock('@/services/asyncRequestApi.js')
@@ -163,12 +164,12 @@ describe('SubmitUrlController', async () => {
     })
 
     describe('urlSize', () => {
-      it('should return true for URLs with a response smaller than 10MB', async () => {
+      it('should return true for URLs with a response smaller than max file size', async () => {
         expect(SubmitUrlController.urlResponseIsNotTooLarge({ headers: { 'content-length': '1' } })).toBe(true)
       })
 
-      it('should return false for URLs with a response larger than 10MB', async () => {
-        expect(SubmitUrlController.urlResponseIsNotTooLarge({ headers: { 'content-length': '11000000' } })).toBe(false)
+      it('should return false for URLs with a response larger than the max file size', async () => {
+        expect(SubmitUrlController.urlResponseIsNotTooLarge({ headers: { 'content-length': config.validations.maxFileSize + 21 } })).toBe(false)
       })
     })
 

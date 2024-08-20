@@ -32,4 +32,7 @@ email: {
     },
     dataManagementEmail: 'fakeemail@fakemail.com'
 }
+validations: {
+    maxFileSize: 100000000
+}
 

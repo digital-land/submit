@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import UploadFileController from '../../src/controllers/uploadFileController.js'
 
+import config from '../../config/index.js'
+
 describe('UploadFileController', () => {
   let uploadFileController
   let asyncRequestApi
@@ -195,11 +197,11 @@ describe('UploadFileController', () => {
 
     describe('file size', () => {
       it('should return true if the file size is less than the max file size', () => {
-        expect(UploadFileController.sizeIsValid({ size: 1000 })).toEqual(true)
+        expect(UploadFileController.sizeIsValid({ size: 1 })).toEqual(true)
       })
 
       it('should return false if the file size is greater than the max file size', () => {
-        expect(UploadFileController.sizeIsValid({ size: 100000000 })).toEqual(false)
+        expect(UploadFileController.sizeIsValid({ size: config.validations.maxFileSize + 10 })).toEqual(false)
       })
     })
 

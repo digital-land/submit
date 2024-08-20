@@ -4,6 +4,7 @@ import { URL } from 'url'
 import logger from '../utils/logger.js'
 import axios from 'axios'
 import { allowedFileTypes } from '../utils/utils.js'
+import config from '../../config/index.js'
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
@@ -91,10 +92,7 @@ class SubmitUrlController extends UploadController {
     try {
       const contentLength = response.headers['content-length']
 
-      // Convert content length to MB
-      const sizeInMB = contentLength / (1024 * 1024)
-
-      return sizeInMB <= 10
+      return contentLength <= config.validations.maxFileSize
     } catch (err) {
       console.warn(err)
       return true // for now we will allow this file as we can't be sure
