@@ -123,9 +123,7 @@ class UploadFileController extends UploadController {
   }
 
   static sizeIsValid (datafile) {
-    const maxSize = 10 * 1024 * 1024 // 10MB
-
-    if (datafile.size > maxSize) {
+    if (datafile.size > config.validations.maxFileSize) {
       return false
     }
 
