@@ -203,7 +203,7 @@ describe('OrganisationsController.js', () => {
       const next = vi.fn()
 
       vi.mocked(datasette.runQuery).mockResolvedValueOnce({
-        formattedData: [{ name: 'Example Organisation' }]
+        formattedData: [{ name: 'Example Organisation', organisation: 'ORG' }]
       }).mockResolvedValueOnce({
         formattedData: [{ name: 'Example Dataset' }]
       })
@@ -235,7 +235,7 @@ describe('OrganisationsController.js', () => {
             }
           }
         }],
-        organisation: { name: 'Example Organisation' },
+        organisation: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset' }
       })
     })
@@ -246,7 +246,7 @@ describe('OrganisationsController.js', () => {
       const next = vi.fn()
 
       vi.mocked(datasette.runQuery).mockResolvedValueOnce({
-        formattedData: [{ name: 'Example Organisation' }]
+        formattedData: [{ name: 'Example Organisation', organisation: 'ORG' }]
       }).mockResolvedValueOnce({
         formattedData: [{ name: 'Example Dataset' }]
       })
@@ -298,7 +298,7 @@ describe('OrganisationsController.js', () => {
             }
           }
         ],
-        organisation: { name: 'Example Organisation' },
+        organisation: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset' }
       })
     })
@@ -337,8 +337,8 @@ describe('OrganisationsController.js', () => {
       const next = vi.fn()
 
       vi.mocked(datasette.runQuery)
-        .mockReturnValueOnce({ formattedData: [{ name: 'mock lpa' }] })
-        .mockReturnValueOnce({ formattedData: [{ name: 'mock dataset' }] })
+        .mockReturnValueOnce({ formattedData: [{ name: 'mock lpa', organisation: 'ORG' }] })
+        .mockReturnValueOnce({ formattedData: [{ name: 'mock dataset', dataset: 'mock-dataset' }] })
 
       vi.mocked(performanceDbApi.getLatestResource).mockResolvedValueOnce({ resource: 'mockResourceId' })
 
@@ -370,10 +370,12 @@ describe('OrganisationsController.js', () => {
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', {
         organisation: {
-          name: 'mock lpa'
+          name: 'mock lpa',
+          organisation: 'ORG'
         },
         dataset: {
-          name: 'mock dataset'
+          name: 'mock dataset',
+          dataset: 'mock-dataset'
         },
         errorHeading: 'mock task message 1',
         issueItems: [
@@ -427,7 +429,7 @@ describe('OrganisationsController.js', () => {
       const next = vi.fn()
       const resourceStatus = { status: '404', days_since_200: 3, endpoint_url: 'https://example.com', latest_log_entry_date: '2022-01-01T12:00:00.000Z' }
 
-      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [{ name: 'Example Organisation' }] })
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [{ name: 'Example Organisation', organisation: 'ORG' }] })
       vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [{ name: 'Example Dataset' }] })
 
       await organisationsController.getEndpointError(req, res, next, { resourceStatus })
@@ -437,7 +439,7 @@ describe('OrganisationsController.js', () => {
       expect(res.render).toHaveBeenCalledTimes(1)
       const renderArgs = res.render.mock.calls[0]
       expect(renderArgs[0]).toEqual('organisations/http-error.html')
-      expect(renderArgs[1].organisation).toEqual({ name: 'Example Organisation' })
+      expect(renderArgs[1].organisation).toEqual({ name: 'Example Organisation', organisation: 'ORG' })
       expect(renderArgs[1].dataset).toEqual({ name: 'Example Dataset' })
       expect(renderArgs[1].errorData.endpoint_url).toEqual('https://example.com')
       expect(renderArgs[1].errorData.http_status).toEqual('404')
