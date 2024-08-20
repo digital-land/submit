@@ -85,12 +85,20 @@ export const OrgDatasetTaskList = v.strictObject({
       })
     })
   })),
-  organisation: OrgNameField,
-  dataset: DatasetNameField
+  organisation:  v.strictObject({
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  }),
+  dataset:  v.strictObject({
+    name: NonEmptyString
+  }),
 })
 
 export const OrgEndpointError = v.strictObject({
-  organisation: OrgNameField,
+  organisation: v.strictObject({
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  }),
   dataset: DatasetNameField,
   errorData: v.strictObject({
     endpoint_url: v.url(),
@@ -101,8 +109,14 @@ export const OrgEndpointError = v.strictObject({
 })
 
 export const OrgIssueDetails = v.strictObject({
-  organisation: OrgNameField,
-  dataset: DatasetNameField,
+  organisation:  v.strictObject({
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  }),
+  dataset:  v.object({
+    name: NonEmptyString,
+    dataset: v.string()
+  }),
   errorHeading: NonEmptyString,
   issueItems: v.array(v.strictObject({
     html: v.string(),
