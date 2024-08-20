@@ -26,7 +26,7 @@ addFilters(nunjucksEnv, { datasetNameMapping })
 let mockDom = new jsdom.JSDOM('')
 const baseResponseObject = {
   render: (template, params) => {
-    const html = nunjucks.render('organisations/overview.html', params)
+    const html = nunjucks.render(template, params)
     mockDom = new jsdom.JSDOM(html)
     delete mockDom.window.localStorage
     delete mockDom.window.sessionStorage
@@ -55,13 +55,22 @@ describe('Organisations', () => {
       }
     })
 
+    const req = {
+      ...baseRequestObject,
+      Organization: {
+        organisation: 'MOG',
+        name: 'MockOrg'
+      }
+    }
+
     // make the call
-    await organisationsController.getOrganisations({ ...baseRequestObject }, { ...baseResponseObject }, mockNextFn)
+    await organisationsController.getOrganisations(req, { ...baseResponseObject }, mockNextFn)
 
     // expect the database to be queried with the correct uri
+    expect(axios.get).toHaveBeenCalledOnce()
+    expect(axios.get).toHaveBeenLastCalledWith()
 
     // expect the
-
-    expect(mockDom.window.document).toEqual('')
+    expect(mockDom.window.document.getElementsByTagName('title')[0].textContent).toContain('Find your organisation - Submit and update your planning data')
   })
 })
