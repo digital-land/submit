@@ -40,7 +40,7 @@ describe('Organisations', () => {
     it('should render correctly when the api responds as expected', async () => {
       // object to mock
       // datasette.runQuery -> axios.get
-  
+
       const mockRows = [
         ['Camdon', 'cam'],
         ['Bristol', 'bristol'],
@@ -49,7 +49,7 @@ describe('Organisations', () => {
         ['Newcastle', 'new'],
         ['Liverpool', 'liv']
       ]
-  
+
       // need to mock the call that returns the list of orgs
       axios.get.mockResolvedValueOnce({
         data: {
@@ -57,7 +57,7 @@ describe('Organisations', () => {
           rows: mockRows
         }
       })
-  
+
       const req = {
         ...baseRequestObject,
         Organization: {
@@ -65,21 +65,21 @@ describe('Organisations', () => {
           name: 'MockOrg'
         }
       }
-  
+
       // make the call
       await organisationsController.getOrganisations(req, { ...baseResponseObject }, mockNextFn)
-  
+
       // expect the database to be queried with the correct uri
       expect(axios.get).toHaveBeenCalledOnce()
-  
+
       const document = mockDom.window.document
-  
+
       // expect the title to be correct
       expect(document.getElementsByTagName('title')[0].textContent).toContain('Find your organisation - Submit and update your planning data')
-  
+
       // expect the organisations list to be correct
       const filterItems = [...document.querySelectorAll('li.js-filter-item')]
-  
+
       mockRows.sort((a, b) => {
         return a[0].localeCompare(b[0])
       }).forEach((row, i) => {
