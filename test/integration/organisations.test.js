@@ -87,5 +87,49 @@ describe('Organisations', () => {
         expect(filterItems[i].getElementsByTagName('a')[0].href).toContain(`/organisations/${row[1]}`)
       })
     })
+
+    it.todo('should render the error page if the api responds with an error')
+
+    it.todo('should render the errors page if the api returns an empty response')
+  })
+
+  describe.todo('dashboard', () => {
+    it.todo('should render the dashboard correctly if the api returns as expected')
+
+    it.todo('should render the error page if the api throws an error')
+
+    it.todo('should render the 404 page if the api returns an empty response')
+  })
+
+  describe.todo('dataset tasklist', () => {
+    it.todo('should render the tasklist correctly if the api returns as expected')
+
+    it.todo('should render the 404 page if the organisation was not found')
+
+    it.todo('should render the 404 page if the dataset was not found')
+
+    it.todo('should render the error page if the api throws an error')
+  })
+
+  describe.todo('issue details', () => {
+    it.todo('should render the page correctly if the api returns as expected')
+
+    it.todo('should render the 404 page if the organisation was not found')
+
+    it.todo('should render the 404 page if the dataset was not found')
+
+    it.todo('should render the 404 page if the issue type was not found')
+
+    it.todo('should render the 500 page if an error occurs')
+  })
+
+  describe.todo('endpoint error', () => {
+    it.todo('should render the page correctly if the api returns as expected')
+
+    it.todo('should render the 404 page if the organisation was not found')
+
+    it.todo('should render the 404 page if the dataset was not found')
+
+    it.todo('should render the error page if an error occurs')
   })
 })
