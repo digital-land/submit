@@ -36,41 +36,56 @@ const baseRequestObject = {}
 const mockNextFn = vi.fn()
 
 describe('Organisations', () => {
-  it('should correctly obtain relevant data then render the find page', async () => {
-    // object to mock
-    // datasette.runQuery -> axios.get
-
-    // need to mock the call that returns the list of orgs
-    axios.get.mockResolvedValueOnce({
-      data: {
-        columns: ['name', 'organisation'],
-        rows: [
-          ['Camdon', 'cam'],
-          ['Bristol', 'bristol'],
-          ['Leeds', 'leeds'],
-          ['Manchester', 'man'],
-          ['Newcastle', 'new'],
-          ['Liverpool', 'liv']
-        ]
+  describe('find', () => {
+    it('should render correctly when the api responds as expected', async () => {
+      // object to mock
+      // datasette.runQuery -> axios.get
+  
+      const mockRows = [
+        ['Camdon', 'cam'],
+        ['Bristol', 'bristol'],
+        ['Leeds', 'leeds'],
+        ['Manchester', 'man'],
+        ['Newcastle', 'new'],
+        ['Liverpool', 'liv']
+      ]
+  
+      // need to mock the call that returns the list of orgs
+      axios.get.mockResolvedValueOnce({
+        data: {
+          columns: ['name', 'organisation'],
+          rows: mockRows
+        }
+      })
+  
+      const req = {
+        ...baseRequestObject,
+        Organization: {
+          organisation: 'MOG',
+          name: 'MockOrg'
+        }
       }
+  
+      // make the call
+      await organisationsController.getOrganisations(req, { ...baseResponseObject }, mockNextFn)
+  
+      // expect the database to be queried with the correct uri
+      expect(axios.get).toHaveBeenCalledOnce()
+  
+      const document = mockDom.window.document
+  
+      // expect the title to be correct
+      expect(document.getElementsByTagName('title')[0].textContent).toContain('Find your organisation - Submit and update your planning data')
+  
+      // expect the organisations list to be correct
+      const filterItems = [...document.querySelectorAll('li.js-filter-item')]
+  
+      mockRows.sort((a, b) => {
+        return a[0].localeCompare(b[0])
+      }).forEach((row, i) => {
+        expect(filterItems[i].textContent).toContain(row[0])
+        expect(filterItems[i].getElementsByTagName('a')[0].href).toContain(`/organisations/${row[1]}`)
+      })
     })
-
-    const req = {
-      ...baseRequestObject,
-      Organization: {
-        organisation: 'MOG',
-        name: 'MockOrg'
-      }
-    }
-
-    // make the call
-    await organisationsController.getOrganisations(req, { ...baseResponseObject }, mockNextFn)
-
-    // expect the database to be queried with the correct uri
-    expect(axios.get).toHaveBeenCalledOnce()
-    expect(axios.get).toHaveBeenLastCalledWith()
-
-    // expect the
-    expect(mockDom.window.document.getElementsByTagName('title')[0].textContent).toContain('Find your organisation - Submit and update your planning data')
   })
 })
