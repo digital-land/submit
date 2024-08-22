@@ -158,7 +158,7 @@ describe('OrganisationsController.js', () => {
         if (query.includes('example-lpa')) {
           return {
             formattedData: [
-              { name: 'Example LPA' }
+              { name: 'Example LPA', organisation: 'LPA' }
             ]
           }
         } else if (query.includes('example-dataset')) {
@@ -174,7 +174,7 @@ describe('OrganisationsController.js', () => {
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/get-started.html', {
-        organisation: { name: 'Example LPA' },
+        organisation: { name: 'Example LPA', organisation: 'LPA' },
         dataset: { name: 'Example Dataset' }
       })
     })
