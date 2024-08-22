@@ -59,7 +59,7 @@ export const OrgOverviewPage = v.strictObject({
 })
 
 export const OrgFindPage = v.strictObject({
-  alphabetisedOrgs: v.record(NonEmptyString,v.array(OrgField))
+  alphabetisedOrgs: v.record(NonEmptyString, v.array(OrgField))
 })
 
 export const OrgGetStarted = v.strictObject({
