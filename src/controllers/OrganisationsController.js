@@ -22,6 +22,56 @@ function validateAndRender (res, name, params) {
   return render(res, name, schema, params)
 }
 
+const fetchOne = async (req, res, next) => {
+  const query = this.query({ req, params: req.params })
+  const result = await datasette.runQuery(query)
+  if (result.formattedData.length === 0) {
+    // we can make the 404 more informative by informing the use what exactly was "not found"
+    res.status(404).render('errorPages/404', { })
+  } else {
+    req[this.result] = result.formattedData[0]
+    next()
+  }
+}
+
+const logPageError = (err, req, res, next) => {
+  logger.warn({
+    message: `OrganisationsController.getStarted(): ${err.message}`,
+    endpoint: req.originalUrl,
+    errorStack: err.stack,
+    errorMessage: err.message,
+    type: types.App
+  })
+  next(err)
+}
+
+const getGetStarted = async (req, res, next) => {
+  const { orgInfo: organisation, dataset } = req
+  const params = { organisation, dataset }
+  try {
+    validateAndRender(res, 'organisations/get-started.html', params)
+  } catch (err) {
+    next(err)
+  }
+  next()
+}
+
+const fetchOrgInfo = fetchOne.bind({
+  query: async ({ params }) => {
+    return `SELECT name, organisation FROM organisation WHERE organisation = '${params.lpa}'`
+  },
+  result: 'orgInfo'
+})
+
+const fetchDatasetName = fetchOne.bind({
+  query: async ({ params }) => {
+    return `SELECT name FROM dataset WHERE dataset = '${params.dataset}'`
+  },
+  result: 'dataset'
+})
+
+export const getGetStartedMiddleware = [fetchOrgInfo, fetchDatasetName, getGetStarted, logPageError]
+
 /**
  * Returns a status tag object with a text label and a CSS class based on the status.
  *
@@ -136,45 +186,6 @@ const organisationsController = {
       validateAndRender(res, 'organisations/find.html', { alphabetisedOrgs })
     } catch (err) {
       logger.warn('organisationsController.getOrganisations(): ' + err.message ?? err.errorMessage, { type: types.App })
-      next(err)
-    }
-  },
-
-  /**
- * Handles GET requests for the "Get Started" page.
- *
- * @param {Express.Request} req - The incoming request object.
- * @param {Express.Response} res - The response object to send back to the client.
- * @param {Express.NextFunction} next - The next function in the middleware chain.
- *
- * Retrieves the organisation and dataset names from the database and renders the "Get Started" page with the organisation and dataset details.
- */
-  async getGetStarted (req, res, next) {
-    try {
-    // get the organisation name
-      const lpa = req.params.lpa
-      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
-      const organisation = organisationResult.formattedData[0]
-
-      // get the dataset name
-      const datasetId = req.params.dataset
-      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-      const dataset = datasetResult.formattedData[0]
-
-      const params = {
-        organisation,
-        dataset
-      }
-
-      validateAndRender(res, 'organisations/get-started.html', params)
-    } catch (err) {
-      logger.warn({
-        message: `OrganisationsController.getStarted(): ${err.message}`,
-        endpoint: req.originalUrl,
-        errorStack: err.stack,
-        errorMessage: err.message,
-        type: types.App
-      })
       next(err)
     }
   },
@@ -398,7 +409,13 @@ const organisationsController = {
       logger.warn(`getIssueDetails() failed for lpa='${lpa}', datasetId='${datasetId}', issue=${issueType}, entityNumber=${entityNumber}, resourceId=${resourceId}`, { type: types.App })
       next(e)
     }
-  }
+  },
+
+  /**
+   * Middleware chain for GET requests for the "Get Started" page.
+   */
+  getGetStartedMiddleware,
+  getGetStarted
 }
 
 export default organisationsController

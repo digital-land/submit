@@ -3,7 +3,7 @@ import OrganisationsController from '../controllers/OrganisationsController.js'
 
 const router = express.Router()
 
-router.get('/:lpa/:dataset/get-started', OrganisationsController.getGetStarted)
+router.get('/:lpa/:dataset/get-started', OrganisationsController.getGetStartedMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:entityNumber', OrganisationsController.getIssueDetails)
 router.get('/:lpa/:dataset/:issue_type', OrganisationsController.getIssueDetails)
 router.get('/:lpa/:dataset', OrganisationsController.conditionalTaskListHandler)

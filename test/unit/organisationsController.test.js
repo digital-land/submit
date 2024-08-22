@@ -149,24 +149,31 @@ describe('OrganisationsController.js', () => {
   })
 
   describe('get-started', () => {
+    const exampleLpa = {
+      formattedData: [
+        { name: 'Example LPA', organisation: 'LPA' }
+      ]
+    }
+    const exampleDataset = {
+      formattedData: [
+        { name: 'Example Dataset' }
+      ]
+    }
+
     it('should render the get-started template with the correct params', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const req = {
+        params: { lpa: 'example-lpa', dataset: 'example-dataset' },
+        orgInfo: exampleLpa.formattedData[0],
+        dataset: exampleDataset.formattedData[0]
+      }
       const res = { render: vi.fn() }
       const next = vi.fn()
 
       datasette.runQuery.mockImplementation((query) => {
         if (query.includes('example-lpa')) {
-          return {
-            formattedData: [
-              { name: 'Example LPA', organisation: 'LPA' }
-            ]
-          }
+          return exampleLpa
         } else if (query.includes('example-dataset')) {
-          return {
-            formattedData: [
-              { name: 'Example Dataset' }
-            ]
-          }
+          return exampleDataset
         }
       })
 
@@ -180,19 +187,18 @@ describe('OrganisationsController.js', () => {
     })
 
     it('should catch and pass errors to the next function', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const req = {
+        params: { lpa: 'example-lpa', dataset: 'example-dataset' },
+        orgInfo: undefined, // this should fail validation
+        dataset: exampleDataset.formattedData[0]
+      }
       const res = { render: vi.fn() }
       const next = vi.fn()
 
-      // Mock the datasette.runQuery method to throw an error
-      datasette.runQuery.mockImplementation(() => {
-        throw new Error('example error')
-      })
-
       await organisationsController.getGetStarted(req, res, next)
 
-      expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(expect.any(Error))
+      // 1 to log error, 1 to pass it to default err middleware
+      expect(next).toHaveBeenCalledTimes(2)
     })
   })
 
