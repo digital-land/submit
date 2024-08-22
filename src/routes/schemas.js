@@ -38,14 +38,11 @@ const datasetStatusEnum = {
   'Not submitted': 'Not submitted'
 }
 
-const OrgNameField = v.strictObject({ name: NonEmptyString })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString })
 const DatasetNameField = v.strictObject({ name: NonEmptyString })
 
 export const OrgOverviewPage = v.strictObject({
-  organisation: v.strictObject({
-    name: NonEmptyString,
-    organisation: NonEmptyString
-  }),
+  organisation: OrgField,
   datasets: v.array(v.strictObject({
     endpoint: v.optional(v.url()),
     status: v.enum(datasetStatusEnum),
@@ -62,15 +59,11 @@ export const OrgOverviewPage = v.strictObject({
 })
 
 export const OrgFindPage = v.strictObject({
-  alphabetisedOrgs: v.record(NonEmptyString,
-    v.array(v.strictObject({
-      name: NonEmptyString,
-      organisation: NonEmptyString
-    })))
+  alphabetisedOrgs: v.record(NonEmptyString, v.array(OrgField))
 })
 
 export const OrgGetStarted = v.strictObject({
-  organisation: OrgNameField,
+  organisation: OrgField,
   dataset: DatasetNameField
 })
 
@@ -85,20 +78,14 @@ export const OrgDatasetTaskList = v.strictObject({
       })
     })
   })),
-  organisation: v.strictObject({
-    name: NonEmptyString,
-    organisation: NonEmptyString
-  }),
+  organisation: OrgField,
   dataset: v.strictObject({
     name: NonEmptyString
   })
 })
 
 export const OrgEndpointError = v.strictObject({
-  organisation: v.strictObject({
-    name: NonEmptyString,
-    organisation: NonEmptyString
-  }),
+  organisation: OrgField,
   dataset: DatasetNameField,
   errorData: v.strictObject({
     endpoint_url: v.url(),
@@ -109,10 +96,7 @@ export const OrgEndpointError = v.strictObject({
 })
 
 export const OrgIssueDetails = v.strictObject({
-  organisation: v.strictObject({
-    name: NonEmptyString,
-    organisation: NonEmptyString
-  }),
+  organisation: OrgField,
   dataset: v.object({
     name: NonEmptyString,
     dataset: v.string()
@@ -156,10 +140,7 @@ export const ChooseDataset = v.strictObject({
 })
 
 export const DatasetDetails = v.strictObject({
-  organisation: v.strictObject({
-    name: NonEmptyString,
-    organisation: NonEmptyString
-  }),
+  organisation: OrgField,
   dataset: v.strictObject({
     name: NonEmptyString,
     dataset: NonEmptyString

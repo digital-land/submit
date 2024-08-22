@@ -153,7 +153,7 @@ const organisationsController = {
     try {
     // get the organisation name
       const lpa = req.params.lpa
-      const organisationResult = await datasette.runQuery(`SELECT name FROM organisation WHERE organisation = '${lpa}'`)
+      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
 
       // get the dataset name
