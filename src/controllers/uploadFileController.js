@@ -47,7 +47,11 @@ class UploadFileController extends UploadController {
       const errors = {
         datafile: new UploadFileController.Error(error.key, error, req, res)
       }
-      logger.warn('UploadFileController: local validation failed during file upload', error)
+      logger.warn({
+        message: 'UploadFileController: local validation failed during file upload',
+        error,
+        type: types.DataValidation
+      })
       return next(errors)
     }
 
@@ -123,9 +127,7 @@ class UploadFileController extends UploadController {
   }
 
   static sizeIsValid (datafile) {
-    const maxSize = 10 * 1024 * 1024 // 10MB
-
-    if (datafile.size > maxSize) {
+    if (datafile.size > config.validations.maxFileSize) {
       return false
     }
 

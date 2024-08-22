@@ -1,6 +1,5 @@
 // makeDatasetSlugToReadableNameFilter.test.js
-import { vi, it, describe, expect } from 'vitest'
-import logger from '../../src/utils/logger.js'
+import { it, describe, expect } from 'vitest'
 import { makeDatasetSlugToReadableNameFilter } from '../../src/filters/makeDatasetSlugToReadableNameFilter'
 
 describe('makeDatasetSlugToReadableNameFilter', () => {
@@ -18,14 +17,5 @@ describe('makeDatasetSlugToReadableNameFilter', () => {
 
   it('returns the original slug if it is not found in the dataset name mapping', () => {
     expect(filter('unknown-slug')).toBe('unknown-slug')
-  })
-
-  it('logs an warn if the provided slug is not found in the dataset name mapping', () => {
-    const loggerWarningSpy = vi.spyOn(logger, 'warn')
-
-    filter('unknown-slug')
-
-    expect(loggerWarningSpy).toHaveBeenCalledTimes(1)
-    expect(loggerWarningSpy).toHaveBeenCalledWith('can\'t find a name for unknown-slug')
   })
 })

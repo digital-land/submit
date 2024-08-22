@@ -2,8 +2,10 @@ import UploadController from './uploadController.js'
 import { postUrlRequest } from '../services/asyncRequestApi.js'
 import { URL } from 'url'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import axios from 'axios'
 import { allowedFileTypes } from '../utils/utils.js'
+import config from '../../config/index.js'
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
@@ -17,7 +19,12 @@ class SubmitUrlController extends UploadController {
       const errors = {
         url: new SubmitUrlController.Error(error.key, error, req, res)
       }
-      logger.warn('SubmitUrlController: local validation failed during url submission', error)
+      logger.warn({
+        message: 'SubmitUrlController: local validation failed during url submission',
+        error: JSON.stringify(error),
+        submittedUrl: `${req.body.url ?? '<no url provided>'}`,
+        type: types.DataValidation
+      })
       return next(errors)
     }
 
@@ -91,10 +98,7 @@ class SubmitUrlController extends UploadController {
     try {
       const contentLength = response.headers['content-length']
 
-      // Convert content length to MB
-      const sizeInMB = contentLength / (1024 * 1024)
-
-      return sizeInMB <= 10
+      return contentLength <= config.validations.maxFileSize
     } catch (err) {
       console.warn(err)
       return true // for now we will allow this file as we can't be sure

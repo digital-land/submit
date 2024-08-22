@@ -1,27 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
+import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import jsdom from 'jsdom'
 import { makeDatasetSlugToReadableNameFilter } from '../../src/filters/makeDatasetSlugToReadableNameFilter.js'
 
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
-
-const datasetNameMapping = new Map([
-
-])
-
-addFilters(nunjucksEnv, { datasetNameMapping })
+const datasetNameMapping = new Map()
+const nunjucks = setupNunjucks({ datasetNameMapping })
 
 describe('LPA Overview Page', () => {
   const params = {
