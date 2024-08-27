@@ -25,17 +25,17 @@ fs.createReadStream('src/content/fieldIssueMessages.csv')
     getEntityMessages()
   })
 
-function getEntityMessages() {
+function getEntityMessages () {
   fs.createReadStream('src/content/entityIssueMessages.csv')
-  .pipe(csv())
-  .on('data', (row) => {
-    const messageInfo = messages.get(row.issue_type)
-    messageInfo.entities_singular = row.singular_message.replace('{num_entries}', '{}'),
-    messageInfo.entities_plural = row.plural_message.replace('{num_entries}', '{}')
-  })
-  .on('end', () => {
+    .pipe(csv())
+    .on('data', (row) => {
+      const messageInfo = messages.get(row.issue_type)
+      messageInfo.entities_singular = row.singular_message.replace('{num_entries}', '{}')
+      messageInfo.entities_plural = row.plural_message.replace('{num_entries}', '{}')
+    })
+    .on('end', () => {
     // Messages object is now populated
-  })
+    })
 }
 
 // ===========================================

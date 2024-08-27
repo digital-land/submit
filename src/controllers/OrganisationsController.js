@@ -23,7 +23,7 @@ function validateAndRender (res, name, params) {
   return render(res, name, schema, params)
 }
 
-async function fetchOne(req, res, next) {
+async function fetchOne (req, res, next) {
   const query = this.query({ req, params: req.params })
   const result = await datasette.runQuery(query)
   if (result.formattedData.length === 0) {
