@@ -11,32 +11,32 @@ import logger from '../utils/logger.js'
 import csv from 'csv-parser' // ToDo: remember to remove this from package.json when we move away from csv
 import fs from 'fs'
 
-const messages = {}
+const messages = new Map()
 
 fs.createReadStream('src/content/fieldIssueMessages.csv')
   .pipe(csv())
   .on('data', (row) => {
-    messages[row.issue_type] = {
+    messages.set(row.issue_type, {
       singular: row.singular_message,
       plural: row.plural_message.replace('{num_issues}', '{}')
-    }
+    })
   })
   .on('end', () => {
-    // Messages object is now populated
+    getEntityMessages()
   })
 
-fs.createReadStream('src/content/entityIssueMessages.csv')
+function getEntityMessages() {
+  fs.createReadStream('src/content/entityIssueMessages.csv')
   .pipe(csv())
   .on('data', (row) => {
-    messages[row.issue_type] = {
-      ...messages[row.issue_type],
-      entities_singular: row.singular_message.replace('{num_entries}', '{}'),
-      entities_plural: row.plural_message.replace('{num_entries}', '{}')
-    }
+    const messageInfo = messages.get(row.issue_type)
+    messageInfo.entities_singular = row.singular_message.replace('{num_entries}', '{}'),
+    messageInfo.entities_plural = row.plural_message.replace('{num_entries}', '{}')
   })
   .on('end', () => {
     // Messages object is now populated
   })
+}
 
 // ===========================================
 
@@ -208,15 +208,16 @@ ORDER BY
   },
 
   getTaskMessage (issueType, issueCount, entityLevel = false) {
-    if (!messages[issueType]) {
+    const messageInfo = messages.get(issueType)
+    if (!messageInfo) {
       throw new Error(`Unknown issue type: ${issueType}`)
     }
 
     let message
     if (entityLevel) {
-      message = issueCount === 1 ? messages[issueType].entities_singular : messages[issueType].entities_plural
+      message = issueCount === 1 ? messageInfo.entities_singular : messageInfo.entities_plural
     } else {
-      message = issueCount === 1 ? messages[issueType].singular : messages[issueType].plural
+      message = issueCount === 1 ? messageInfo.singular : messageInfo.plural
     }
     return message.replace('{}', issueCount)
   },
@@ -248,7 +249,15 @@ ORDER BY
     return result.formattedData
   },
 
+  /**
+   *
+   * @param {*} resourceId
+   * @param {*} entryNumber
+   * @param {*} dataset
+   * @returns {Promise<{field: string, value: string, entry_number: number}[]>}
+   */
   async getEntry (resourceId, entryNumber, dataset) {
+    // TODO: why do we order by rowid?
     const sql = `
       select
         fr.rowid,

@@ -1,4 +1,5 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
+import * as v from 'valibot'
 import organisationsController from '../../src/controllers/OrganisationsController.js'
 import performanceDbApi from '../../src/services/performanceDbApi.js'
 import datasette from '../../src/services/datasette.js'
@@ -23,29 +24,36 @@ describe('OrganisationsController.js', () => {
   })
 
   describe('overview', () => {
+    const exampleLpa = {
+      formattedData: [
+        { name: 'Example LPA', organisation: 'LPA' }
+      ]
+    }
+
+    const perfDbApiResponse = {
+      name: 'test LPA',
+      datasets: {
+        dataset1: { endpoint: 'https://example.com', status: 'Live' },
+        dataset2: { endpoint: null, status: 'Needs fixing' },
+        dataset3: { endpoint: 'https://example.com', status: 'Error' }
+      }
+    }
+
     it('should render the overview page', async () => {
-      const req = { params: { lpa: 'test-lpa' } }
+      const req = {
+        params: { lpa: 'LPA' },
+        orgInfo: exampleLpa.formattedData[0],
+        lpaOverview: perfDbApiResponse
+      }
       const res = { render: vi.fn() }
       const next = vi.fn()
 
-      const expectedResponse = {
-        name: 'test LPA',
-        datasets: {
-          dataset1: { endpoint: 'https://example.com', status: 'Live' },
-          dataset2: { endpoint: null, status: 'Needs fixing' },
-          dataset3: { endpoint: 'https://example.com', status: 'Error' }
-        }
-      }
-
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{ name: 'Test lpa', organisation: 'test-lpa' }] })
-
-      performanceDbApi.getLpaOverview = vi.fn().mockResolvedValue(expectedResponse)
-
+      organisationsController.prepareOverviewTemplateParams(req, res, () => {})
       await organisationsController.getOverview(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/overview.html', expect.objectContaining({
-        organisation: { name: 'Test lpa', organisation: 'test-lpa' },
+        organisation: { name: 'Example LPA', organisation: 'LPA' },
         datasets: expect.arrayContaining([
           { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
           { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
@@ -56,22 +64,6 @@ describe('OrganisationsController.js', () => {
         datasetsWithIssues: 1,
         datasetsWithErrors: 1
       }))
-    })
-
-    it('should catch and pass errors to the next function', async () => {
-      const req = { params: { lpa: 'test-lpa' } }
-      const res = { }
-      const next = vi.fn()
-
-      const error = new Error('Test error')
-
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [{ name: 'Test lpa', organisation: 'test-lpa' }] })
-      vi.mocked(performanceDbApi.getLpaOverview).mockRejectedValue(error)
-
-      await organisationsController.getOverview(req, res, next)
-
-      expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(error)
     })
   })
 
@@ -197,8 +189,7 @@ describe('OrganisationsController.js', () => {
 
       await organisationsController.getGetStarted(req, res, next)
 
-      // 1 to log error, 1 to pass it to default err middleware
-      expect(next).toHaveBeenCalledTimes(2)
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -327,49 +318,54 @@ describe('OrganisationsController.js', () => {
   })
 
   describe('issue details', () => {
-    it('should call render with the issue details page and the correct params', async () => {
-      const req = {
-        params: {
-          lpa: 'test-lpa',
-          dataset: 'test-dataset',
-          issue_type: 'test-issue-type',
-          resourceId: 'test-resource-id',
-          entityNumber: '1'
-        }
+    const orgInfo = { name: 'mock lpa', organisation: 'ORG' }
+    const dataset = { name: 'mock dataset', dataset: 'mock-dataset' }
+    const entryData = [
+      {
+        field: 'start-date',
+        value: '02-02-2022',
+        entry_number: 1
       }
+    ]
+    const issues = [
+      {
+        entry_number: 0,
+        field: 'start-date',
+        value: '02-02-2022'
+      }
+    ]
+
+    it('should call render with the issue details page and the correct params', async () => {
+      const requestParams = {
+        lpa: 'test-lpa',
+        dataset: 'test-dataset',
+        issue_type: 'test-issue-type',
+        resourceId: 'test-resource-id',
+        entityNumber: '1'
+      }
+      const req = {
+        params: requestParams,
+        // middleware supplies the below
+        entityNumber: '1',
+        orgInfo,
+        dataset,
+        entryData,
+        issues,
+        resourceId: requestParams.resourceId
+        // errorHeading -- set  in prepare* fn
+      }
+      v.parse(organisationsController.IssueDetailsQueryParams, req.params)
+
       const res = {
         render: vi.fn()
       }
       const next = vi.fn()
 
-      vi.mocked(datasette.runQuery)
-        .mockReturnValueOnce({ formattedData: [{ name: 'mock lpa', organisation: 'ORG' }] })
-        .mockReturnValueOnce({ formattedData: [{ name: 'mock dataset', dataset: 'mock-dataset' }] })
-
-      vi.mocked(performanceDbApi.getLatestResource).mockResolvedValueOnce({ resource: 'mockResourceId' })
-
-      const issues = [
-        {
-          entry_number: 0,
-          field: 'start-date',
-          value: '02-02-2022'
-        }
-      ]
-
-      vi.mocked(performanceDbApi.getIssues).mockResolvedValueOnce(issues)
-
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
-
       issues.forEach(issue => {
         vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
       })
-
-      vi.mocked(performanceDbApi.getEntry).mockResolvedValueOnce([
-        {
-          field: 'start-date',
-          value: '02-02-2022'
-        }
-      ])
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
+      organisationsController.prepareIssueDetailsTemplateParams(req, {}, () => {})
 
       await organisationsController.getIssueDetails(req, res, next)
 
