@@ -47,10 +47,9 @@ class UploadFileController extends UploadController {
       const errors = {
         datafile: new UploadFileController.Error(error.key, error, req, res)
       }
-      logger.warn({
-        message: 'UploadFileController: local validation failed during file upload',
-        error,
-        type: types.DataValidation
+      logger.info('UploadFileController: local validation failed during file upload', {
+        type: types.App,
+        fileValidationError: error
       })
       return next(errors)
     }
