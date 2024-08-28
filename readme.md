@@ -19,6 +19,16 @@ This is the frontend for the LPA Data Validator application. It is a nodeJS expr
     ```
 
 ## Running the application
+
+**Prerequisite**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+```sh
+docker-compose -f docker-compose-real-backend-minus-frontend.yml up -d;
+
+npm run start:local;
+```
+
+### Alternative methods of starting application
 - Run the application
     ```
     npm run start
@@ -27,13 +37,21 @@ This is the frontend for the LPA Data Validator application. It is a nodeJS expr
     ```
     npm run start
     ```
-- run the application, using a local api
+- Run the application, using a local api
     ```
     npm run start:local
     ```
-- run the application, using a local api in watch mode
+- Run the application, using a local api in watch mode
     ```
     npm run start:local:watch
+    ```
+- Run the application using docker
+    ```
+    docker-compose -f docker-compose-real-backend.yml up
+    ```
+- Run the application (without the frontend) using docker
+    ```
+    docker-compose -f docker-compose-real-backend-minus-frontend.yml up
     ```
 
 ## Mac users only
