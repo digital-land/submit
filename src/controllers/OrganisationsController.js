@@ -23,7 +23,20 @@ function validateAndRender (res, name, params) {
   return render(res, name, schema, params)
 }
 
+/**
+ * Middleware. Attempts to fetch data and short-circuits with 404 when
+ * data for given query does not exist. Meant to be used to fetch singular records.
+ *
+ * `this` needs `{ query({ req, params }) => any, result: string }`
+ *
+ * where the `result` is the key under which result of the query will be stored in `req`
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 async function fetchOne (req, res, next) {
+  logger.debug({ type: types.App, message: 'fetchOne', resultKey: this.result })
   const query = this.query({ req, params: req.params })
   const result = await datasette.runQuery(query)
   if (result.formattedData.length === 0) {
@@ -36,7 +49,8 @@ async function fetchOne (req, res, next) {
 }
 
 /**
- * Set `req.handlerName` to a string that will identify the function that threw the error.
+ * Middleware. Set `req.handlerName` to a string that will identify
+ * the function that threw the error.
  *
  * @param {Error} err
  * @param {{handlerName: string}} req
@@ -56,7 +70,7 @@ const logPageError = (err, req, res, next) => {
 }
 
 /**
- * Validates and renders the template.
+ * Middleware. Validates and renders the template.
  *
  * `this` needs: `{ templateParams(req), template,  handlerName }`
  *
@@ -108,6 +122,7 @@ const fetchDatasetInfo = fetchOne.bind({
 })
 
 /**
+ * Middleware.
  *
  * @param {*} req
  * @param {*} res
@@ -121,6 +136,13 @@ async function fetchLpaOverview (req, res, next) {
   next()
 }
 
+/**
+ * Middleware.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 async function fetchLatestResource (req, res, next) {
   const { lpa, dataset } = req.params
   const resource = await performanceDbApi.getLatestResource(lpa, dataset)
@@ -130,7 +152,7 @@ async function fetchLatestResource (req, res, next) {
 
 /**
  *
- * Updates `req` with `issues`.
+ * Middleware. Updates `req` with `issues`.
  *
  * Requires `resourceId` in request params or request (in that order).
  *
@@ -149,7 +171,7 @@ async function fetchIssues (req, res, next) {
 
 /**
  *
- * Updates `req` with `entryData`
+ * Middleware. Updates `req` with `entryData`
  *
  * @param {*} req
  * @param {*} res
@@ -164,13 +186,8 @@ async function fetchEntry (req, res, next) {
   next()
 }
 
-// async function fetchTaskMessage(req, res, next) {
-//   const { } = req.params
-//   req.taskMessage = a
-//   next()
-// }
-
 /**
+ * Middleware. Does a conditional fetch. Optionally invokes `else` if condition is false.
  *
  * `this` needs: `{ fetchFn, condition: (req) => boolean, else?: (req) => void }`
  *
@@ -252,7 +269,8 @@ const getOverview = renderTemplate.bind({
 })
 
 /**
- * Validates query params according to
+ * Middleware. Validates query params according to schema.
+ * Short circuits with 400 error if validation fails
  *
  * `this` needs: `{ schema }`
  *
@@ -279,6 +297,13 @@ export const IssueDetailsQueryParams = v.object({
 
 const validateIssueDetailsQueryParams = validateQueryParams.bind({ schema: IssueDetailsQueryParams })
 
+/**
+ *
+ * @param {*} text
+ * @param {*} html
+ * @param {*} classes
+ * @returns {{key: {text: string}, value: { html: string}, classes: string}}
+ */
 const issueField = (text, html, classes) => {
   return {
     key: {
@@ -295,10 +320,17 @@ const issueField = (text, html, classes) => {
  *
  * @param {string} errorMessage
  * @param {{value: string}?} issue
- * @returns
+ * @returns {string}
  */
 const issueErrorMessageHtml = (errorMessage, issue) => `<p class="govuk-error-message">${errorMessage}</p>${issue.value ?? ''}`
 
+/**
+ *
+ * @param {*} issueType
+ * @param {*} issuesByEntryNumber
+ * @param {*} row
+ * @returns {{key: {text: string}, value: { html: string}, classes: string}}
+ */
 const processEntryRow = (issueType, issuesByEntryNumber, row) => {
   const { entry_number: entryNumber } = row
   console.assert(entryNumber, 'precessEntryRow(): entry_number not in row')
@@ -321,6 +353,9 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
   return issueField(row.field, valueHtml, classes)
 }
 
+/***
+ * Middleware. Updates req with `templateParams`
+ */
 function prepareIssueDetailsTemplateParams (req, res, next) {
   const { issues, entryData, entityNumber } = req
   const { lpa, dataset: datasetId, issue_type: issueType } = req.params
