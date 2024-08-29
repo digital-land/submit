@@ -12,7 +12,7 @@ export const datasets = {
 
 export default class DatasetPage extends BasePage {
   constructor (page) {
-    super(page, '/dataset')
+    super(page, '/check/dataset')
   }
 
   async selectDataset (dataset) {

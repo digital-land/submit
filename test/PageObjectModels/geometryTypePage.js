@@ -8,7 +8,7 @@ export const geometryTypes = {
 
 export default class GeometryTypePage extends BasePage {
   constructor (page) {
-    super(page, '/geometry-type')
+    super(page, '/check/geometry-type')
   }
 
   async selectGeometryType (type) {

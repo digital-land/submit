@@ -9,7 +9,7 @@ export const uploadMethods = {
 
 export default class UploadMethodPage extends BasePage {
   constructor (page) {
-    super(page, '/upload-method')
+    super(page, '/check/upload-method')
   }
 
   async selectUploadMethod (method) {
