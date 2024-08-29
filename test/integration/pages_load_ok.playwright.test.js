@@ -46,7 +46,7 @@ test.describe('without a valid session, the user can not access the later form p
 })
 
 test.describe('with a valid session, the user can access the later form pages', () => {
-  test('/dataset', async ({ page }) => {
+  test('/check/dataset', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -55,7 +55,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await checkRouteResponse(page, '/check/dataset', [200, 304])
   })
 
-  test('/geometry-type', async ({ page }) => {
+  test('/check/geometry-type', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -68,7 +68,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await checkRouteResponse(page, '/check/geometry-type', [200, 304])
   })
 
-  test('/upload-method', async ({ page }) => {
+  test('/check/upload-method', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -85,7 +85,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await checkRouteResponse(page, '/check/upload-method', [200, 304])
   })
 
-  test('/upload', async ({ page }) => {
+  test('/check/upload', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -106,7 +106,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await checkRouteResponse(page, '/check/upload', [200, 304])
   })
 
-  test('/url', async ({ page }) => {
+  test('/check/url', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
