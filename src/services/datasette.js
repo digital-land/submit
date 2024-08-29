@@ -1,5 +1,6 @@
 import axios from 'axios'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 const datasetteUrl = 'https://datasette.planning.data.gov.uk'
 
@@ -23,7 +24,7 @@ export default {
         formattedData: formatData(response.data.columns, response.data.rows)
       }
     } catch (error) {
-      logger.warn(error)
+      logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl })
       throw error
     }
   }
