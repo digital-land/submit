@@ -492,10 +492,10 @@ const organisationsController = {
     const datasetId = req.params.dataset
 
     try {
-      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
+      const organisationResult = await datasette.runQuery(`SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
 
-      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
+      const datasetResult = await datasette.runQuery(`SELECT dataset, name FROM dataset WHERE dataset = '${datasetId}'`)
       const dataset = datasetResult.formattedData[0]
 
       const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)

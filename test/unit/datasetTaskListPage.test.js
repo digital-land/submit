@@ -102,8 +102,8 @@ describe('Dataset Task List Page', () => {
   })
 
   it('renders correctly when no taskList items are passed in', () => {
-    const organisation = { name: 'Test Organisation' }
-    const dataset = { name: 'Test Dataset' }
+    const organisation = { name: 'Test Organisation', statistical_geography: '12345678' }
+    const dataset = { name: 'Test Dataset', dataset: 'test-dataset' }
     const taskList = []
 
     const html = nunjucks.render('organisations/datasetTaskList.html', {
@@ -113,7 +113,9 @@ describe('Dataset Task List Page', () => {
     })
 
     const paragraphText = `There are no issues with ${organisation.name}'s ${dataset.name} dataset.`
+    const linkHref = `https://www.planning.data.gov.uk/entity/?dataset=${dataset.dataset}&geometry_curie=statistical-geography:${organisation.statistical_geography}`
 
     expect(html).toContain(paragraphText)
+    expect(html).toContain(linkHref)
   })
 })
