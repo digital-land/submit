@@ -66,12 +66,8 @@
       rows: entry.fields
     }) }}
 
-    {% if num_entries > 1 %}
-      {{ govukPagination({
-        previous: pagination_obj.prevObj,
-        next: pagination_obj.nextObj,
-        items: pagination_obj.items
-      }) }}
+    {% if issueItems | length > 1 %}
+      {{ govukPagination(pagination) }}
     {% endif %}
   </div>
 </div>

@@ -7,6 +7,7 @@ import { statusToTagClass } from '../filters/filters.js'
 import { render } from '../utils/custom-renderer.js'
 import { templateSchema } from '../routes/schemas.js'
 import * as v from 'valibot'
+import { pagination } from '../utils/pagination.js'
 
 // get a list of available datasets
 const availableDatasets = Object.values(dataSubjects)
@@ -309,6 +310,8 @@ const organisationsController = {
         resourceId = resource.resource
       }
 
+      const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount(resourceId, issueType, datasetId)
+
       const issues = await performanceDbApi.getIssues(resourceId, issueType, datasetId)
 
       const issuesByEntryNumber = issues.reduce((acc, current) => {
@@ -317,7 +320,7 @@ const organisationsController = {
         return acc
       }, {})
 
-      const errorHeading = performanceDbApi.getTaskMessage(issueType, Object.keys(issuesByEntryNumber).length, true)
+      const errorHeading = performanceDbApi.getTaskMessage(issueType, issueEntitiesCount, true)
 
       const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues]) => {
         return {
@@ -384,13 +387,42 @@ const organisationsController = {
         fields
       }
 
+      const paginationObj = {}
+      if (entityNumber > 1) {
+        paginationObj.previous = {
+          href: `/organisations/${lpa}/${datasetId}/${issueType}/${entityNumber - 1}`
+        }
+      }
+
+      if (entityNumber < issueEntitiesCount) {
+        paginationObj.next = {
+          href: `/organisations/${lpa}/${datasetId}/${issueType}/${entityNumber + 1}`
+        }
+      }
+
+      paginationObj.items = pagination(issueEntitiesCount, entityNumber).map(item => {
+        if (item === '...') {
+          return {
+            ellipsis: true,
+            href: '#'
+          }
+        } else {
+          return {
+            number: item,
+            href: `/organisations/${lpa}/${datasetId}/${issueType}/${item}`,
+            current: entityNumber === parseInt(item)
+          }
+        }
+      })
+
       const params = {
         organisation,
         dataset,
         errorHeading,
         issueItems,
         entry,
-        issueType
+        issueType,
+        pagination: paginationObj
       }
 
       validateAndRender(res, 'organisations/issueDetails.html', params)

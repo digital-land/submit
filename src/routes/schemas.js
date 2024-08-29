@@ -114,6 +114,9 @@ export const OrgIssueDetails = v.strictObject({
       value: v.strictObject({ html: v.string() }),
       classes: v.string()
     }))
+  }),
+  pagination: v.object({
+
   })
 })
 
