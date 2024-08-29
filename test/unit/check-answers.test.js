@@ -10,7 +10,7 @@ describe('check-answers View', async () => {
     values: {
       lpa: 'mockLpa',
       name: 'mockName',
-      email: 'mockEmail',
+      email: 'mockEmail@example.com',
       dataset: 'mockDataset',
       'endpoint-url': 'mockEndpointUrl',
       'documentation-url': 'mockDocumentationUrl',
@@ -67,6 +67,7 @@ describe('check-answers View', async () => {
       }
     }
     const html = stripWhitespace(nunjucks.render('check-answers.html', noLicenseParams))
+
     const hasLicenceRegex = new RegExp('<div class="govuk-summary-list__row">.*Licence.*False.*Change.*</div>', 'g')
     expect(html).toMatch(hasLicenceRegex)
   })
