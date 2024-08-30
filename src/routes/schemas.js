@@ -38,7 +38,7 @@ const datasetStatusEnum = {
   'Not submitted': 'Not submitted'
 }
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(NonEmptyString) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString })
 
 export const OrgOverviewPage = v.strictObject({
@@ -80,6 +80,7 @@ export const OrgDatasetTaskList = v.strictObject({
   })),
   organisation: OrgField,
   dataset: v.strictObject({
+    dataset: v.optional(NonEmptyString),
     name: NonEmptyString
   })
 })
