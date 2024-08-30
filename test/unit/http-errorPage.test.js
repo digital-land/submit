@@ -1,31 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
+import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
 
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
-
-const datasetNameMapping = new Map()
-addFilters(nunjucksEnv, { datasetNameMapping })
+const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 describe('http-error.html', () => {
   const params = {
     organisation: {
-      name: 'mock org'
+      name: 'mock org',
+      organisation: 'mock-org'
     },
     dataset: {
-      name: 'mock dataset'
+      name: 'mock-dataset'
     },
     errorData: {
       endpoint_url: 'https://example.com/data-url',
@@ -40,7 +27,7 @@ describe('http-error.html', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org - mock dataset - Task list - Submit and update your planning data'
+    pageTitle: 'mock org - mock-dataset - Task list - Submit and update your planning data'
   })
 
   it('Renders the correct heading', () => {
@@ -64,5 +51,10 @@ describe('http-error.html', () => {
 
     expect(rows[3].querySelector('.govuk-summary-list__key').textContent).toContain('Last successful access')
     expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(/\d{1,2} [A-Za-z]{3,9} \d{4} at \d{1,2}(am|pm)/)
+  })
+
+  it('re-submit link points to get-started page', () => {
+    const resubmitLink = document.querySelector('a.resubmit-link')
+    expect(resubmitLink.getAttribute('href')).toBe(`/organisations/${params.organisation.organisation}/${params.dataset.name}/get-started`)
   })
 })
