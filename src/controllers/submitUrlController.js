@@ -3,8 +3,7 @@ import { postUrlRequest } from '../services/asyncRequestApi.js'
 import { URL } from 'url'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-// eslint-disable-next-line no-unused-vars
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import { allowedFileTypes } from '../utils/utils.js'
 import config from '../../config/index.js'
 
