@@ -103,16 +103,10 @@ describe('SubmitUrlController', async () => {
   })
 
   describe('getHeadRequest', () => {
-    it('should call axios.head with the correct URL', async () => {
-      mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1' } }))
-      await SubmitUrlController.getHeadRequest('http://example.com')
-      expect(mocks.headMock).toHaveBeenCalledWith('http://example.com')
-    })
-
     it('should return the response from axios.head', async () => {
       const response = { headers: { 'content-length': '1' } }
       mocks.headMock.mockImplementation(() => response)
-      expect(await SubmitUrlController.getHeadRequest('http://example.com')).toBe(response)
+      expect(await SubmitUrlController.headRequest('http://example.com')).toBe(response)
     })
   })
 

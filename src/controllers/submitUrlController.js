@@ -44,18 +44,19 @@ class SubmitUrlController extends UploadController {
       { type: 'format', fn: () => SubmitUrlController.urlIsValid(url) },
       { type: 'length', fn: () => SubmitUrlController.urlIsNotTooLong(url) }
     ]
-
-    const headRequest = await SubmitUrlController.getHeadRequest(url)
-
-    if (headRequest) {
-      validators.push(
-        { type: 'exists', fn: () => SubmitUrlController.urlExists(headRequest) },
-        { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(headRequest) },
-        { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(headRequest) }
-      )
+    const preCheckFailure = validators.find(validator => !validator.fn())
+    if (preCheckFailure) {
+      return preCheckFailure.type
     }
 
-    return validators.find(validator => !validator.fn())?.type
+    const postValidators = (resp) => ([
+      { type: 'exists', fn: () => SubmitUrlController.urlExists(resp) },
+      { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
+      { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
+    ])
+    const headResponse = await SubmitUrlController.headRequest(url)
+
+    return postValidators(headResponse).find(validator => !validator.fn())?.type
   }
 
   static urlIsDefined (url) {
@@ -76,10 +77,11 @@ class SubmitUrlController extends UploadController {
     return url.length <= 2048
   }
 
-  static async getHeadRequest (url) {
+  static async headRequest (url) {
     try {
-      return await axios.head(url)
+      return await axios.head(url, { headers: { 'User-Agent': 'check service' } })
     } catch (err) {
+      logger.info({ message: `SubmitUrlController.headRequest(): err.code=${err.code}`, type: types.External, responseStatus: err?.response?.status, url })
       if (err.code && ['ENOTFOUND', 'ECONNREFUSED'].includes(err.code)) {
         return null
       }
