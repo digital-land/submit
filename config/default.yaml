@@ -26,7 +26,7 @@ serviceNames: {
 }
 templateContent:
     feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
-    homeLink: '/'
+    homepageUrl: '/'
 email: {
     templates: {
         RequestTemplateId: 'fa1c2b51-3c91-4f9d-9a18-83639164d552',
