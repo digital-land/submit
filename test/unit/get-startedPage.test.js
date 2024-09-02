@@ -49,4 +49,13 @@ describe('Get Started Page', () => {
     expect(document.querySelector('h1').textContent).toContain('World heritage site buffer zone')
     expect(document.querySelector('h2').textContent).toContain('How to prepare and submit your World heritage site buffer zone data')
   })
+
+  it('Renders breadcrumbs correctly', () => {
+    const breadcrumbs = document.querySelectorAll('.govuk-breadcrumbs__list-item')
+    expect(breadcrumbs.length).toEqual(4)
+    expect(breadcrumbs[0].textContent).toContain('Home')
+    expect(breadcrumbs[1].textContent).toContain('Organisations')
+    expect(breadcrumbs[2].textContent).toContain('Mock org')
+    expect(breadcrumbs[3].textContent).toContain('Get started')
+  })
 })
