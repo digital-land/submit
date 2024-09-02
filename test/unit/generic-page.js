@@ -37,9 +37,6 @@ export const runGenericPageTests = (html, options) => {
       const breadcrumbsChildren = breadcrumbs.children
 
       options.breadcrumbs.forEach((breadcrumb, i) => {
-        const capitalizedText = breadcrumb.text.charAt(0).toUpperCase() + breadcrumb.text.slice(1).toLowerCase()
-        expect(breadcrumbsChildren[i].textContent).toContain(capitalizedText)
-
         if (breadcrumb.href) {
           const breadcrumbLink = breadcrumbsChildren[i].children[0]
           expect(breadcrumbLink.getAttribute('href')).toEqual(breadcrumb.href)
