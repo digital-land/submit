@@ -50,7 +50,7 @@
     <p>There are no issues with {{ organisation.name }}'s {{ dataset.name }} dataset.</p>
 
     <p><a
-        href="https://www.planning.data.gov.uk/entity/?dataset=brownfield-land&geometry_curie=statistical-geography:E07000091">View
+        href="https://www.planning.data.gov.uk/entity/?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}">View
         the dataset on the Planning Data platform</a></p>
 
     {% else %}
@@ -67,7 +67,7 @@
 
     <ol class="govuk-list govuk-list--number">
       <li>Fix the errors indicated</li>
-      <li>Use the <a href="/">check service</a> to make sure the data meets
+      <li>Use the <a href="/check">check service</a> to make sure the data meets
         the standard</li>
       <li>Publish the updated data on the data URL</li>
     </ol>

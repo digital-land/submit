@@ -24,38 +24,38 @@ const checkSessionExpired = async (page, route) => {
 }
 
 test.describe('without a valid session, the user can not access the later form pages', () => {
-  test('/dataset', async ({ page }) => {
-    await checkSessionExpired(page, '/dataset')
+  test('/check/dataset', async ({ page }) => {
+    await checkSessionExpired(page, '/check/dataset')
   })
 
-  test('/geometry-type', async ({ page }) => {
-    await checkSessionExpired(page, '/geometry-type')
+  test('/check/geometry-type', async ({ page }) => {
+    await checkSessionExpired(page, '/check/geometry-type')
   })
 
-  test('/upload-method', async ({ page }) => {
-    await checkSessionExpired(page, '/upload-method')
+  test('/check/upload-method', async ({ page }) => {
+    await checkSessionExpired(page, '/check/upload-method')
   })
 
-  test('/upload', async ({ page }) => {
-    await checkSessionExpired(page, '/upload')
+  test('/check/upload', async ({ page }) => {
+    await checkSessionExpired(page, '/check/upload')
   })
 
-  test('/url', async ({ page }) => {
-    await checkSessionExpired(page, '/url')
+  test('/check/url', async ({ page }) => {
+    await checkSessionExpired(page, '/check/url')
   })
 })
 
 test.describe('with a valid session, the user can access the later form pages', () => {
-  test('/dataset', async ({ page }) => {
+  test('/check/dataset', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
     await startPage.clickStartNow()
 
-    await checkRouteResponse(page, '/dataset', [200, 304])
+    await checkRouteResponse(page, '/check/dataset', [200, 304])
   })
 
-  test('/geometry-type', async ({ page }) => {
+  test('/check/geometry-type', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -65,10 +65,10 @@ test.describe('with a valid session, the user can access the later form pages', 
     await datasetPage.selectDataset(datasets.Tree)
     await datasetPage.clickContinue()
 
-    await checkRouteResponse(page, '/geometry-type', [200, 304])
+    await checkRouteResponse(page, '/check/geometry-type', [200, 304])
   })
 
-  test('/upload-method', async ({ page }) => {
+  test('/check/upload-method', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -82,10 +82,10 @@ test.describe('with a valid session, the user can access the later form pages', 
     await geometryTypePage.selectGeometryType(geometryTypes.point)
     await geometryTypePage.clickContinue()
 
-    await checkRouteResponse(page, '/upload-method', [200, 304])
+    await checkRouteResponse(page, '/check/upload-method', [200, 304])
   })
 
-  test('/upload', async ({ page }) => {
+  test('/check/upload', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -103,10 +103,10 @@ test.describe('with a valid session, the user can access the later form pages', 
     await uploadMethodPage.selectUploadMethod(uploadMethods.File)
     await uploadMethodPage.clickContinue()
 
-    await checkRouteResponse(page, '/upload', [200, 304])
+    await checkRouteResponse(page, '/check/upload', [200, 304])
   })
 
-  test('/url', async ({ page }) => {
+  test('/check/url', async ({ page }) => {
     const startPage = new StartPage(page)
 
     await startPage.navigateHere()
@@ -124,7 +124,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
     await uploadMethodPage.clickContinue()
 
-    await checkRouteResponse(page, '/url', [200, 304])
+    await checkRouteResponse(page, '/check/url', [200, 304])
   })
 })
 

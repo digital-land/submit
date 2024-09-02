@@ -8,7 +8,7 @@ import ConfirmationPage from './confirmationPage'
 
 export default class ResultsPage extends BasePage {
   constructor (page) {
-    super(page, '/results')
+    super(page, '/check/results')
   }
 
   async expectPageIsErrorsPage () {

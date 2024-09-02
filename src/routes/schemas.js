@@ -38,7 +38,7 @@ const datasetStatusEnum = {
   'Not submitted': 'Not submitted'
 }
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(NonEmptyString) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString })
 
 export const OrgOverviewPage = v.strictObject({
@@ -80,6 +80,7 @@ export const OrgDatasetTaskList = v.strictObject({
   })),
   organisation: OrgField,
   dataset: v.strictObject({
+    dataset: v.optional(NonEmptyString),
     name: NonEmptyString
   })
 })
@@ -115,9 +116,28 @@ export const OrgIssueDetails = v.strictObject({
       classes: v.string()
     }))
   }),
-  pagination: v.object({
-
-  })
+  pagination: v.optional(v.strictObject({
+    previous: v.optional(v.strictObject({
+      href: v.string()
+    })),
+    next: v.optional(v.strictObject({
+      href: v.string()
+    })),
+    items: v.array(v.variant('type',[
+      v.strictObject({
+        type: v.literal('item'),
+        number: v.integer(),
+        href: v.string(),
+        current: v.boolean()
+      }),
+      v.strictObject({
+        type: v.literal('ellipsis'),
+        ellipsis: v.boolean(),
+        href: v.string()
+      }),
+    ])),
+  })),
+  issueEntitiesCount: v.integer()
 })
 
 export const CheckAnswers = v.strictObject({

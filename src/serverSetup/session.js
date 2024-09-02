@@ -14,14 +14,14 @@ export async function setupSession (app) {
     const url = `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     const redisClient = createClient({ url })
     const errorHandler = (error) => {
-      logger.info(`session/setupSession: failed to connect to ${url}`, { type: types.AppLifecycle })
+      logger.info(`session/setupSession: failed to connect to ${url}, defaulting to MemoryStore`, { type: types.AppLifecycle })
       logger.warn('session/setupSession: redis connection error', { type: types.External, error })
+      return new session.MemoryStore()
     }
-    await redisClient.connect().catch(errorHandler)
 
-    sessionStore = new RedisStore({
-      client: redisClient
-    })
+    sessionStore = await redisClient.connect().then(_ => {
+      return new RedisStore({ client: redisClient })
+    }).catch(errorHandler)
   }
   app.use(session({
     secret: process.env.SESSION_SECRET || 'keyboard cat',

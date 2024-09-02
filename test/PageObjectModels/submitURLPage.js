@@ -3,7 +3,7 @@ import StatusPage from './statusPage'
 
 export default class SubmitURLPage extends BasePage {
   constructor (page) {
-    super(page, '/url')
+    super(page, '/check/url')
   }
 
   async enterURL (url) {
