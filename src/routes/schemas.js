@@ -123,7 +123,7 @@ export const OrgIssueDetails = v.strictObject({
     next: v.optional(v.strictObject({
       href: v.string()
     })),
-    items: v.array(v.variant('type',[
+    items: v.array(v.variant('type', [
       v.strictObject({
         type: v.literal('item'),
         number: v.integer(),
@@ -134,8 +134,8 @@ export const OrgIssueDetails = v.strictObject({
         type: v.literal('ellipsis'),
         ellipsis: v.boolean(),
         href: v.string()
-      }),
-    ])),
+      })
+    ]))
   })),
   issueEntitiesCount: v.integer()
 })

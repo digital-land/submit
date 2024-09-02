@@ -180,7 +180,7 @@ async function fetchIssues (req, res, next) {
  * @param {*} res
  * @param {*} next
  */
-async function fetchIssueEntitiesCount (req, res, next){
+async function fetchIssueEntitiesCount (req, res, next) {
   const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType } = req.params
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
