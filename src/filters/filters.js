@@ -11,7 +11,7 @@ import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadable
  */
 const statusToTagClassMapping = {
   Error: 'govuk-tag--red',
-  'Not submitted': 'govuk-tag--red',
+  'Not submitted': 'govuk-tag--grey',
   'Needs fixing': 'govuk-tag--yellow',
   Warning: 'govuk-tag--blue',
   Issue: 'govuk-tag--blue', // deprecated
