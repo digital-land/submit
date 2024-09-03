@@ -3,7 +3,7 @@ import { combineConfigs, validateConfig } from './util.js'
 
 /**
  *
- * @returns {{defaultConfig, environment, url}}
+ * @returns {{defaultConfig, environment, url, checkService: { userAgent: string }}}
  */
 const getConfig = () => {
   const environment = process.env.NODE_ENV || process.env.ENVIRONMENT || 'production'
