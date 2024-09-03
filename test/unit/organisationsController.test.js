@@ -406,7 +406,8 @@ describe('OrganisationsController.js', () => {
             type: 'item'
           }]
         },
-        issueEntitiesCount: 1
+        issueEntitiesCount: 1,
+        entityNumber: "1"
       })
     })
 
