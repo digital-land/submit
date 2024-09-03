@@ -238,7 +238,7 @@ ORDER BY
 
   async getEntitiesWithIssuesCount (resource, issueType, database = 'digital-land') {
     const sql = `
-      SELECT count(entry_number) as count
+      SELECT count(DISTINCT entry_number) as count
       FROM issue
       WHERE resource = '${resource}'
       AND issue_type = '${issueType}'
