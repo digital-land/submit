@@ -393,7 +393,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
     }
   })
 
-  const errorHeading = performanceDbApi.getTaskMessage(issueType, Object.keys(issuesByEntryNumber).length, true)
+  const errorHeading = performanceDbApi.getTaskMessage(issueType, issueEntitiesCount, true)
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = issuesByEntryNumber[entityNumber] || []
   for (const issue of entityIssues) {
