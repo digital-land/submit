@@ -38,7 +38,7 @@ export const render = (renderer, template, schema, params) => {
     } catch (error) {
       if (error instanceof v.ValiError) {
         // the below will only show up in the terminal when testing
-        console.debug({ params, message: 'failed validation input' })
+        // console.debug({ params, message: 'failed validation input' })
         logger.warn(
           validationErrorMessage(error, template),
           {

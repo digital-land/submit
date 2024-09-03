@@ -24,7 +24,9 @@ serviceNames: {
     check: 'Check planning and housing data for England',
     manage: 'Submit and update your planning data'
 }
-feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
+templateContent:
+    feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
+    homepageUrl: '/'
 email: {
     templates: {
         RequestTemplateId: 'fa1c2b51-3c91-4f9d-9a18-83639164d552',
@@ -35,4 +37,14 @@ email: {
 validations: {
     maxFileSize: 100000000
 }
-
+datasetsFilter: [
+    'article-4-direction',
+    'article-4-direction-area',
+    'conservation-area',
+    'conservation-area-document',
+    'tree-preservation-order',
+    'tree-preservation-zone',
+    'tree',
+    'listed-building',
+    'listed-building-outline'   
+]

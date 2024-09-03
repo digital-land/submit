@@ -19,7 +19,7 @@ class SubmitUrlController extends UploadController {
       const errors = {
         url: new SubmitUrlController.Error(error.key, error, req, res)
       }
-      logger.warn({
+      logger.info({
         message: 'SubmitUrlController: local validation failed during url submission',
         error: JSON.stringify(error),
         submittedUrl: `${req.body.url ?? '<no url provided>'}`,
@@ -38,24 +38,30 @@ class SubmitUrlController extends UploadController {
     super.post(req, res, next)
   }
 
+  /**
+   *
+   * @param {string?} url
+   * @returns { Promise<string | undefined> }
+   */
   static async localUrlValidation (url) {
     const validators = [
       { type: 'required', fn: () => SubmitUrlController.urlIsDefined(url) },
       { type: 'format', fn: () => SubmitUrlController.urlIsValid(url) },
       { type: 'length', fn: () => SubmitUrlController.urlIsNotTooLong(url) }
     ]
-
-    const headRequest = await SubmitUrlController.getHeadRequest(url)
-
-    if (headRequest) {
-      validators.push(
-        { type: 'exists', fn: () => SubmitUrlController.urlExists(headRequest) },
-        { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(headRequest) },
-        { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(headRequest) }
-      )
+    const preCheckFailure = validators.find(validator => !validator.fn())
+    if (preCheckFailure) {
+      return preCheckFailure.type
     }
 
-    return validators.find(validator => !validator.fn())?.type
+    const postValidators = (resp) => ([
+      { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) },
+      { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
+      { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
+    ])
+    const headResponse = await SubmitUrlController.headRequest(url)
+
+    return postValidators(headResponse).find(validator => !validator.fn())?.type
   }
 
   static urlIsDefined (url) {
@@ -72,40 +78,52 @@ class SubmitUrlController extends UploadController {
     }
   }
 
+  /**
+   * @param {string} url
+   * @returns {boolean}
+   */
   static urlIsNotTooLong (url) {
     return url.length <= 2048
   }
 
-  static async getHeadRequest (url) {
+  /**
+   * Performs a HEAD request and returns the response object or null (when the URL couldn't be accessed).
+   *
+   * @param {string} url
+   * @returns {Promise<AxiosResponse?>}
+   */
+  static async headRequest (url) {
     try {
-      return await axios.head(url)
+      return await axios.head(url, { headers: { 'User-Agent': 'check service' } })
     } catch (err) {
-      if (err.code && ['ENOTFOUND', 'ECONNREFUSED'].includes(err.code)) {
-        return null
+      const response = err?.response
+      if (response) {
+        return response
       }
-
-      const response = err.response
-      if (response && response.status === 400) {
-        return null
-      }
-
-      // If err.response is not present or doesn't have a status property, return the entire error object
-      return err
+      logger.info({ message: `SubmitUrlController.headRequest(): err.code=${err.code}`, type: types.App, url })
+      return null
     }
   }
 
+  /**
+   * @param {AxiosResponse?} response
+   * @returns {boolean}
+   */
   static urlResponseIsNotTooLarge (response) {
+    const contentLength = (response?.headers ?? {})['content-length']
     try {
-      const contentLength = response.headers['content-length']
-
       return contentLength <= config.validations.maxFileSize
     } catch (err) {
-      console.warn(err)
+      console.warn('urlResponseIsNotTooLarge()', { type: types.App, errorMessage: err.message, errorStack: err.stack, contentLength })
       return true // for now we will allow this file as we can't be sure
     }
   }
 
-  static urlExists (response) {
+  /**
+   * @param {AxiosResponse?} response
+   * @returns {boolean}
+   */
+  static isUrlAccessible (response) {
     if (!response) {
       return false
     }
@@ -117,7 +135,13 @@ class SubmitUrlController extends UploadController {
     }
   }
 
+  /**
+   *
+   * @param {AxiosResponse?} response
+   * @returns {boolean}
+   */
   static validateAcceptedFileType (response) {
+    if (!response) { return false }
     try {
       const contentType = response.headers['content-type'].split(';')[0]
       const acceptedTypes = Object.values(allowedFileTypes).flat()

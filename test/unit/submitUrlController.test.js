@@ -103,16 +103,10 @@ describe('SubmitUrlController', async () => {
   })
 
   describe('getHeadRequest', () => {
-    it('should call axios.head with the correct URL', async () => {
-      mocks.headMock.mockImplementation(() => ({ headers: { 'content-length': '1' } }))
-      await SubmitUrlController.getHeadRequest('http://example.com')
-      expect(mocks.headMock).toHaveBeenCalledWith('http://example.com')
-    })
-
     it('should return the response from axios.head', async () => {
       const response = { headers: { 'content-length': '1' } }
       mocks.headMock.mockImplementation(() => response)
-      expect(await SubmitUrlController.getHeadRequest('http://example.com')).toBe(response)
+      expect(await SubmitUrlController.headRequest('http://example.com')).toBe(response)
     })
   })
 
@@ -175,19 +169,19 @@ describe('SubmitUrlController', async () => {
 
     describe('urlExists', () => {
       it('should return true for URLs that exist', async () => {
-        expect(SubmitUrlController.urlExists({ status: 200 })).toBe(true)
+        expect(SubmitUrlController.isUrlAccessible({ status: 200 })).toBe(true)
       })
 
       it('should return false for URLs that exist with a 3XX status code', async () => {
-        expect(SubmitUrlController.urlExists({ status: 301 })).toBe(false)
+        expect(SubmitUrlController.isUrlAccessible({ status: 301 })).toBe(false)
       })
 
       it('should return false for URLs that exist with a 4XX status code', async () => {
-        expect(SubmitUrlController.urlExists({ status: 404 })).toBe(false)
+        expect(SubmitUrlController.isUrlAccessible({ status: 404 })).toBe(false)
       })
 
       it('should return false for URLs that do not exist', async () => {
-        expect(SubmitUrlController.urlExists(null)).toBe(false)
+        expect(SubmitUrlController.isUrlAccessible(null)).toBe(false)
       })
     })
 

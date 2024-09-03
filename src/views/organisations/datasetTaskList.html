@@ -50,7 +50,7 @@
     <p>There are no issues with {{ organisation.name }}'s {{ dataset.name }} dataset.</p>
 
     <p><a
-        href="https://www.planning.data.gov.uk/entity/?dataset=brownfield-land&geometry_curie=statistical-geography:E07000091">View
+        href="https://www.planning.data.gov.uk/entity/?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}">View
         the dataset on the Planning Data platform</a></p>
 
     {% else %}
