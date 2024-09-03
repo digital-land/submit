@@ -36,6 +36,9 @@ export const ConfigSchema = v.object({
     submit: NonEmptyString,
     manage: NonEmptyString
   }),
+  checkService: v.object({
+    userAgent: NonEmptyString
+  }),
   templateContent: v.object({
     feedbackLink: v.url(),
     homepageUrl: NonEmptyString // relative link, e.g. '/manage
