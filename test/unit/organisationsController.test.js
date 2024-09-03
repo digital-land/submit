@@ -347,6 +347,7 @@ describe('OrganisationsController.js', () => {
         params: requestParams,
         // middleware supplies the below
         entityNumber: '1',
+        issueEntitiesCount: 1,
         orgInfo,
         dataset,
         entryData,
@@ -396,7 +397,16 @@ describe('OrganisationsController.js', () => {
             }
           ]
         },
-        issueType: 'test-issue-type'
+        issueType: 'test-issue-type',
+        pagination: {
+          items: [{
+            current: false,
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/1',
+            number: 1,
+            type: 'item'
+          }]
+        },
+        issueEntitiesCount: 1
       })
     })
 
