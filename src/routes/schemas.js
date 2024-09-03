@@ -137,7 +137,8 @@ export const OrgIssueDetails = v.strictObject({
       })
     ]))
   })),
-  issueEntitiesCount: v.integer()
+  issueEntitiesCount: v.integer(),
+  entityNumber: v.integer()
 })
 
 export const CheckAnswers = v.strictObject({

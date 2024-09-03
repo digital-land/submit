@@ -451,7 +451,8 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
     entry,
     issueType,
     pagination: paginationObj,
-    issueEntitiesCount
+    issueEntitiesCount,
+    entityNumber
   }
 
   next()
