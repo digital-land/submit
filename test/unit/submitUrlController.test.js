@@ -169,19 +169,19 @@ describe('SubmitUrlController', async () => {
 
     describe('urlExists', () => {
       it('should return true for URLs that exist', async () => {
-        expect(SubmitUrlController.urlExists({ status: 200 })).toBe(true)
+        expect(SubmitUrlController.isUrlAccessible({ status: 200 })).toBe(true)
       })
 
       it('should return false for URLs that exist with a 3XX status code', async () => {
-        expect(SubmitUrlController.urlExists({ status: 301 })).toBe(false)
+        expect(SubmitUrlController.isUrlAccessible({ status: 301 })).toBe(false)
       })
 
       it('should return false for URLs that exist with a 4XX status code', async () => {
-        expect(SubmitUrlController.urlExists({ status: 404 })).toBe(false)
+        expect(SubmitUrlController.isUrlAccessible({ status: 404 })).toBe(false)
       })
 
       it('should return false for URLs that do not exist', async () => {
-        expect(SubmitUrlController.urlExists(null)).toBe(false)
+        expect(SubmitUrlController.isUrlAccessible(null)).toBe(false)
       })
     })
 

@@ -36,7 +36,10 @@ export const ConfigSchema = v.object({
     submit: NonEmptyString,
     manage: NonEmptyString
   }),
-  feedbackLink: v.url(),
+  templateContent: v.object({
+    feedbackLink: v.url(),
+    homepageUrl: NonEmptyString // relative link, e.g. '/manage
+  }),
   email: v.object({
     templates: v.object({
       RequesetTemplateId: v.uuid(),
