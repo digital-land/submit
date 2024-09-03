@@ -47,7 +47,7 @@ export function setupNunjucks ({ app, datasetNameMapping }) {
 
   const globalValues = {
     serviceName: config.serviceNames.submit,
-    feedbackLink: config.feedbackLink
+    ...config.templateContent
   }
 
   if ('smartlook' in config) {
