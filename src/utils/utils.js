@@ -36,27 +36,6 @@ export const dataSubjects = {
       }
     ]
   },
-  'tree-preservation-order': {
-    available: true,
-    dataSets: [
-      {
-        value: 'tree-preservation-order',
-        text: 'Tree preservation order dataset',
-        available: true
-      },
-      {
-        value: 'tree-preservation-zone',
-        text: 'Tree preservation zone dataset',
-        available: true
-      },
-      {
-        value: 'tree',
-        text: 'Tree dataset',
-        available: true,
-        requiresGeometryTypeSelection: true
-      }
-    ]
-  },
   'listed-building': {
     available: true,
     dataSets: [
@@ -66,14 +45,35 @@ export const dataSubjects = {
         available: false
       },
       {
-        value: 'listed-building-outline',
-        text: 'Listed building outline',
-        available: true
-      },
-      {
         value: 'listed-building-grade',
         text: 'Listed building grade',
         available: false
+      },
+      {
+        value: 'listed-building-outline',
+        text: 'Listed building outline',
+        available: true
+      }
+    ]
+  },
+  'tree-preservation-order': {
+    available: true,
+    dataSets: [
+      {
+        value: 'tree',
+        text: 'Tree dataset',
+        available: true,
+        requiresGeometryTypeSelection: true
+      },
+      {
+        value: 'tree-preservation-order',
+        text: 'Tree preservation order dataset',
+        available: true
+      },
+      {
+        value: 'tree-preservation-zone',
+        text: 'Tree preservation zone dataset',
+        available: true
       }
     ]
   }
