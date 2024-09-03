@@ -94,7 +94,7 @@ describe('issueDetails.html', () => {
   runGenericPageTests(html, {
     pageTitle: `mock org - mock Dataset - Issues - ${config.serviceNames.submit}`,
     breadcrumbs: [
-      { text: 'Home', href: '/manage' },
+      { text: 'Home', href: '/' },
       { text: 'Organisations', href: '/organisations' },
       { text: 'mock org', href: '/organisations/mock-org' },
       { text: 'mock Dataset', href: '/organisations/mock-org/mock-dataset' },
@@ -141,7 +141,7 @@ describe('issueDetails.html', () => {
     runGenericPageTests(multiPageHtml, {
       pageTitle: `mock org - mock Dataset - Issues (Page 2 of 3) - ${config.serviceNames.submit}`,
       breadcrumbs: [
-        { text: 'Home', href: '/manage' },
+        { text: 'Home', href: '/' },
         { text: 'Organisations', href: '/organisations' },
         { text: 'mock org', href: '/organisations/mock-org' },
         { text: 'mock Dataset', href: '/organisations/mock-org/mock-dataset' },

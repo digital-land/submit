@@ -83,7 +83,7 @@ describe('LPA Overview Page', () => {
 
   runGenericPageTests(html, {
     pageTitle: 'mock org overview - Submit and update your planning data',
-    breadcrumbs: [{ text: 'Home', href: '/manage' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org' }]
+    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org' }]
   })
 
   const statsBoxes = document.querySelector('.dataset-status').children

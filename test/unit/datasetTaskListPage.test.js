@@ -75,7 +75,7 @@ describe('Dataset Task List Page', () => {
 
   runGenericPageTests(html, {
     pageTitle: 'mock org - Article 4 direction area - Task list - Submit and update your planning data',
-    breadcrumbs: [{ text: 'Home', href: '/manage' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org', href: '/organisations/mock-org' }, { text: 'Article 4 direction area' }]
+    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org', href: '/organisations/mock-org' }, { text: 'Article 4 direction area' }]
   })
 
   it('Renders the correct headings', () => {

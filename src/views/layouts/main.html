@@ -21,6 +21,11 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
   {% endif %}
 {% endblock %}
 
+<!-- For now I'm adding this manual check as we want the service to go back to the start page of check, however we will eventually remove the check start page -->
+{% if serviceType | lower == 'check' %}
+  {% set startPageUrl = '/check' %}
+{% endif %}
+
 {% block head %}
   <link rel="stylesheet" href="/public/stylesheets/index.css">
   {% if smartlookKey %}
@@ -36,7 +41,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
   {{ govukHeader({
     homepageUrl: homepageUrl,
     serviceName: serviceName,
-    serviceUrl: homepageUrl
+    serviceUrl: startPageUrl or homepageUrl
   }) }}
   {{ govukPhaseBanner({
     tag: {
