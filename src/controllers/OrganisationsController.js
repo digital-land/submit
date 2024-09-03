@@ -132,9 +132,13 @@ const fetchDatasetInfo = fetchOne.bind({
  */
 async function fetchLpaOverview (req, res, next) {
   const { datasetsFilter } = config
-  const overview = await performanceDbApi.getLpaOverview(req.params.lpa, { datasetsFilter })
-  req.lpaOverview = overview
-  next()
+  try {
+    const overview = await performanceDbApi.getLpaOverview(req.params.lpa, { datasetsFilter })
+    req.lpaOverview = overview
+    next()
+  } catch (error) {
+    next(error)
+  }
 }
 
 /**
@@ -146,9 +150,13 @@ async function fetchLpaOverview (req, res, next) {
  */
 async function fetchLatestResource (req, res, next) {
   const { lpa, dataset } = req.params
-  const resource = await performanceDbApi.getLatestResource(lpa, dataset)
-  req.resourceId = resource.resource
-  next()
+  try {
+    const resource = await performanceDbApi.getLatestResource(lpa, dataset)
+    req.resourceId = resource.resource
+    next()
+  } catch (error) {
+    next(error)
+  }
 }
 
 /**
@@ -165,9 +173,13 @@ async function fetchIssues (req, res, next) {
   const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType } = req.params
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
-  const issues = await performanceDbApi.getIssues(req.resourceId, issueType, datasetId)
-  req.issues = issues
-  next()
+  try {
+    const issues = await performanceDbApi.getIssues(req.resourceId, issueType, datasetId)
+    req.issues = issues
+    next()
+  } catch (error) {
+    next(error)
+  }
 }
 
 /**
@@ -573,7 +585,7 @@ const organisationsController = {
     const datasetId = req.params.dataset
 
     try {
-      const organisationResult = await datasette.runQuery(`SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${lpa}'`)
+      const organisationResult = await datasette.runQuery(/* sql */ `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${lpa}'`)
       const organisation = organisationResult.formattedData[0]
 
       const datasetResult = await datasette.runQuery(`SELECT dataset, name FROM dataset WHERE dataset = '${datasetId}'`)
