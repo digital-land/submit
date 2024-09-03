@@ -54,7 +54,7 @@ describe('Organisations Find Page', () => {
 
   runGenericPageTests(html, {
     pageTitle: `Find your organisation - ${config.serviceNames.submit}`,
-    breadcrumbs: [{ text: 'Home', href: '/manage' }, { text: 'Organisations' }]
+    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations' }]
   })
 
   it('correct has a form element with the correct data-filter attribute', () => {
