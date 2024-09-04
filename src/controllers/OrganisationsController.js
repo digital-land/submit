@@ -7,6 +7,7 @@ import { statusToTagClass } from '../filters/filters.js'
 import { render } from '../utils/custom-renderer.js'
 import { templateSchema } from '../routes/schemas.js'
 import * as v from 'valibot'
+import { pagination } from '../utils/pagination.js'
 import config from '../../config/index.js'
 
 // get a list of available datasets
@@ -171,7 +172,49 @@ async function fetchIssues (req, res, next) {
 
 /**
  *
+ * Middleware. Updates `req` with `issues`.
+ *
+ * Requires `issues` in request.
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+async function reformatIssuesToBeByEntryNumber (req, res, next) {
+  const { issues } = req
+  const issuesByEntryNumber = issues.reduce((acc, current) => {
+    acc[current.entry_number] = acc[current.entry_number] || []
+    acc[current.entry_number].push(current)
+    return acc
+  }, {})
+  req.issuesByEntryNumber = issuesByEntryNumber
+  next()
+}
+
+/**
+ *
+ * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
+ *
+ * Requires `resourceId` in request params or request (in that order).
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+async function fetchIssueEntitiesCount (req, res, next) {
+  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType } = req.params
+  const resourceId = passedResourceId ?? req.resourceId
+  console.assert(resourceId, 'missng resourceId')
+  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount(resourceId, issueType, datasetId)
+  req.issueEntitiesCount = parseInt(issueEntitiesCount)
+  next()
+}
+
+/**
+ *
  * Middleware. Updates `req` with `entryData`
+ *
+ * Requires `pageNumber`, `dataset` and
  *
  * @param {*} req
  * @param {*} res
@@ -179,10 +222,17 @@ async function fetchIssues (req, res, next) {
  *
  */
 async function fetchEntry (req, res, next) {
-  const { dataset: datasetId, entityNumber } = req.params
-  const entityNum = entityNumber ? parseInt(entityNumber) : 1
-  req.entityNumber = entityNum
+  const { dataset: datasetId, pageNumber } = req.params
+  const { issuesByEntryNumber } = req
+  const pageNum = pageNumber ? parseInt(pageNumber) : 1
+  req.pageNumber = pageNum
+
+  // look at issue Entries and get the index of that entry - 1
+
+  const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
+
   req.entryData = await performanceDbApi.getEntry(req.resourceId, entityNum, datasetId)
+  req.entryNumber = entityNum
   next()
 }
 
@@ -291,7 +341,7 @@ export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
   dataset: v.string(),
   issue_type: v.string(),
-  entityNumber: v.optional(v.string()),
+  pageNumber: v.optional(v.string()),
   resourceId: v.optional(v.string())
 })
 
@@ -322,7 +372,7 @@ const issueField = (text, html, classes) => {
  * @param {{value: string}?} issue
  * @returns {string}
  */
-const issueErrorMessageHtml = (errorMessage, issue) => `<p class="govuk-error-message">${errorMessage}</p>${issue.value ?? ''}`
+const issueErrorMessageHtml = (errorMessage, issue) => `<p class="govuk-error-message">${errorMessage}</p>${issue ? issue.value ?? '' : ''}`
 
 /**
  *
@@ -357,25 +407,21 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { issues, entryData, entityNumber } = req
+  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber } = req
   const { lpa, dataset: datasetId, issue_type: issueType } = req.params
 
-  const issuesByEntryNumber = issues.reduce((acc, current) => {
-    acc[current.entry_number] = acc[current.entry_number] || []
-    acc[current.entry_number].push(current)
-    return acc
-  }, {})
-
-  const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues]) => {
+  const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
+    const pageNum = i + 1
     return {
       html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
-      href: `/organisations/${lpa}/${datasetId}/${issueType}/${entryNumber}`
+      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNum}`
     }
-  })
+  }
+  )
 
-  const errorHeading = performanceDbApi.getTaskMessage(issueType, Object.keys(issuesByEntryNumber).length, true)
+  const errorHeading = performanceDbApi.getTaskMessage(issueType, issueEntitiesCount, true)
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
-  const entityIssues = issuesByEntryNumber[entityNumber] || []
+  const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
   for (const issue of entityIssues) {
     if (!fields.find(field => field.key.text === issue.field)) {
       const errorMessage = issue.message || issueType
@@ -388,9 +434,39 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
   }
 
   const entry = {
-    title: `entry: ${entityNumber}`,
+    title: `entry: ${entryNumber}`,
     fields
   }
+
+  const paginationObj = {}
+  if (pageNumber > 1) {
+    paginationObj.previous = {
+      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNumber - 1}`
+    }
+  }
+
+  if (pageNumber < issueEntitiesCount) {
+    paginationObj.next = {
+      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNumber + 1}`
+    }
+  }
+
+  paginationObj.items = pagination(issueEntitiesCount, pageNumber).map(item => {
+    if (item === '...') {
+      return {
+        type: 'ellipsis',
+        ellipsis: true,
+        href: '#'
+      }
+    } else {
+      return {
+        type: 'item',
+        number: item,
+        href: `/organisations/${lpa}/${datasetId}/${issueType}/${item}`,
+        current: pageNumber === parseInt(item)
+      }
+    }
+  })
 
   // schema: OrgIssueDetails
   req.templateParams = {
@@ -399,7 +475,10 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
     errorHeading,
     issueItems,
     entry,
-    issueType
+    issueType,
+    pagination: paginationObj,
+    issueEntitiesCount,
+    pageNumber
   }
 
   next()
@@ -425,7 +504,9 @@ const getIssueDetailsMiddleware = [
   fetchDatasetInfo,
   maybeFetchLatestResource,
   fetchIssues,
+  reformatIssuesToBeByEntryNumber,
   fetchEntry,
+  fetchIssueEntitiesCount,
   prepareIssueDetailsTemplateParams,
   getIssueDetails
 ]

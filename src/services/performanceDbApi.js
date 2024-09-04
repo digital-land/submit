@@ -236,11 +236,24 @@ ORDER BY
     return result.formattedData[0]
   },
 
+  async getEntitiesWithIssuesCount (resource, issueType, database = 'digital-land') {
+    const sql = `
+      SELECT count(DISTINCT entry_number) as count
+      FROM issue
+      WHERE resource = '${resource}'
+      AND issue_type = '${issueType}'
+    `
+
+    const result = await datasette.runQuery(sql, database)
+
+    return result.formattedData[0].count
+  },
+
   async getIssues (resource, issueType, database = 'digital-land') {
     const sql = `
       SELECT i.field, i.line_number, entry_number, message, issue_type, value
       FROM issue i
-      WHERE i.resource = '${resource}'
+      WHERE resource = '${resource}'
       AND issue_type = '${issueType}'
     `
 
