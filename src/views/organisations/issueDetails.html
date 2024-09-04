@@ -7,8 +7,8 @@
 
 {% set serviceType = 'Submit'%}
 
-{% if numEntries > 1 %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNum}} of {{numEntries}}){% endset %}
+{% if issueEntitiesCount > 1 %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{entityNumber}} of {{issueEntitiesCount}}){% endset %}
 {% else %}
   {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
 {%endif%}
@@ -21,7 +21,7 @@
   items: [
     {
       text: "Home",
-      href: "/manage"
+      href: "/"
     },
     {
       text: "Organisations",
@@ -66,12 +66,8 @@
       rows: entry.fields
     }) }}
 
-    {% if num_entries > 1 %}
-      {{ govukPagination({
-        previous: pagination_obj.prevObj,
-        next: pagination_obj.nextObj,
-        items: pagination_obj.items
-      }) }}
+    {% if issueItems | length > 1 %}
+      {{ govukPagination(pagination) }}
     {% endif %}
   </div>
 </div>

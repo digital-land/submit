@@ -71,7 +71,7 @@ export default {
       datasetClause = `AND rle.pipeline in (${datasetString})`
     }
 
-    const query = `
+    const query = /* sql */ `
     SELECT
     p.organisation,
     o.name,
@@ -85,7 +85,6 @@ export default {
       when (rle.status is null) then 'Not Submitted'
       when (rle.status != '200') then 'Error'
       when (it.severity = 'error') then 'Needs fixing'
-      when (it.severity = 'warning') then 'Warning'
       else 'Live'
   end as status,
     case
@@ -103,7 +102,7 @@ export default {
   it.responsibility,
   COUNT(
       case
-      when it.severity != 'info' then 1
+      when it.severity != 'info' and it.severity != 'warning' then 1
       else null
       end
   ) as issue_count
@@ -151,7 +150,7 @@ ORDER BY
   },
 
   getResourceStatus: async (lpa, datasetId) => {
-    const sql = `
+    const sql = /* sql */`
       select endpoint_url, status, latest_log_entry_date, days_since_200 from reporting_latest_endpoints
       WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
       AND pipeline = '${datasetId}'`
@@ -195,8 +194,9 @@ ORDER BY
       LEFT JOIN
           issue_type it ON i.issue_type = it.issue_type
       WHERE
-          p.organisation = '${lpa}' AND p.dataset = '${datasetId}'
-          AND (it.severity == 'error' OR it.severity == 'warning')
+          p.organisation = '${lpa}' 
+          AND p.dataset = '${datasetId}'
+          AND (it.severity == 'error')
       GROUP BY i.issue_type
       ORDER BY it.severity`
 
@@ -236,11 +236,24 @@ ORDER BY
     return result.formattedData[0]
   },
 
+  async getEntitiesWithIssuesCount (resource, issueType, database = 'digital-land') {
+    const sql = `
+      SELECT count(DISTINCT entry_number) as count
+      FROM issue
+      WHERE resource = '${resource}'
+      AND issue_type = '${issueType}'
+    `
+
+    const result = await datasette.runQuery(sql, database)
+
+    return result.formattedData[0].count
+  },
+
   async getIssues (resource, issueType, database = 'digital-land') {
     const sql = `
       SELECT i.field, i.line_number, entry_number, message, issue_type, value
       FROM issue i
-      WHERE i.resource = '${resource}'
+      WHERE resource = '${resource}'
       AND issue_type = '${issueType}'
     `
 
