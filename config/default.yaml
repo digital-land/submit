@@ -24,6 +24,10 @@ serviceNames: {
     check: 'Check planning and housing data for England',
     manage: 'Submit and update your planning data'
 }
+checkService:
+    # used as User-Agent header when checking the accessibility
+    # of user supplied URLs
+    userAgent: 'GOVUK Planning Data: Check Service'
 templateContent:
     feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
     homepageUrl: '/'

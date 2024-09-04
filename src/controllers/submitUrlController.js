@@ -95,7 +95,7 @@ class SubmitUrlController extends UploadController {
    */
   static async headRequest (url) {
     try {
-      return await axios.head(url, { headers: { 'User-Agent': 'check service' } })
+      return await axios.head(url, { headers: { 'User-Agent': config.checkService.userAgent } })
     } catch (err) {
       const response = err?.response
       const tags = { code: err.code, url }
