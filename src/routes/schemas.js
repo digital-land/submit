@@ -115,7 +115,30 @@ export const OrgIssueDetails = v.strictObject({
       value: v.strictObject({ html: v.string() }),
       classes: v.string()
     }))
-  })
+  }),
+  pagination: v.optional(v.strictObject({
+    previous: v.optional(v.strictObject({
+      href: v.string()
+    })),
+    next: v.optional(v.strictObject({
+      href: v.string()
+    })),
+    items: v.array(v.variant('type', [
+      v.strictObject({
+        type: v.literal('item'),
+        number: v.integer(),
+        href: v.string(),
+        current: v.boolean()
+      }),
+      v.strictObject({
+        type: v.literal('ellipsis'),
+        ellipsis: v.boolean(),
+        href: v.string()
+      })
+    ]))
+  })),
+  issueEntitiesCount: v.integer(),
+  pageNumber: v.integer()
 })
 
 export const CheckAnswers = v.strictObject({

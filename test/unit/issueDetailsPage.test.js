@@ -135,11 +135,59 @@ describe('issueDetails.html', () => {
   })
 
   describe('multi page', () => {
-    const multiPageHtml = nunjucks.render('organisations/issueDetails.html', { ...params, pageNum: 2, numEntries: 3 })
+    const items = [
+      {
+        type: 'number',
+        current: false,
+        number: 1,
+        href: 'organisations/mock-org/mock-dataset/mock issue/1'
+      },
+      {
+        type: 'number',
+        current: true,
+        number: 2,
+        href: 'organisations/mock-org/mock-dataset/mock issue/2'
+      },
+      {
+        type: 'number',
+        current: false,
+        number: 3,
+        href: 'organisations/mock-org/mock-dataset/mock issue/3'
+      },
+      {
+        type: 'ellipsis',
+        ellipsis: true,
+        href: '#'
+      },
+      {
+        type: 'number',
+        current: false,
+        number: 10,
+        href: 'organisations/mock-org/mock-dataset/mock issue/10'
+      }
+    ]
+    const next = {
+      number: 3,
+      href: 'organisations/mock-org/mock-dataset/mock issue/3'
+    }
+    const previous = {
+      number: 1,
+      href: 'organisations/mock-org/mock-dataset/mock issue/1'
+    }
+    const multiPageHtml = nunjucks.render('organisations/issueDetails.html', {
+      ...params,
+      pagination: {
+        previous,
+        next,
+        items
+      },
+      issueEntitiesCount: 10,
+      entityNumber: 2
+    })
     // const multiPageDom = new JSDOM(multiPageHtml)
     // const multiPageDocument = multiPageDom.window.document
     runGenericPageTests(multiPageHtml, {
-      pageTitle: `mock org - mock Dataset - Issues (Page 2 of 3) - ${config.serviceNames.submit}`,
+      pageTitle: `mock org - mock Dataset - Issues (Page 2 of 10) - ${config.serviceNames.submit}`,
       breadcrumbs: [
         { text: 'Home', href: '/' },
         { text: 'Organisations', href: '/organisations' },
@@ -149,8 +197,40 @@ describe('issueDetails.html', () => {
       ]
     })
 
-    it.todo('correctly renders the pagination', () => {
+    const domMultiPage = new JSDOM(multiPageHtml)
+    const documentMultiPage = domMultiPage.window.document
 
+    it('correctly renders the pagination component', () => {
+      const pagination = documentMultiPage.querySelector('.govuk-pagination')
+      const paginationChildren = pagination.children
+
+      expect(paginationChildren.length).toEqual(3)
+
+      const previousLink = paginationChildren[0]
+      expect(previousLink.getAttribute('class')).toContain('prev')
+      expect(previousLink.children[0].getAttribute('href')).toContain(previous.href)
+
+      const nextLink = paginationChildren[2]
+      expect(nextLink.getAttribute('class')).toContain('next')
+      expect(nextLink.children[0].getAttribute('href')).toContain(next.href)
+
+      const itemsList = paginationChildren[1]
+      expect(itemsList.getAttribute('class')).toContain('list')
+
+      const listElements = itemsList.children
+
+      expect(listElements.length).toEqual(5)
+
+      items.forEach((item, i) => {
+        if (item.type === 'number') {
+          expect(listElements[i].textContent).toContain(item.number)
+          expect(listElements[i].children[0].getAttribute('href')).toEqual(item.href)
+        } else if (item.type === 'ellipsis') {
+          expect(listElements[i].textContent).toContain('⋯')
+        } else {
+          expect.fail('pagination item type should be number or ellipsis')
+        }
+      })
     })
   })
 })
