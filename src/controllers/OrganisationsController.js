@@ -372,7 +372,7 @@ const issueField = (text, html, classes) => {
  * @param {{value: string}?} issue
  * @returns {string}
  */
-const issueErrorMessageHtml = (errorMessage, issue) => `<p class="govuk-error-message">${errorMessage}</p>${issue.value ?? ''}`
+const issueErrorMessageHtml = (errorMessage, issue) => `<p class="govuk-error-message">${errorMessage}</p>${issue ? issue.value ?? '' : ''}`
 
 /**
  *
