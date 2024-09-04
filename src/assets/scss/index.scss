@@ -68,6 +68,10 @@ $govuk-global-styles: true;
   align-items: flex-start;
 }
 
+.govuk-summary-card__title {
+  text-transform: capitalize;
+}
+
 .dataset-status {
   margin-bottom: govuk-spacing(6);
 
