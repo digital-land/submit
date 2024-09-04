@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node'
 import UploadController from './uploadController.js'
 import { postUrlRequest } from '../services/asyncRequestApi.js'
 import { URL } from 'url'
@@ -97,9 +98,13 @@ class SubmitUrlController extends UploadController {
       return await axios.head(url, { headers: { 'User-Agent': 'check service' } })
     } catch (err) {
       const response = err?.response
+      const tags = { code: err.code, url }
       if (response) {
+        tags.responseStatus = response.status
+        Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
         return response
       }
+      Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
       logger.info({ message: `SubmitUrlController.headRequest(): err.code=${err.code}`, type: types.App, url })
       return null
     }
