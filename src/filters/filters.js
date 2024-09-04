@@ -5,6 +5,7 @@ import toErrorList from './toErrorList.js'
 import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
 import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadableNameFilter.js'
+import pluralize from 'pluralize'
 
 /** maps dataset status (as returned by performanceDbApi/getLpaOverview()) to a
  * CSS class used by the govuk-tag component
@@ -38,6 +39,7 @@ const addFilters = (nunjucksEnv, { datasetNameMapping }) => {
   nunjucksEnv.addFilter('prettifyColumnName', prettifyColumnName)
   nunjucksEnv.addFilter('getFullServiceName', getFullServiceName)
   nunjucksEnv.addFilter('statusToTagClass', statusToTagClass)
+  nunjucksEnv.addFilter('pluralise', pluralize)
 }
 
 export default addFilters

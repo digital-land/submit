@@ -120,7 +120,9 @@ describe('LPA Overview Page', () => {
         expectedHint = 'Data URL not submitted'
       } else if (dataset.error) {
         expectedHint = dataset.error
-      } else if (dataset.issue_count > 0) {
+      } else if (dataset.issue_count === 1) {
+        expectedHint = `There are ${dataset.issue_count} issue in this dataset`
+      } else if (dataset.issue_count > 1) {
         expectedHint = `There are ${dataset.issue_count} issues in this dataset`
       }
       expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent.trim()).toContain(expectedHint)
