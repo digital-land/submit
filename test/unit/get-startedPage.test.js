@@ -29,7 +29,7 @@ addFilters(nunjucksEnv, { datasetNameMapping })
 describe('Get Started Page', () => {
   const params = {
     organisation: {
-      name: 'mock org'
+      name: 'Mock org'
     },
     dataset: {
       name: 'World heritage site buffer zone'
@@ -41,11 +41,11 @@ describe('Get Started Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org - World heritage site buffer zone - Get started - Submit and update your planning data'
+    pageTitle: 'Mock org - World heritage site buffer zone - Get started - Submit and update your planning data'
   })
 
   it('Renders the correct headings', () => {
-    expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual('mock org')
+    expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual('Mock org')
     expect(document.querySelector('h1').textContent).toContain('World heritage site buffer zone')
     expect(document.querySelector('h2').textContent).toContain('How to prepare and submit your World heritage site buffer zone data')
   })
