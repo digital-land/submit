@@ -18,7 +18,7 @@ fs.createReadStream('src/content/fieldIssueMessages.csv')
   .on('data', (row) => {
     messages.set(row.issue_type, {
       singular: row.singular_message,
-      plural: row.plural_message.replace('{num_issues}', '{}')
+      plural: row.plural_message
     })
   })
   .on('end', () => {
@@ -234,7 +234,7 @@ ORDER BY
     } else {
       message = numIssues === 1 ? messageInfo.singular : messageInfo.plural
     }
-    return message.replace('{num_entries}', numIssues).replace('{column_name}', field)
+    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field)
   },
 
   async getLatestResource (lpa, dataset) {
@@ -312,5 +312,17 @@ ORDER BY
     const result = await datasette.runQuery(sql, dataset)
 
     return result.formattedData
+  },
+
+  async getEntityCount (resource, dataset) {
+    const query = /* sql */`
+      select dataset, entity_count, resource
+      from dataset_resource
+      WHERE resource = '${resource}'
+    `
+
+    const result = await datasette.runQuery(query, dataset)
+
+    return result.formattedData[0].entity_count
   }
 }
