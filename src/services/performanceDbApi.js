@@ -23,6 +23,7 @@ fs.createReadStream('src/content/fieldIssueMessages.csv')
   })
   .on('end', () => {
     getEntityMessages()
+    getAllRowsMessages()
   })
 
 function getEntityMessages () {
@@ -30,11 +31,11 @@ function getEntityMessages () {
     .pipe(csv())
     .on('data', (row) => {
       const messageInfo = messages.get(row.issue_type)
-      messageInfo.entities_singular = row.singular_message.replace('{num_entries}', '{}')
-      messageInfo.entities_plural = row.plural_message.replace('{num_entries}', '{}')
+      messageInfo.entities_singular = row.singular_message
+      messageInfo.entities_plural = row.plural_message
     })
     .on('end', () => {
-      getAllRowsMessages()
+      // Messages object is now populated
     })
 }
 
@@ -43,7 +44,7 @@ function getAllRowsMessages () {
     .pipe(csv())
     .on('data', (row) => {
       const messageInfo = messages.get(row.issue_type)
-      messageInfo.entities_singular = row.allRows_message.replace('{column_name}', '{}')
+      messageInfo.allRows_message = row.allRows_message
     })
     .on('end', () => {
     // Messages object is now populated
@@ -203,10 +204,7 @@ ORDER BY
       ORDER BY it.severity`
 
     const result = await datasette.runQuery(sql)
-    /* eslint camelcase: "off" */
-    return result.formattedData.map(({ num_issues, issue_type, status }) => {
-      return { num_issues, issue_type, status }
-    })
+    return result.formattedData
   },
 
   /**
@@ -222,7 +220,7 @@ ORDER BY
    *
    * @throws {Error} If the issue type is unknown
    */
-  getTaskMessage ({ issue_type: issueType, num_issues: numIssues, entityCount }, entityLevel = false) {
+  getTaskMessage ({ issue_type: issueType, num_issues: numIssues, entityCount, field }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
       throw new Error(`Unknown issue type: ${issueType}`)
@@ -236,7 +234,7 @@ ORDER BY
     } else {
       message = numIssues === 1 ? messageInfo.singular : messageInfo.plural
     }
-    return message.replace('{}', numIssues)
+    return message.replace('{num_entries}', numIssues).replace('{column_name}', field)
   },
 
   async getLatestResource (lpa, dataset) {
