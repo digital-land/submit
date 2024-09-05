@@ -224,6 +224,26 @@ async function fetchIssueEntitiesCount (req, res, next) {
 
 /**
  *
+ * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
+ *
+ * Requires `resourceId` in request params or request (in that order).
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+async function fetchEntityCount (req, res, next) {
+  const { dataset: datasetId, resourceId: passedResourceId } = req.params
+  const resourceId = passedResourceId ?? req.resourceId
+  console.assert(resourceId, 'missng resourceId')
+
+  const entityCount = await performanceDbApi.getEntityCount(resourceId, datasetId)
+  req.entityCount = entityCount
+  next()
+}
+
+/**
+ *
  * Middleware. Updates `req` with `entryData`
  *
  * Requires `pageNumber`, `dataset` and
@@ -245,26 +265,6 @@ async function fetchEntry (req, res, next) {
 
   req.entryData = await performanceDbApi.getEntry(req.resourceId, entityNum, datasetId)
   req.entryNumber = entityNum
-  next()
-}
-
-/**
- *
- * Middleware. Updates `req` with `entryData`
- *
- * Requires `pageNumber`, `dataset` and
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- *
- */
-async function fetchEntityCount (req, res, next) {
-  // const { dataset: datasetId, resourceId: passedResourceId } = req.params
-  // const resourceId = passedResourceId ?? req.resourceId
-
-  // ToDo
-
   next()
 }
 
@@ -439,7 +439,7 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber } = req
+  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount } = req
   const { lpa, dataset: datasetId, issue_type: issueType } = req.params
 
   // issue contains i.field, i.line_number, entry_number, message, issue_type, value
@@ -449,13 +449,12 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
   const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
     const pageNum = i + 1
     return {
-      html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1 }) + ` in record ${entryNumber}`,
       href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNum}`
     }
-  }
-  )
+  })
 
-  const errorHeading = performanceDbApi.getTaskMessage(issueType, issueEntitiesCount, true)
+  const errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true)
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
   for (const issue of entityIssues) {
@@ -620,10 +619,12 @@ const organisationsController = {
 
       const issues = await performanceDbApi.getLpaDatasetIssues(resource.resource, datasetId)
 
+      const entityCount = await performanceDbApi.getEntityCount(resource.resource, datasetId)
+
       const taskList = issues.map((issue) => {
         return {
           title: {
-            text: performanceDbApi.getTaskMessage(issue)
+            text: performanceDbApi.getTaskMessage({ ...issue, entityCount })
           },
           href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
           status: getStatusTag(issue.status)
