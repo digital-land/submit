@@ -36,6 +36,7 @@ function getEntityMessages () {
     .on('end', () => {
       getAllRowsMessages()
     })
+}
 
 function getAllRowsMessages () {
   fs.createReadStream('src/content/allRowsIssueMessages.csv')
@@ -171,13 +172,9 @@ ORDER BY
     return result.formattedData[0]
   },
 
-  getLpaDatasetIssues: async (lpa, datasetId) => {
+  getLpaDatasetIssues: async (resource, datasetId) => {
     const sql = `
       SELECT
-        rle.endpoint,
-        rle.resource,
-        rle.exception,
-
         i.field,
         i.issue_type,
         i.line_number,
@@ -195,48 +192,51 @@ ORDER BY
         END AS status,
         COUNT(i.issue_type) as num_issues
       FROM
-          provision p
+          issue i
       LEFT JOIN
-          reporting_latest_endpoints rle
-          ON REPLACE(rle.organisation, '-eng', '') = p.organisation
-          AND rle.pipeline = p.dataset
-      LEFT JOIN
-          issue i ON rle.resource = i.resource AND rle.pipeline = i.dataset
-      LEFT JOIN
-          issue_type it ON i.issue_type = it.issue_type
+        issue_type it ON i.issue_type = it.issue_type
       WHERE
-          p.organisation = '${lpa}' 
-          AND p.dataset = '${datasetId}'
+          i.resource = '${resource}' 
+          AND i.dataset = '${datasetId}'
           AND (it.severity == 'error')
       GROUP BY i.issue_type
       ORDER BY it.severity`
 
     const result = await datasette.runQuery(sql)
     /* eslint camelcase: "off" */
-    return result.formattedData.map(({ num_issues, issue_type, resource, status }) => {
-      return { num_issues, issue_type, resource, status }
+    return result.formattedData.map(({ num_issues, issue_type, status }) => {
+      return { num_issues, issue_type, status }
     })
   },
 
-  getTaskMessage ({issueType, issueCount, entityCount}, entityLevel = false) {
-
-
-
+  /**
+   * Returns a task message based on the provided issue type, issue count, and entity count.
+   *
+   * @param {Object} options - Options object
+   * @param {string} options.issueType - The type of issue
+   * @param {number} options.issueCount - The number of issues
+   * @param {number} options.entityCount - The number of entities
+   * @param {boolean} [entityLevel=false] - Whether to use entity-level or dataset level messaging
+   *
+   * @returns {string} The task message with the issue count inserted
+   *
+   * @throws {Error} If the issue type is unknown
+   */
+  getTaskMessage ({ issue_type: issueType, num_issues: numIssues, entityCount }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
       throw new Error(`Unknown issue type: ${issueType}`)
     }
 
     let message
-    if ( entityCount && issueCount >= entityCount){
+    if (entityCount && numIssues >= entityCount) {
       message = messageInfo.allRows_message
-    }
-    if (entityLevel) {
-      message = issueCount === 1 ? messageInfo.entities_singular : messageInfo.entities_plural
+    } else if (entityLevel) {
+      message = numIssues === 1 ? messageInfo.entities_singular : messageInfo.entities_plural
     } else {
-      message = issueCount === 1 ? messageInfo.singular : messageInfo.plural
+      message = numIssues === 1 ? messageInfo.singular : messageInfo.plural
     }
-    return message.replace('{}', issueCount)
+    return message.replace('{}', numIssues)
   },
 
   async getLatestResource (lpa, dataset) {

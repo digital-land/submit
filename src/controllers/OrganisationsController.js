@@ -249,6 +249,26 @@ async function fetchEntry (req, res, next) {
 }
 
 /**
+ *
+ * Middleware. Updates `req` with `entryData`
+ *
+ * Requires `pageNumber`, `dataset` and
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ *
+ */
+async function fetchEntityCount (req, res, next) {
+  // const { dataset: datasetId, resourceId: passedResourceId } = req.params
+  // const resourceId = passedResourceId ?? req.resourceId
+
+  // ToDo
+
+  next()
+}
+
+/**
  * Middleware. Does a conditional fetch. Optionally invokes `else` if condition is false.
  *
  * `this` needs: `{ fetchFn, condition: (req) => boolean, else?: (req) => void }`
@@ -422,6 +442,10 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
   const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber } = req
   const { lpa, dataset: datasetId, issue_type: issueType } = req.params
 
+  // issue contains i.field, i.line_number, entry_number, message, issue_type, value
+  // if every line has the same issue for a field and type
+  // output the column level issue
+
   const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
     const pageNum = i + 1
     return {
@@ -518,6 +542,7 @@ const getIssueDetailsMiddleware = [
   fetchIssues,
   reformatIssuesToBeByEntryNumber,
   fetchEntry,
+  fetchEntityCount,
   fetchIssueEntitiesCount,
   prepareIssueDetailsTemplateParams,
   getIssueDetails
@@ -591,12 +616,14 @@ const organisationsController = {
       const datasetResult = await datasette.runQuery(`SELECT dataset, name FROM dataset WHERE dataset = '${datasetId}'`)
       const dataset = datasetResult.formattedData[0]
 
-      const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
+      const resource = await performanceDbApi.getLatestResource(lpa, datasetId)
+
+      const issues = await performanceDbApi.getLpaDatasetIssues(resource.resource, datasetId)
 
       const taskList = issues.map((issue) => {
         return {
           title: {
-            text: performanceDbApi.getTaskMessage(issue.issue_type, issue.num_issues)
+            text: performanceDbApi.getTaskMessage(issue)
           },
           href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
           status: getStatusTag(issue.status)
