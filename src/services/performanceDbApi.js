@@ -34,6 +34,17 @@ function getEntityMessages () {
       messageInfo.entities_plural = row.plural_message.replace('{num_entries}', '{}')
     })
     .on('end', () => {
+      getAllRowsMessages()
+    })
+
+function getAllRowsMessages () {
+  fs.createReadStream('src/content/allRowsIssueMessages.csv')
+    .pipe(csv())
+    .on('data', (row) => {
+      const messageInfo = messages.get(row.issue_type)
+      messageInfo.entities_singular = row.allRows_message.replace('{column_name}', '{}')
+    })
+    .on('end', () => {
     // Messages object is now populated
     })
 }
@@ -207,13 +218,19 @@ ORDER BY
     })
   },
 
-  getTaskMessage (issueType, issueCount, entityLevel = false) {
+  getTaskMessage ({issueType, issueCount, entityCount}, entityLevel = false) {
+
+
+
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
       throw new Error(`Unknown issue type: ${issueType}`)
     }
 
     let message
+    if ( entityCount && issueCount >= entityCount){
+      message = messageInfo.allRows_message
+    }
     if (entityLevel) {
       message = issueCount === 1 ? messageInfo.entities_singular : messageInfo.entities_plural
     } else {
