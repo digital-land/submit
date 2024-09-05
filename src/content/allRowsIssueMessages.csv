@@ -33,4 +33,4 @@ issue_type,allRows_message
 "patch","All rows have been patched in {column_name} column"
 "removed URI prefix","{column_name} URIs in all rows have had their prefix removed"
 "unknown entity","All rows refer to unknown entities in {column_name} column"
-"reference values are not unique","{column_name} reference values in all rows are not unique"
+"reference values are not unique","reference values in all rows are not unique"
