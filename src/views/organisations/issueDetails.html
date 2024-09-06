@@ -57,6 +57,15 @@
       errorList: issueItems
     }) }}
 
+    {% if entry.geometries %}
+      <div
+        id="map"
+        class="app-map"
+        role="region"
+        aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
+      </div>
+    {% endif %}
+
     {{ govukSummaryList({
       card: {
         title: {
@@ -86,4 +95,18 @@
     </ol>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  {% if entry.geometries %}
+    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+    <script>
+      window.serverContext = {
+        containerId: 'map',
+        geometries: {{ entry.geometries | dump | safe }},
+      }
+    </script>
+    <script src="/public/js/map.bundle.js"></script>
+  {% endif %}
 {% endblock %}
