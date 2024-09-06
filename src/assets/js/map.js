@@ -6,7 +6,8 @@ class Map {
     this.map = new maplibregl.Map({
       container: containerId,
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
-      zoom: 11
+      zoom: 11,
+      center: [-0.1298779, 51.4959698]
     })
 
     this.map.on('load', () => {
