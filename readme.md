@@ -23,9 +23,7 @@ This is the frontend for the LPA Data Validator application. It is a nodeJS expr
 **Prerequisite**: Install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 ```sh
-docker-compose -f docker-compose-real-backend-minus-frontend.yml up -d;
-
-npm run start:local;
+npm run dev
 ```
 
 ### Alternative methods of starting application
