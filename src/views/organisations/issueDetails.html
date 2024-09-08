@@ -105,6 +105,7 @@
       window.serverContext = {
         containerId: 'map',
         geometries: {{ entry.geometries | dump | safe }},
+        mapType: "static"
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>

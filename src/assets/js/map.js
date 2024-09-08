@@ -2,12 +2,13 @@ import parse from 'wellknown'
 import maplibregl from 'maplibre-gl'
 
 class Map {
-  constructor (containerId, geometries) {
+  constructor (containerId, geometries, interactive = true) {
     this.map = new maplibregl.Map({
       container: containerId,
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
       zoom: 11,
-      center: [-0.1298779, 51.4959698]
+      center: [-0.1298779, 51.4959698],
+      interactive
     })
 
     this.map.on('load', () => {
@@ -119,7 +120,7 @@ class Map {
 }
 
 const createMapFromServerContext = () => {
-  const { containerId, geometries } = window.serverContext
+  const { containerId, geometries, mapType } = window.serverContext
 
   // if any of the required properties are missing, return null
   if (!containerId || !geometries) {
@@ -127,7 +128,7 @@ const createMapFromServerContext = () => {
     return null
   }
 
-  return new Map(containerId, geometries)
+  return new Map(containerId, geometries, mapType !== 'static')
 }
 
 const newMap = createMapFromServerContext()
