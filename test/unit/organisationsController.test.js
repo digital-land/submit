@@ -408,7 +408,119 @@ describe('OrganisationsController.js', () => {
               value: { html: '<p class="govuk-error-message">mock message</p>02-02-2022' },
               classes: 'dl-summary-card-list__row--error'
             }
+          ],
+          geometries: []
+        },
+        issueType: 'test-issue-type',
+        pagination: {
+          items: [{
+            current: true,
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/1',
+            number: 1,
+            type: 'item'
+          }]
+        },
+        issueEntitiesCount: 1,
+        pageNumber: 1
+      })
+    })
+
+    it('should call render with the issue details page with the correct geometry params', async () => {
+      const entryData = [
+        {
+          field: 'start-date',
+          value: '02-02-2022',
+          entry_number: 1
+        },
+        {
+          field: 'geometry',
+          value: 'POINT(0 0)',
+          entry_number: 1
+        }
+      ]
+      const requestParams = {
+        lpa: 'test-lpa',
+        dataset: 'test-dataset',
+        issue_type: 'test-issue-type',
+        resourceId: 'test-resource-id',
+        entityNumber: '1'
+      }
+      const req = {
+        params: requestParams,
+        // middleware supplies the below
+        entryNumber: 1,
+        issueEntitiesCount: 1,
+        pageNumber: 1,
+        orgInfo,
+        dataset,
+        entryData,
+        issues,
+        resourceId: requestParams.resourceId,
+        issuesByEntryNumber: {
+          1: [
+            {
+              field: 'start-date',
+              value: '02-02-2022',
+              line_number: 1,
+              entry_number: 1,
+              message: 'mock message',
+              issue_type: 'mock type'
+            }
           ]
+        }
+        // errorHeading -- set  in prepare* fn
+      }
+      v.parse(organisationsController.IssueDetailsQueryParams, req.params)
+
+      const res = {
+        render: vi.fn()
+      }
+      const next = vi.fn()
+
+      issues.forEach(issue => {
+        vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
+      })
+      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
+      organisationsController.prepareIssueDetailsTemplateParams(req, {}, () => {})
+
+      await organisationsController.getIssueDetails(req, res, next)
+
+      expect(res.render).toHaveBeenCalledTimes(1)
+      expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', {
+        organisation: {
+          name: 'mock lpa',
+          organisation: 'ORG'
+        },
+        dataset: {
+          name: 'mock dataset',
+          dataset: 'mock-dataset'
+        },
+        errorHeading: 'mock task message 1',
+        issueItems: [
+          {
+            html: 'mockMessageFor: 0 in record 1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/1'
+          }
+        ],
+        entry: {
+          title: 'entry: 1',
+          fields: [
+            {
+              key: { text: 'start-date' },
+              value: { html: '<p class="govuk-error-message">mock message</p>02-02-2022' },
+              classes: 'dl-summary-card-list__row--error'
+            },
+            {
+              classes: '',
+              key: {
+                text: 'geometry'
+              },
+              value: {
+                html: 'POINT(0 0)'
+              }
+            }
+          ],
+          geometries: ['POINT(0 0)']
         },
         issueType: 'test-issue-type',
         pagination: {
