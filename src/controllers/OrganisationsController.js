@@ -459,7 +459,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
     })
   } else {
     issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true)
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
     }]
   }
 
