@@ -321,6 +321,9 @@ function prepareOverviewTemplateParams (req, res, next) {
     }
   })
 
+  // re-sort the datasets to be in alphabetical order
+  datasets.sort((a, b) => a.slug.localeCompare(b.slug))
+
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce((accumulator, dataset) => {
     if (dataset.endpoint) accumulator[0]++
