@@ -53,7 +53,7 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukErrorSummary({
-      titleText: errorHeading,
+      titleText: errorHeading if errorHeading else 'There is a problem',
       errorList: issueItems
     }) }}
 

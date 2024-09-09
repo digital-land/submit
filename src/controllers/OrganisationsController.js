@@ -442,19 +442,25 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
   const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount } = req
   const { lpa, dataset: datasetId, issue_type: issueType } = req.params
 
-  // issue contains i.field, i.line_number, entry_number, message, issue_type, value
-  // if every line has the same issue for a field and type
-  // output the column level issue
+  let errorHeading
+  let issueItems
 
-  const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
-    const pageNum = i + 1
-    return {
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1 }) + ` in record ${entryNumber}`,
-      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNum}`
-    }
-  })
+  if (issuesByEntryNumber < entityCount) {
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true)
+    issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
+      const pageNum = i + 1
+      return {
+        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1 }) + ` in record ${entryNumber}`,
+        href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNum}`
+      }
+    })
+  } else {
+    issueItems = [{
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true),
+      href: '#'
+    }]
+  }
 
-  const errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true)
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
   for (const issue of entityIssues) {

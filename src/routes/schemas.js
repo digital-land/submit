@@ -102,7 +102,7 @@ export const OrgIssueDetails = v.strictObject({
     name: NonEmptyString,
     dataset: v.string()
   }),
-  errorHeading: NonEmptyString,
+  errorHeading: v.optional(NonEmptyString),
   issueItems: v.array(v.strictObject({
     html: v.string(),
     href: v.url()
