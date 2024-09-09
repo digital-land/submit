@@ -226,7 +226,7 @@ ORDER BY
       throw new Error(`Unknown issue type: ${issueType}`)
     }
 
-    if(!field){
+    if (!field) {
       logger.warn('performanceDbApi.getTaskMessage(): no field provided', { issueType })
       field = 'value'
     }
@@ -256,7 +256,7 @@ ORDER BY
     return result.formattedData[0]
   },
 
-  async getEntitiesWithIssuesCount ({resource, issueType, issueField}, database = 'digital-land') {
+  async getEntitiesWithIssuesCount ({ resource, issueType, issueField }, database = 'digital-land') {
     const sql = `
       SELECT count(DISTINCT entry_number) as count
       FROM issue
@@ -270,7 +270,7 @@ ORDER BY
     return result.formattedData[0].count
   },
 
-  async getIssues ({resource, issueType, issueField}, database = 'digital-land') {
+  async getIssues ({ resource, issueType, issueField }, database = 'digital-land') {
     const sql = `
       SELECT i.field, i.line_number, entry_number, message, issue_type, value
       FROM issue i

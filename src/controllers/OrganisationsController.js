@@ -174,7 +174,7 @@ async function fetchIssues (req, res, next) {
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
   try {
-    const issues = await performanceDbApi.getIssues({resource: req.resourceId, issueType, issueField}, datasetId)
+    const issues = await performanceDbApi.getIssues({ resource: req.resourceId, issueType, issueField }, datasetId)
     req.issues = issues
     next()
   } catch (error) {
@@ -217,7 +217,7 @@ async function fetchIssueEntitiesCount (req, res, next) {
   const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType, issue_field: issueField } = req.params
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({resource: resourceId, issueType, issueField}, datasetId)
+  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
   req.issueEntitiesCount = parseInt(issueEntitiesCount)
   next()
 }
@@ -459,7 +459,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
     })
   } else {
     issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true),
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true)
     }]
   }
 
