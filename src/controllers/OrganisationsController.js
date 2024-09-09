@@ -170,11 +170,11 @@ async function fetchLatestResource (req, res, next) {
  * @param {*} next
  */
 async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType } = req.params
+  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType, issue_field: issueField } = req.params
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
   try {
-    const issues = await performanceDbApi.getIssues(req.resourceId, issueType, datasetId)
+    const issues = await performanceDbApi.getIssues({resource: req.resourceId, issueType, issueField}, datasetId)
     req.issues = issues
     next()
   } catch (error) {
@@ -214,10 +214,10 @@ async function reformatIssuesToBeByEntryNumber (req, res, next) {
  * @param {*} next
  */
 async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType } = req.params
+  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType, issue_field: issueField } = req.params
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount(resourceId, issueType, datasetId)
+  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({resource: resourceId, issueType, issueField}, datasetId)
   req.issueEntitiesCount = parseInt(issueEntitiesCount)
   next()
 }
@@ -373,6 +373,7 @@ export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
   dataset: v.string(),
   issue_type: v.string(),
+  issue_field: v.string(),
   pageNumber: v.optional(v.string()),
   resourceId: v.optional(v.string())
 })
@@ -386,7 +387,7 @@ const validateIssueDetailsQueryParams = validateQueryParams.bind({ schema: Issue
  * @param {*} classes
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
-const issueField = (text, html, classes) => {
+const getIssueField = (text, html, classes) => {
   return {
     key: {
       text
@@ -432,7 +433,7 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
   }
   valueHtml += row.value
 
-  return issueField(row.field, valueHtml, classes)
+  return getIssueField(row.field, valueHtml, classes)
 }
 
 /***
@@ -440,24 +441,25 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  */
 function prepareIssueDetailsTemplateParams (req, res, next) {
   const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount } = req
-  const { lpa, dataset: datasetId, issue_type: issueType } = req.params
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
   let errorHeading
   let issueItems
 
-  if (issuesByEntryNumber < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true)
+  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
+
+  if (Object.keys(issuesByEntryNumber).length < entityCount) {
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
     issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
       const pageNum = i + 1
       return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1 }) + ` in record ${entryNumber}`,
-        href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNum}`
+        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
+        href: `${BaseSubpath}${pageNum}`
       }
     })
   } else {
     issueItems = [{
       html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount }, true),
-      href: '#'
     }]
   }
 
@@ -470,7 +472,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
       const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
       const classes = 'dl-summary-card-list__row--error'
 
-      fields.push(issueField(issue.field, valueHtml, classes))
+      fields.push(getIssueField(issue.field, valueHtml, classes))
     }
   }
 
@@ -482,13 +484,13 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
   const paginationObj = {}
   if (pageNumber > 1) {
     paginationObj.previous = {
-      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNumber - 1}`
+      href: `${BaseSubpath}${pageNumber - 1}`
     }
   }
 
   if (pageNumber < issueEntitiesCount) {
     paginationObj.next = {
-      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNumber + 1}`
+      href: `${BaseSubpath}${pageNumber + 1}`
     }
   }
 
@@ -503,7 +505,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
       return {
         type: 'item',
         number: item,
-        href: `/organisations/${lpa}/${datasetId}/${issueType}/${item}`,
+        href: `${BaseSubpath}${item}`,
         current: pageNumber === parseInt(item)
       }
     }
@@ -630,9 +632,9 @@ const organisationsController = {
       const taskList = issues.map((issue) => {
         return {
           title: {
-            text: performanceDbApi.getTaskMessage({ ...issue, entityCount })
+            text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
           },
-          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
+          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}/${issue.field}`,
           status: getStatusTag(issue.status)
         }
       })

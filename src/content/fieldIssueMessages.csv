@@ -9,7 +9,7 @@ issue_type,singular_message,plural_message
 "invalid organisation", 1 field has an invalid organisation, {num_issues} fields have invalid organisations
 "invalid URI", 1 field has an invalid URI, {num_issues} fields have invalid URIs
 "invalid WKT", 1 field has invalid WKT, {num_issues} fields have invalid WKT
-"missing value", 1 field is missing a value, {num_issues} fields are missing values
+"missing value", 1 row is missing a {column_name}, {num_issues} rows are missing a {column_name}
 "OSGB out of bounds of custom boundary", 1 field has OSGB coordinates that are out of bounds of the custom boundary, {num_issues} fields have OSGB coordinates that are out of bounds of the custom boundary
 "OSGB out of bounds of England", 1 field has OSGB coordinates that are out of bounds of England, {num_issues} fields have OSGB coordinates that are out of bounds of England
 "too large", 1 field is too large, {num_issues} fields are too large

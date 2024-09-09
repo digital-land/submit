@@ -200,7 +200,7 @@ ORDER BY
           i.resource = '${resource}' 
           AND i.dataset = '${datasetId}'
           AND (it.severity == 'error')
-      GROUP BY i.issue_type
+      GROUP BY i.issue_type, i.field
       ORDER BY it.severity`
 
     const result = await datasette.runQuery(sql)
@@ -224,6 +224,11 @@ ORDER BY
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
       throw new Error(`Unknown issue type: ${issueType}`)
+    }
+
+    if(!field){
+      logger.warn('performanceDbApi.getTaskMessage(): no field provided', { issueType })
+      field = 'value'
     }
 
     let message
@@ -251,12 +256,13 @@ ORDER BY
     return result.formattedData[0]
   },
 
-  async getEntitiesWithIssuesCount (resource, issueType, database = 'digital-land') {
+  async getEntitiesWithIssuesCount ({resource, issueType, issueField}, database = 'digital-land') {
     const sql = `
       SELECT count(DISTINCT entry_number) as count
       FROM issue
       WHERE resource = '${resource}'
       AND issue_type = '${issueType}'
+      AND field = '${issueField}'
     `
 
     const result = await datasette.runQuery(sql, database)
@@ -264,12 +270,13 @@ ORDER BY
     return result.formattedData[0].count
   },
 
-  async getIssues (resource, issueType, database = 'digital-land') {
+  async getIssues ({resource, issueType, issueField}, database = 'digital-land') {
     const sql = `
       SELECT i.field, i.line_number, entry_number, message, issue_type, value
       FROM issue i
       WHERE resource = '${resource}'
       AND issue_type = '${issueType}'
+      AND field = '${issueField}'
     `
 
     const result = await datasette.runQuery(sql, database)
