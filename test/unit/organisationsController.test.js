@@ -205,10 +205,15 @@ describe('OrganisationsController.js', () => {
         formattedData: [{ name: 'Example Dataset' }]
       })
 
+      vi.mocked(performanceDbApi.getLatestResource).mockResolvedValue({
+        resource: 'mock-resource'
+      })
+
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
         {
           issue: 'Example issue 1',
           issue_type: 'Example issue type 1',
+          field: 'Example field 1',
           num_issues: 1,
           status: 'Error'
         }
@@ -224,7 +229,7 @@ describe('OrganisationsController.js', () => {
           title: {
             text: 'task message 1'
           },
-          href: '/organisations/example-lpa/example-dataset/Example issue type 1',
+          href: '/organisations/example-lpa/example-dataset/Example issue type 1/Example field 1',
           status: {
             tag: {
               classes: 'govuk-tag--red',
@@ -248,16 +253,22 @@ describe('OrganisationsController.js', () => {
         formattedData: [{ name: 'Example Dataset' }]
       })
 
+      vi.mocked(performanceDbApi.getLatestResource).mockResolvedValue({
+        resource: 'mock-resource'
+      })
+
       vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
         {
           issue: 'Example issue 1',
           issue_type: 'Example issue type 1',
+          field: 'Example issue field 1',
           num_issues: 1,
           status: 'Error'
         },
         {
           issue: 'Example issue 2',
           issue_type: 'Example issue type 2',
+          field: 'Example issue field 2',
           num_issues: 1,
           status: 'Needs fixing'
         }
@@ -274,7 +285,7 @@ describe('OrganisationsController.js', () => {
             title: {
               text: 'task message 1'
             },
-            href: '/organisations/example-lpa/example-dataset/Example issue type 1',
+            href: '/organisations/example-lpa/example-dataset/Example issue type 1/Example issue field 1',
             status: {
               tag: {
                 classes: 'govuk-tag--red',
@@ -286,7 +297,7 @@ describe('OrganisationsController.js', () => {
             title: {
               text: 'task message 2'
             },
-            href: '/organisations/example-lpa/example-dataset/Example issue type 2',
+            href: '/organisations/example-lpa/example-dataset/Example issue type 2/Example issue field 2',
             status: {
               tag: {
                 classes: 'govuk-tag--yellow',
@@ -340,6 +351,7 @@ describe('OrganisationsController.js', () => {
         lpa: 'test-lpa',
         dataset: 'test-dataset',
         issue_type: 'test-issue-type',
+        issue_field: 'test-issue-field',
         resourceId: 'test-resource-id',
         entityNumber: '1'
       }
@@ -347,6 +359,7 @@ describe('OrganisationsController.js', () => {
         params: requestParams,
         // middleware supplies the below
         entryNumber: 1,
+        entityCount: 3,
         issueEntitiesCount: 1,
         pageNumber: 1,
         orgInfo,
@@ -393,11 +406,11 @@ describe('OrganisationsController.js', () => {
           name: 'mock dataset',
           dataset: 'mock-dataset'
         },
-        errorHeading: 'mock task message 1',
+        errorHeading: 'mockMessageFor: 0',
         issueItems: [
           {
-            html: 'mockMessageFor: 0 in record 1',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/1'
+            html: 'mock task message 1 in record 1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
           }
         ],
         entry: {
@@ -414,7 +427,7 @@ describe('OrganisationsController.js', () => {
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1',
             number: 1,
             type: 'item'
           }]
