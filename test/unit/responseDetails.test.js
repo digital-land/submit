@@ -293,13 +293,13 @@ describe('ResponseDetails', () => {
         previousPage: 4,
         totalPages: 10,
         items: [
-          { number: 1, href: '/results/test/0', current: false },
+          { number: 1, href: '/check/results/test/0', current: false },
           { ellipsis: true, href: '#' },
-          { number: 5, href: '/results/test/4', current: false },
-          { number: 6, href: '/results/test/5', current: true },
-          { number: 7, href: '/results/test/6', current: false },
+          { number: 5, href: '/check/results/test/4', current: false },
+          { number: 6, href: '/check/results/test/5', current: true },
+          { number: 7, href: '/check/results/test/6', current: false },
           { ellipsis: true, href: '#' },
-          { number: 10, href: '/results/test/9', current: false }
+          { number: 10, href: '/check/results/test/9', current: false }
         ]
       })
     })
@@ -323,11 +323,11 @@ describe('ResponseDetails', () => {
         previousPage: 8,
         totalPages: 10,
         items: [
-          { number: 1, href: '/results/test/0', current: false },
+          { number: 1, href: '/check/results/test/0', current: false },
           { ellipsis: true, href: '#' },
-          { number: 8, href: '/results/test/7', current: false },
-          { number: 9, href: '/results/test/8', current: false },
-          { number: 10, href: '/results/test/9', current: true }
+          { number: 8, href: '/check/results/test/7', current: false },
+          { number: 9, href: '/check/results/test/8', current: false },
+          { number: 10, href: '/check/results/test/9', current: true }
         ]
       })
     })
@@ -351,11 +351,11 @@ describe('ResponseDetails', () => {
         previousPage: null,
         totalPages: 10,
         items: [
-          { number: 1, href: '/results/test/0', current: true },
-          { number: 2, href: '/results/test/1', current: false },
-          { number: 3, href: '/results/test/2', current: false },
+          { number: 1, href: '/check/results/test/0', current: true },
+          { number: 2, href: '/check/results/test/1', current: false },
+          { number: 3, href: '/check/results/test/2', current: false },
           { ellipsis: true, href: '#' },
-          { number: 10, href: '/results/test/9', current: false }
+          { number: 10, href: '/check/results/test/9', current: false }
         ]
       })
     })
