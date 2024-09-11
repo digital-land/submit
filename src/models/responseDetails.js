@@ -132,7 +132,7 @@ export default class ResponseDetails {
       } else {
         return {
           number: item,
-          href: `/results/${this.id}/${parseInt(item) - 1}`,
+          href: `/check/results/${this.id}/${parseInt(item) - 1}`,
           current: pageNumber === parseInt(item) - 1
         }
       }
