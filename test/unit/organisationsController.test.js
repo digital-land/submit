@@ -428,7 +428,7 @@ describe('OrganisationsController.js', () => {
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1',
             number: 1,
             type: 'item'
           }]
@@ -455,6 +455,7 @@ describe('OrganisationsController.js', () => {
         lpa: 'test-lpa',
         dataset: 'test-dataset',
         issue_type: 'test-issue-type',
+        issue_field: 'test-issue-field',
         resourceId: 'test-resource-id',
         entityNumber: '1'
       }
@@ -462,6 +463,7 @@ describe('OrganisationsController.js', () => {
         params: requestParams,
         // middleware supplies the below
         entryNumber: 1,
+        entityCount: 3,
         issueEntitiesCount: 1,
         pageNumber: 1,
         orgInfo,
@@ -508,11 +510,11 @@ describe('OrganisationsController.js', () => {
           name: 'mock dataset',
           dataset: 'mock-dataset'
         },
-        errorHeading: 'mock task message 1',
+        errorHeading: 'mockMessageFor: 0',
         issueItems: [
           {
-            html: 'mockMessageFor: 0 in record 1',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/1'
+            html: 'mock task message 1 in record 1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
           }
         ],
         entry: {

@@ -111,7 +111,7 @@ describe('issueDetails.html', () => {
     it('should render the correct heading', () => {
       expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(errorHeading)
     })
-  
+
     it('should render the correct heading if none is supplied', () => {
       const noErrorHeadingPageHtml = nunjucks.render('organisations/issueDetails.html', {
         ...params,
@@ -123,17 +123,16 @@ describe('issueDetails.html', () => {
 
       expect(documentNoErrorHeading.querySelector('.govuk-error-summary__title').textContent).toContain('There is a problem')
     })
-  
+
     it('should render the issue items', () => {
       const issueList = document.querySelector('.govuk-error-summary__list')
       const issueItemElements = [...issueList.children]
       expect(issueItemElements.length).toBe(issueItems.length)
-  
+
       issueItemElements.forEach((element, index) => {
         expect(element.textContent).toContain(issueItems[index].html)
       })
     })
-
   })
 
   it('should render the entry details', () => {
