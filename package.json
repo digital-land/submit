@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "prepare": "husky",
+    "dev": "docker-compose -f docker-compose-real-backend-minus-frontend.yml up -d && npm run start:local",
     "start": "node index.js",
     "start:watch": "concurrently \"nodemon --exec 'npm run build && npm run start'\" \"npm run scss:watch\"",
     "start:test": "NODE_ENV=test node index.js",

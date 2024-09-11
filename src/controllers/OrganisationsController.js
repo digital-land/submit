@@ -479,9 +479,11 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
     }
   }
 
+  const geometries = entryData.filter(row => row.field === 'geometry').map(row => row.value)
   const entry = {
     title: `entry: ${entryNumber}`,
-    fields
+    fields,
+    geometries
   }
 
   const paginationObj = {}

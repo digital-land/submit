@@ -114,7 +114,8 @@ export const OrgIssueDetails = v.strictObject({
       key: v.strictObject({ text: NonEmptyString }),
       value: v.strictObject({ html: v.string() }),
       classes: v.string()
-    }))
+    })),
+    geometries: v.optional(v.array(v.string()))
   }),
   pagination: v.optional(v.strictObject({
     previous: v.optional(v.strictObject({
