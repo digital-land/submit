@@ -1,6 +1,7 @@
 import axios from 'axios'
 import config from '../../config/index.js'
-import RequestData from '../models/requestData.js'
+import ResultData from '../models/requestData.js'
+import logger from '../utils/logger.js'
 
 const requestsEndpoint = `${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}`
 
@@ -19,7 +20,7 @@ export const postFileRequest = async (formData) => {
 
 export const postUrlRequest = async (formData) => {
   const { url, dataset, collection, geomType } = formData
-
+  logger.debug('postUrlRequest', { url, dataset, collection, geomType })
   return await postRequest({
     dataset,
     collection,
@@ -56,7 +57,7 @@ export const getRequestData = async (resultId) => {
   try {
     const response = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${resultId}`)
 
-    return new RequestData(response.data)
+    return new ResultData(response.data)
   } catch (error) {
     throw new Error(`HTTP error! status: ${error.status}`)
   }
