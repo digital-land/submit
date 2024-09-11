@@ -293,13 +293,13 @@ describe('ResponseDetails', () => {
         previousPage: 4,
         totalPages: 10,
         items: [
-          { number: 1, href: '/results/test/0', current: false },
+          { number: 1, href: '/check/results/test/0', current: false },
           { ellipsis: true, href: '#' },
-          { number: 5, href: '/results/test/4', current: false },
-          { number: 6, href: '/results/test/5', current: true },
-          { number: 7, href: '/results/test/6', current: false },
+          { number: 5, href: '/check/results/test/4', current: false },
+          { number: 6, href: '/check/results/test/5', current: true },
+          { number: 7, href: '/check/results/test/6', current: false },
           { ellipsis: true, href: '#' },
-          { number: 10, href: '/results/test/9', current: false }
+          { number: 10, href: '/check/results/test/9', current: false }
         ]
       })
     })
