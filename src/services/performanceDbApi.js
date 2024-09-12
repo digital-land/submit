@@ -13,42 +13,33 @@ import fs from 'fs'
 
 const messages = new Map()
 
-fs.createReadStream('src/content/fieldIssueMessages.csv')
-  .pipe(csv())
-  .on('data', (row) => {
-    messages.set(row.issue_type, {
-      singular: row.singular_message,
-      plural: row.plural_message
-    })
+fs.createReadStream('src/content/fieldIssueMessages.csv').pipe(csv()).on('data', row => {
+  messages.set(row.issue_type, {
+    singular: row.singular_message,
+    plural: row.plural_message
   })
-  .on('end', () => {
-    getEntityMessages()
-    getAllRowsMessages()
-  })
+}).on('end', () => {
+  getEntityMessages()
+  getAllRowsMessages()
+})
 
 function getEntityMessages () {
-  fs.createReadStream('src/content/entityIssueMessages.csv')
-    .pipe(csv())
-    .on('data', (row) => {
-      const messageInfo = messages.get(row.issue_type)
-      messageInfo.entities_singular = row.singular_message
-      messageInfo.entities_plural = row.plural_message
-    })
-    .on('end', () => {
-      // Messages object is now populated
-    })
+  fs.createReadStream('src/content/entityIssueMessages.csv').pipe(csv()).on('data', row => {
+    const messageInfo = messages.get(row.issue_type)
+    messageInfo.entities_singular = row.singular_message
+    messageInfo.entities_plural = row.plural_message
+  }).on('end', () => {
+    // Messages object is now populated
+  })
 }
 
 function getAllRowsMessages () {
-  fs.createReadStream('src/content/allRowsIssueMessages.csv')
-    .pipe(csv())
-    .on('data', (row) => {
-      const messageInfo = messages.get(row.issue_type)
-      messageInfo.allRows_message = row.allRows_message
-    })
-    .on('end', () => {
+  fs.createReadStream('src/content/allRowsIssueMessages.csv').pipe(csv()).on('data', row => {
+    const messageInfo = messages.get(row.issue_type)
+    messageInfo.allRows_message = row.allRows_message
+  }).on('end', () => {
     // Messages object is now populated
-    })
+  })
 }
 
 // ===========================================
@@ -73,10 +64,10 @@ function getAllRowsMessages () {
  */
 export default {
   /**
-   * Get LPA overview
-   * @param {string} lpa - LPA ID
-   * @returns {Promise<LpaOverview>} LPA overview
-   */
+     * Get LPA overview
+     * @param {string} lpa - LPA ID
+     * @returns {Promise<LpaOverview>} LPA overview
+     */
   getLpaOverview: async (lpa, params = {}) => {
     let datasetClause = ''
     if (params.datasetsFilter) {
@@ -84,7 +75,9 @@ export default {
       datasetClause = `AND rle.pipeline in (${datasetString})`
     }
 
-    const query = /* sql */ `
+    const query =
+    /* sql */
+    `
     SELECT
     p.organisation,
     o.name,
@@ -162,65 +155,94 @@ ORDER BY
     return { datasets }
   },
 
+  /**
+     * Retrieves the resource status from the performance database.
+     *
+     * @param {string} lpa - The Local Planning Authority (LPA) code.
+     * @param {string} datasetId - The ID of the dataset to retrieve the status for.
+     * @returns {object} The resource status object containing the endpoint URL, status, latest log entry date, and days since 200.
+     */
   getResourceStatus: async (lpa, datasetId) => {
-    const sql = /* sql */`
-      select endpoint_url, status, latest_log_entry_date, days_since_200 from reporting_latest_endpoints
-      WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
-      AND pipeline = '${datasetId}'`
+    const sql =
+    /* sql */
+    `
+    select endpoint_url, status, latest_log_entry_date, days_since_200 from reporting_latest_endpoints
+    WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
+    AND pipeline = '${datasetId}'`
 
     const result = await datasette.runQuery(sql)
 
     return result.formattedData[0]
   },
 
+  /**
+     * Retrieves LPA dataset issues for a given resource and dataset ID.
+     *
+     * @param {string} resource - The resource to retrieve issues for.
+     * @param {string} datasetId - The ID of the dataset to retrieve issues for.
+     *
+     * @returns {object[]} An array of issue objects, each containing:
+     *   - field: {string} The field associated with the issue.
+     *   - issue_type: {string} The type of issue.
+     *   - line_number: {number} The line number of the issue.
+     *   - value: {string} The value associated with the issue.
+     *   - message: {string} The error message associated with the issue.
+     *   - status: {string} The status of the issue ('Needs fixing' or 'Live').
+     *   - num_issues: {number} The number of issues of this type.
+     */
   getLpaDatasetIssues: async (resource, datasetId) => {
     const sql = `
-      SELECT
-        i.field,
-        i.issue_type,
-        i.line_number,
-        i.value,
-        i.message,
+    SELECT
+      i.field,
+      i.issue_type,
+      i.line_number,
+      i.value,
+      i.message,
 
-        CASE
-          WHEN COUNT(
-            CASE
-              WHEN it.severity == 'error' THEN 1
-              ELSE null
-            END
-          ) > 0 THEN 'Needs fixing'
-          ELSE 'Live'
-        END AS status,
-        COUNT(i.issue_type) as num_issues
-      FROM
-          issue i
-      LEFT JOIN
-        issue_type it ON i.issue_type = it.issue_type
-      WHERE
-          i.resource = '${resource}' 
-          AND i.dataset = '${datasetId}'
-          AND (it.severity == 'error')
-      GROUP BY i.issue_type, i.field
-      ORDER BY it.severity`
+      CASE
+        WHEN COUNT(
+          CASE
+            WHEN it.severity == 'error' THEN 1
+            ELSE null
+          END
+        ) > 0 THEN 'Needs fixing'
+        ELSE 'Live'
+      END AS status,
+      COUNT(i.issue_type) as num_issues
+    FROM
+        issue i
+    LEFT JOIN
+      issue_type it ON i.issue_type = it.issue_type
+    WHERE
+        i.resource = '${resource}' 
+        AND i.dataset = '${datasetId}'
+        AND (it.severity == 'error')
+    GROUP BY i.issue_type, i.field
+    ORDER BY it.severity`
 
     const result = await datasette.runQuery(sql)
     return result.formattedData
   },
 
   /**
-   * Returns a task message based on the provided issue type, issue count, and entity count.
-   *
-   * @param {Object} options - Options object
-   * @param {string} options.issueType - The type of issue
-   * @param {number} options.issueCount - The number of issues
-   * @param {number} options.entityCount - The number of entities
-   * @param {boolean} [entityLevel=false] - Whether to use entity-level or dataset level messaging
-   *
-   * @returns {string} The task message with the issue count inserted
-   *
-   * @throws {Error} If the issue type is unknown
-   */
-  getTaskMessage ({ issue_type: issueType, num_issues: numIssues, entityCount, field }, entityLevel = false) {
+     * Returns a task message based on the provided issue type, issue count, and entity count.
+     *
+     * @param {Object} options - Options object
+     * @param {string} options.issueType - The type of issue
+     * @param {number} options.issueCount - The number of issues
+     * @param {number} options.entityCount - The number of entities
+     * @param {boolean} [entityLevel=false] - Whether to use entity-level or dataset level messaging
+     *
+     * @returns {string} The task message with the issue count inserted
+     *
+     * @throws {Error} If the issue type is unknown
+     */
+  getTaskMessage ({
+    issue_type: issueType,
+    num_issues: numIssues,
+    entityCount,
+    field
+  }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
       throw new Error(`Unknown issue type: ${issueType}`)
@@ -235,49 +257,88 @@ ORDER BY
     if (entityCount && numIssues >= entityCount) {
       message = messageInfo.allRows_message
     } else if (entityLevel) {
-      message = numIssues === 1 ? messageInfo.entities_singular : messageInfo.entities_plural
+      message = numIssues === 1
+        ? messageInfo.entities_singular
+        : messageInfo.entities_plural
     } else {
-      message = numIssues === 1 ? messageInfo.singular : messageInfo.plural
+      message = numIssues === 1
+        ? messageInfo.singular
+        : messageInfo.plural
     }
     return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field)
   },
 
+  /**
+     * Retrieves the latest resource information for a given LPA and dataset.
+     *
+     * @param {string} lpa - The Local Planning Authority (LPA) identifier.
+     * @param {string} dataset - The dataset to retrieve the latest resource for.
+     * @returns {object} The latest resource information, including the resource, status, endpoint, endpoint URL, days since 200, and exception.
+     */
   async getLatestResource (lpa, dataset) {
     const sql = `
-      SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
-      FROM reporting_latest_endpoints rle
-      LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
-      LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
-      WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
-      AND rle.pipeline = '${dataset}'`
+    SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
+    FROM reporting_latest_endpoints rle
+    LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
+    LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
+    WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
+    AND rle.pipeline = '${dataset}'`
 
     const result = await datasette.runQuery(sql)
 
     return result.formattedData[0]
   },
 
-  async getEntitiesWithIssuesCount ({ resource, issueType, issueField }, database = 'digital-land') {
+  /**
+     * Retrieves the count of entities with issues of a specific type and field.
+     *
+     * @param {Object} params - Parameters for the query
+     * @param {string} params.resource - Resource to filter by
+     * @param {string} params.issueType - Issue type to filter by
+     * @param {string} params.issueField - Field to filter by
+     * @param {string} [database="digital-land"] - Database to query (optional)
+     * @returns {Promise<number>} Count of entities with issues
+     */
+  async getEntitiesWithIssuesCount ({
+    resource,
+    issueType,
+    issueField
+  }, database = 'digital-land') {
     const sql = `
-      SELECT count(DISTINCT entry_number) as count
-      FROM issue
-      WHERE resource = '${resource}'
-      AND issue_type = '${issueType}'
-      AND field = '${issueField}'
-    `
+    SELECT count(DISTINCT entry_number) as count
+    FROM issue
+    WHERE resource = '${resource}'
+    AND issue_type = '${issueType}'
+    AND field = '${issueField}'
+  `
 
     const result = await datasette.runQuery(sql, database)
 
     return result.formattedData[0].count
   },
 
-  async getIssues ({ resource, issueType, issueField }, database = 'digital-land') {
+  /**
+     * Retrieves issues from the performance database.
+     *
+     * @param {Object} params - Object with parameters for the query
+     * @param {string} params.resource - Resource to filter issues by
+     * @param {string} params.issueType - Issue type to filter by
+     * @param {string} params.issueField - Field to filter by
+     * @param {string} [database="digital-land"] - Database to query (defaults to "digital-land")
+     * @returns {Promise<Object>} - Promise resolving to an object with formatted data
+     */
+  async getIssues ({
+    resource,
+    issueType,
+    issueField
+  }, database = 'digital-land') {
     const sql = `
-      SELECT i.field, i.line_number, entry_number, message, issue_type, value
-      FROM issue i
-      WHERE resource = '${resource}'
-      AND issue_type = '${issueType}'
-      AND field = '${issueField}'
-    `
+    SELECT i.field, i.line_number, entry_number, message, issue_type, value
+    FROM issue i
+    WHERE resource = '${resource}'
+    AND issue_type = '${issueType}'
+    AND field = '${issueField}'
+  `
 
     const result = await datasette.runQuery(sql, database)
 
@@ -285,12 +346,12 @@ ORDER BY
   },
 
   /**
-   *
-   * @param {*} resourceId
-   * @param {*} entryNumber
-   * @param {*} dataset
-   * @returns {Promise<{field: string, value: string, entry_number: number}[]>}
-   */
+     *
+     * @param {*} resourceId
+     * @param {*} entryNumber
+     * @param {*} dataset
+     * @returns {Promise<{field: string, value: string, entry_number: number}[]>}
+     */
   async getEntry (resourceId, entryNumber, dataset) {
     // TODO: why do we order by rowid?
     const sql = `
@@ -321,12 +382,21 @@ ORDER BY
     return result.formattedData
   },
 
+  /**
+     * Retrieves the entity count for a given resource and dataset.
+     *
+     * @param {string} resource - The resource to retrieve the entity count for.
+     * @param {string} dataset - The dataset to retrieve the entity count from.
+     * @returns {number} The entity count for the given resource and dataset.
+     */
   async getEntityCount (resource, dataset) {
-    const query = /* sql */`
-      select dataset, entity_count, resource
-      from dataset_resource
-      WHERE resource = '${resource}'
+    const query =
+    /* sql */
     `
+    select dataset, entity_count, resource
+    from dataset_resource
+    WHERE resource = '${resource}'
+  `
 
     const result = await datasette.runQuery(query, dataset)
 

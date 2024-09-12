@@ -664,14 +664,14 @@ const organisationsController = {
 
   /**
    * Handles endpoint error responses for organizations.
-   * 
+   *
    * @param {Object} req - The incoming request object.
    * @param {Object} res - The outgoing response object.
    * @param {Function} next - The next middleware function in the chain.
    * @param {Object} resourceStatus - An object containing information about the resource status.
-   * 
+   *
    * @returns {Promise<void>} A promise that resolves when the error response has been rendered.
-   * 
+   *
    * @throws {Error} If an error occurs while processing the request.
    */
   async getEndpointError (req, res, next, { resourceStatus }) {
