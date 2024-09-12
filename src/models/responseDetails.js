@@ -71,7 +71,7 @@ export default class ResponseDetails {
     }))
   }
 
-/**
+  /**
  * Returns an array of rows with verbose columns, optionally filtering out rows without errors.
  *
  * @param {boolean} [filterNonErrors=false] - If true, only return rows that have at least one error.
