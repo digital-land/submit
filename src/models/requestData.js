@@ -3,9 +3,14 @@ import axios from 'axios'
 import config from '../../config/index.js'
 import ResponseDetails from './responseDetails.js'
 
-export default class RequestData {
-  constructor (response) {
-    Object.assign(this, response)
+/**
+ * Holds response data of 'http://ASYNC-REQUEST-API-HOST/requests/:result-id' endpoint.
+ *
+ * Allows to get the result details by invoking {@link fetchResponseDetails}
+ */
+export default class ResultData {
+  constructor (responseData) {
+    Object.assign(this, responseData)
   }
 
   async fetchResponseDetails (pageNumber = 0, limit = 50, severity = undefined) {
@@ -16,15 +21,15 @@ export default class RequestData {
       urlParams.append('jsonpath', `$.issue_logs[*].severity=="${severity}"`)
     }
 
-    const request = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?${urlParams.toString()}`, { timeout: 30000 })
+    const response = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?${urlParams.toString()}`, { timeout: 30000 })
 
     const pagination = {
-      totalResults: request.headers['x-pagination-total-results'],
-      offset: request.headers['x-pagination-offset'],
-      limit: request.headers['x-pagination-limit']
+      totalResults: response.headers['x-pagination-total-results'],
+      offset: response.headers['x-pagination-offset'],
+      limit: response.headers['x-pagination-limit']
     }
 
-    return new ResponseDetails(this.id, request.data, pagination, this.getColumnFieldLog())
+    return new ResponseDetails(this.id, response.data, pagination, this.getColumnFieldLog())
   }
 
   getErrorSummary () {
@@ -69,6 +74,10 @@ export default class RequestData {
     return finishedProcessingStatuses.includes(this.status)
   }
 
+  /**
+   *
+   * @returns {any[]}
+   */
   getColumnFieldLog () {
     if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
       logger.warn('trying to get column field log when there is none', { requestId: this.id })

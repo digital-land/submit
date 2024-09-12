@@ -1,7 +1,11 @@
 import { getVerboseColumns } from '../utils/getVerboseColumns.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import { pagination } from '../utils/pagination.js'
 
+/**
+ * Holds response data of 'http://ASYNC-REQUEST-API-HOST/requests/:result-id/response-details' endpoint.
+ */
 export default class ResponseDetails {
   constructor (id, response, pagination, columnFieldLog) {
     this.id = id
@@ -104,18 +108,32 @@ export default class ResponseDetails {
     return columnFieldEntry.column
   }
 
+  /**
+   * Returns array of geometries when available, `undefined` otherwise.
+   *
+   * @returns {any[] | undefined }
+   */
   getGeometries () {
-    if (!this.response) {
-      logger.warn('trying to get response details when there are none', { requestId: this.id })
+    const rows = this.getRows()
+    if (rows.length === 0) {
       return undefined
     }
 
-    const geometryKey = this.getGeometryKey()
-
-    const geometries = this.response.map(row => row.converted_row[geometryKey]).filter(geometry => geometry !== '')
-    if (geometries.length === 0) {
-      return null
+    const item = rows[0]
+    const getGeometryValue = this.#makeGeometryGetter(item)
+    if (!getGeometryValue) {
+      logger.debug('could not create geometry getter', { type: types.App, requestId: this.id })
+      return undefined
     }
+
+    const geometries = []
+    for (const item of rows) {
+      const geometry = getGeometryValue(item)
+      if (geometry && geometry.trim() !== '') {
+        geometries.push(geometry)
+      }
+    }
+    logger.debug('getGetometries()', { type: types.App, requestId: this.id, geometryCount: geometries.length, rowCount: rows.length })
     return geometries
   }
 
@@ -148,5 +166,35 @@ export default class ResponseDetails {
       totalPages,
       items
     }
+  }
+
+  /**
+   * Detects where geometry is stored in the item and returns a function of
+   * item to geometry value. It's caller responsibility to handle situations
+   * where the getter couldn't be returned (for most common use case, we can
+   * omit diplaying the map).
+   *
+   * @param {any} item
+   * @returns { ((item) => string ) | undefined}
+   */
+  #makeGeometryGetter (item) {
+    let getGeometryValue
+    if ('point' in item.converted_row) {
+      getGeometryValue = row => row.converted_row.point
+    } else if ('geometry' in item.converted_row) {
+      getGeometryValue = row => row.converted_row.geometry
+    } else if ('GeoX' in item.converted_row) {
+      logger.debug('converted_row', { type: types.App, transformedRow: item.transformed_row })
+      getGeometryValue = row => {
+        const { GeoX, GeoY } = row.converted_row
+        if (GeoX === '' || GeoY === '') return ''
+        return `POINT (${GeoX} ${GeoY})`
+      }
+    } else {
+      // unexpected, but let's take a note and proceed without throwing
+      logger.warn('geometry data not found in response details', { requestId: this.id, type: types.App })
+    }
+
+    return getGeometryValue
   }
 }

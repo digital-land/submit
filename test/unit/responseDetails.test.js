@@ -43,6 +43,11 @@ describe('ResponseDetails', () => {
     }
   ]
 
+  const mockResponsWithGeoXGeoY = mockResponse.map(({ converted_row: row, ...entry }, i) => {
+    const { geometry, ...other } = row
+    return { ...entry, converted_row: { ...other, GeoX: `123.4${i}`, GeoY: `123.4${i}` } }
+  })
+
   const mockPagination = {
     totalResults: 2,
     offset: 0,
@@ -251,7 +256,7 @@ describe('ResponseDetails', () => {
     it('returns null if there are no geometries', () => {
       const responseDetails = new ResponseDetails(undefined, [], undefined, undefined)
       const result = responseDetails.getGeometries()
-      expect(result).toBeNull()
+      expect(result).toBeUndefined()
     })
 
     it('returns an array of geometries', () => {
@@ -266,6 +271,17 @@ describe('ResponseDetails', () => {
       const expected = [
         'POINT (423432.0000000000000000 564564.0000000000000000)',
         'POINT (423432.0000000000000000 564564.0000000000000000)'
+      ]
+      expect(result).toEqual(expected)
+    })
+
+    it('handles Geox, GeoY columns', () => {
+      const mockColumnFieldLog = []
+      const responseDetails = new ResponseDetails(undefined, mockResponsWithGeoXGeoY, undefined, mockColumnFieldLog)
+      const result = responseDetails.getGeometries()
+      const expected = [
+        'POINT (123.40 123.40)',
+        'POINT (123.41 123.41)'
       ]
       expect(result).toEqual(expected)
     })
