@@ -1,5 +1,6 @@
 issue_type,singular_message,plural_message
 "future entry date", 1 entry has a future entry date, {num_entries} entries have a future entry date
+"future entry-date", 1 entry has a future entry date, {num_entries} entries have a future entry date
 "invalid coordinates", 1 entry has invalid coordinates, {num_entries} entries have invalid coordinates
 "invalid date", 1 entry has an invalid date, {num_entries} entries have invalid dates
 "invalid decimal", 1 entry has an invalid decimal, {num_entries} entries have invalid decimals
