@@ -3,6 +3,7 @@
  */
 import datasette from './datasette.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 // ===========================================
 
@@ -210,7 +211,11 @@ ORDER BY
   getTaskMessage (issueType, issueCount, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
-      throw new Error(`Unknown issue type: ${issueType}`)
+      logger.warn({
+        message: `PerformanceDbApi.getTaskMessage(): Unknown issue type: ${issueType}`,
+        type: types.App
+      })
+      return `${issueCount} issue of type ${issueType}`
     }
 
     let message
