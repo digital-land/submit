@@ -3,6 +3,7 @@
  */
 import datasette from './datasette.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 // ===========================================
 
@@ -229,7 +230,7 @@ ORDER BY
      *
      * @param {Object} options - Options object
      * @param {string} options.issueType - The type of issue
-     * @param {number} options.issueCount - The number of issues
+     * @param {number} options.num_issues - The number of issues
      * @param {number} options.entityCount - The number of entities
      * @param {boolean} [entityLevel=false] - Whether to use entity-level or dataset level messaging
      *
@@ -245,7 +246,11 @@ ORDER BY
   }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
-      throw new Error(`Unknown issue type: ${issueType}`)
+      logger.warn({
+        message: `PerformanceDbApi.getTaskMessage(): Unknown issue type: ${issueType}`,
+        type: types.App
+      })
+      return `${numIssues} issue of type ${issueType}`
     }
 
     if (!field) {

@@ -93,12 +93,6 @@ describe('performanceDbApi', () => {
       expect(message).toContain('singular message')
     })
 
-    it('throws an error for an unknown issue type', () => {
-      expect(() => {
-        performanceDbApi.getTaskMessage({ issue_type: 'unknown_issue_type', num_issues: 1 })
-      }).toThrowError('Unknown issue type: unknown_issue_type')
-    })
-
     it('returns a message with the correct field replacement', () => {
       const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'my_field' })
       expect(message).toContain('my_field')
@@ -122,6 +116,11 @@ describe('performanceDbApi', () => {
     it('returns an "all rows" message when num_issues >= entityCount', () => {
       const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 5, entityCount: 5, field: 'some_field' })
       expect(message).toContain('all rows message for some_field')
+    })
+
+    it('returns a fallback message when the issue type is unknown', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'unknown_issue_type', num_issues: 1 })
+      expect(message).toContain('1 issue of type unknown_issue_type')
     })
   })
 })
