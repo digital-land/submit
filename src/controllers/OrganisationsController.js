@@ -662,6 +662,18 @@ const organisationsController = {
     }
   },
 
+  /**
+   * Handles endpoint error responses for organizations.
+   * 
+   * @param {Object} req - The incoming request object.
+   * @param {Object} res - The outgoing response object.
+   * @param {Function} next - The next middleware function in the chain.
+   * @param {Object} resourceStatus - An object containing information about the resource status.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the error response has been rendered.
+   * 
+   * @throws {Error} If an error occurs while processing the request.
+   */
   async getEndpointError (req, res, next, { resourceStatus }) {
     const { lpa, dataset: datasetId } = req.params
 
@@ -694,6 +706,20 @@ const organisationsController = {
     }
   },
 
+  /**
+   * Handles conditional task list request.
+   *
+   * @param {object} req - The HTTP request object.
+   * @param {object} res - The HTTP response object.
+   * @param {function} next - The next middleware function in the chain.
+   *
+   * @throws {Error} - If an error occurs while processing the request.
+   *
+   * @description
+   * This function checks the resource status for a given LPA and dataset ID.
+   * If the resource status is 200, it calls the `getDatasetTaskList` function to retrieve the task list.
+   * Otherwise, it calls the `getEndpointError` function to handle the error.
+   */
   async conditionalTaskListHandler (req, res, next) {
     const { lpa, dataset: datasetId } = req.params
 
