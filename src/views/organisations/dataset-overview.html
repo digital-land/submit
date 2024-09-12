@@ -43,12 +43,20 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    {{ dataset | dump }}
+    <div id="map" class="app-map" role="region" aria-label="Map illustrating {{ dataset.name }} geometries. Use your keyboard to interact with the map. For screen reader users, use the arrow keys to navigate the map and the plus and minus keys to zoom in and out."></div>
   </div>
 </div>
 
 {% endblock %}
 
 {% block scripts %}
-    {{super()}}
+  {{ super() }}
+  <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+  <script>
+    window.serverContext = {
+      containerId: 'map',
+      geometries: []
+    }
+  </script>
+  <script src="/public/js/map.bundle.js"></script>
 {% endblock %}
