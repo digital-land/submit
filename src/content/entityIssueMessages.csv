@@ -1,28 +1,28 @@
 issue_type,singular_message,plural_message
-"future entry date", 1 entry has a future entry date, {num_entries} entries have a future entry date
-"future entry-date", 1 entry has a future entry date, {num_entries} entries have a future entry date
-"invalid coordinates", 1 entry has invalid coordinates, {num_entries} entries have invalid coordinates
-"invalid date", 1 entry has an invalid date, {num_entries} entries have invalid dates
-"invalid decimal", 1 entry has an invalid decimal, {num_entries} entries have invalid decimals
-"invalid flag", 1 entry has an invalid flag, {num_entries} entries have invalid flags
-"invalid geometry - not fixable", 1 entry has an invalid geometry that cannot be fixed, {num_entries} entries have invalid geometries that cannot be fixed
-"invalid integer", 1 entry has an invalid integer, {num_entries} entries have invalid integers
-"invalid organisation", 1 entry has an invalid organisation, {num_entries} entries have invalid organisations
-"invalid URI", 1 entry has an invalid URI, {num_entries} entries have invalid URIs
-"invalid WKT", 1 entry has invalid WKT, {num_entries} entries have invalid WKT
-"missing value", 1 entry is missing a {column_name}, {num_entries} rows are missing a {column_name}
-"OSGB out of bounds of custom boundary", 1 entry has OSGB coordinates that are out of bounds of the custom boundary, {num_entries} entries have OSGB coordinates that are out of bounds of the custom boundary
-"OSGB out of bounds of England", 1 entry has OSGB coordinates that are out of bounds of England, {num_entries} entries have OSGB coordinates that are out of bounds of England
-"too large", 1 entry is too large, {num_entries} entries are too large
-"too small", 1 entry is too small, {num_entries} entries are too small
-"Unexpected geom type", 1 entry has an unexpected geometry type, {num_entries} entries have unexpected geometry types
-"Unexpected geom type within GeometryCollection", 1 entry has an unexpected geometry type within a GeometryCollection, {num_entries} entries have unexpected geometry types within GeometryCollections
-"unknown entity - missing reference", 1 entry has an unknown entity with a missing reference, {num_entries} entries have unknown entities with missing references
-"WGS84 out of bounds", 1 entry has WGS84 coordinates that are out of bounds, {num_entries} entries have WGS84 coordinates that are out of bounds
-"WGS84 out of bounds of custom boundary", 1 entry has WGS84 coordinates that are out of bounds of the custom boundary, {num_entries} entries have WGS84 coordinates that are out of bounds of the custom boundary
-"WGS84 out of bounds of England", 1 entry has WGS84 coordinates that are out of bounds of England, {num_entries} entries have WGS84 coordinates that are out of bounds of England
+"future entry date", 1 entry must be in the past, {num_entries} entries must be in the past
+"future entry-date", 1 entry must be in the past, {num_entries} entries must be in the past
+"invalid coordinates", 1 entry must have valid coordinates, {num_entries} entries must have valid coordinates
+"invalid date", 1 entry must have dates in YYYY-MM-DD format, {num_entries} entries must have dates in YYYY-MM-DD format
+"invalid decimal", 1 entry must have a decimal number, {num_entries} entries must have decimal numbers
+"invalid flag", 1 entry must have a YES or NO value, {num_entries} entries must have YES or NO values
+"invalid geometry - not fixable", 1 must have valid geometry, {num_entries} entries must have valid geometry
+"invalid integer", 1 entry must have a valid integer, {num_entries} entries must have valid integers
+"invalid organisation", 1 entry must have a valid organisation, {num_entries} entries must have a valid organisation
+"invalid URI", 1 entry must have a valid URI, {num_entries} entries must have valid URIs
+"invalid WKT", 1 entry must have valid WKT values, {num_entries} entries must have valid WKT values
+"missing value", 1 row is missing a {column_name}, {num_entries} rows are missing a {column_name}
+"OSGB out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary
+"OSGB out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England
+"too large", 1 entry must be below the maximum number needed, {num_entries} entries must be below the maximum number needed
+"too small", 1 entry must be above the minimum number needed, {num_entries} entries must be above the minimum number needed
+"Unexpected geom type", 1 entry must have valid geometry, {num_entries} entries must have valid geometry
+"Unexpected geom type within GeometryCollection", 1 entry must have valid geometry, {num_entries} entries must have valid geometry
+"unknown entity - missing reference", 1 row is missing a {column_name}, {num_entries} rows are missing a {column_name}
+"WGS84 out of bounds", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary
+"WGS84 out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary
+"WGS84 out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England
 "invalid geometry - fixed", 1 entry has an invalid geometry that has been fixed, {num_entries} entries have invalid geometries that have been fixed
-"invalid type geojson", 1 entry has an invalid GeoJSON type, {num_entries} entries have invalid GeoJSON types
+"invalid type geojson", 1 entry must have valid GeoJSON, {num_entries} entries must have valid GeoJSON
 "Mercator", 1 entry uses Mercator coordinates, {num_entries} entries use Mercator coordinates
 "Mercator flipped", 1 entry uses flipped Mercator coordinates, {num_entries} entries use flipped Mercator coordinates
 "OSGB", 1 entry uses OSGB coordinates, {num_entries} entries use OSGB coordinates
