@@ -1,0 +1,35 @@
+{% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
+
+{% macro table(params) %}
+    <div class="app-scrollable-container">
+        <table class="govuk-table">
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    {% for column in params.columns %}
+                        <th scope="col" class="govuk-table__header">{{ column }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+                {% for row in params.rows %}
+                    <tr class="govuk-table__row">
+                        {% for field in params.fields %}
+                            {% set columnData = row.columns[field] %}
+                            <td class="govuk-table__cell app-wrap">
+                                
+                                {% if columnData.error %}
+                                    {{ govukInsetText({
+                                        classes: "app-inset-text---error",
+                                        html: '<p class="app-inset-text__value">'+columnData.value | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | prettifyColumnName +'</p>'
+                                    }) }}
+                                {% elseif columnData.value %}
+                                    {{ columnData.value }}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}

@@ -34,11 +34,38 @@ class ResultsController extends PageController {
       req.form.options.requestParams = requestData.getParams()
 
       if (req.form.options.template !== failedFileRequestTemplate && req.form.options.template !== failedUrlRequestTemplate) {
+        let rows = responseDetails.getRowsWithVerboseColumns(requestData.hasErrors())
+
+        // remove any issues that aren't of severity error
+        rows = rows.map((row) => {
+          const { columns, ...rest } = row
+
+          const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
+            let error
+            if (value.error && value.error.severity === 'error') {
+              error = value.error
+            }
+            const newValue = {
+              ...value,
+              error
+            }
+            return [key, newValue]
+          }))
+
+          return {
+            ...rest,
+            columns: columnsOnlyErrors
+          }
+        })
+
+        req.form.options.tableParams = {
+          columns: responseDetails.getColumns(),
+          rows,
+          fields: responseDetails.getFields()
+        }
+
         req.form.options.errorSummary = requestData.getErrorSummary()
-        req.form.options.columns = responseDetails.getColumns()
-        req.form.options.fields = responseDetails.getFields()
         req.form.options.mappings = responseDetails.getFieldMappings()
-        req.form.options.verboseRows = responseDetails.getRowsWithVerboseColumns(requestData.hasErrors())
         req.form.options.geometries = responseDetails.getGeometries()
         req.form.options.pagination = responseDetails.getPagination(req.params.pageNumber)
         req.form.options.id = req.params.id
