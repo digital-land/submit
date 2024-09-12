@@ -247,4 +247,50 @@ describe('issueDetails.html', () => {
       })
     })
   })
+
+  describe('Dataset visualisation: Maps', () => {
+    it('should render a map when geometries are passed in', () => {
+      const paramWithGeometry = {
+        organisation,
+        dataset,
+        errorHeading,
+        issueItems,
+        entry: {
+          ...entry,
+          geometries: ['POINT(0 0)']
+        },
+        issueType
+      }
+
+      const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)
+      const mapDom = new JSDOM(mapHtml)
+      const mapDocument = mapDom.window.document
+      const map = mapDocument.querySelector('#map')
+
+      expect(map).not.toBeNull()
+      expect(map.getAttribute('role')).toEqual('region')
+      expect(map.getAttribute('aria-label')).toEqual('Static map showing mock Dataset for mock org.')
+    })
+
+    it('should not render a map when no geometries are passed in', () => {
+      const paramWithGeometry = {
+        organisation,
+        dataset,
+        errorHeading,
+        issueItems,
+        entry: {
+          ...entry,
+          geometries: []
+        },
+        issueType
+      }
+
+      const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)
+      const mapDom = new JSDOM(mapHtml)
+      const mapDocument = mapDom.window.document
+      const map = mapDocument.querySelector('#map')
+
+      expect(map).toBeNull()
+    })
+  })
 })
