@@ -71,7 +71,20 @@ export default class ResponseDetails {
     }))
   }
 
-  // This function returns an array of rows with verbose columns
+/**
+ * Returns an array of rows with verbose columns, optionally filtering out rows without errors.
+ *
+ * @param {boolean} [filterNonErrors=false] - If true, only return rows that have at least one error.
+ * @returns {Array<object>} An array of rows with verbose columns, each containing:
+ *   - `entryNumber`: the entry number of the row
+ *   - `hasErrors`: a boolean indicating whether the row has any errors
+ *   - `columns`: an array of verbose column details, each containing:
+ *     - `key`: the column key
+ *     - `value`: the column value
+ *     - `column`: the column name
+ *     - `field`: the field name
+ *     - `error`: an error message if data was missing
+ */
   getRowsWithVerboseColumns (filterNonErrors = false) {
     if (!this.response) {
       logger.warn('trying to get response details when there are none', { requestId: this.id })
