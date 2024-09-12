@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import jsdom from 'jsdom'
 
+const path = '/check/results/test'
+
 const paginationTests = (template, nunjucks) => {
   describe('pagination', () => {
     it('correctly renders the pagination', () => {
@@ -8,13 +10,13 @@ const paginationTests = (template, nunjucks) => {
         nextPage: 4,
         previousPage: 2,
         items: [
-          { number: 1, href: '/results/test/0', current: false },
+          { number: 1, href: `${path}/0`, current: false },
           { ellipsis: true, href: '#' },
-          { number: 2, href: '/results/test/1', current: false },
-          { number: 3, href: '/results/test/2', current: true },
-          { number: 4, href: '/results/test/3', current: false },
+          { number: 2, href: `${path}/1`, current: false },
+          { number: 3, href: `${path}/2`, current: true },
+          { number: 4, href: `${path}/3`, current: false },
           { ellipsis: true, href: '#' },
-          { number: 10, href: '/results/test/9', current: false }
+          { number: 10, href: `${path}/9`, current: false }
         ]
       }
 
@@ -35,11 +37,11 @@ const paginationTests = (template, nunjucks) => {
         nextPage: 2,
         previousPage: undefined,
         items: [
-          { number: 1, href: '/results/test/0', current: true },
-          { number: 2, href: '/results/test/1', current: false },
-          { number: 3, href: '/results/test/2', current: false },
+          { number: 1, href: `${path}/0`, current: true },
+          { number: 2, href: `${path}/1`, current: false },
+          { number: 3, href: `${path}/2`, current: false },
           { ellipsis: true, href: '#' },
-          { number: 10, href: '/results/test/9', current: false }
+          { number: 10, href: `${path}/9`, current: false }
         ]
       }
 
@@ -60,11 +62,11 @@ const paginationTests = (template, nunjucks) => {
         nextPage: undefined,
         previousPage: 9,
         items: [
-          { number: 1, href: '/results/test/0', current: false },
+          { number: 1, href: `${path}/0`, current: false },
           { ellipsis: true, href: '#' },
-          { number: 8, href: '/results/test/7', current: false },
-          { number: 9, href: '/results/test/8', current: false },
-          { number: 10, href: '/results/test/9', current: true }
+          { number: 8, href: `${path}/7`, current: false },
+          { number: 9, href: `${path}/8`, current: false },
+          { number: 10, href: `${path}/9`, current: true }
         ]
       }
 
@@ -97,7 +99,7 @@ const testPagination = ({ template, nunjucks, params }) => {
 
   // Previous link
   if (pagination.previousPage) {
-    expect(paginationChildren[currentPaginationChild].children[0].href).toEqual(`/results/${id}/${pagination.previousPage}`)
+    expect(paginationChildren[currentPaginationChild].children[0].href).toEqual(`/check/results/${id}/${pagination.previousPage}`)
     currentPaginationChild++
   }
 
@@ -122,7 +124,7 @@ const testPagination = ({ template, nunjucks, params }) => {
 
   // next link
   if (pagination.nextPage) {
-    expect(paginationChildren[currentPaginationChild].children[0].href).toEqual(`/results/${id}/${pagination.nextPage}`)
+    expect(paginationChildren[currentPaginationChild].children[0].href).toEqual(`/check/results/${id}/${pagination.nextPage}`)
     currentPaginationChild++
   }
 
