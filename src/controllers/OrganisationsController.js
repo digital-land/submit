@@ -122,6 +122,17 @@ const fetchDatasetInfo = fetchOne.bind({
   result: 'dataset'
 })
 
+const getDatasetOverview = renderTemplate.bind(
+  {
+    templateParams (req) {
+      const { orgInfo: organisation, dataset } = req
+      return { organisation, dataset }
+    },
+    template: 'organisations/dataset-overview.html',
+    handlerName: 'datasetOverview'
+  }
+)
+
 /**
  * Middleware.
  *
@@ -544,6 +555,8 @@ const getIssueDetails = renderTemplate.bind({
 
 const getGetStartedMiddleware = [fetchOrgInfo, fetchDatasetName, getGetStarted, logPageError]
 
+const getDatasetOverviewMiddleware = [fetchOrgInfo, fetchDatasetName, getDatasetOverview, logPageError]
+
 const getOverviewMiddleware = [fetchOrgInfo, fetchLpaOverview, prepareOverviewTemplateParams, getOverview, logPageError]
 
 const getIssueDetailsMiddleware = [
@@ -742,6 +755,9 @@ const organisationsController = {
    */
   getGetStartedMiddleware,
   getGetStarted,
+
+  getDatasetOverviewMiddleware,
+  getDatasetOverview,
 
   getOverviewMiddleware,
   getOverview,
