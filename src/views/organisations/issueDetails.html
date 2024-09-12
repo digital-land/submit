@@ -57,7 +57,7 @@
       errorList: issueItems
     }) }}
 
-    {% if entry.geometries %}
+    {% if entry.geometries and entry.geometries.length %}
       <div
         id="map"
         class="app-map"
@@ -99,7 +99,7 @@
 
 {% block scripts %}
   {{ super() }}
-  {% if entry.geometries %}
+  {% if entry.geometries and entry.geometries.length %}
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
