@@ -53,7 +53,7 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukErrorSummary({
-      titleText: errorHeading,
+      titleText: errorHeading if errorHeading else 'There is a problem',
       errorList: issueItems
     }) }}
 
@@ -75,7 +75,7 @@
       rows: entry.fields
     }) }}
 
-    {% if issueItems | length > 1 %}
+    {% if issueEntitiesCount > 1 %}
       {{ govukPagination(pagination) }}
     {% endif %}
   </div>

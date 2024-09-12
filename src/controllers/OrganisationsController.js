@@ -170,11 +170,11 @@ async function fetchLatestResource (req, res, next) {
  * @param {*} next
  */
 async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType } = req.params
+  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType, issue_field: issueField } = req.params
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
   try {
-    const issues = await performanceDbApi.getIssues(req.resourceId, issueType, datasetId)
+    const issues = await performanceDbApi.getIssues({ resource: req.resourceId, issueType, issueField }, datasetId)
     req.issues = issues
     next()
   } catch (error) {
@@ -214,11 +214,31 @@ async function reformatIssuesToBeByEntryNumber (req, res, next) {
  * @param {*} next
  */
 async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType } = req.params
+  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType, issue_field: issueField } = req.params
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount(resourceId, issueType, datasetId)
+  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
   req.issueEntitiesCount = parseInt(issueEntitiesCount)
+  next()
+}
+
+/**
+ *
+ * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
+ *
+ * Requires `resourceId` in request params or request (in that order).
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+async function fetchEntityCount (req, res, next) {
+  const { dataset: datasetId, resourceId: passedResourceId } = req.params
+  const resourceId = passedResourceId ?? req.resourceId
+  console.assert(resourceId, 'missng resourceId')
+
+  const entityCount = await performanceDbApi.getEntityCount(resourceId, datasetId)
+  req.entityCount = entityCount
   next()
 }
 
@@ -356,6 +376,7 @@ export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
   dataset: v.string(),
   issue_type: v.string(),
+  issue_field: v.string(),
   pageNumber: v.optional(v.string()),
   resourceId: v.optional(v.string())
 })
@@ -369,7 +390,7 @@ const validateIssueDetailsQueryParams = validateQueryParams.bind({ schema: Issue
  * @param {*} classes
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
-const issueField = (text, html, classes) => {
+const getIssueField = (text, html, classes) => {
   return {
     key: {
       text
@@ -415,26 +436,36 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
   }
   valueHtml += row.value
 
-  return issueField(row.field, valueHtml, classes)
+  return getIssueField(row.field, valueHtml, classes)
 }
 
 /***
  * Middleware. Updates req with `templateParams`
  */
 function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber } = req
-  const { lpa, dataset: datasetId, issue_type: issueType } = req.params
+  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount } = req
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
-  const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
-    const pageNum = i + 1
-    return {
-      html: performanceDbApi.getTaskMessage(issueType, issues.length) + ` in record ${entryNumber}`,
-      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNum}`
-    }
+  let errorHeading
+  let issueItems
+
+  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
+
+  if (Object.keys(issuesByEntryNumber).length < entityCount) {
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
+    issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
+      const pageNum = i + 1
+      return {
+        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
+        href: `${BaseSubpath}${pageNum}`
+      }
+    })
+  } else {
+    issueItems = [{
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
+    }]
   }
-  )
 
-  const errorHeading = performanceDbApi.getTaskMessage(issueType, issueEntitiesCount, true)
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
   for (const issue of entityIssues) {
@@ -444,7 +475,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
       const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
       const classes = 'dl-summary-card-list__row--error'
 
-      fields.push(issueField(issue.field, valueHtml, classes))
+      fields.push(getIssueField(issue.field, valueHtml, classes))
     }
   }
 
@@ -458,13 +489,13 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
   const paginationObj = {}
   if (pageNumber > 1) {
     paginationObj.previous = {
-      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNumber - 1}`
+      href: `${BaseSubpath}${pageNumber - 1}`
     }
   }
 
   if (pageNumber < issueEntitiesCount) {
     paginationObj.next = {
-      href: `/organisations/${lpa}/${datasetId}/${issueType}/${pageNumber + 1}`
+      href: `${BaseSubpath}${pageNumber + 1}`
     }
   }
 
@@ -479,7 +510,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
       return {
         type: 'item',
         number: item,
-        href: `/organisations/${lpa}/${datasetId}/${issueType}/${item}`,
+        href: `${BaseSubpath}${item}`,
         current: pageNumber === parseInt(item)
       }
     }
@@ -523,6 +554,7 @@ const getIssueDetailsMiddleware = [
   fetchIssues,
   reformatIssuesToBeByEntryNumber,
   fetchEntry,
+  fetchEntityCount,
   fetchIssueEntitiesCount,
   prepareIssueDetailsTemplateParams,
   getIssueDetails
@@ -596,14 +628,18 @@ const organisationsController = {
       const datasetResult = await datasette.runQuery(`SELECT dataset, name FROM dataset WHERE dataset = '${datasetId}'`)
       const dataset = datasetResult.formattedData[0]
 
-      const issues = await performanceDbApi.getLpaDatasetIssues(lpa, datasetId)
+      const resource = await performanceDbApi.getLatestResource(lpa, datasetId)
+
+      const issues = await performanceDbApi.getLpaDatasetIssues(resource.resource, datasetId)
+
+      const entityCount = await performanceDbApi.getEntityCount(resource.resource, datasetId)
 
       const taskList = issues.map((issue) => {
         return {
           title: {
-            text: performanceDbApi.getTaskMessage(issue.issue_type, issue.num_issues)
+            text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
           },
-          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}`,
+          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}/${issue.field}`,
           status: getStatusTag(issue.status)
         }
       })
@@ -626,6 +662,18 @@ const organisationsController = {
     }
   },
 
+  /**
+   * Handles endpoint error responses for organizations.
+   *
+   * @param {Object} req - The incoming request object.
+   * @param {Object} res - The outgoing response object.
+   * @param {Function} next - The next middleware function in the chain.
+   * @param {Object} resourceStatus - An object containing information about the resource status.
+   *
+   * @returns {Promise<void>} A promise that resolves when the error response has been rendered.
+   *
+   * @throws {Error} If an error occurs while processing the request.
+   */
   async getEndpointError (req, res, next, { resourceStatus }) {
     const { lpa, dataset: datasetId } = req.params
 
@@ -658,6 +706,20 @@ const organisationsController = {
     }
   },
 
+  /**
+   * Handles conditional task list request.
+   *
+   * @param {object} req - The HTTP request object.
+   * @param {object} res - The HTTP response object.
+   * @param {function} next - The next middleware function in the chain.
+   *
+   * @throws {Error} - If an error occurs while processing the request.
+   *
+   * @description
+   * This function checks the resource status for a given LPA and dataset ID.
+   * If the resource status is 200, it calls the `getDatasetTaskList` function to retrieve the task list.
+   * Otherwise, it calls the `getEndpointError` function to handle the error.
+   */
   async conditionalTaskListHandler (req, res, next) {
     const { lpa, dataset: datasetId } = req.params
 
