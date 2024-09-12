@@ -1,0 +1,54 @@
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% extends "layouts/main.html" %}
+
+{% set serviceType = 'Submit' %}
+{% set pageName %}
+    {{organisation.name}} - {{dataset.name}} - Get started
+{% endset %}
+
+{% block beforeContent %}
+
+{{ super() }}
+
+{{ govukBreadcrumbs({
+  items: [
+    {
+      text: "Home",
+      href: "/"
+    },
+    {
+      text: "Organisations",
+      href: '/organisations'
+    },
+    {
+      text: organisation.name,
+      href: '/organisations/' + organisation.organisation
+    },
+    {
+      text: 'Get started'
+    }
+  ]
+}) }}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <span class="govuk-caption-xl">{{ organisation.name }}</span>
+        <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
+    </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ dataset | dump }}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{super()}}
+{% endblock %}
