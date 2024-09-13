@@ -40,37 +40,35 @@
   </div>
 </div>
 
-{% if options.tableParams.rows|length > 0 %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    {% if options.tableParams.rows|length > 0 %}
       <h2 class="govuk-heading-m">
         Check your errors
       </h2>
 
-      
       {{ table(options.tableParams) }}
+    {% endif %}
 
-      {% if options.pagination.items | length > 1 %}
-        {{ govukPagination({
-          previous: {
-            href: '/check/results/'+options.id+'/'+options.pagination.previousPage
-          } if options.pagination.previousPage else undefined,
-          next: {
-            href: '/check/results/'+options.id+'/'+options.pagination.nextPage
-          } if options.pagination.nextPage else undefined,
-          items: options.pagination.items
-        })}}
-      {% endif %}
-
-    </div>
+    {% if options.pagination.items | length > 1 %}
+      {{ govukPagination({
+        previous: {
+          href: '/check/results/'+options.id+'/'+options.pagination.previousPage
+        } if options.pagination.previousPage else undefined,
+        next: {
+          href: '/check/results/'+options.id+'/'+options.pagination.nextPage
+        } if options.pagination.nextPage else undefined,
+        items: options.pagination.items
+      })}}
+    {% endif %}
   </div>
-{% endif %}
+</div>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukButton({
       text: "Upload a new version",
-      href: "/upload-method"
+      href: "/check/upload-method"
     }) }}
 
   </div>
