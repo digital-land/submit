@@ -6,7 +6,7 @@
             <thead class="govuk-table__head">
                 <tr class="govuk-table__row">
                     {% for column in params.columns %}
-                        <th scope="col" class="govuk-table__header">{{ column }}</th>
+                        <th scope="col" class="govuk-table__header">{{ column | prettifyColumnName}}</th>
                     {% endfor %}
                 </tr>
             </thead>
