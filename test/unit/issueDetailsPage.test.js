@@ -107,17 +107,31 @@ describe('issueDetails.html', () => {
     expect(document.querySelector('h1').textContent).toContain(params.dataset.name)
   })
 
-  it('should render the error heading', () => {
-    expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(errorHeading)
-  })
+  describe('error summary', () => {
+    it('should render the correct heading', () => {
+      expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(errorHeading)
+    })
 
-  it('should render the issue items', () => {
-    const issueList = document.querySelector('.govuk-error-summary__list')
-    const issueItemElements = [...issueList.children]
-    expect(issueItemElements.length).toBe(issueItems.length)
+    it('should render the correct heading if none is supplied', () => {
+      const noErrorHeadingPageHtml = nunjucks.render('organisations/issueDetails.html', {
+        ...params,
+        errorHeading: undefined
+      })
 
-    issueItemElements.forEach((element, index) => {
-      expect(element.textContent).toContain(issueItems[index].html)
+      const domNoErrorHeading = new JSDOM(noErrorHeadingPageHtml)
+      const documentNoErrorHeading = domNoErrorHeading.window.document
+
+      expect(documentNoErrorHeading.querySelector('.govuk-error-summary__title').textContent).toContain('There is a problem')
+    })
+
+    it('should render the issue items', () => {
+      const issueList = document.querySelector('.govuk-error-summary__list')
+      const issueItemElements = [...issueList.children]
+      expect(issueItemElements.length).toBe(issueItems.length)
+
+      issueItemElements.forEach((element, index) => {
+        expect(element.textContent).toContain(issueItems[index].html)
+      })
     })
   })
 

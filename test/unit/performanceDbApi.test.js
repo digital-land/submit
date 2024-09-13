@@ -88,13 +88,38 @@ describe('performanceDbApi', () => {
 
   describe('getTaskMessage', () => {
     it('returns a message for a known issue type with no field provided', () => {
-      const message = performanceDbApi.getTaskMessage('some_issue_type', 1)
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1 })
       expect(message).toBeDefined()
       expect(message).toContain('singular message')
     })
 
+    it('returns a message with the correct field replacement', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'my_field' })
+      expect(message).toContain('my_field')
+    })
+
+    it('returns a singular message for num_issues === 1', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1 })
+      expect(message).toContain('singular message for value')
+    })
+
+    it('returns a plural message for num_issues > 1', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 2 })
+      expect(message).toContain('plural message for value with count 2')
+    })
+
+    it('returns an entity-level message when entityLevel is true', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, entityCount: 2 }, true)
+      expect(message).toContain('singular entities message for value')
+    })
+
+    it('returns an "all rows" message when num_issues >= entityCount', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 5, entityCount: 5, field: 'some_field' })
+      expect(message).toContain('all rows message for some_field')
+    })
+
     it('returns a fallback message when the issue type is unknown', () => {
-      const message = performanceDbApi.getTaskMessage('unknown_issue_type', 1)
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'unknown_issue_type', num_issues: 1 })
       expect(message).toContain('1 issue of type unknown_issue_type')
     })
   })
