@@ -10,7 +10,6 @@
     "standard.usePackageJson": true,
     "editor.insertSpaces": true,
     "editor.detectIndentation": true,
-    "editor.tabSize": 2,
-    "editor.formatOnSave": true
+    "editor.tabSize": 2
   }
 }
