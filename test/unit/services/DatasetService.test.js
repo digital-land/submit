@@ -1,0 +1,49 @@
+import { describe, it, expect, vi } from 'vitest'
+import { getLatestDatasetResourcesForLpa, getGeometryEntriesForResourceId } from '../../../src/services/DatasetService.js'
+import datasette from '../../../src/services/datasette'
+
+vi.mock('../../../src/services/datasette')
+
+describe('DatasetService', () => {
+  describe('getLatestDatasetResourcesForLpa', () => {
+    it('should return the latest dataset resources for a given LPA', async () => {
+      const mockData = {
+        formattedData: [
+          { resource: 'resource1', status: 'active', endpoint: 'endpoint1', endpoint_url: 'url1', days_since_200: 5, exception: null }
+        ]
+      }
+      datasette.runQuery.mockResolvedValue(mockData)
+
+      const result = await getLatestDatasetResourcesForLpa('dataset1', 'lpa1')
+      expect(result).toEqual(mockData.formattedData[0])
+    })
+
+    it('should return undefined if no data is found', async () => {
+      datasette.runQuery.mockResolvedValue({ formattedData: [] })
+
+      const result = await getLatestDatasetResourcesForLpa('dataset1', 'lpa1')
+      expect(result).toBeUndefined()
+    })
+  })
+
+  describe('getGeometryEntriesForResourceId', () => {
+    it('should return geometry entries for a given resource ID', async () => {
+      const mockData = {
+        formattedData: [
+          { rowid: 1, end_date: '2023-01-01', fact: 'fact1', entry_date: '2023-01-01', entry_number: 1, resource: 'resource1', start_date: '2023-01-01', entity: 'entity1', field: 'geometry', value: 'value1' }
+        ]
+      }
+      datasette.runQuery.mockResolvedValue(mockData)
+
+      const result = await getGeometryEntriesForResourceId('dataset1', 'resource1')
+      expect(result).toEqual(mockData.formattedData)
+    })
+
+    it('should return an empty array if no data is found', async () => {
+      datasette.runQuery.mockResolvedValue({ formattedData: [] })
+
+      const result = await getGeometryEntriesForResourceId('dataset1', 'resource1')
+      expect(result).toEqual([])
+    })
+  })
+})

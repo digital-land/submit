@@ -132,7 +132,7 @@
   <script>
     window.serverContext = {
       containerId: 'map',
-      geometries: []
+      geometries: {{ geometries | dump | safe }},
     }
   </script>
   <script src="/public/js/map.bundle.js"></script>

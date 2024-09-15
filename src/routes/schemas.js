@@ -69,7 +69,8 @@ export const OrgGetStarted = v.strictObject({
 
 export const OrgDatasetOverview = v.strictObject({
   organisation: OrgField,
-  dataset: DatasetNameField
+  dataset: DatasetNameField,
+  geometries: v.array(v.string())
 })
 
 export const OrgDatasetTaskList = v.strictObject({
