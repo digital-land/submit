@@ -34,8 +34,57 @@ export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
 
     return getGeometryEntriesForResourceId(dataset, resource)
   } catch (error) {
-    logger.error(`Error getting geometry entries for ${lpa} in ${dataset}`, error)
+    logger.error(
+      `Error getting geometry entries for ${lpa} in ${dataset}`,
+      error
+    )
 
     return []
+  }
+}
+
+export async function getDatasetStatsForResourceId (dataset, resourceId) {
+  const sql = `
+    SELECT 'number_of_records' AS metric, COUNT(*) AS value
+    FROM
+      (
+        SELECT
+          *
+        FROM
+          fact_resource fr
+        WHERE
+          fr.resource = '${resourceId}'
+        GROUP BY
+          entry_number
+      )
+    UNION ALL
+    SELECT 'number_of_fields_supplied' AS metric, COUNT(*) AS value
+    FROM
+    (
+      SELECT
+        *
+      FROM
+        fact_resource fr
+      WHERE
+        fr.resource = '${resourceId}'
+    )`
+
+  const { formattedData } = await datasette.runQuery(sql, dataset)
+
+  return formattedData
+}
+
+export async function getDatasetStats (dataset, lpa) {
+  try {
+    const { resource: resourceId } = await getLatestDatasetResourceForLpa(dataset, lpa)
+
+    return getDatasetStatsForResourceId(dataset, resourceId)
+  } catch (error) {
+    logger.error(
+      `Error getting geometry entries for ${lpa} in ${dataset}`,
+      error
+    )
+
+    return {}
   }
 }
