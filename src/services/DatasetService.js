@@ -1,9 +1,9 @@
 import datasette from './datasette.js'
 import logger from '../utils/logger.js'
 
-export async function getLatestDatasetResourcesForLpa (dataset, lpa) {
+export async function getLatestDatasetResourceForLpa (dataset, lpa) {
   const sql = `
-    SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
+    SELECT rle.resource
     FROM reporting_latest_endpoints rle
     LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
     LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
@@ -17,27 +17,11 @@ export async function getLatestDatasetResourcesForLpa (dataset, lpa) {
 
 export async function getGeometryEntriesForResourceId (dataset, resourceId) {
   const sql = `
-      select
-        fr.rowid,
-        fr.end_date,
-        fr.fact,
-        fr.entry_date,
-        fr.entry_number,
-        fr.resource,
-        fr.start_date,
-        ft.entity,
-        ft.field,
-        ft.entry_date,
-        ft.start_date,
-        ft.value
-      from
-        fact_resource fr
-        left join fact ft on fr.fact = ft.fact
-      where
-        fr.resource = '${resourceId}'
-        AND ft.field = 'geometry'
-      order by
-        fr.rowid`
+      SELECT ft.field, ft.value
+      FROM fact_resource fr
+      LEFT JOIN fact ft ON fr.fact = ft.fact
+      WHERE fr.resource = '${resourceId}'
+      AND ft.field = 'geometry'`
 
   const { formattedData } = await datasette.runQuery(sql, dataset)
 
@@ -46,7 +30,7 @@ export async function getGeometryEntriesForResourceId (dataset, resourceId) {
 
 export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
   try {
-    const { resource } = await getLatestDatasetResourcesForLpa(dataset, lpa)
+    const { resource } = await getLatestDatasetResourceForLpa(dataset, lpa)
 
     return getGeometryEntriesForResourceId(dataset, resource)
   } catch (error) {
