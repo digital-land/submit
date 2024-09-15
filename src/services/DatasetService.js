@@ -45,7 +45,7 @@ export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
 
 export async function getDatasetStatsForResourceId (dataset, resourceId) {
   const sql = `
-    SELECT 'number_of_records' AS metric, COUNT(*) AS value
+    SELECT 'numberOfRecords' AS metric, COUNT(*) AS value
     FROM
       (
         SELECT
@@ -58,7 +58,7 @@ export async function getDatasetStatsForResourceId (dataset, resourceId) {
           entry_number
       )
     UNION ALL
-    SELECT 'number_of_fields_supplied' AS metric, COUNT(*) AS value
+    SELECT 'numberOfFieldsSupplied' AS metric, COUNT(*) AS value
     FROM
     (
       SELECT
@@ -76,9 +76,15 @@ export async function getDatasetStatsForResourceId (dataset, resourceId) {
 
 export async function getDatasetStats (dataset, lpa) {
   try {
+    const stats = {}
     const { resource: resourceId } = await getLatestDatasetResourceForLpa(dataset, lpa)
+    const metrics = await getDatasetStatsForResourceId(dataset, resourceId)
 
-    return getDatasetStatsForResourceId(dataset, resourceId)
+    metrics.forEach(({ metric, value }) => {
+      stats[metric] = value
+    })
+
+    return stats
   } catch (error) {
     logger.error(
       `Error getting geometry entries for ${lpa} in ${dataset}`,
