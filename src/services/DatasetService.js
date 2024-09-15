@@ -1,4 +1,5 @@
 import datasette from './datasette.js'
+import logger from '../utils/logger.js'
 
 export async function getLatestDatasetResourcesForLpa (dataset, lpa) {
   const sql = `
@@ -44,7 +45,13 @@ export async function getGeometryEntriesForResourceId (dataset, resourceId) {
 }
 
 export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
-  const { resource } = await getLatestDatasetResourcesForLpa(dataset, lpa)
+  try {
+    const { resource } = await getLatestDatasetResourcesForLpa(dataset, lpa)
 
-  return getGeometryEntriesForResourceId(dataset, resource)
+    return getGeometryEntriesForResourceId(dataset, resource)
+  } catch (error) {
+    logger.error(`Error getting geometry entries for ${lpa} in ${dataset}`, error)
+
+    return []
+  }
 }
