@@ -4,7 +4,7 @@
 
 {% set serviceType = 'Submit' %}
 {% set pageName %}
-    {{organisation.name}} - {{dataset.name}} - Get started
+    {{organisation.name}} - {{dataset.name}} - Dataset overview
 {% endset %}
 
 {% block beforeContent %}
@@ -26,7 +26,7 @@
       href: '/organisations/' + organisation.organisation
     },
     {
-      text: 'Get started'
+      text: dataset.name
     }
   ]
 }) }}
