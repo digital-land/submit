@@ -21,9 +21,12 @@ export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
 
     return getGeometryEntriesForResourceId(dataset, resourceId)
   } catch (error) {
-    logger.error(
-      `Error getting geometry entries for ${lpa} in ${dataset}`,
-      error
+    logger.warn(
+      `DatasetService.getLatestDatasetGeometryEntriesForLpa(): Error getting geometry entries for ${lpa} in ${dataset}`,
+      {
+        errorMessage: error.message,
+        errorStack: error.stack
+      }
     )
 
     return []
@@ -73,9 +76,12 @@ export async function getDatasetStats (dataset, lpa) {
 
     return stats
   } catch (error) {
-    logger.error(
-      `Error getting geometry entries for ${lpa} in ${dataset}`,
-      error
+    logger.warn(
+      `DatasetService.getDatasetStats(): Error getting dataset stats for ${lpa} in ${dataset}`,
+      {
+        errorMessage: error.message,
+        errorStack: error.stack
+      }
     )
 
     return {}
