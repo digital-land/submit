@@ -1,31 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getGeometryEntriesForResourceId, getDatasetStatsForResourceId, getDatasetStats, getLatestDatasetResourceForLpa } from '../../../src/services/DatasetService.js'
+import { getGeometryEntriesForResourceId, getDatasetStatsForResourceId, getDatasetStats } from '../../../src/services/DatasetService.js'
 import datasette from '../../../src/services/datasette'
 
 vi.mock('../../../src/services/datasette')
 
 describe('DatasetService', () => {
-  describe('getLatestDatasetResourcesForLpa', () => {
-    it('should return the latest dataset resources for a given LPA', async () => {
-      const mockData = {
-        formattedData: [
-          { resource: 'resource1', status: 'active', endpoint: 'endpoint1', endpoint_url: 'url1', days_since_200: 5, exception: null }
-        ]
-      }
-      datasette.runQuery.mockResolvedValue(mockData)
-
-      const result = await getLatestDatasetResourceForLpa('dataset1', 'lpa1')
-      expect(result).toEqual(mockData.formattedData[0])
-    })
-
-    it('should return undefined if no data is found', async () => {
-      datasette.runQuery.mockResolvedValue({ formattedData: [] })
-
-      const result = await getLatestDatasetResourceForLpa('dataset1', 'lpa1')
-      expect(result).toBeUndefined()
-    })
-  })
-
   describe('getGeometryEntriesForResourceId', () => {
     it('should return geometry entries for a given resource ID', async () => {
       const mockData = {

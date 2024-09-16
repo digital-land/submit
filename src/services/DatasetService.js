@@ -1,19 +1,6 @@
 import datasette from './datasette.js'
 import logger from '../utils/logger.js'
-
-export async function getLatestDatasetResourceForLpa (dataset, lpa) {
-  const sql = `
-    SELECT rle.resource
-    FROM reporting_latest_endpoints rle
-    LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
-    LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
-    WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
-    AND rle.pipeline = '${dataset}'`
-
-  const resources = await datasette.runQuery(sql)
-
-  return resources?.formattedData[0]
-}
+import performanceDbApi from './performanceDbApi.js'
 
 export async function getGeometryEntriesForResourceId (dataset, resourceId) {
   const sql = `
@@ -30,9 +17,9 @@ export async function getGeometryEntriesForResourceId (dataset, resourceId) {
 
 export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
   try {
-    const { resource } = await getLatestDatasetResourceForLpa(dataset, lpa)
+    const { resource: resourceId } = await performanceDbApi.getLatestResource(lpa, dataset)
 
-    return getGeometryEntriesForResourceId(dataset, resource)
+    return getGeometryEntriesForResourceId(dataset, resourceId)
   } catch (error) {
     logger.error(
       `Error getting geometry entries for ${lpa} in ${dataset}`,
@@ -77,7 +64,7 @@ export async function getDatasetStatsForResourceId (dataset, resourceId) {
 export async function getDatasetStats (dataset, lpa) {
   try {
     const stats = {}
-    const { resource: resourceId } = await getLatestDatasetResourceForLpa(dataset, lpa)
+    const { resource: resourceId } = await performanceDbApi.getLatestResource(lpa, dataset)
     const metrics = await getDatasetStatsForResourceId(dataset, resourceId)
 
     metrics.forEach(({ metric, value }) => {
