@@ -1,33 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../../../src/filters/filters.js'
-import { runGenericPageTests } from '../../generic-page.js'
 import jsdom from 'jsdom'
-
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
-
-const datasetNameMapping = new Map([
-  ['article-4-direction', 'Article 4 Direction'],
-  ['article-4-direction-area', 'Article 4 Direction Area']
-  // ...
-])
-
-addFilters(nunjucksEnv, { datasetNameMapping })
+import { runGenericPageTests } from '../../generic-page.js'
+import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
+import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 
 describe('Dataset Overview Page', () => {
   const params = {
     organisation: {
-      name: 'Mock org'
+      name: 'Mock org',
+      organisation: 'mock-org'
     },
     dataset: {
       name: 'World heritage site buffer zone'
@@ -38,7 +19,9 @@ describe('Dataset Overview Page', () => {
     },
     geometries: []
   }
-  const html = nunjucks.render('organisations/dataset-overview.html', params)
+
+  const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
+  const html = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', params))
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
@@ -76,9 +59,9 @@ describe('Dataset Overview Page', () => {
   it('Renders the map section when geometries are present', () => {
     const paramsWithGeometries = {
       ...params,
-      geometries: [{ type: 'Point', coordinates: [0, 0] }]
+      geometries: ['MULTIPOLYGON (((-0.1275 51.5072, -0.1275 51.5072, -0.1275 51.5072, -0.1275 51.5072)))']
     }
-    const htmlWithGeometries = nunjucks.render('organisations/dataset-overview.html', paramsWithGeometries)
+    const htmlWithGeometries = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithGeometries))
     const domWithGeometries = new jsdom.JSDOM(htmlWithGeometries)
     const documentWithGeometries = domWithGeometries.window.document
 
