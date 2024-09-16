@@ -15,7 +15,7 @@ class ResultsController extends PageController {
       let responseDetails
 
       if (!requestData.isComplete()) {
-        res.redirect(`/status/${req.params.id}`)
+        res.redirect(`/check/status/${req.params.id}`)
         return
       } else if (req.form.options.data.isFailed()) {
         if (req.form.options.data.getType() === 'check_file') {
