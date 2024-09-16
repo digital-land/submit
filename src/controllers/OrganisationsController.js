@@ -9,6 +9,7 @@ import { templateSchema } from '../routes/schemas.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import config from '../../config/index.js'
+import { getDatasetStats, getLatestDatasetGeometryEntriesForLpa } from '../services/DatasetService.js'
 
 // get a list of available datasets
 const availableDatasets = Object.values(dataSubjects)
@@ -121,6 +122,30 @@ const fetchDatasetInfo = fetchOne.bind({
   },
   result: 'dataset'
 })
+
+const fetchDatasetGeometries = async (req, res, next) => {
+  const datasetEntries = await getLatestDatasetGeometryEntriesForLpa(req.params.dataset, req.params.lpa)
+  req.geometries = datasetEntries.map(entry => entry.value)
+
+  next()
+}
+
+const fetchDatasetStats = async (req, res, next) => {
+  req.stats = await getDatasetStats(req.params.dataset, req.params.lpa)
+
+  next()
+}
+
+const getDatasetOverview = renderTemplate.bind(
+  {
+    templateParams (req) {
+      const { orgInfo: organisation, dataset, geometries, stats } = req
+      return { organisation, dataset, geometries, stats }
+    },
+    template: 'organisations/dataset-overview.html',
+    handlerName: 'datasetOverview'
+  }
+)
 
 /**
  * Middleware.
@@ -544,6 +569,8 @@ const getIssueDetails = renderTemplate.bind({
 
 const getGetStartedMiddleware = [fetchOrgInfo, fetchDatasetName, getGetStarted, logPageError]
 
+const getDatasetOverviewMiddleware = [fetchOrgInfo, fetchDatasetName, fetchDatasetGeometries, fetchDatasetStats, getDatasetOverview, logPageError]
+
 const getOverviewMiddleware = [fetchOrgInfo, fetchLpaOverview, prepareOverviewTemplateParams, getOverview, logPageError]
 
 const getIssueDetailsMiddleware = [
@@ -742,6 +769,9 @@ const organisationsController = {
    */
   getGetStartedMiddleware,
   getGetStarted,
+
+  getDatasetOverviewMiddleware,
+  getDatasetOverview,
 
   getOverviewMiddleware,
   getOverview,

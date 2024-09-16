@@ -69,7 +69,12 @@
         <li class="govuk-task-list__item govuk-task-list__item--with-link">
           <div class="govuk-task-list__name-and-hint">
             <h2 class="govuk-heading-m">
-              {% if dataset.endpoint %}
+              {% if dataset.status === "Live" %}
+                <a class="govuk-link govuk-task-list__link"
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
+                  {{dataset.slug | datasetSlugToReadableName}}
+                </a>
+              {% elseif dataset.endpoint %}
                 <a class="govuk-link govuk-task-list__link"
                   href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}">
                   {{dataset.slug | datasetSlugToReadableName}}

@@ -67,6 +67,16 @@ export const OrgGetStarted = v.strictObject({
   dataset: DatasetNameField
 })
 
+export const OrgDatasetOverview = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  geometries: v.array(v.string()),
+  stats: v.strictObject({
+    numberOfRecords: v.integer(),
+    numberOfFieldsSupplied: v.integer()
+  })
+})
+
 export const OrgDatasetTaskList = v.strictObject({
   taskList: v.array(v.strictObject({
     title: v.strictObject({ text: NonEmptyString }),
@@ -192,6 +202,7 @@ export const templateSchema = new Map([
   ['organisations/overview.html', OrgOverviewPage],
   ['organisations/find.html', OrgFindPage],
   ['organisations/get-started.html', OrgGetStarted],
+  ['organisations/dataset-overview.html', OrgDatasetOverview],
   ['organisations/datasetTaskList.html', OrgDatasetTaskList],
   ['organisations/http-error.html', OrgEndpointError],
   ['organisations/issueDetails.html', OrgIssueDetails],
