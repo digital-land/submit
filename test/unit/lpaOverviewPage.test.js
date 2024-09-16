@@ -148,17 +148,32 @@ describe('LPA Overview Page', () => {
 
   params.datasets.forEach((dataset, i) => {
     it(`Renders the correct status on each dataset card for dataset='${dataset.slug}'`, () => {
-      let expectedHint = 'Live'
+      let expectedStatus = 'Live'
       if (dataset.status === 'Not submitted') {
-        expectedHint = 'Not submitted'
+        expectedStatus = 'Not submitted'
       } else if (dataset.status === 'Error') {
-        expectedHint = dataset.status
+        expectedStatus = dataset.status
       } else if (dataset.status === 'Needs fixing') {
-        expectedHint = 'Needs fixing'
+        expectedStatus = 'Needs fixing'
       }
 
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
-      expect(statusIndicator.textContent.trim()).toContain(expectedHint)
+      expect(statusIndicator.textContent.trim()).toContain(expectedStatus)
+    })
+
+    it(`Renders the correct link on each dataset card for dataset='${dataset.slug}'`, () => {
+      const expectedLink = datasetCards[i].querySelector('.govuk-task-list__link').href
+
+      if (dataset.status === 'Live') {
+        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}/overview`)
+      } else if (dataset.status === 'Not submitted') {
+        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}/get-started`)
+      } else {
+        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}`)
+      }
+
+      const link = datasetCards[i].querySelector('.govuk-link')
+      expect(link.href).toContain(expectedLink)
     })
   })
 })
