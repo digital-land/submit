@@ -571,10 +571,6 @@ const getOrganisationsMiddleware = [
   logPageError
 ]
 
-// const getDatasetTaskListMiddleware = [
-//   fetchOrgInfoWithStatGeo
-// ]
-
 /**
  * Returns a status tag object with a text label and a CSS class based on the status.
  *
