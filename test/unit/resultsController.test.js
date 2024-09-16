@@ -137,7 +137,7 @@ describe('ResultsController', () => {
 
       const res = { redirect: vi.fn() }
       await resultsController.locals(req, res, () => {})
-      expect(res.redirect).toHaveBeenCalledWith(`/status/${req.params.id}`)
+      expect(res.redirect).toHaveBeenCalledWith(`/check/status/${req.params.id}`)
     })
 
     it("should call next with a 404 error if the result wasn't found", async () => {
