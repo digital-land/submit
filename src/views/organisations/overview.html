@@ -69,7 +69,7 @@
         <li class="govuk-task-list__item govuk-task-list__item--with-link">
           <div class="govuk-task-list__name-and-hint">
             <h2 class="govuk-heading-m">
-              {% if dataset.status === "Live" %}
+                {% if dataset.status === "Live" and not ("tree-preservation-order" in dataset.slug or "tree-preservation-zone" in dataset.slug or "tree" in dataset.slug) %}
                 <a class="govuk-link govuk-task-list__link"
                   href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
                   {{dataset.slug | datasetSlugToReadableName}}
