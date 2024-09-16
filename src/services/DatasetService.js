@@ -33,7 +33,7 @@ export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
   }
 }
 
-export async function getDatasetStatsForResourceId (dataset, resourceId) {
+async function getDatasetStatsForResourceId (dataset, resourceId) {
   const sql = `
     SELECT 'numberOfRecords' AS metric, COUNT(*) AS value
     FROM

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getGeometryEntriesForResourceId, getDatasetStatsForResourceId, getDatasetStats } from '../../../src/services/DatasetService.js'
+import { getGeometryEntriesForResourceId, getDatasetStats } from '../../../src/services/DatasetService.js'
 import datasette from '../../../src/services/datasette'
 
 vi.mock('../../../src/services/datasette')
@@ -22,26 +22,6 @@ describe('DatasetService', () => {
       datasette.runQuery.mockResolvedValue({ formattedData: [] })
 
       const result = await getGeometryEntriesForResourceId('dataset1', 'resource1')
-      expect(result).toEqual([])
-    })
-  })
-
-  describe('getDatasetStatsForResourceId', () => {
-    it('should return dataset stats for a given resource ID', async () => {
-      const mockStats = [
-        { metric: 'numberOfRecords', value: 10 },
-        { metric: 'numberOfFieldsSupplied', value: 5 }
-      ]
-      datasette.runQuery.mockResolvedValue({ formattedData: mockStats })
-
-      const result = await getDatasetStatsForResourceId('dataset1', 'resource1')
-      expect(result).toEqual(mockStats)
-    })
-
-    it('should return an empty array if no data is found', async () => {
-      datasette.runQuery.mockResolvedValue({ formattedData: [] })
-
-      const result = await getDatasetStatsForResourceId('dataset1', 'resource1')
       expect(result).toEqual([])
     })
   })
