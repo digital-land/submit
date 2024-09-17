@@ -9,7 +9,13 @@ import { types } from './logging.js'
  */
 export const invalidSchemaPaths = (error) => {
   if (error instanceof v.ValiError) {
-    return error.issues.map((issue) => issue.path.flatMap((p) => p.key))
+    const paths = []
+    for (const issue of error.issues) {
+      if (issue.path) {
+        paths.push(issue.path.flatMap((p) => p.key))
+      }
+    }
+    return paths
   }
   throw new TypeError(`error is not a validation error: ${error.name}`)
 }

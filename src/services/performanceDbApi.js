@@ -187,25 +187,15 @@ ORDER BY
     return { datasets }
   },
 
-  /**
-     * Retrieves the resource status from the performance database.
-     *
-     * @param {string} lpa - The Local Planning Authority (LPA) code.
-     * @param {string} datasetId - The ID of the dataset to retrieve the status for.
-     * @returns {object} The resource status object containing the endpoint URL, status, latest log entry date, and days since 200.
-     */
-  getResourceStatus: async (lpa, datasetId) => {
-    const sql =
-    /* sql */
-    `
-    select endpoint_url, status, latest_log_entry_date, days_since_200 from reporting_latest_endpoints
+  resourceStatusQuery (lpa, datasetId) {
+    return /* sql */ `
+    select resource, endpoint_url, status, latest_log_entry_date, days_since_200 
+    from reporting_latest_endpoints
     WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
     AND pipeline = '${datasetId}'`
-
-    const result = await datasette.runQuery(sql)
-
-    return result.formattedData[0]
   },
+
+  datasetIssuesQuery,
 
   /**
      * Retrieves LPA dataset issues for a given resource and dataset ID.
@@ -213,7 +203,7 @@ ORDER BY
      * @param {string} resource - The resource to retrieve issues for.
      * @param {string} datasetId - The ID of the dataset to retrieve issues for.
      *
-     * @returns {object[]} An array of issue objects, each containing:
+     * @returns {Promise<object[]>} An array of issue objects, each containing:
      *   - field: {string} The field associated with the issue.
      *   - issue_type: {string} The type of issue.
      *   - line_number: {number} The line number of the issue.
@@ -276,6 +266,16 @@ ORDER BY
     return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field)
   },
 
+  latestResourceQuery: (lpa, dataset) => {
+    return /* sql */ `
+    SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
+    FROM reporting_latest_endpoints rle
+    LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
+    LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
+    WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
+    AND rle.pipeline = '${dataset}'`
+  },
+
   /**
      * Retrieves the latest resource information for a given LPA and dataset.
      *
@@ -284,14 +284,7 @@ ORDER BY
      * @returns {object} The latest resource information, including the resource, status, endpoint, endpoint URL, days since 200, and exception.
      */
   async getLatestResource (lpa, dataset) {
-    const sql = `
-    SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
-    FROM reporting_latest_endpoints rle
-    LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
-    LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
-    WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
-    AND rle.pipeline = '${dataset}'`
-
+    const sql = this.latestResourceQuery(lpa, dataset)
     const result = await datasette.runQuery(sql)
 
     return result.formattedData[0]
@@ -390,12 +383,20 @@ ORDER BY
     return result.formattedData
   },
 
+  entityCountQuery (resource) {
+    return /* sql */ `
+    select dataset, entity_count, resource
+    from dataset_resource
+    WHERE resource = '${resource}'
+  `
+  },
+
   /**
      * Retrieves the entity count for a given resource and dataset.
      *
      * @param {string} resource - The resource to retrieve the entity count for.
      * @param {string} dataset - The dataset to retrieve the entity count from.
-     * @returns {number} The entity count for the given resource and dataset.
+     * @returns {Promise<number>} The entity count for the given resource and dataset.
      */
   async getEntityCount (resource, dataset) {
     const query =

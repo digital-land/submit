@@ -11,7 +11,8 @@ describe('Dataset Overview Page', () => {
       organisation: 'mock-org'
     },
     dataset: {
-      name: 'World heritage site buffer zone'
+      name: 'World heritage site buffer zone',
+      dataset: 'mock-dataset'
     },
     stats: {
       numberOfRecords: 10,

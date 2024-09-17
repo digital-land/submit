@@ -12,7 +12,8 @@ describe('http-error.html', () => {
       organisation: 'mock-org'
     },
     dataset: {
-      name: 'mock-dataset'
+      name: 'mock-dataset',
+      dataset: 'mock-dataset'
     },
     errorData: {
       endpoint_url: 'https://example.com/data-url',
