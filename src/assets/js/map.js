@@ -95,6 +95,17 @@ class Map {
           'fill-opacity': opacity
         }
       })
+
+      this.map.addLayer({
+        id: `${sourceId}-border`,
+        type: 'line',
+        source: sourceId,
+        layout: {},
+        paint: {
+          'line-color': lineColor,
+          'line-width': 1
+        }
+      })
     })
   }
 
