@@ -22,12 +22,26 @@ class Map {
     }
 
     this.map.on('load', () => {
+      this.setFirstSymbolId()
+
       if (this.options.boundaryGeoJson) this.addBoundaryGeoJsonToMap(this.options.boundaryGeoJson)
       if (this.options.wktFormat) this.addWktDataToMap(this.options.geometries)
       else this.addGeoJsonUrlsToMap(this.options.geometries)
 
       if (this.bbox) this.setMapViewToBoundingBox()
     })
+  }
+
+  setFirstSymbolId () {
+    const layers = this.map.getStyle().layers
+
+    // Find the index of the first symbol layer in the map style
+    for (let i = 0; i < layers.length; i++) {
+      if (layers[i].type === 'symbol') {
+        this.firstSymbolId = layers[i].id
+        break
+      }
+    }
   }
 
   addWktDataToMap (geometriesWkt) {
@@ -56,7 +70,7 @@ class Map {
             'fill-color': fillColor,
             'fill-opacity': opacity
           }
-        })
+        }, this.firstSymbolId)
 
         this.map.addLayer({
           id: name + '-border',
@@ -67,7 +81,7 @@ class Map {
             'line-color': lineColor,
             'line-width': 1
           }
-        })
+        }, this.firstSymbolId)
       } else if (geometry.type === 'Point' || geometry.type === 'MultiPoint') {
         this.map.addLayer({
           id: name,
@@ -78,7 +92,7 @@ class Map {
             'circle-color': fillColor,
             'circle-opacity': opacity
           }
-        })
+        }, this.firstSymbolId)
       }
     })
 
@@ -86,16 +100,6 @@ class Map {
   }
 
   addGeoJsonUrlsToMap (geoJsonUrls) {
-    const layers = this.map.getStyle().layers
-    // Find the index of the first symbol layer in the map style
-    let firstSymbolId
-    for (let i = 0; i < layers.length; i++) {
-      if (layers[i].type === 'symbol') {
-        firstSymbolId = layers[i].id
-        break
-      }
-    }
-
     geoJsonUrls.forEach(async (url, index) => {
       const name = `geometry-${index}`
       this.map.addSource(name, {
@@ -112,7 +116,7 @@ class Map {
           'fill-color': fillColor,
           'fill-opacity': opacity
         }
-      }, firstSymbolId)
+      }, this.firstSymbolId)
 
       this.map.addLayer({
         id: `${name}-border`,
@@ -123,7 +127,7 @@ class Map {
           'line-color': lineColor,
           'line-width': 1
         }
-      }, firstSymbolId)
+      }, this.firstSymbolId)
     })
   }
 
@@ -143,7 +147,7 @@ class Map {
         'line-width': 2,
         'line-opacity': opacity
       }
-    })
+    }, this.firstSymbolId)
   }
 
   setMapViewToBoundingBox () {
