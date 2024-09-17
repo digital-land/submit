@@ -9,6 +9,6 @@ router.get('/:lpa/:dataset/:issue_type/:issue_field/:pageNumber', OrganisationsC
 router.get('/:lpa/:dataset/:issue_type/:issue_field', OrganisationsController.getIssueDetailsMiddleware)
 router.get('/:lpa/:dataset', OrganisationsController.conditionalTaskListHandler)
 router.get('/:lpa', OrganisationsController.getOverviewMiddleware)
-router.get('/', OrganisationsController.getOrganisations)
+router.get('/', OrganisationsController.getOrganisationsMiddleware)
 
 export default router
