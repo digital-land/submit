@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getGeometryEntriesForResourceId, getDatasetStats } from '../../../src/services/DatasetService.js'
+import { getGeometryEntriesForResourceId, getDatasetStats, getSpecifications } from '../../../src/services/DatasetService.js'
 import datasette from '../../../src/services/datasette'
 
 vi.mock('../../../src/services/datasette')
@@ -46,6 +46,13 @@ describe('DatasetService', () => {
 
       const result = await getDatasetStats('dataset1', 'lpa1')
       expect(result).toEqual({})
+    })
+  })
+
+  describe('getSpecifications', async () => {
+    it('can get specs', async () => {
+      const specifications = await getSpecifications()
+      expect(specifications).toBeDefined()
     })
   })
 })

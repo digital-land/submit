@@ -35,86 +35,41 @@ export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
   }
 }
 
-/*
-  Needs to get:
-    - Number of records
-    - Number of fields supplied
-    - Number of fields matched
-    - Licence
-    - source documentation url
-    - for each data url
-      - the endpoint
-      - last accessed
-      - last updated
-      - any access errors
+async function getColumnSummary (dataset, lpa) {
+  const sql = `select * from column_field_summary
+    where resource != ''
+    and pipeline = '${dataset}'
+    AND organisation = '${lpa}'
+    limit 1000`
 
-*/
-async function getDatasetStatsForResourceId (dataset, resourceId) {
-  const sql = `
-    SELECT 'numberOfRecords' AS metric, COUNT(*) AS value
-    FROM
-      (
-        SELECT
-          *
-        FROM
-          fact_resource fr
-        WHERE
-          fr.resource = '${resourceId}'
-        GROUP BY
-          entry_number
-      )
-    UNION ALL
-    SELECT 'numberOfFieldsSupplied' AS metric, COUNT(*) AS value
-    FROM
-    (
-      SELECT
-        *
-      FROM
-        fact_resource fr
-      WHERE
-        fr.resource = '${resourceId}'
-    )`
-
-  const { formattedData } = await datasette.runQuery(sql, dataset)
+  const { formattedData } = await datasette.runQuery(sql, 'performance')
 
   return formattedData
 }
 
-// async function getColumnSummary (dataset, lpa) {
-//   const sql = `select * from column_field_summary
-//     where resource != ''
-//     and pipeline = '${dataset}'
-//     AND organisation = '${lpa}'
-//     limit 1000`
+export async function getFieldStats (lpa, dataset) {
+  const columnSummary = await getColumnSummary(dataset, lpa)
+  const specifications = await getSpecifications()
+  const datasetSpecification = specifications[dataset]
 
-//   const { formattedData } = await datasette.runQuery(sql, 'performance')
+  const matchingFields = columnSummary[0].matching_field.split(',')
+  const nonMatchingFields = columnSummary[0].non_matching_field.split(',')
+  const allFields = [...matchingFields, ...nonMatchingFields]
 
-//   return formattedData
-// }
+  const numberOfFieldsSupplied = datasetSpecification.fields.map(field => field.field).reduce((acc, current) => {
+    return allFields.includes(current) ? acc + 1 : acc
+  }, 0)
 
-export async function getDatasetStats (dataset, lpa) {
-  try {
-    const stats = {}
-    const { resource: resourceId } = await performanceDbApi.getLatestResource(lpa, dataset)
-    // const columnSummary = await getColumnSummary(dataset, lpa)
+  const numberOfFieldsMatched = datasetSpecification.fields.map(field => field.field).reduce((acc, current) => {
+    return matchingFields.includes(current) ? acc + 1 : acc
+  }, 0)
 
-    const metrics = await getDatasetStatsForResourceId(dataset, resourceId)
+  const NumberOfExpectedFields = datasetSpecification.fields.length
 
-    metrics.forEach(({ metric, value }) => {
-      stats[metric] = value
-    })
-
-    return stats
-  } catch (error) {
-    logger.warn(
-      `DatasetService.getDatasetStats(): Error getting dataset stats for ${lpa} in ${dataset}`,
-      {
-        errorMessage: error.message,
-        errorStack: error.stack
-      }
-    )
-
-    return {}
+  return {
+    numberOfFieldsSupplied,
+    numberOfFieldsMatched,
+    NumberOfExpectedFields
   }
 }
 
@@ -147,4 +102,17 @@ export async function getSpecifications () {
   } catch (error) {
     console.error(error)
   }
+}
+
+export async function getSources (lpa, dataset) {
+  const sql = `
+    select endpoint, endpoint_url, status, exception, resource, latest_log_entry_date, endpoint_entry_date, endpoint_end_date, resource_start_date, resource_end_date
+    from reporting_historic_endpoints 
+    where REPLACE(organisation, '-eng', '') = '${lpa}' and pipeline = '${dataset}'
+    AND (resource_end_date >= current_timestamp OR resource_end_date is null)
+  `
+
+  const { formattedData } = await datasette.runQuery(sql, 'performance')
+
+  return formattedData
 }

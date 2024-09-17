@@ -33,6 +33,93 @@
 
 {% endblock %}
 
+{% set mainRows = [
+  {
+    key: {
+      text: "Number of records"
+    },
+    value: {
+      text: stats.numberOfRecords | default(0)
+    }
+  },
+  {
+    key: {
+      text: "Number of fields supplied"
+    },
+    value: {
+      text: stats.numberOfFieldsSupplied + '/' + stats.NumberOfExpectedFields | default(0)
+    }
+  },
+  {
+    key: {
+      text: "Number of fields matched"
+    },
+    value: {
+      text: stats.numberOfFieldsMatched + '/' + stats.NumberOfExpectedFields | default(0)
+    }
+  },
+  {
+    key: {
+      text: "License"
+    },
+    value: {
+      text: "To Do"
+    }
+  }  
+] %}
+
+{% set endpointRows = []%}
+
+{% for endpoint in stats.endpoints %}
+  {% set endpointRow = {
+    key: {
+      text: endpoint.name
+    },
+    value: {
+      text: endpoint.endpoint
+    },
+    classes: 'padding-top'
+  } %}
+  {{ endpointRows.push(endpointRow) }}
+
+
+
+  {% if endpoint.error %}
+    {% set lastAccessedRow = {
+      key: {
+        text: 'Data URL last accessed'
+      },
+      value: {
+        html: endpoint.lastAccessed + '<br><p class="govuk-error-message">There was a '+endpoint.error.code+' error accessing the data URL</p> <p class="app-inset-text__error"></p>'
+      },
+      classes: 'app-inset-text---error'
+    } %}
+  {% else %}
+    {% set lastAccessedRow = {
+      key: {
+        text: 'Data URL last accessed'
+      },
+      value: {
+        text: endpoint.lastAccessed
+      }
+    } %}
+  {% endif %}
+
+
+  {{ endpointRows.push(lastAccessedRow) }}
+
+  {% set lastUpdatedRow = {
+    key: {
+      text: 'Data URL last updated'
+    },
+    value: {
+      text: endpoint.lastUpdated
+    }
+  } %}
+  {{ endpointRows.push(lastUpdatedRow) }}
+
+{% endfor %}
+
 {% block content %}
 
 <div class="govuk-grid-row">
@@ -57,34 +144,12 @@
   <div class="govuk-grid-column-two-thirds">
     <section>
       <h2 class="govuk-heading-m">Dataset details</h2>
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Number of records"
-            },
-            value: {
-              text: stats.numberOfRecords | default(0)
-            }
-          },
-          {
-            key: {
-              text: "Number of fields supplied"
-            },
-            value: {
-              text: stats.numberOfFieldsSupplied | default(0)
-            }
-          },
-          {
-            key: {
-              text: "License"
-            },
-            value: {
-              text: "Open Government Licence"
-            }
-          }
-        ]
-      }) }}
+      {{ govukSummaryList({ rows: mainRows }) }}
+
+      
+      <h2 class="govuk-heading-m">Endpoints</h2>
+
+      {{ govukSummaryList({ rows: endpointRows }) }}
     </section>
   </div>
 </div>

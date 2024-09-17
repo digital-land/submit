@@ -394,13 +394,34 @@ ORDER BY
      * @param {string} dataset - The dataset to retrieve the entity count from.
      * @returns {number} The entity count for the given resource and dataset.
      */
-  async getEntityCount (resource, dataset) {
+  async getEntityCountForResource (resource, dataset) {
     const query =
     /* sql */
     `
     select dataset, entity_count, resource
     from dataset_resource
     WHERE resource = '${resource}'
+  `
+
+    const result = await datasette.runQuery(query, dataset)
+
+    return result.formattedData[0].entity_count
+  },
+
+  /**
+   * Retrieves the entity count for a given resource and dataset.
+   *
+   * @param {string} resource - The resource to retrieve the entity count for.
+   * @param {string} dataset - The dataset to retrieve the entity count from.
+   * @returns {number} The entity count for the given resource and dataset.
+   */
+  async getEntityCount (lpa, dataset) {
+    const query =
+    /* sql */
+    `
+    select dataset, entity_count, resource
+    from dataset_resource
+    WHERE resource = '${lpa}'
   `
 
     const result = await datasette.runQuery(query, dataset)

@@ -9,7 +9,7 @@ import { templateSchema } from '../routes/schemas.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import config from '../../config/index.js'
-import { getDatasetStats, getLatestDatasetGeometryEntriesForLpa } from '../services/DatasetService.js'
+import { getFieldStats, getLatestDatasetGeometryEntriesForLpa, getSources } from '../services/DatasetService.js'
 
 // get a list of available datasets
 const availableDatasets = Object.values(dataSubjects)
@@ -131,7 +131,47 @@ const fetchDatasetGeometries = async (req, res, next) => {
 }
 
 const fetchDatasetStats = async (req, res, next) => {
-  req.stats = await getDatasetStats(req.params.dataset, req.params.lpa)
+  const { dataset, lpa } = req.params
+
+  const { numberOfFieldsSupplied, numberOfFieldsMatched, NumberOfExpectedFields } = await getFieldStats(lpa, dataset)
+
+  const sources = await getSources(lpa, dataset)
+
+  // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
+  const endpoints = sources.sort((a, b) => {
+    if (a.status >= 200 && a.status < 300) return -1
+    if (b.status >= 200 && b.status < 300) return 1
+    return 0
+  }).map((source, index) => {
+    let error
+
+    if (parseInt(source.status) <= 200 || parseInt(source.status) > 300) {
+      error = {
+        code: parseInt(source.status),
+        exception: source.exception
+      }
+    }
+
+    return {
+      name: `Data Url ${index}`,
+      endpoint: source.endpoint_url,
+      lastAccessed: source.latest_log_entry_date,
+      lastUpdated: source.endpoint_entry_date, // not sure if this is the lastupdated
+      error
+    }
+  })
+
+  const numberOfRecords = 10 // ToDo: await performanceDbApi.getEntityCount(lpa, dataset)
+
+  // ToDo: get the documentation url
+
+  req.stats = {
+    numberOfFieldsSupplied,
+    numberOfFieldsMatched,
+    NumberOfExpectedFields,
+    numberOfRecords,
+    endpoints
+  }
 
   next()
 }
@@ -139,7 +179,11 @@ const fetchDatasetStats = async (req, res, next) => {
 const getDatasetOverview = renderTemplate.bind(
   {
     templateParams (req) {
-      const { orgInfo: organisation, dataset, geometries, stats } = req
+      const {
+        orgInfo: organisation,
+        dataset, geometries,
+        stats
+      } = req
       return { organisation, dataset, geometries, stats }
     },
     template: 'organisations/dataset-overview.html',
@@ -262,7 +306,7 @@ async function fetchEntityCount (req, res, next) {
   const resourceId = passedResourceId ?? req.resourceId
   console.assert(resourceId, 'missng resourceId')
 
-  const entityCount = await performanceDbApi.getEntityCount(resourceId, datasetId)
+  const entityCount = await performanceDbApi.getEntityCountForResource(resourceId, datasetId)
   req.entityCount = entityCount
   next()
 }
@@ -659,7 +703,7 @@ const organisationsController = {
 
       const issues = await performanceDbApi.getLpaDatasetIssues(resource.resource, datasetId)
 
-      const entityCount = await performanceDbApi.getEntityCount(resource.resource, datasetId)
+      const entityCount = await performanceDbApi.getEntityCountForResource(resource.resource, datasetId)
 
       const taskList = issues.map((issue) => {
         return {

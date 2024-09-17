@@ -73,7 +73,19 @@ export const OrgDatasetOverview = v.strictObject({
   geometries: v.array(v.string()),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
-    numberOfFieldsSupplied: v.integer()
+    numberOfFieldsSupplied: v.integer(),
+    numberOfFieldsMatched: v.integer(),
+    NumberOfExpectedFields: v.integer(),
+    endpoints: v.array(v.strictObject({
+      name: v.string(),
+      endpoint: v.string(),
+      lastAccessed: v.string(), // ToDo: can we have date type on these?
+      lastUpdated: v.string(),
+      error: v.optional(v.strictObject({
+        code: v.integer(),
+        exception: v.string()
+      }))
+    }))
   })
 })
 
