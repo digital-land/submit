@@ -152,28 +152,29 @@ class Map {
   }
 }
 
-const generateGeoJsonLinks = async (geoJsonUrl) => {
+const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   const geoJsonLinks = [geoJsonUrl]
   const initialResponse = await fetch(geoJsonUrl)
   const initialData = await initialResponse.json()
 
+  // return if no pagination is needed
   if (!initialData.links || !initialData.links.last) return geoJsonLinks
 
+  // get the limit and last offset from the last link
   const lastLink = new URL(initialData.links.last)
-  const limit = lastLink.searchParams.get('limit')
-  const lastOffset = lastLink.searchParams.get('offset')
+  const limit = parseInt(lastLink.searchParams.get('limit'))
+  const lastOffset = parseInt(lastLink.searchParams.get('offset'))
 
+  // return if the limit or lastOffset is missing
   if (!limit || !lastOffset) return geoJsonLinks
 
-  console.log(limit, lastOffset)
-
-  // generate an array of links to fetch
-  /*  for (let offset = limit; offset < lastOffset; offset += limit) {
+  // create a loop to generate the links
+  for (let offset = limit; offset < lastOffset; offset += limit) {
     const newLink = new URL(geoJsonUrl)
     newLink.searchParams.set('offset', offset)
-    console.log(newLink.toString())
+
     geoJsonLinks.push(newLink.toString())
-  } */
+  }
 
   return geoJsonLinks
 }
@@ -183,15 +184,12 @@ const createMapFromServerContext = async () => {
 
   let data = geometries
 
-  if (geoJsonUrl) {
-    data = await generateGeoJsonLinks(geoJsonUrl)
-
-    console.log(data)
-  }
+  // if the geoJsonUrl is provided, generate the paginated GeoJSON links
+  if (geoJsonUrl) data = await generatePaginatedGeoJsonLinks(geoJsonUrl)
 
   // if any of the required properties are missing, return null
   if (!containerId || !data) {
-    console.log('Missing required properties (containerId and (geometries or geoJsonUrl)) on window.serverContext', window.serverContext)
+    console.log('Missing required properties (containerId and either geometries or geoJsonUrl) on window.serverContext', window.serverContext)
     return null
   }
 
