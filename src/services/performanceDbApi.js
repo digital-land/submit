@@ -215,7 +215,7 @@ ORDER BY
     LEFT JOIN
       issue_type it ON i.issue_type = it.issue_type
     WHERE
-        i.resource = '${resource}' 
+        i.resource = '${resource}'
         AND i.dataset = '${datasetId}'
         AND (it.severity == 'error')
     GROUP BY i.issue_type, i.field
@@ -405,6 +405,6 @@ ORDER BY
 
     const result = await datasette.runQuery(query, dataset)
 
-    return result.formattedData[0].entity_count
+    return result.formattedData && result.formattedData.length ? result.formattedData[0].entity_count : 0
   }
 }
