@@ -12,13 +12,19 @@ class Map {
       container: this.options.containerId,
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
       zoom: 11,
-      center: this.options.center ?? [-0.1298779, 51.4959698],
+      center: [-0.1298779, 51.4959698],
       interactive: this.options.interactive
     })
+
+    if (this.options.boundingBox) {
+      this.bbox = this.options.boundingBox
+    }
 
     this.map.on('load', () => {
       if (this.options.wktFormat) this.addWktDataToMap(this.options.geometries)
       else this.addGeoJsonUrlsToMap(this.options.geometries)
+
+      if (this.bbox) this.setMapViewToBoundingBox()
     })
   }
 
@@ -74,8 +80,7 @@ class Map {
       }
     })
 
-    this.bbox = this.calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
-    this.setMapViewToBoundingBox()
+    this.bbox = calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
   }
 
   addGeoJsonUrlsToMap (geoJsonUrls) {
@@ -130,46 +135,52 @@ class Map {
       zoom: 11
     })
   }
-
-  calculateBoundingBoxFromGeometries (geometries) {
-    let minX = Infinity
-    let minY = Infinity
-    let maxX = -Infinity
-    let maxY = -Infinity
-
-    const pullOutCoordinates = (geometry) => {
-      if (Array.isArray(geometry[0])) {
-        geometry.forEach(pullOutCoordinates)
-      } else {
-        const [x, y] = geometry
-
-        // if x or y isn't a valid number log an error and continue
-        if (isNaN(x) || isNaN(y)) {
-          console.error('Invalid coordinates', x, y)
-          return
-        }
-
-        minX = Math.min(minX, x)
-        minY = Math.min(minY, y)
-        maxX = Math.max(maxX, x)
-        maxY = Math.max(maxY, y)
-      }
-    }
-
-    pullOutCoordinates(geometries)
-
-    // Return the bounding box
-    return [[minX, minY], [maxX, maxY]]
-  }
 }
 
-const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
+const calculateBoundingBoxFromGeometries = (geometries) => {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+
+  const pullOutCoordinates = (geometry) => {
+    if (Array.isArray(geometry[0])) {
+      geometry.forEach(pullOutCoordinates)
+    } else {
+      const [x, y] = geometry
+
+      // if x or y isn't a valid number log an error and continue
+      if (isNaN(x) || isNaN(y)) {
+        console.error('Invalid coordinates', x, y)
+        return
+      }
+
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+    }
+  }
+
+  pullOutCoordinates(geometries)
+
+  // Return the bounding box
+  return [[minX, minY], [maxX, maxY]]
+}
+
+const generatePaginatedGeoJsonLinksAndBoundingBox = async (geoJsonUrl) => {
   const geoJsonLinks = [geoJsonUrl]
   const initialResponse = await fetch(geoJsonUrl)
   const initialData = await initialResponse.json()
+  const boundingBox = calculateBoundingBoxFromGeometries(initialData.features[0].geometry.coordinates)
 
   // return if no pagination is needed
-  if (!initialData.links || !initialData.links.last) return geoJsonLinks
+  if (!initialData.links || !initialData.links.last) {
+    return {
+      geoJsonLinks,
+      boundingBox
+    }
+  }
 
   // get the limit and last offset from the last link
   const lastLink = new URL(initialData.links.last)
@@ -177,7 +188,12 @@ const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   const lastOffset = parseInt(lastLink.searchParams.get('offset'))
 
   // return if the limit or lastOffset is missing
-  if (!limit || !lastOffset) return geoJsonLinks
+  if (!limit || !lastOffset) {
+    return {
+      geoJsonLinks,
+      boundingBox
+    }
+  }
 
   // create a loop to generate the links
   for (let offset = limit; offset < lastOffset; offset += limit) {
@@ -187,7 +203,10 @@ const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
     geoJsonLinks.push(newLink.toString())
   }
 
-  return geoJsonLinks
+  return {
+    geoJsonLinks,
+    boundingBox
+  }
 }
 
 const createMapFromServerContext = async () => {
@@ -200,7 +219,12 @@ const createMapFromServerContext = async () => {
   }
 
   // if the geoJsonUrl is provided, generate the paginated GeoJSON links
-  if (geoJsonUrl) options.geometries = await generatePaginatedGeoJsonLinks(geoJsonUrl)
+  if (geoJsonUrl) {
+    const { geoJsonLinks, boundingBox } = await generatePaginatedGeoJsonLinksAndBoundingBox(geoJsonUrl)
+
+    options.geometries = geoJsonLinks
+    options.boundingBox = boundingBox
+  }
 
   // if any of the required properties are missing, return null
   if (!containerId || !options.geometries) {
