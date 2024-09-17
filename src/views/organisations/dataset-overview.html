@@ -2,7 +2,15 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% extends "layouts/main.html" %}
 
-{% set showMap = ["tree"].includes(dataset.dataset) %}
+{% set showMap = [
+  "article-4-direction-area",
+  "conservation-area",
+  "listed-building",
+  "listed-building-outline",
+  "tree",
+  "tree-preservation-zone"
+].includes(dataset.dataset) %}
+
 {% set serviceType = 'Submit' %}
 {% set pageName %}
     {{organisation.name}} - {{dataset.name}} - Dataset overview
