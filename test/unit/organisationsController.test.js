@@ -73,8 +73,8 @@ describe('OrganisationsController.js', () => {
       const res = { render: vi.fn() }
       const next = vi.fn()
 
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [] })
-
+      req.organisations = { formattedData: [] }
+      organisationsController.prepareGetOrganisationsTemplateParams(req, res, next)
       await organisationsController.getOrganisations(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
@@ -97,8 +97,8 @@ describe('OrganisationsController.js', () => {
         { name: 'East Sussex NHS Trust', organisation: 'East Sussex NHS Trust' }
       ]
 
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: datasetteResponse })
-
+      req.organisations = { formattedData: datasetteResponse }
+      organisationsController.prepareGetOrganisationsTemplateParams(req, res, next)
       await organisationsController.getOrganisations(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
@@ -132,8 +132,7 @@ describe('OrganisationsController.js', () => {
       const error = new Error('Test error')
 
       vi.mocked(datasette.runQuery).mockRejectedValue(error)
-
-      await organisationsController.getOrganisations(req, res, next)
+      await organisationsController.fetchOrganisations(req, res, next)
 
       expect(next).toHaveBeenCalledTimes(1)
       expect(next).toHaveBeenCalledWith(error)
