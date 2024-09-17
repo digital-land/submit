@@ -2,37 +2,6 @@ import datasette from './datasette.js'
 import logger from '../utils/logger.js'
 import performanceDbApi from './performanceDbApi.js'
 
-export async function getGeometryEntriesForResourceId (dataset, resourceId) {
-  const sql = `
-      SELECT ft.field, ft.value
-      FROM fact_resource fr
-      LEFT JOIN fact ft ON fr.fact = ft.fact
-      WHERE fr.resource = '${resourceId}'
-      AND ft.field = 'geometry'`
-
-  const { formattedData } = await datasette.runQuery(sql, dataset)
-
-  return formattedData
-}
-
-export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
-  try {
-    const { resource: resourceId } = await performanceDbApi.getLatestResource(lpa, dataset)
-
-    return getGeometryEntriesForResourceId(dataset, resourceId)
-  } catch (error) {
-    logger.warn(
-      `DatasetService.getLatestDatasetGeometryEntriesForLpa(): Error getting geometry entries for ${lpa} in ${dataset}`,
-      {
-        errorMessage: error.message,
-        errorStack: error.stack
-      }
-    )
-
-    return []
-  }
-}
-
 async function getDatasetStatsForResourceId (dataset, resourceId) {
   const sql = `
     SELECT 'numberOfRecords' AS metric, COUNT(*) AS value
