@@ -104,7 +104,7 @@ const getGetStarted = renderTemplate.bind(
 
 const fetchOrgInfo = fetchOne.bind({
   query: ({ params }) => {
-    return `SELECT name, organisation FROM organisation WHERE organisation = '${params.lpa}'`
+    return `SELECT name, organisation, entity FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
@@ -132,6 +132,7 @@ const fetchDatasetGeometries = async (req, res, next) => {
 
 const fetchDatasetStats = async (req, res, next) => {
   const { dataset, lpa } = req.params
+  const { orgInfo: organisation } = req
 
   const { numberOfFieldsSupplied, numberOfFieldsMatched, NumberOfExpectedFields } = await getFieldStats(lpa, dataset)
 
@@ -161,7 +162,7 @@ const fetchDatasetStats = async (req, res, next) => {
     }
   })
 
-  const numberOfRecords = 10 // ToDo: await performanceDbApi.getEntityCount(lpa, dataset)
+  const numberOfRecords = await performanceDbApi.getEntityCount(organisation.entity, dataset)
 
   // ToDo: get the documentation url
 

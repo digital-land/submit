@@ -415,13 +415,13 @@ ORDER BY
    * @param {string} dataset - The dataset to retrieve the entity count from.
    * @returns {number} The entity count for the given resource and dataset.
    */
-  async getEntityCount (lpa, dataset) {
+  async getEntityCount (orgEntity, dataset) {
     const query =
     /* sql */
     `
-    select dataset, entity_count, resource
-    from dataset_resource
-    WHERE resource = '${lpa}'
+    select count(entity) as entity_count 
+    from entity
+    WHERE organisation_entity = '${orgEntity}'
   `
 
     const result = await datasette.runQuery(query, dataset)
