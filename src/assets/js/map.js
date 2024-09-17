@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl'
 
 const fillColor = '#008'
 const lineColor = '#000000'
+const boundaryLineColor = '#000'
 const opacity = 0.4
 
 class Map {
@@ -21,6 +22,7 @@ class Map {
     }
 
     this.map.on('load', () => {
+      if (this.options.boundaryGeoJson) this.addBoundaryGeoJsonToMap(this.options.boundaryGeoJson)
       if (this.options.wktFormat) this.addWktDataToMap(this.options.geometries)
       else this.addGeoJsonUrlsToMap(this.options.geometries)
 
@@ -125,6 +127,25 @@ class Map {
     })
   }
 
+  addBoundaryGeoJsonToMap (geoJsonUrl) {
+    this.map.addSource('boundary', {
+      type: 'geojson',
+      data: geoJsonUrl
+    })
+
+    this.map.addLayer({
+      id: 'boundary',
+      type: 'line',
+      source: 'boundary',
+      layout: {},
+      paint: {
+        'line-color': boundaryLineColor,
+        'line-width': 2,
+        'line-opacity': opacity
+      }
+    })
+  }
+
   setMapViewToBoundingBox () {
     this.map.fitBounds(this.bbox, { padding: 20, duration: 0 })
   }
@@ -168,31 +189,23 @@ const calculateBoundingBoxFromGeometries = (geometries) => {
   return [[minX, minY], [maxX, maxY]]
 }
 
-const generatePaginatedGeoJsonLinksAndBoundingBox = async (geoJsonUrl) => {
+const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   const geoJsonLinks = [geoJsonUrl]
   const initialResponse = await fetch(geoJsonUrl)
   const initialData = await initialResponse.json()
-  const boundingBox = calculateBoundingBoxFromGeometries(initialData.features[0].geometry.coordinates)
 
   // return if no pagination is needed
   if (!initialData.links || !initialData.links.last) {
-    return {
-      geoJsonLinks,
-      boundingBox
-    }
+    return geoJsonLinks
   }
 
-  // get the limit and last offset from the last link
   const lastLink = new URL(initialData.links.last)
   const limit = parseInt(lastLink.searchParams.get('limit'))
   const lastOffset = parseInt(lastLink.searchParams.get('offset'))
 
-  // return if the limit or lastOffset is missing
   if (!limit || !lastOffset) {
-    return {
-      geoJsonLinks,
-      boundingBox
-    }
+    console.error('Invalid pagination links', lastLink)
+    return geoJsonLinks
   }
 
   // create a loop to generate the links
@@ -203,14 +216,18 @@ const generatePaginatedGeoJsonLinksAndBoundingBox = async (geoJsonUrl) => {
     geoJsonLinks.push(newLink.toString())
   }
 
-  return {
-    geoJsonLinks,
-    boundingBox
-  }
+  return geoJsonLinks
+}
+
+const generateBoundingBox = async (boundaryGeoJsonUrl) => {
+  const res = await fetch(boundaryGeoJsonUrl)
+  const boundaryGeoJson = await res.json()
+
+  return calculateBoundingBoxFromGeometries(boundaryGeoJson.features[0].geometry.coordinates)
 }
 
 const createMapFromServerContext = async () => {
-  const { containerId, geometries, mapType, geoJsonUrl } = window.serverContext
+  const { containerId, geometries, mapType, geoJsonUrl, boundaryGeoJsonUrl } = window.serverContext
   const options = {
     containerId,
     geometries,
@@ -220,10 +237,12 @@ const createMapFromServerContext = async () => {
 
   // if the geoJsonUrl is provided, generate the paginated GeoJSON links
   if (geoJsonUrl) {
-    const { geoJsonLinks, boundingBox } = await generatePaginatedGeoJsonLinksAndBoundingBox(geoJsonUrl)
+    options.geometries = await generatePaginatedGeoJsonLinks(geoJsonUrl)
+  }
 
-    options.geometries = geoJsonLinks
-    options.boundingBox = boundingBox
+  if (boundaryGeoJsonUrl) {
+    options.boundingBox = await generateBoundingBox(boundaryGeoJsonUrl)
+    options.boundaryGeoJson = boundaryGeoJsonUrl
   }
 
   // if any of the required properties are missing, return null

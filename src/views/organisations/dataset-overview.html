@@ -107,7 +107,8 @@
     <script>
       window.serverContext = {
         containerId: 'map',
-        geoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}&limit=100"
+        geoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}&limit=100",
+        boundaryGeoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset=local-planning-authority&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}"
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>
