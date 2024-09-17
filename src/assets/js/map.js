@@ -6,18 +6,19 @@ const lineColor = '#000000'
 const opacity = 0.4
 
 class Map {
-  constructor (containerId, geometries, interactive = true, wktFormat = true) {
+  constructor (options = {}) {
+    this.options = options
     this.map = new maplibregl.Map({
-      container: containerId,
+      container: this.options.containerId,
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
       zoom: 11,
-      center: [-0.1298779, 51.4959698],
-      interactive
+      center: this.options.center ?? [-0.1298779, 51.4959698],
+      interactive: this.options.interactive
     })
 
     this.map.on('load', () => {
-      if (wktFormat) this.addWktDataToMap(geometries)
-      else this.addGeoJsonUrlsToMap(geometries)
+      if (this.options.wktFormat) this.addWktDataToMap(this.options.geometries)
+      else this.addGeoJsonUrlsToMap(this.options.geometries)
     })
   }
 
@@ -78,34 +79,44 @@ class Map {
   }
 
   addGeoJsonUrlsToMap (geoJsonUrls) {
+    const layers = this.map.getStyle().layers
+    // Find the index of the first symbol layer in the map style
+    let firstSymbolId
+    for (let i = 0; i < layers.length; i++) {
+      if (layers[i].type === 'symbol') {
+        firstSymbolId = layers[i].id
+        break
+      }
+    }
+
     geoJsonUrls.forEach(async (url, index) => {
-      const sourceId = `geojson-${index}`
-      this.map.addSource(sourceId, {
+      const name = `geometry-${index}`
+      this.map.addSource(name, {
         type: 'geojson',
         data: url
       })
 
       this.map.addLayer({
-        id: `${sourceId}-layer`,
+        id: name,
         type: 'fill',
-        source: sourceId,
+        source: name,
         layout: {},
         paint: {
           'fill-color': fillColor,
           'fill-opacity': opacity
         }
-      })
+      }, firstSymbolId)
 
       this.map.addLayer({
-        id: `${sourceId}-border`,
+        id: `${name}-border`,
         type: 'line',
-        source: sourceId,
+        source: name,
         layout: {},
         paint: {
           'line-color': lineColor,
           'line-width': 1
         }
-      })
+      }, firstSymbolId)
     })
   }
 
@@ -181,19 +192,23 @@ const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
 
 const createMapFromServerContext = async () => {
   const { containerId, geometries, mapType, geoJsonUrl } = window.serverContext
-
-  let data = geometries
+  const options = {
+    containerId,
+    geometries,
+    interactive: mapType !== 'static',
+    wktFormat: geoJsonUrl === undefined
+  }
 
   // if the geoJsonUrl is provided, generate the paginated GeoJSON links
-  if (geoJsonUrl) data = await generatePaginatedGeoJsonLinks(geoJsonUrl)
+  if (geoJsonUrl) options.geometries = await generatePaginatedGeoJsonLinks(geoJsonUrl)
 
   // if any of the required properties are missing, return null
-  if (!containerId || !data) {
+  if (!containerId || !options.geometries) {
     console.log('Missing required properties (containerId and either geometries or geoJsonUrl) on window.serverContext', window.serverContext)
     return null
   }
 
-  return new Map(containerId, data, mapType !== 'static', geoJsonUrl === undefined)
+  return new Map(options)
 }
 
 const newMap = createMapFromServerContext()
