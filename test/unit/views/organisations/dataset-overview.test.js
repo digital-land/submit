@@ -11,13 +11,13 @@ describe('Dataset Overview Page', () => {
       organisation: 'mock-org'
     },
     dataset: {
+      dataset: 'world-heritage-site-buffer-zone',
       name: 'World heritage site buffer zone'
     },
     stats: {
       numberOfRecords: 10,
       numberOfFieldsSupplied: 5
-    },
-    geometries: []
+    }
   }
 
   const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
@@ -52,14 +52,17 @@ describe('Dataset Overview Page', () => {
     expect(breadcrumbs[3].textContent).toContain('World heritage site buffer zone')
   })
 
-  it('Does not render the map section when geometries are absent', () => {
+  it('Does not render the map section when non mappable dataset is viewed', () => {
     expect(document.querySelector('#map')).toBeNull()
   })
 
-  it('Renders the map section when geometries are present', () => {
+  it('Renders the map section when a mappable dataset is viewed', () => {
     const paramsWithGeometries = {
       ...params,
-      geometries: ['MULTIPOLYGON (((-0.1275 51.5072, -0.1275 51.5072, -0.1275 51.5072, -0.1275 51.5072)))']
+      dataset: {
+        dataset: 'article-4-direction-area',
+        name: 'Article 4 direction area'
+      }
     }
     const htmlWithGeometries = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithGeometries))
     const domWithGeometries = new jsdom.JSDOM(htmlWithGeometries)
