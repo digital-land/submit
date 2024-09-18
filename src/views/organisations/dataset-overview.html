@@ -2,6 +2,15 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% extends "layouts/main.html" %}
 
+{% set showMap = [
+  "article-4-direction-area",
+  "conservation-area",
+  "listed-building",
+  "listed-building-outline",
+  "tree",
+  "tree-preservation-zone"
+].includes(dataset.dataset) %}
+
 {% set serviceType = 'Submit' %}
 {% set pageName %}
     {{organisation.name}} - {{dataset.name}} - Dataset overview
@@ -42,7 +51,7 @@
     </div>
 </div>
 
-{% if geometries and geometries.length %}
+{% if showMap %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
       <section>
@@ -93,12 +102,13 @@
 
 {% block scripts %}
   {{ super() }}
-  {% if geometries and geometries.length %}
+  {% if showMap %}
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
         containerId: 'map',
-        geometries: {{ geometries | dump | safe }},
+        geoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}&limit=100",
+        boundaryGeoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset=local-planning-authority&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}"
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>
