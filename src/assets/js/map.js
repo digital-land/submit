@@ -6,6 +6,21 @@ const lineColor = '#000000'
 const boundaryLineColor = '#000000'
 const opacity = 0.4
 
+/**
+ * Creates a Map instance.
+ * @param {MapOptions} opts - The options for creating the map.
+ * @constructor
+ */
+/**
+ * Options for creating a Map instance.
+ * @typedef {Object} MapOptions
+ * @property {string} containerId - Required - The ID of the HTML container element for the map.
+ * @property {string[]} data - Required - An array of URLs or WKT geometries to be added to the map.
+ * @property {string} [boundaryGeoJsonUrl] - Optional - The URL of the boundary GeoJSON to be added to the map.
+ * @property {boolean} [interactive] - Optional - Indicates whether the map should be interactive. Default is true.
+ * @property {boolean} [wktFormat] - Optional - Indicates whether the data is in WKT format. Default is false.
+ * @property {number[]} [boundingBox] - Optional - The bounding box coordinates [minX, minY, maxX, maxY] to set the initial view of the map.
+ */
 class Map {
   constructor (opts) {
     this.bbox = opts.boundingBox ?? null
@@ -14,7 +29,7 @@ class Map {
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
       zoom: 11,
       center: [-0.1298779, 51.4959698],
-      interactive: opts.interactive
+      interactive: opts.interactive ?? true
     })
 
     this.map.on('load', () => {
