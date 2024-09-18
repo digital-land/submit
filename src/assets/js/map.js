@@ -3,10 +3,12 @@ import maplibregl from 'maplibre-gl'
 
 const fillColor = '#008'
 const lineColor = '#000000'
+const boundaryLineColor = '#000000'
 const opacity = 0.4
 
 class Map {
   constructor (opts) {
+    this.bbox = opts.boundingBox ?? null
     this.map = new maplibregl.Map({
       container: opts.containerId,
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
@@ -16,10 +18,18 @@ class Map {
     })
 
     this.map.on('load', () => {
+      // Store the first symbol layer id
       this.setFirstMapLayerId()
 
-      if (this.options.wktFormat) this.addWktDataToMap(this.options.data)
-      else this.addGeoJsonUrlsToMap(this.options.data)
+      // Add the boundary GeoJSON to the map
+      if (opts.boundaryGeoJsonUrl) this.addBoundaryGeoJsonToMap(opts.boundaryGeoJsonUrl)
+
+      // Add layer data to map
+      if (opts.wktFormat) this.addWktDataToMap(opts.data)
+      else this.addGeoJsonUrlsToMap(opts.data)
+
+      // Move the map to the bounding box
+      if (this.bbox) this.setMapViewToBoundingBox()
     })
   }
 
@@ -88,7 +98,6 @@ class Map {
     })
 
     this.bbox = this.calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
-    this.setMapViewToBoundingBox()
   }
 
   addGeoJsonUrlsToMap (geoJsonUrls) {
@@ -108,7 +117,7 @@ class Map {
           'fill-color': fillColor,
           'fill-opacity': opacity
         }
-      }, this.firstSymbolId)
+      }, this.firstMapLayerId)
 
       this.map.addLayer({
         id: `${name}-border`,
@@ -119,8 +128,27 @@ class Map {
           'line-color': lineColor,
           'line-width': 1
         }
-      }, this.firstSymbolId)
+      }, this.firstMapLayerId)
     })
+  }
+
+  addBoundaryGeoJsonToMap (geoJsonUrl) {
+    this.map.addSource('boundary', {
+      type: 'geojson',
+      data: geoJsonUrl
+    })
+
+    this.map.addLayer({
+      id: 'boundary',
+      type: 'line',
+      source: 'boundary',
+      layout: {},
+      paint: {
+        'line-color': boundaryLineColor,
+        'line-width': 2,
+        'line-opacity': opacity
+      }
+    }, this.firstMapLayerId)
   }
 
   setMapViewToBoundingBox () {
@@ -133,37 +161,37 @@ class Map {
       zoom: 11
     })
   }
+}
 
-  calculateBoundingBoxFromGeometries (geometries) {
-    let minX = Infinity
-    let minY = Infinity
-    let maxX = -Infinity
-    let maxY = -Infinity
+const calculateBoundingBoxFromGeometries = (geometries) => {
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
 
-    const pullOutCoordinates = (geometry) => {
-      if (Array.isArray(geometry[0])) {
-        geometry.forEach(pullOutCoordinates)
-      } else {
-        const [x, y] = geometry
+  const pullOutCoordinates = (geometry) => {
+    if (Array.isArray(geometry[0])) {
+      geometry.forEach(pullOutCoordinates)
+    } else {
+      const [x, y] = geometry
 
-        // if x or y isn't a valid number log an error and continue
-        if (isNaN(x) || isNaN(y)) {
-          console.error('Invalid coordinates', x, y)
-          return
-        }
-
-        minX = Math.min(minX, x)
-        minY = Math.min(minY, y)
-        maxX = Math.max(maxX, x)
-        maxY = Math.max(maxY, y)
+      // if x or y isn't a valid number log an error and continue
+      if (isNaN(x) || isNaN(y)) {
+        console.error('Invalid coordinates', x, y)
+        return
       }
+
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
     }
-
-    pullOutCoordinates(geometries)
-
-    // Return the bounding box
-    return [[minX, minY], [maxX, maxY]]
   }
+
+  pullOutCoordinates(geometries)
+
+  // Return the bounding box
+  return [[minX, minY], [maxX, maxY]]
 }
 
 const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
@@ -196,11 +224,19 @@ const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   return geoJsonLinks
 }
 
+const generateBoundingBox = async (boundaryGeoJsonUrl) => {
+  const res = await fetch(boundaryGeoJsonUrl)
+  const boundaryGeoJson = await res.json()
+
+  return calculateBoundingBoxFromGeometries(boundaryGeoJson.features[0].geometry.coordinates)
+}
+
 const createMapFromServerContext = async () => {
-  const { containerId, geometries, mapType, geoJsonUrl } = window.serverContext
+  const { containerId, geometries, mapType, geoJsonUrl, boundaryGeoJsonUrl } = window.serverContext
   const options = {
     containerId,
     data: geometries,
+    boundaryGeoJsonUrl,
     interactive: mapType !== 'static',
     wktFormat: geoJsonUrl === undefined
   }
@@ -208,6 +244,10 @@ const createMapFromServerContext = async () => {
   // if the geoJsonUrl is provided, generate the paginated GeoJSON links
   if (geoJsonUrl) {
     options.data = await generatePaginatedGeoJsonLinks(geoJsonUrl)
+  }
+
+  if (options.boundaryGeoJsonUrl) {
+    options.boundingBox = await generateBoundingBox(boundaryGeoJsonUrl)
   }
 
   // if any of the required properties are missing, return null
