@@ -274,6 +274,8 @@ const createMapFromServerContext = async () => {
   return new Map(options)
 }
 
-const newMap = createMapFromServerContext()
-
-window.map = newMap
+try {
+  window.map = await createMapFromServerContext()
+} catch (error) {
+  console.error('Error creating map', error)
+}
