@@ -17,7 +17,9 @@ class Map {
 
     this.map.on('load', () => {
       this.setFirstMapLayerId()
-      this.addDataToMap(opts.geometries)
+
+      if (this.options.wktFormat) this.addWktDataToMap(this.options.data)
+      else this.addGeoJsonUrlsToMap(this.options.data)
     })
   }
 
@@ -33,7 +35,7 @@ class Map {
     }
   }
 
-  addDataToMap (geometriesWkt) {
+  addWktDataToMap (geometriesWkt) {
     const geometries = []
     geometriesWkt.forEach((geometryWkt, index) => {
       const name = `geometry-${index}`
@@ -89,6 +91,38 @@ class Map {
     this.setMapViewToBoundingBox()
   }
 
+  addGeoJsonUrlsToMap (geoJsonUrls) {
+    geoJsonUrls.forEach(async (url, index) => {
+      const name = `geometry-${index}`
+      this.map.addSource(name, {
+        type: 'geojson',
+        data: url
+      })
+
+      this.map.addLayer({
+        id: name,
+        type: 'fill',
+        source: name,
+        layout: {},
+        paint: {
+          'fill-color': fillColor,
+          'fill-opacity': opacity
+        }
+      }, this.firstSymbolId)
+
+      this.map.addLayer({
+        id: `${name}-border`,
+        type: 'line',
+        source: name,
+        layout: {},
+        paint: {
+          'line-color': lineColor,
+          'line-width': 1
+        }
+      }, this.firstSymbolId)
+    })
+  }
+
   setMapViewToBoundingBox () {
     this.map.fitBounds(this.bbox, { padding: 20, duration: 0 })
   }
@@ -132,16 +166,52 @@ class Map {
   }
 }
 
-const createMapFromServerContext = () => {
-  const { containerId, geometries, mapType } = window.serverContext
+const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
+  const geoJsonLinks = [geoJsonUrl]
+  const initialResponse = await fetch(geoJsonUrl)
+  const initialData = await initialResponse.json()
+
+  // return if no pagination is needed
+  if (!initialData.links || !initialData.links.last) {
+    return geoJsonLinks
+  }
+
+  const lastLink = new URL(initialData.links.last)
+  const limit = parseInt(lastLink.searchParams.get('limit'))
+  const lastOffset = parseInt(lastLink.searchParams.get('offset'))
+
+  if (!limit || !lastOffset) {
+    console.error('Invalid pagination links', lastLink)
+    return geoJsonLinks
+  }
+
+  // create a loop to generate the links
+  for (let offset = limit; offset < lastOffset; offset += limit) {
+    const newLink = new URL(geoJsonUrl)
+    newLink.searchParams.set('offset', offset)
+
+    geoJsonLinks.push(newLink.toString())
+  }
+
+  return geoJsonLinks
+}
+
+const createMapFromServerContext = async () => {
+  const { containerId, geometries, mapType, geoJsonUrl } = window.serverContext
   const options = {
     containerId,
-    geometries,
-    interactive: mapType !== 'static'
+    data: geometries,
+    interactive: mapType !== 'static',
+    wktFormat: geoJsonUrl === undefined
+  }
+
+  // if the geoJsonUrl is provided, generate the paginated GeoJSON links
+  if (geoJsonUrl) {
+    options.data = await generatePaginatedGeoJsonLinks(geoJsonUrl)
   }
 
   // if any of the required properties are missing, return null
-  if (!options.containerId || !options.geometries) {
+  if (!options.containerId || !options.data) {
     console.log('Missing required properties (containerId, geometries) on window.serverContext', window.serverContext)
     return null
   }
