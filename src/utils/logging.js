@@ -13,6 +13,7 @@ const types = {
   AppLifecycle: 'AppLifecycle',
   App: 'App',
   DataValidation: 'DataValidation',
+  DataFetch: 'DataFetch',
   External: 'External'
 }
 

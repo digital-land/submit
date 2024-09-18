@@ -45,6 +45,37 @@ function getAllRowsMessages () {
 
 // ===========================================
 
+const datasetIssuesQuery = (resource, datasetId) => {
+  return /* sql */ `
+    SELECT
+    i.field,
+    i.issue_type,
+    i.line_number,
+    i.value,
+    i.message,
+
+    CASE
+      WHEN COUNT(
+        CASE
+          WHEN it.severity == 'error' THEN 1
+          ELSE null
+        END
+      ) > 0 THEN 'Needs fixing'
+      ELSE 'Live'
+    END AS status,
+    COUNT(i.issue_type) as num_issues
+  FROM
+      issue i
+  LEFT JOIN
+    issue_type it ON i.issue_type = it.issue_type
+  WHERE
+      i.resource = '${resource}' 
+      AND i.dataset = '${datasetId}'
+      AND (it.severity == 'error')
+  GROUP BY i.issue_type, i.field
+  ORDER BY it.severity`
+}
+
 /**
  * @typedef {object} Dataset
  * @property {'Not submitted' | 'Error' | 'Needs fixing' | 'Warning' | 'Live' } status
@@ -192,35 +223,7 @@ ORDER BY
      *   - num_issues: {number} The number of issues of this type.
      */
   getLpaDatasetIssues: async (resource, datasetId) => {
-    const sql = `
-    SELECT
-      i.field,
-      i.issue_type,
-      i.line_number,
-      i.value,
-      i.message,
-
-      CASE
-        WHEN COUNT(
-          CASE
-            WHEN it.severity == 'error' THEN 1
-            ELSE null
-          END
-        ) > 0 THEN 'Needs fixing'
-        ELSE 'Live'
-      END AS status,
-      COUNT(i.issue_type) as num_issues
-    FROM
-        issue i
-    LEFT JOIN
-      issue_type it ON i.issue_type = it.issue_type
-    WHERE
-        i.resource = '${resource}' 
-        AND i.dataset = '${datasetId}'
-        AND (it.severity == 'error')
-    GROUP BY i.issue_type, i.field
-    ORDER BY it.severity`
-
+    const sql = datasetIssuesQuery(resource, datasetId)
     const result = await datasette.runQuery(sql)
     return result.formattedData
   },
