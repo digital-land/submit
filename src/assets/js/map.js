@@ -1,18 +1,22 @@
 import parse from 'wellknown'
 import maplibregl from 'maplibre-gl'
 
+const fillColor = '#008'
+const lineColor = '#000000'
+const opacity = 0.4
+
 class Map {
-  constructor (containerId, geometries, interactive = true) {
+  constructor (opts) {
     this.map = new maplibregl.Map({
-      container: containerId,
+      container: opts.containerId,
       style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
       zoom: 11,
       center: [-0.1298779, 51.4959698],
-      interactive
+      interactive: opts.interactive
     })
 
     this.map.on('load', () => {
-      this.addDataToMap(geometries)
+      this.addDataToMap(opts.geometries)
     })
   }
 
@@ -31,10 +35,6 @@ class Map {
         data: geometry
       })
 
-      const color = '#008'
-      const lineColor = '#000000'
-      const opacity = 0.4
-
       // Add a layer to the map based on the geometry type
       if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
         this.map.addLayer({
@@ -43,7 +43,7 @@ class Map {
           source: name,
           layout: {},
           paint: {
-            'fill-color': color,
+            'fill-color': fillColor,
             'fill-opacity': opacity
           }
         })
@@ -65,7 +65,7 @@ class Map {
           source: name,
           paint: {
             'circle-radius': 10,
-            'circle-color': color,
+            'circle-color': fillColor,
             'circle-opacity': opacity
           }
         })
@@ -121,14 +121,19 @@ class Map {
 
 const createMapFromServerContext = () => {
   const { containerId, geometries, mapType } = window.serverContext
+  const options = {
+    containerId,
+    geometries,
+    interactive: mapType !== 'static'
+  }
 
   // if any of the required properties are missing, return null
-  if (!containerId || !geometries) {
+  if (!options.containerId || !options.geometries) {
     console.log('Missing required properties (containerId, geometries) on window.serverContext', window.serverContext)
     return null
   }
 
-  return new Map(containerId, geometries, mapType !== 'static')
+  return new Map(options)
 }
 
 const newMap = createMapFromServerContext()
