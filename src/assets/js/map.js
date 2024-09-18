@@ -16,8 +16,21 @@ class Map {
     })
 
     this.map.on('load', () => {
+      this.setFirstMapLayerId()
       this.addDataToMap(opts.geometries)
     })
+  }
+
+  setFirstMapLayerId () {
+    const layers = this.map.getStyle().layers
+
+    // Find the index of the first symbol layer in the map style
+    for (let i = 0; i < layers.length; i++) {
+      if (layers[i].type === 'symbol') {
+        this.firstMapLayerId = layers[i].id
+        break
+      }
+    }
   }
 
   addDataToMap (geometriesWkt) {
@@ -46,7 +59,7 @@ class Map {
             'fill-color': fillColor,
             'fill-opacity': opacity
           }
-        })
+        }, this.firstMapLayerId)
 
         this.map.addLayer({
           id: name + '-border',
@@ -57,7 +70,7 @@ class Map {
             'line-color': lineColor,
             'line-width': 1
           }
-        })
+        }, this.firstMapLayerId)
       } else if (geometry.type === 'Point' || geometry.type === 'MultiPoint') {
         this.map.addLayer({
           id: name,
@@ -68,7 +81,7 @@ class Map {
             'circle-color': fillColor,
             'circle-opacity': opacity
           }
-        })
+        }, this.firstMapLayerId)
       }
     })
 
