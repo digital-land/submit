@@ -594,9 +594,11 @@ const onlyIf = (condition, middlewareFn) => {
  * @returns { { templateParams: object }}
  */
 const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { issues, entityCount, params, dataset, orgInfo: organisation } = req
+  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
+  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
   const { lpa, dataset: datasetId } = params
   console.assert(req.resourceStatus.resource === req.resource.resource, 'mismatch between resourceStatus and resource data')
+  console.assert(typeof entityCount === 'number', 'entityCount should be a number')
 
   const taskList = issues.map((issue) => {
     return {
