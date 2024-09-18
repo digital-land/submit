@@ -399,16 +399,8 @@ ORDER BY
      * @returns {Promise<number>} The entity count for the given resource and dataset.
      */
   async getEntityCount (resource, dataset) {
-    const query =
-    /* sql */
-    `
-    select dataset, entity_count, resource
-    from dataset_resource
-    WHERE resource = '${resource}'
-  `
-
+    const query = this.entityCountQuery(resource)
     const result = await datasette.runQuery(query, dataset)
-
     return result.formattedData[0].entity_count
   }
 }
