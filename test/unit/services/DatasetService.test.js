@@ -1,37 +1,75 @@
-import { describe, it, expect, vi } from 'vitest'
-import { getDatasetStats, getSpecifications } from '../../../src/services/DatasetService.js'
-import datasette from '../../../src/services/datasette'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { getFieldStats, getSpecifications } from '../../../src/services/DatasetService.js'
+import datasette from '../../../src/services/datasette.js'
 
 vi.mock('../../../src/services/datasette')
 
 describe('DatasetService', () => {
-  describe('getDatasetStats', () => {
-    it('should return dataset stats for a given LPA', async () => {
-      const mockStats = [
-        { metric: 'numberOfRecords', value: 10 },
-        { metric: 'numberOfFieldsSupplied', value: 5 }
-      ]
-      datasette.runQuery.mockResolvedValue({ formattedData: mockStats })
-
-      const result = await getDatasetStats('dataset1', 'lpa1')
-      expect(result).toEqual({
-        numberOfRecords: 10,
-        numberOfFieldsSupplied: 5
+  describe('getSpecifications', () => {
+    beforeEach(() => {
+      datasette.runQuery.mockReturnValue({
+        formattedData: [
+          {
+            datasets: 'dataset1',
+            json: "[{'key': 'value'}]"
+          },
+          {
+            datasets: 'dataset2;dataset3',
+            json: "[{'key2': 'value2'},{'key3': 'value3'}]"
+          },
+          {
+            datasets: 'dataset4',
+            json: "[{'key4': 'value4'}]"
+          }
+        ]
       })
     })
 
-    it('should return an empty object if an error occurs', async () => {
-      datasette.runQuery.mockRejectedValue(new Error('Test error'))
+    const expectedSpecifications = {
+      dataset1: { key: 'value' },
+      dataset2: { key2: 'value2' },
+      dataset3: { key3: 'value3' },
+      dataset4: { key4: 'value4' }
+    }
 
-      const result = await getDatasetStats('dataset1', 'lpa1')
-      expect(result).toEqual({})
+    it('returns specifications in the correct format', async () => {
+      const specifications = await getSpecifications()
+      expect(specifications).toEqual(expectedSpecifications)
     })
   })
 
-  describe('getSpecifications', async () => {
-    it('can get specs', async () => {
-      const specifications = await getSpecifications()
-      expect(specifications).toBeDefined()
+  describe('getFieldStats', () => {
+    const columnSummary = [
+      {
+        matching_field: 'field1,field2',
+        non_matching_field: 'field3,field4'
+      }
+    ]
+
+    const specifications = [
+      {
+        datasets: 'dataset1',
+        json: '[{fields: [{field: "field1"},{field: "field3"}]}]'
+      }
+    ]
+
+    beforeEach(() => {
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: columnSummary })
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: specifications })
+    })
+
+    it('returns field stats', async () => {
+      const fieldStats = await getFieldStats('lpa', 'dataset1')
+      expect(fieldStats).toEqual({
+        numberOfFieldsSupplied: 2,
+        numberOfFieldsMatched: 1,
+        NumberOfExpectedFields: 2
+      })
+    })
+
+    it('returns null if dataset specification is missing', async () => {
+      const fieldStats = await getFieldStats('lpa', 'nonExistentDataset')
+      expect(fieldStats).toBeNull()
     })
   })
 })
