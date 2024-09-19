@@ -7,7 +7,7 @@ import { statusToTagClass } from '../filters/filters.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import config from '../../config/index.js'
-import { getFieldStats, getLatestDatasetGeometryEntriesForLpa, getSources } from '../services/DatasetService.js'
+import { getFieldStats, getSources } from '../services/DatasetService.js'
 import {
   fetchOne,
   fetchMany,
@@ -35,7 +35,7 @@ const getGetStarted = renderTemplate.bind({
 
 const fetchOrgInfo = fetchOne.bind({
   query: ({ params }) => {
-    return `SELECT name, organisation, entity FROM organisation WHERE organisation = '${params.lpa}'`
+    return `SELECT name, organisation, entity, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
@@ -53,13 +53,6 @@ const fetchDatasetInfo = fetchOne.bind({
   },
   result: 'dataset'
 })
-
-const fetchDatasetGeometries = async (req, res, next) => {
-  const datasetEntries = await getLatestDatasetGeometryEntriesForLpa(req.params.dataset, req.params.lpa)
-  req.geometries = datasetEntries.map(entry => entry.value)
-
-  next()
-}
 
 const fetchDatasetStats = async (req, res, next) => {
   const { dataset, lpa } = req.params
@@ -111,12 +104,8 @@ const fetchDatasetStats = async (req, res, next) => {
 const getDatasetOverview = renderTemplate.bind(
   {
     templateParams (req) {
-      const {
-        orgInfo: organisation,
-        dataset, geometries,
-        stats
-      } = req
-      return { organisation, dataset, geometries, stats }
+      const { orgInfo: organisation, dataset, stats } = req
+      return { organisation, dataset, stats }
     },
     template: 'organisations/dataset-overview.html',
     handlerName: 'datasetOverview'
@@ -549,7 +538,7 @@ const getGetStartedMiddleware = [
   logPageError
 ]
 
-const getDatasetOverviewMiddleware = [fetchOrgInfo, fetchDatasetName, fetchDatasetGeometries, fetchDatasetStats, getDatasetOverview, logPageError]
+const getDatasetOverviewMiddleware = [fetchOrgInfo, fetchDatasetInfo, fetchDatasetStats, getDatasetOverview, logPageError]
 
 const getOverviewMiddleware = [
   fetchOrgInfo,
