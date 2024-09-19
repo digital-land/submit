@@ -39,7 +39,7 @@ const datasetStatusEnum = {
 }
 
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(NonEmptyString) })
-const DatasetNameField = v.strictObject({ name: NonEmptyString })
+const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString })
 
 export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
@@ -99,7 +99,10 @@ export const OrgDatasetTaskList = v.strictObject({
 
 export const OrgEndpointError = v.strictObject({
   organisation: OrgField,
-  dataset: DatasetNameField,
+  dataset: v.object({
+    name: NonEmptyString,
+    dataset: NonEmptyString
+  }),
   errorData: v.strictObject({
     endpoint_url: v.url(),
     http_status: v.integer(),
@@ -110,10 +113,7 @@ export const OrgEndpointError = v.strictObject({
 
 export const OrgIssueDetails = v.strictObject({
   organisation: OrgField,
-  dataset: v.object({
-    name: NonEmptyString,
-    dataset: v.string()
-  }),
+  dataset: DatasetNameField,
   errorHeading: v.optional(NonEmptyString),
   issueItems: v.array(v.strictObject({
     html: v.string(),
