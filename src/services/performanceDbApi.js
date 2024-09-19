@@ -383,12 +383,12 @@ ORDER BY
     return result.formattedData
   },
 
-  entityCountQuery (resource) {
+  entityCountQuery (orgEntity) {
     return /* sql */ `
-    select dataset, entity_count, resource
-    from dataset_resource
-    WHERE resource = '${resource}'
-  `
+      select count(entity) as entity_count 
+      from entity
+      WHERE organisation_entity = '${orgEntity}'
+    `
   },
 
   /**
@@ -399,14 +399,7 @@ ORDER BY
    * @returns {number} The entity count for the given resource and dataset.
    */
   async getEntityCount (orgEntity, dataset) {
-    const query =
-    /* sql */
-    `
-    select count(entity) as entity_count 
-    from entity
-    WHERE organisation_entity = '${orgEntity}'
-  `
-
+    const query = this.entityCountQuery(orgEntity)
     const result = await datasette.runQuery(query, dataset)
     return result.formattedData[0].entity_count
   }
