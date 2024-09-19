@@ -16,7 +16,27 @@ describe('Dataset Overview Page', () => {
     },
     stats: {
       numberOfRecords: 10,
-      numberOfFieldsSupplied: 5
+      numberOfFieldsSupplied: 5,
+      numberOfFieldsMatched: 6,
+      numberOfExpectedFields: 10,
+      endpoints: [
+        {
+          name: 'endpoint 1',
+          endpoint: 'http://endpoint1.co.uk',
+          lastAccessed: '2024-09-09',
+          lastUpdated: '2024-09-09'
+        },
+        {
+          name: 'endpoint 2',
+          endpoint: 'http://endpoint2.co.uk',
+          lastAccessed: '2024-19-19',
+          lastUpdated: '2024-19-19',
+          error: {
+            code: 404,
+            exception: ''
+          }
+        }
+      ]
     }
   }
 
@@ -38,9 +58,17 @@ describe('Dataset Overview Page', () => {
   it('Renders dataset details correctly', () => {
     expect(document.querySelector('h2.govuk-heading-m').textContent).toContain('Dataset details')
     const summaryListValues = document.querySelectorAll('dd.govuk-summary-list__value')
-    expect(summaryListValues[0].textContent.trim()).toEqual('10')
-    expect(summaryListValues[1].textContent.trim()).toEqual('5')
-    expect(summaryListValues[2].textContent.trim()).toEqual('Open Government Licence')
+    expect(summaryListValues[0].textContent.trim()).toEqual(params.stats.numberOfRecords.toString())
+    expect(summaryListValues[1].textContent.trim()).toEqual(`${params.stats.numberOfFieldsSupplied}/${params.stats.numberOfExpectedFields}`)
+    expect(summaryListValues[2].textContent.trim()).toEqual(`${params.stats.numberOfFieldsMatched}/${params.stats.numberOfExpectedFields}`)
+    expect(summaryListValues[3].textContent.trim()).toEqual('Open Government Licence')
+    expect(summaryListValues[4].textContent).toContain(params.stats.endpoints[0].endpoint)
+    expect(summaryListValues[5].textContent).toContain(params.stats.endpoints[0].lastAccessed)
+    expect(summaryListValues[6].textContent).toContain(params.stats.endpoints[0].lastUpdated)
+    expect(summaryListValues[7].textContent).toContain(params.stats.endpoints[1].endpoint)
+    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].lastAccessed)
+    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].error.code)
+    expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].lastUpdated)
   })
 
   it('Renders breadcrumbs correctly', () => {

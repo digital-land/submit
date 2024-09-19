@@ -77,7 +77,7 @@ export const OrgDatasetOverview = v.strictObject({
     numberOfRecords: v.integer(),
     numberOfFieldsSupplied: v.integer(),
     numberOfFieldsMatched: v.integer(),
-    NumberOfExpectedFields: v.integer(),
+    numberOfExpectedFields: v.integer(),
     endpoints: v.array(v.strictObject({
       name: v.string(),
       endpoint: v.string(),

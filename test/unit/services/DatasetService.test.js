@@ -63,7 +63,7 @@ describe('DatasetService', () => {
       expect(fieldStats).toEqual({
         numberOfFieldsSupplied: 2,
         numberOfFieldsMatched: 1,
-        NumberOfExpectedFields: 2
+        numberOfExpectedFields: 2
       })
     })
 

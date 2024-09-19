@@ -52,7 +52,7 @@ const fetchDatasetStats = async (req, res, next) => {
   const { dataset, lpa } = req.params
   const { orgInfo: organisation } = req
 
-  const { numberOfFieldsSupplied, numberOfFieldsMatched, NumberOfExpectedFields } = await getFieldStats(lpa, dataset)
+  const { numberOfFieldsSupplied, numberOfFieldsMatched, numberOfExpectedFields } = await getFieldStats(lpa, dataset)
 
   const sources = await getSources(lpa, dataset)
 
@@ -87,7 +87,7 @@ const fetchDatasetStats = async (req, res, next) => {
   req.stats = {
     numberOfFieldsSupplied,
     numberOfFieldsMatched,
-    NumberOfExpectedFields,
+    numberOfExpectedFields,
     numberOfRecords,
     endpoints
   }

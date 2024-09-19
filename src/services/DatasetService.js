@@ -37,12 +37,12 @@ export async function getFieldStats (lpa, dataset) {
     return matchingFields.includes(current) ? acc + 1 : acc
   }, 0)
 
-  const NumberOfExpectedFields = datasetSpecification.fields.length
+  const numberOfExpectedFields = datasetSpecification.fields.length
 
   return {
     numberOfFieldsSupplied,
     numberOfFieldsMatched,
-    NumberOfExpectedFields
+    numberOfExpectedFields
   }
 }
 
