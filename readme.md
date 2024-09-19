@@ -81,6 +81,9 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
 The application picks up one of the configs in `config` directory, 
 depeding on `NODE_ENV` environment variable (set to 'production' by default).
 
+You can start the appliction in one fo the following ways (see "scripts" section
+of [package.json](package.json)) for more examples.
+
 - Run the application
     ```
     npm run start
@@ -100,6 +103,11 @@ depeding on `NODE_ENV` environment variable (set to 'production' by default).
 - Run the application (without the frontend) using docker
     ```
     docker-compose -f docker-compose-real-backend-minus-frontend.yml up
+    ```
+- Run external services in containers and start application
+    ```
+    npm run dev
+    ```
 
 ### Mac users only
 
