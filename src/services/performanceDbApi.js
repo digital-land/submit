@@ -392,22 +392,9 @@ ORDER BY
   },
 
   /**
-     * Retrieves the entity count for a given resource and dataset.
-     *
-     * @param {string} resource - The resource to retrieve the entity count for.
-     * @param {string} dataset - The dataset to retrieve the entity count from.
-     * @returns {Promise<number>} The entity count for the given resource and dataset.
-     */
-  async getEntityCountForResource (resource, dataset) {
-    const query = this.entityCountQuery(resource)
-    const result = await datasette.runQuery(query, dataset)
-    return result.formattedData[0].entity_count
-  },
-
-  /**
-   * Retrieves the entity count for a given resource and dataset.
+   * Retrieves the entity count for a given organisation and dataset.
    *
-   * @param {string} resource - The resource to retrieve the entity count for.
+   * @param {string} orgEntity - The organisation entity to retrieve the entity count for.
    * @param {string} dataset - The dataset to retrieve the entity count from.
    * @returns {number} The entity count for the given resource and dataset.
    */
