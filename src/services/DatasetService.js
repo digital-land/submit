@@ -60,9 +60,8 @@ export async function getSpecifications () {
   })
 
   const specifications = resultWithParsedJson.reduce((accumulator, current) => {
-    const datasets = current.datasets.split(';')
-    datasets.forEach((dataset, index) => {
-      accumulator[dataset] = current.json[index]
+    current.json.forEach((spec) => {
+      accumulator[spec.dataset] = spec
     })
     return accumulator
   }, {})

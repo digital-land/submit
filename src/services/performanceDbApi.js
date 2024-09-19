@@ -421,7 +421,6 @@ ORDER BY
   `
 
     const result = await datasette.runQuery(query, dataset)
-
     return result.formattedData[0].entity_count
   }
 }
