@@ -1,5 +1,6 @@
 import datasette from './datasette.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import JSON5 from 'json5' // need to use this as spec is written with single quotes. need to pass this onto data designers team to fix
 
 async function getColumnSummary (dataset, lpa) {
@@ -17,6 +18,11 @@ async function getColumnSummary (dataset, lpa) {
 export async function getFieldStats (lpa, dataset) {
   const columnSummary = await getColumnSummary(dataset, lpa)
   const specifications = await getSpecifications()
+  if (!(dataset in specifications)) {
+    logger.warn(`services/datasetService.getFieldStats(): cannot find specification for dataset: ${dataset}`, { type: types.app, dataset })
+    return null
+  }
+
   const datasetSpecification = specifications[dataset]
 
   const matchingFields = columnSummary[0].matching_field.split(',')
@@ -41,32 +47,27 @@ export async function getFieldStats (lpa, dataset) {
 }
 
 export async function getSpecifications () {
-  try {
-    const sql = 'select * from specification order by specification'
-    const result = await datasette.runQuery(sql)
+  const sql = 'select * from specification order by specification'
+  const result = await datasette.runQuery(sql)
 
-    const resultWithParsedJson = result.formattedData.filter(dataset => dataset.datasets !== '').map((dataset) => {
-      const { json, ...rest } = dataset
-      const formattedJson = JSON5.parse(json)
-      return {
-        ...rest,
-        json: formattedJson
-      }
+  const resultWithParsedJson = result.formattedData.filter(dataset => dataset.datasets !== '').map((dataset) => {
+    const { json, ...rest } = dataset
+    const formattedJson = JSON5.parse(json)
+    return {
+      ...rest,
+      json: formattedJson
+    }
+  })
+
+  const specifications = resultWithParsedJson.reduce((accumulator, current) => {
+    const datasets = current.datasets.split(';')
+    datasets.forEach((dataset, index) => {
+      accumulator[dataset] = current.json[index]
     })
+    return accumulator
+  }, {})
 
-    const specifications = resultWithParsedJson.reduce((accumulator, current) => {
-      const datasets = current.datasets.split(';')
-      datasets.forEach((dataset, index) => {
-        accumulator[dataset] = current.json[index]
-      })
-      return accumulator
-    }, {})
-
-    return specifications
-  } catch (error) {
-    // ToDo: handle this error
-    logger.error(error) // ToDo: make this error appropriate
-  }
+  return specifications
 }
 
 export async function getSources (lpa, dataset) {
