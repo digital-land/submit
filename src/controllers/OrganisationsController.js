@@ -6,7 +6,7 @@ import { statusToTagClass } from '../filters/filters.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import config from '../../config/index.js'
-import { getFieldStats, getSources } from '../services/DatasetService.js'
+import { getDatasetStats } from '../services/DatasetService.js'
 import {
   fetchIf,
   fetchMany,
@@ -49,49 +49,11 @@ const fetchDatasetInfo = fetchOne({
 })
 
 const fetchDatasetStats = async (req, res, next) => {
-  const { dataset, lpa } = req.params
-  const { orgInfo: organisation } = req
-
-  const { numberOfFieldsSupplied, numberOfFieldsMatched, numberOfExpectedFields } = await getFieldStats(lpa, dataset)
-
-  const sources = await getSources(lpa, dataset)
-
-  // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
-  const endpoints = sources.sort((a, b) => {
-    if (a.status >= 200 && a.status < 300) return -1
-    if (b.status >= 200 && b.status < 300) return 1
-    return 0
-  }).map((source, index) => {
-    let error
-
-    if (parseInt(source.status) <= 200 || parseInt(source.status) > 300) {
-      error = {
-        code: parseInt(source.status),
-        exception: source.exception
-      }
-    }
-
-    return {
-      name: `Data Url ${index}`,
-      endpoint: source.endpoint_url,
-      lastAccessed: source.latest_log_entry_date,
-      lastUpdated: source.endpoint_entry_date, // not sure if this is the lastupdated
-      error
-    }
+  req.stats = await getDatasetStats({
+    lpa: req.params.lpa,
+    dataset: req.params.dataset,
+    organisation: req.orgInfo
   })
-
-  const numberOfRecords = await performanceDbApi.getEntityCount(organisation.entity, dataset)
-
-  // ToDo: get the documentation url
-
-  req.stats = {
-    numberOfFieldsSupplied,
-    numberOfFieldsMatched,
-    numberOfExpectedFields,
-    numberOfRecords,
-    endpoints
-  }
-
   next()
 }
 

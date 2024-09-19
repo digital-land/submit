@@ -2,6 +2,7 @@ import datasette from './datasette.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import JSON5 from 'json5' // need to use this as spec is written with single quotes. need to pass this onto data designers team to fix
+import performanceDbApi from './performanceDbApi.js'
 
 async function getColumnSummary (dataset, lpa) {
   const sql = `select * from column_field_summary
@@ -80,4 +81,46 @@ export async function getSources (lpa, dataset) {
   const { formattedData } = await datasette.runQuery(sql, 'performance')
 
   return formattedData
+}
+
+export async function getDatasetStats ({ dataset, lpa, organisation }) {
+  const { numberOfFieldsSupplied, numberOfFieldsMatched, numberOfExpectedFields } = await getFieldStats(lpa, dataset)
+
+  const sources = await getSources(lpa, dataset)
+
+  // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
+  const endpoints = sources.sort((a, b) => {
+    if (a.status >= 200 && a.status < 300) return -1
+    if (b.status >= 200 && b.status < 300) return 1
+    return 0
+  }).map((source, index) => {
+    let error
+
+    if (parseInt(source.status) <= 200 || parseInt(source.status) > 300) {
+      error = {
+        code: parseInt(source.status),
+        exception: source.exception
+      }
+    }
+
+    return {
+      name: `Data Url ${index}`,
+      endpoint: source.endpoint_url,
+      lastAccessed: source.latest_log_entry_date,
+      lastUpdated: source.endpoint_entry_date, // not sure if this is the lastupdated
+      error
+    }
+  })
+
+  const numberOfRecords = await performanceDbApi.getEntityCount(organisation.entity, dataset)
+
+  // ToDo: get the documentation url
+
+  return {
+    numberOfFieldsSupplied,
+    numberOfFieldsMatched,
+    numberOfExpectedFields,
+    numberOfRecords,
+    endpoints
+  }
 }
