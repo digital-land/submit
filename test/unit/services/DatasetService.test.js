@@ -11,25 +11,25 @@ describe('DatasetService', () => {
         formattedData: [
           {
             datasets: 'dataset1',
-            json: "[{'key': 'value'}]"
+            json: "[{'dataset': 'dataset1', 'key': 'value'}]"
           },
           {
             datasets: 'dataset2;dataset3',
-            json: "[{'key2': 'value2'},{'key3': 'value3'}]"
+            json: "[{'dataset': 'dataset2', 'key2': 'value2'},{'dataset': 'dataset3', 'key3': 'value3'}]"
           },
           {
             datasets: 'dataset4',
-            json: "[{'key4': 'value4'}]"
+            json: "[{'dataset': 'dataset4', 'key4': 'value4'}]"
           }
         ]
       })
     })
 
     const expectedSpecifications = {
-      dataset1: { key: 'value' },
-      dataset2: { key2: 'value2' },
-      dataset3: { key3: 'value3' },
-      dataset4: { key4: 'value4' }
+      dataset1: { dataset: 'dataset1', key: 'value' },
+      dataset2: { dataset: 'dataset2', key2: 'value2' },
+      dataset3: { dataset: 'dataset3', key3: 'value3' },
+      dataset4: { dataset: 'dataset4', key4: 'value4' }
     }
 
     it('returns specifications in the correct format', async () => {
@@ -49,7 +49,7 @@ describe('DatasetService', () => {
     const specifications = [
       {
         datasets: 'dataset1',
-        json: '[{fields: [{field: "field1"},{field: "field3"}]}]'
+        json: '[{dataset: "dataset1", fields: [{field: "field1"},{field: "field3"}]}]'
       }
     ]
 
