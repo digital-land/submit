@@ -42,7 +42,7 @@
 
 {% endblock %}
 
-{% set mainRows = [
+{% set rows = [
   {
     key: {
       text: "Number of records"
@@ -77,31 +77,30 @@
   }  
 ] %}
 
-{% set endpointRows = []%}
-
 {% for endpoint in stats.endpoints %}
   {% set endpointRow = {
     key: {
-      text: endpoint.name
+      text: 'Data URL',
+      classes: 'padding-top'
     },
     value: {
       text: endpoint.endpoint
     },
     classes: 'padding-top'
   } %}
-  {{ endpointRows.push(endpointRow) }}
+  {{ rows.push(endpointRow) }}
 
 
 
   {% if endpoint.error %}
     {% set lastAccessedRow = {
       key: {
-        text: 'Data URL last accessed'
+        text: 'Data URL last accessed',
+        classes: 'app-inset-text---error'
       },
       value: {
         html: endpoint.lastAccessed + '<br><p class="govuk-error-message">There was a '+endpoint.error.code+' error accessing the data URL</p> <p class="app-inset-text__error"></p>'
-      },
-      classes: 'app-inset-text---error'
+      }
     } %}
   {% else %}
     {% set lastAccessedRow = {
@@ -115,7 +114,7 @@
   {% endif %}
 
 
-  {{ endpointRows.push(lastAccessedRow) }}
+  {{ rows.push(lastAccessedRow) }}
 
   {% set lastUpdatedRow = {
     key: {
@@ -125,7 +124,7 @@
       text: endpoint.lastUpdated
     }
   } %}
-  {{ endpointRows.push(lastUpdatedRow) }}
+  {{ rows.push(lastUpdatedRow) }}
 
 {% endfor %}
 
@@ -153,12 +152,7 @@
   <div class="govuk-grid-column-two-thirds">
     <section>
       <h2 class="govuk-heading-m">Dataset details</h2>
-      {{ govukSummaryList({ rows: mainRows }) }}
-
-      
-      <h2 class="govuk-heading-m">Endpoints</h2>
-
-      {{ govukSummaryList({ rows: endpointRows }) }}
+      {{ govukSummaryList({ rows: rows }) }}
     </section>
   </div>
 </div>
