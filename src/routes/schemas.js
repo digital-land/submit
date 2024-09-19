@@ -80,8 +80,9 @@ export const OrgDatasetOverview = v.strictObject({
     numberOfExpectedFields: v.integer(),
     endpoints: v.array(v.strictObject({
       name: v.string(),
+      documentation_url: v.optional(v.string()),
       endpoint: v.string(),
-      lastAccessed: v.string(), // ToDo: can we have date type on these?
+      lastAccessed: v.string(),
       lastUpdated: v.string(),
       error: v.optional(v.strictObject({
         code: v.integer(),

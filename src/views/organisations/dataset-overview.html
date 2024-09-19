@@ -84,13 +84,21 @@
       classes: 'padding-top'
     },
     value: {
-      text: endpoint.endpoint
+      html: '<a href="'+endpoint.endpoint+'">'+endpoint.endpoint+'</a>'
     },
     classes: 'padding-top'
   } %}
   {{ rows.push(endpointRow) }}
 
-
+  {% set documentationRow = {
+    key: {
+      text: 'Documentation URL'
+    },
+    value: {
+      html: '<a href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
+    }
+  } %}
+  {{ rows.push(documentationRow) }}
 
   {% if endpoint.error %}
     {% set lastAccessedRow = {

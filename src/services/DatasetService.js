@@ -72,13 +72,14 @@ export async function getSpecifications () {
 
 export async function getSources (lpa, dataset) {
   const sql = `
-    select endpoint, endpoint_url, status, exception, resource, latest_log_entry_date, endpoint_entry_date, endpoint_end_date, resource_start_date, resource_end_date
-    from reporting_historic_endpoints 
-    where REPLACE(organisation, '-eng', '') = '${lpa}' and pipeline = '${dataset}'
-    AND (resource_end_date >= current_timestamp OR resource_end_date is null)
+    select rhe.endpoint, rhe.endpoint_url, rhe.status, rhe.exception, rhe.resource, rhe.latest_log_entry_date, rhe.endpoint_entry_date, rhe.endpoint_end_date, rhe.resource_start_date, rhe.resource_end_date, s.documentation_url
+    from reporting_historic_endpoints rhe
+    LEFT JOIN source s ON rhe.endpoint = s.endpoint
+    where REPLACE(rhe.organisation, '-eng', '') = '${lpa}' and rhe.pipeline = '${dataset}'
+    AND (rhe.resource_end_date >= current_timestamp OR rhe.resource_end_date is null)
   `
 
-  const { formattedData } = await datasette.runQuery(sql, 'performance')
+  const { formattedData } = await datasette.runQuery(sql)
 
   return formattedData
 }
@@ -106,6 +107,7 @@ export async function getDatasetStats ({ dataset, lpa, organisation }) {
     return {
       name: `Data Url ${index}`,
       endpoint: source.endpoint_url,
+      documentation_url: source.documentation_url,
       lastAccessed: source.latest_log_entry_date,
       lastUpdated: source.endpoint_entry_date, // not sure if this is the lastupdated
       error
@@ -113,8 +115,6 @@ export async function getDatasetStats ({ dataset, lpa, organisation }) {
   })
 
   const numberOfRecords = await performanceDbApi.getEntityCount(organisation.entity, dataset)
-
-  // ToDo: get the documentation url
 
   return {
     numberOfFieldsSupplied,
