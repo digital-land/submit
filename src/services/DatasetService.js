@@ -1,39 +1,6 @@
 import datasette from './datasette.js'
 import logger from '../utils/logger.js'
-import performanceDbApi from './performanceDbApi.js'
-import Papa from 'papaparse'
 import JSON5 from 'json5' // need to use this as spec is written with single quotes. need to pass this onto data designers team to fix
-
-export async function getGeometryEntriesForResourceId (dataset, resourceId) {
-  const sql = `
-      SELECT ft.field, ft.value
-      FROM fact_resource fr
-      LEFT JOIN fact ft ON fr.fact = ft.fact
-      WHERE fr.resource = '${resourceId}'
-      AND ft.field = 'geometry'`
-
-  const { formattedData } = await datasette.runQuery(sql, dataset)
-
-  return formattedData
-}
-
-export async function getLatestDatasetGeometryEntriesForLpa (dataset, lpa) {
-  try {
-    const { resource: resourceId } = await performanceDbApi.getLatestResource(lpa, dataset)
-
-    return getGeometryEntriesForResourceId(dataset, resourceId)
-  } catch (error) {
-    logger.warn(
-      `DatasetService.getLatestDatasetGeometryEntriesForLpa(): Error getting geometry entries for ${lpa} in ${dataset}`,
-      {
-        errorMessage: error.message,
-        errorStack: error.stack
-      }
-    )
-
-    return []
-  }
-}
 
 async function getColumnSummary (dataset, lpa) {
   const sql = `select * from column_field_summary
@@ -75,13 +42,10 @@ export async function getFieldStats (lpa, dataset) {
 
 export async function getSpecifications () {
   try {
-    const response = await fetch('https://raw.githubusercontent.com/digital-land/specification/main/specification/specification.csv')
+    const sql = 'select * from specification order by specification'
+    const result = await datasette.runQuery(sql)
 
-    const csvData = await response.text()
-
-    const initalParse = Papa.parse(csvData, { header: true })
-
-    const fullyParsed = initalParse.data.filter(dataset => dataset.datasets !== '').map((dataset) => {
+    const resultWithParsedJson = result.formattedData.filter(dataset => dataset.datasets !== '').map((dataset) => {
       const { json, ...rest } = dataset
       const formattedJson = JSON5.parse(json)
       return {
@@ -90,7 +54,7 @@ export async function getSpecifications () {
       }
     })
 
-    const specifications = fullyParsed.reduce((accumulator, current) => {
+    const specifications = resultWithParsedJson.reduce((accumulator, current) => {
       const datasets = current.datasets.split(';')
       datasets.forEach((dataset, index) => {
         accumulator[dataset] = current.json[index]
@@ -100,7 +64,8 @@ export async function getSpecifications () {
 
     return specifications
   } catch (error) {
-    console.error(error)
+    // ToDo: handle this error
+    logger.error(error) // ToDo: make this error appropriate
   }
 }
 
