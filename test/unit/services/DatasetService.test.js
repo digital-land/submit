@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getFieldStats, getSpecifications } from '../../../src/services/DatasetService.js'
+import { datasetService } from '../../../src/services/DatasetService.js'
 import datasette from '../../../src/services/datasette.js'
+import performanceDbApi from '../../../src/services/performanceDbApi.js'
 
 vi.mock('../../../src/services/datasette')
+vi.mock('../../../src/services/performanceDbApi.js')
 
 describe('DatasetService', () => {
   describe('getSpecifications', () => {
@@ -33,7 +35,7 @@ describe('DatasetService', () => {
     }
 
     it('returns specifications in the correct format', async () => {
-      const specifications = await getSpecifications()
+      const specifications = await datasetService.getSpecifications()
       expect(specifications).toEqual(expectedSpecifications)
     })
   })
@@ -59,7 +61,7 @@ describe('DatasetService', () => {
     })
 
     it('returns field stats', async () => {
-      const fieldStats = await getFieldStats('lpa', 'dataset1')
+      const fieldStats = await datasetService.getFieldStats('lpa', 'dataset1')
       expect(fieldStats).toEqual({
         numberOfFieldsSupplied: 2,
         numberOfFieldsMatched: 1,
@@ -68,12 +70,117 @@ describe('DatasetService', () => {
     })
 
     it('returns null if dataset specification is missing', async () => {
-      const fieldStats = await getFieldStats('lpa', 'nonExistentDataset')
+      const fieldStats = await datasetService.getFieldStats('lpa', 'nonExistentDataset')
       expect(fieldStats).toBeNull()
     })
   })
 
-  describe('getDatasetStats', () => {
-    // todo
+  describe('getDatasetStats', async () => {
+    const lpa = 'lpa-example'
+    const dataset = 'dataset-example'
+    const organisation = 'organisation-example'
+
+    const getFieldStatsSpy = vi.spyOn(datasetService, 'getFieldStats')
+    const getSourcesSpy = vi.spyOn(datasetService, 'getSources')
+
+    beforeEach(() => {
+      getFieldStatsSpy.mockImplementation(() => {
+        return {
+          numberOfFieldsSupplied: 2,
+          numberOfFieldsMatched: 1,
+          numberOfExpectedFields: 2
+        }
+      })
+      getSourcesSpy.mockImplementation(() => [
+        {
+          status: 200,
+          endpoint_url: 'https://example.com/endpoint1',
+          documentation_url: 'https://example.com/doc1',
+          latest_log_entry_date: '2023-02-20T14:30:00Z',
+          endpoint_entry_date: '2023-02-19T12:00:00Z'
+        },
+        {
+          status: 404,
+          endpoint_url: 'https://example.com/endpoint2',
+          documentation_url: 'https://example.com/doc2',
+          latest_log_entry_date: '2023-02-20T14:30:00Z',
+          endpoint_entry_date: '2023-02-19T12:00:00Z',
+          exception: 'Not Found'
+        }
+      ])
+      performanceDbApi.getEntityCount = vi.fn().mockResolvedValueOnce(100)
+    })
+
+    it('returns dataset stats with field stats and sources', async () => {
+      const datasetStats = await datasetService.getDatasetStats({ dataset, lpa, organisation })
+
+      expect(datasetStats).toEqual({
+        numberOfFieldsSupplied: 2,
+        numberOfFieldsMatched: 1,
+        numberOfExpectedFields: 2,
+        numberOfRecords: 100,
+        endpoints: [
+          {
+            name: 'Data Url 0',
+            endpoint: 'https://example.com/endpoint1',
+            documentation_url: 'https://example.com/doc1',
+            lastAccessed: '2023-02-20T14:30:00Z',
+            lastUpdated: '2023-02-19T12:00:00Z'
+          },
+          {
+            name: 'Data Url 1',
+            endpoint: 'https://example.com/endpoint2',
+            documentation_url: 'https://example.com/doc2',
+            lastAccessed: '2023-02-20T14:30:00Z',
+            lastUpdated: '2023-02-19T12:00:00Z',
+            error: {
+              code: 404,
+              exception: 'Not Found'
+            }
+          }
+        ]
+      })
+    })
+
+    it('returns 0s if getFieldStats returns null', async () => {
+      getFieldStatsSpy.mockResolvedValueOnce(null)
+      const datasetStats = await datasetService.getDatasetStats({ dataset, lpa, organisation })
+      expect(datasetStats).toEqual({
+        numberOfFieldsSupplied: 0,
+        numberOfFieldsMatched: 0,
+        numberOfExpectedFields: 0,
+        numberOfRecords: 100,
+        endpoints: [
+          {
+            name: 'Data Url 0',
+            endpoint: 'https://example.com/endpoint1',
+            documentation_url: 'https://example.com/doc1',
+            lastAccessed: '2023-02-20T14:30:00Z',
+            lastUpdated: '2023-02-19T12:00:00Z'
+          },
+          {
+            name: 'Data Url 1',
+            endpoint: 'https://example.com/endpoint2',
+            documentation_url: 'https://example.com/doc2',
+            lastAccessed: '2023-02-20T14:30:00Z',
+            lastUpdated: '2023-02-19T12:00:00Z',
+            error: {
+              code: 404,
+              exception: 'Not Found'
+            }
+          }
+        ]
+      })
+    })
+
+    it('throws an error if getFieldStats throws an error', async () => {
+      getFieldStatsSpy.mockRejectedValueOnce(new Error('Error fetching sources'))
+      await expect(datasetService.getDatasetStats({ dataset, lpa, organisation })).rejects.toThrowError('Error fetching sources')
+    })
+
+    it('throws an error if getSources throws an error', async () => {
+      getSourcesSpy.mockRejectedValueOnce(new Error('Error fetching sources'))
+      await expect(datasetService.getDatasetStats({ dataset, lpa, organisation })).rejects.toThrowError('Error fetching sources')
+    })
   })
 })

@@ -16,9 +16,9 @@ async function getColumnSummary (dataset, lpa) {
   return formattedData
 }
 
-export async function getFieldStats (lpa, dataset) {
-  const columnSummary = await getColumnSummary(dataset, lpa)
-  const specifications = await getSpecifications()
+async function getFieldStats (lpa, dataset) {
+  const columnSummary = await datasetService.getColumnSummary(dataset, lpa)
+  const specifications = await datasetService.getSpecifications()
   if (!(dataset in specifications)) {
     logger.warn(`services/datasetService.getFieldStats(): cannot find specification for dataset: ${dataset}`, { type: types.app, dataset })
     return null
@@ -47,7 +47,7 @@ export async function getFieldStats (lpa, dataset) {
   }
 }
 
-export async function getSpecifications () {
+async function getSpecifications () {
   const sql = 'select * from specification order by specification'
   const result = await datasette.runQuery(sql)
 
@@ -85,9 +85,9 @@ export async function getSources (lpa, dataset) {
 }
 
 export async function getDatasetStats ({ dataset, lpa, organisation }) {
-  const { numberOfFieldsSupplied, numberOfFieldsMatched, numberOfExpectedFields } = await getFieldStats(lpa, dataset)
+  const stats = await datasetService.getFieldStats(lpa, dataset)
 
-  const sources = await getSources(lpa, dataset)
+  const sources = await datasetService.getSources(lpa, dataset)
 
   // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
   const endpoints = sources.sort((a, b) => {
@@ -97,7 +97,7 @@ export async function getDatasetStats ({ dataset, lpa, organisation }) {
   }).map((source, index) => {
     let error
 
-    if (parseInt(source.status) <= 200 || parseInt(source.status) > 300) {
+    if (parseInt(source.status) < 200 || parseInt(source.status) >= 300) {
       error = {
         code: parseInt(source.status),
         exception: source.exception
@@ -117,10 +117,18 @@ export async function getDatasetStats ({ dataset, lpa, organisation }) {
   const numberOfRecords = await performanceDbApi.getEntityCount(organisation.entity, dataset)
 
   return {
-    numberOfFieldsSupplied,
-    numberOfFieldsMatched,
-    numberOfExpectedFields,
+    numberOfFieldsSupplied: stats?.numberOfFieldsSupplied ?? 0,
+    numberOfFieldsMatched: stats?.numberOfFieldsMatched ?? 0,
+    numberOfExpectedFields: stats?.numberOfExpectedFields ?? 0,
     numberOfRecords,
     endpoints
   }
+}
+
+export const datasetService = {
+  getColumnSummary,
+  getFieldStats,
+  getSpecifications,
+  getSources,
+  getDatasetStats
 }
