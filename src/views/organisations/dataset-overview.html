@@ -90,15 +90,17 @@
   } %}
   {{ rows.push(endpointRow) }}
 
-  {% set documentationRow = {
-    key: {
-      text: 'Documentation URL'
-    },
-    value: {
-      html: '<a href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
-    }
-  } %}
-  {{ rows.push(documentationRow) }}
+  {% if endpoint.documentation_url %}
+    {% set documentationRow = {
+      key: {
+        text: 'Documentation URL'
+      },
+      value: {
+        html: '<a href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
+      }
+    } %}p
+    {{ rows.push(documentationRow) }}
+  {% endif %}
 
   {% if endpoint.error %}
     {% set lastAccessedRow = {

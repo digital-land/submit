@@ -23,6 +23,7 @@ describe('Dataset Overview Page', () => {
         {
           name: 'endpoint 1',
           endpoint: 'http://endpoint1.co.uk',
+          documentation_url: 'http://endpoint1-docs.co.uk',
           lastAccessed: '2024-09-09',
           lastUpdated: '2024-09-09'
         },
@@ -63,12 +64,13 @@ describe('Dataset Overview Page', () => {
     expect(summaryListValues[2].textContent.trim()).toEqual(`${params.stats.numberOfFieldsMatched}/${params.stats.numberOfExpectedFields}`)
     expect(summaryListValues[3].textContent.trim()).toEqual('Open Government Licence')
     expect(summaryListValues[4].textContent).toContain(params.stats.endpoints[0].endpoint)
-    expect(summaryListValues[5].textContent).toContain(params.stats.endpoints[0].lastAccessed)
-    expect(summaryListValues[6].textContent).toContain(params.stats.endpoints[0].lastUpdated)
-    expect(summaryListValues[7].textContent).toContain(params.stats.endpoints[1].endpoint)
-    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].lastAccessed)
-    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].error.code)
-    expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].lastUpdated)
+    expect(summaryListValues[5].textContent).toContain(params.stats.endpoints[0].documentation_url)
+    expect(summaryListValues[6].textContent).toContain(params.stats.endpoints[0].lastAccessed)
+    expect(summaryListValues[7].textContent).toContain(params.stats.endpoints[0].lastUpdated)
+    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].endpoint)
+    expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].lastAccessed)
+    expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].error.code)
+    expect(summaryListValues[10].textContent).toContain(params.stats.endpoints[1].lastUpdated)
   })
 
   it('Renders breadcrumbs correctly', () => {
