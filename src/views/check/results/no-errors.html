@@ -2,10 +2,11 @@
 
 {% from 'govuk/components/button/macro.njk' import govukButton %}
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
-{% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
-
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+
+{% from "../../components/table.html" import table %}
+
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'Check your data before you continue' %}
@@ -45,32 +46,9 @@
     <div class="govuk-grid-column-full">
       <p>{{options.pagination.totalResults}} rows can be published.</p>
 
-      <div class="app-scrollable-container" s>
-        <table class="govuk-table">
-          <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              {% for column in options.columns %}
-                <th scope="col" class="govuk-table__header">{{column}}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-            {% for row in options.verboseRows %}
-              <tr class="govuk-table__row">
-                {% for field in options.fields %}
-                  {% set columnData = row.columns[field] %}
-                  <td class="govuk-table__cell app-wrap">
-                      {% if columnData.value %}
-                        {{columnData.value}}
-                      {% endif %}
-                  </td>
-                {% endfor %}
-              </tr>
-            {% endfor %}
 
-          </tbody>
-        </table>
-      </div>
+        
+      {{ table(options.tableParams) }}
 
       {% if options.pagination.items | length > 1 %}
         {{ govukPagination({

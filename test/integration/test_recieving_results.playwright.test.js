@@ -127,7 +127,9 @@ const getTableValuesFromResponse = (response, details) => {
 
   const uniqueHeaders = [...new Set(notUniqueHeaders)]
 
-  tableValues.unshift(uniqueHeaders)
+  const prettifiedUniqueHeaders = uniqueHeaders.map(header => prettifyColumnName(header))
+
+  tableValues.unshift(prettifiedUniqueHeaders)
 
   tableValues.push(...details.map(detail => {
     const convertedRow = detail.converted_row
