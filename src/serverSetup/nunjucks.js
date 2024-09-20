@@ -16,6 +16,9 @@ const proto = {
     logger.info(`rendering: ${name} with schema=<${schema ? 'defined' : 'any'}>`)
     return customRenderer.render(nunjucks, name, schema ?? v.any(), context)
   },
+  renderString (string, context) {
+    return nunjucks.renderString(string, context)
+  },
   configure (paths, options) {
     return nunjucks.configure(paths, options)
   }

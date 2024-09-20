@@ -77,20 +77,31 @@ describe('ResultsController', () => {
       expect(req.form.options.template).toBe('results/no-errors')
     })
 
-    it('should redirect to the status page if the form is complete', async () => {
+    it('should correctly set template variables', async () => {
       const mockResult = {
         isComplete: () => true,
         isFailed: () => false,
         getParams: () => 'params',
         getErrorSummary: () => (['error summary']),
-        getGeometries: () => ['geometries'],
+
         getColumns: () => (['columns']),
         getRowsWithVerboseColumns: () => (['verbose-columns']),
         getFields: () => (['fields']),
-        getFieldMappings: () => ({ fields: 'geometries' }),
         hasErrors: () => false,
-        getPagination: () => 'pagination',
-        fetchResponseDetails: () => {}
+        fetchResponseDetails: () => ({
+          getRowsWithVerboseColumns: () => [
+            {
+              columns: {},
+              fields: ['mock field'],
+              values: ['mock value']
+            }
+          ],
+          getColumns: () => 'mock Columns',
+          getFields: () => 'mock fields',
+          getFieldMappings: () => ({ fields: 'geometries' }),
+          getGeometries: () => ['geometries'],
+          getPagination: () => 'pagination'
+        })
       }
 
       const res = { redirect: vi.fn() }
@@ -99,77 +110,88 @@ describe('ResultsController', () => {
       await resultsController.locals(req, res, () => {})
 
       expect(req.form.options.data).toBe(mockResult)
-      expect(req.form.options.requestParams).toBe('params')
-      expect(req.form.options.errorSummary).toStrictEqual(['error summary'])
-      expect(req.form.options.columns).toStrictEqual(['columns'])
-      expect(req.form.options.fields).toStrictEqual(['fields'])
-      expect(req.form.options.verboseRows).toStrictEqual(['verbose-columns'])
-      expect(req.form.options.geometries).toStrictEqual(['geometries'])
-      expect(req.form.options.pagination).toBe('pagination')
-      expect(req.form.options.errorSummary).toStrictEqual(['error summary'])
-    })
-  })
-
-  it("should call next with a 404 error if the result wasn't found", async () => {
-    asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
-      throw new Error('Request not found', { message: 'Request not found', status: 404 })
-    })
-
-    const nextMock = vi.fn()
-    await resultsController.locals(req, {}, nextMock)
-    expect(nextMock).toHaveBeenCalledWith(new Error('Request not found', { message: 'Request not found', status: 404 }), req, {}, nextMock)
-  })
-
-  it('should call next with a 500 error if the result processing errored', async () => {
-    asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
-      throw new Error('Unexpected error', { message: 'Unexpected error', status: 500 })
+      expect(req.form.options).toStrictEqual({
+        data: mockResult,
+        tableParams: {
+          columns: 'mock Columns',
+          fields: 'mock fields',
+          rows: [{
+            columns: {},
+            fields: ['mock field'],
+            values: ['mock value']
+          }]
+        },
+        errorSummary: ['error summary'],
+        mappings: { fields: 'geometries' },
+        geometries: ['geometries'],
+        pagination: 'pagination',
+        requestParams: 'params',
+        template: 'results/no-errors',
+        id: req.params.id
+      })
     })
 
-    const nextMock = vi.fn()
-    await resultsController.locals(req, {}, nextMock)
-    expect(nextMock).toHaveBeenCalledWith(new Error('Unexpected error', { message: 'Unexpected error', status: 500 }), req, {}, nextMock)
-  })
+    it('should redirect to the status page if the result is not complete', async () => {
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => false }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
-  it('should set the template to the errors template if the result has errors', async () => {
-    const mockResult = { hasErrors: () => true, isFailed: () => false, isComplete: () => true }
-    asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      const res = { redirect: vi.fn() }
+      await resultsController.locals(req, res, () => {})
+      expect(res.redirect).toHaveBeenCalledWith(`/check/status/${req.params.id}`)
+    })
 
-    await resultsController.locals(req, {}, () => {})
-    expect(req.form.options.template).toBe('results/errors')
-    expect(resultsController.noErrors(req)).toBe(false)
-  })
+    it("should call next with a 404 error if the result wasn't found", async () => {
+      asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
+        throw new Error('Request not found', { message: 'Request not found', status: 404 })
+      })
 
-  it('should set the template to the no-errors template if the result has no errors', async () => {
-    const mockResult = { hasErrors: () => false, isFailed: () => false, isComplete: () => true }
-    asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      const nextMock = vi.fn()
+      await resultsController.locals(req, {}, nextMock)
+      expect(nextMock).toHaveBeenCalledWith(new Error('Request not found', { message: 'Request not found', status: 404 }), req, {}, nextMock)
+    })
 
-    await resultsController.locals(req, {}, () => {})
-    expect(req.form.options.template).toBe('results/no-errors')
-    expect(resultsController.noErrors(req)).toBe(true)
-  })
+    it('should call next with a 500 error if the result processing errored', async () => {
+      asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
+        throw new Error('Unexpected error', { message: 'Unexpected error', status: 500 })
+      })
 
-  it('should set the template to the failedFileRequest template if the result is failed for a file check', async () => {
-    const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_file' }
-    asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      const nextMock = vi.fn()
+      await resultsController.locals(req, {}, nextMock)
+      expect(nextMock).toHaveBeenCalledWith(new Error('Unexpected error', { message: 'Unexpected error', status: 500 }), req, {}, nextMock)
+    })
 
-    await resultsController.locals(req, {}, () => {})
-    expect(req.form.options.template).toBe('results/failedFileRequest')
-  })
+    it('should set the template to the errors template if the result has errors', async () => {
+      const mockResult = { hasErrors: () => true, isFailed: () => false, isComplete: () => true }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
-  it('should set the template to the failedUrlRequest template if the result is failed for a url check', async () => {
-    const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_url' }
-    asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      await resultsController.locals(req, {}, () => {})
+      expect(req.form.options.template).toBe('results/errors')
+      expect(resultsController.noErrors(req)).toBe(false)
+    })
 
-    await resultsController.locals(req, {}, () => {})
-    expect(req.form.options.template).toBe('results/failedUrlRequest')
-  })
+    it('should set the template to the no-errors template if the result has no errors', async () => {
+      const mockResult = { hasErrors: () => false, isFailed: () => false, isComplete: () => true }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
 
-  it('should redirect to the status page if the result is not complete', async () => {
-    const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => false }
-    asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      await resultsController.locals(req, {}, () => {})
+      expect(req.form.options.template).toBe('results/no-errors')
+      expect(resultsController.noErrors(req)).toBe(true)
+    })
 
-    const res = { redirect: vi.fn() }
-    await resultsController.locals(req, res, () => {})
-    expect(res.redirect).toHaveBeenCalledWith(`/status/${req.params.id}`)
+    it('should set the template to the failedFileRequest template if the result is failed for a file check', async () => {
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_file' }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+
+      await resultsController.locals(req, {}, () => {})
+      expect(req.form.options.template).toBe('results/failedFileRequest')
+    })
+
+    it('should set the template to the failedUrlRequest template if the result is failed for a url check', async () => {
+      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_url' }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+
+      await resultsController.locals(req, {}, () => {})
+      expect(req.form.options.template).toBe('results/failedUrlRequest')
+    })
   })
 })
