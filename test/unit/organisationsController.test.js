@@ -2,7 +2,6 @@ import { describe, it, vi, expect, beforeEach } from 'vitest'
 import * as v from 'valibot'
 import organisationsController from '../../src/controllers/OrganisationsController.js'
 import performanceDbApi from '../../src/services/performanceDbApi.js'
-import datasette from '../../src/services/datasette.js'
 
 vi.mock('../../src/services/performanceDbApi.js')
 vi.mock('../../src/utils/utils.js', () => {
@@ -49,7 +48,7 @@ describe('OrganisationsController.js', () => {
       const next = vi.fn()
 
       organisationsController.prepareOverviewTemplateParams(req, res, () => {})
-      await organisationsController.getOverview(req, res, next)
+      organisationsController.getOverview(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/overview.html', expect.objectContaining({
@@ -73,9 +72,9 @@ describe('OrganisationsController.js', () => {
       const res = { render: vi.fn() }
       const next = vi.fn()
 
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [] })
-
-      await organisationsController.getOrganisations(req, res, next)
+      req.organisations = []
+      organisationsController.prepareGetOrganisationsTemplateParams(req, res, next)
+      organisationsController.getOrganisations(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/find.html', expect.objectContaining({
@@ -97,9 +96,9 @@ describe('OrganisationsController.js', () => {
         { name: 'East Sussex NHS Trust', organisation: 'East Sussex NHS Trust' }
       ]
 
-      vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: datasetteResponse })
-
-      await organisationsController.getOrganisations(req, res, next)
+      req.organisations = datasetteResponse
+      organisationsController.prepareGetOrganisationsTemplateParams(req, res, next)
+      organisationsController.getOrganisations(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/find.html', expect.objectContaining({
@@ -123,21 +122,6 @@ describe('OrganisationsController.js', () => {
         }
       }))
     })
-
-    it('should catch errors and pass them onto the next function', async () => {
-      const req = {}
-      const res = {}
-      const next = vi.fn()
-
-      const error = new Error('Test error')
-
-      vi.mocked(datasette.runQuery).mockRejectedValue(error)
-
-      await organisationsController.getOrganisations(req, res, next)
-
-      expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(error)
-    })
   })
 
   describe('get-started', () => {
@@ -146,35 +130,23 @@ describe('OrganisationsController.js', () => {
         { name: 'Example LPA', organisation: 'LPA' }
       ]
     }
-    const exampleDataset = {
-      formattedData: [
-        { name: 'Example Dataset' }
-      ]
-    }
+    const exampleDataset = { name: 'Example Dataset', dataset: 'example-dataset' }
 
     it('should render the get-started template with the correct params', async () => {
       const req = {
         params: { lpa: 'example-lpa', dataset: 'example-dataset' },
         orgInfo: exampleLpa.formattedData[0],
-        dataset: exampleDataset.formattedData[0]
+        dataset: exampleDataset
       }
       const res = { render: vi.fn() }
       const next = vi.fn()
 
-      datasette.runQuery.mockImplementation((query) => {
-        if (query.includes('example-lpa')) {
-          return exampleLpa
-        } else if (query.includes('example-dataset')) {
-          return exampleDataset
-        }
-      })
-
-      await organisationsController.getGetStarted(req, res, next)
+      organisationsController.getGetStarted(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/get-started.html', {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
-        dataset: { name: 'Example Dataset' }
+        dataset: exampleDataset
       })
     })
 
@@ -182,101 +154,56 @@ describe('OrganisationsController.js', () => {
       const req = {
         params: { lpa: 'example-lpa', dataset: 'example-dataset' },
         orgInfo: undefined, // this should fail validation
-        dataset: exampleDataset.formattedData[0]
+        dataset: exampleDataset
       }
       const res = { render: vi.fn() }
       const next = vi.fn()
 
-      await organisationsController.getGetStarted(req, res, next)
+      organisationsController.getGetStarted(req, res, next)
 
       expect(next).toHaveBeenCalledTimes(1)
+      expect(res.render).toHaveBeenCalledTimes(0)
     })
   })
 
   describe('dataset task list', () => {
-    it('should call render with the datasetTaskList page', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
-      const res = { render: vi.fn() }
-      const next = vi.fn()
-
-      vi.mocked(datasette.runQuery).mockResolvedValueOnce({
-        formattedData: [{ name: 'Example Organisation', organisation: 'ORG' }]
-      }).mockResolvedValueOnce({
-        formattedData: [{ name: 'Example Dataset' }]
-      })
-
-      vi.mocked(performanceDbApi.getLatestResource).mockResolvedValue({
-        resource: 'mock-resource'
-      })
-
-      vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        {
-          issue: 'Example issue 1',
-          issue_type: 'Example issue type 1',
-          field: 'Example field 1',
-          num_issues: 1,
-          status: 'Error'
-        }
-      ])
-
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1')
-
-      await organisationsController.getDatasetTaskList(req, res, next)
-
-      expect(res.render).toHaveBeenCalledTimes(1)
-      expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
-        taskList: [{
-          title: {
-            text: 'task message 1'
-          },
-          href: '/organisations/example-lpa/example-dataset/Example issue type 1/Example field 1',
-          status: {
-            tag: {
-              classes: 'govuk-tag--red',
-              text: 'Error'
-            }
-          }
-        }],
-        organisation: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset' }
-      })
-    })
-
     it('should fetch the dataset tasks and correctly pass them on to the dataset task list page', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const req = {
+        params: { lpa: 'example-lpa', dataset: 'example-dataset' },
+        resourceStatus: {
+          resource: 'mock-resource',
+          endpoint_url: 'http://example.com/resource',
+          status: '200',
+          latest_log_entry_date: '',
+          days_since_200: 0
+        },
+        orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
+        dataset: { name: 'Example Dataset' },
+        resource: { resource: 'mock-resource' },
+        issues: [
+          {
+            issue: 'Example issue 1',
+            issue_type: 'Example issue type 1',
+            field: 'Example issue field 1',
+            num_issues: 1,
+            status: 'Error'
+          },
+          {
+            issue: 'Example issue 2',
+            issue_type: 'Example issue type 2',
+            field: 'Example issue field 2',
+            num_issues: 1,
+            status: 'Needs fixing'
+          }
+        ]
+      }
       const res = { render: vi.fn() }
       const next = vi.fn()
-
-      vi.mocked(datasette.runQuery).mockResolvedValueOnce({
-        formattedData: [{ name: 'Example Organisation', organisation: 'ORG' }]
-      }).mockResolvedValueOnce({
-        formattedData: [{ name: 'Example Dataset' }]
-      })
-
-      vi.mocked(performanceDbApi.getLatestResource).mockResolvedValue({
-        resource: 'mock-resource'
-      })
-
-      vi.mocked(performanceDbApi.getLpaDatasetIssues).mockResolvedValue([
-        {
-          issue: 'Example issue 1',
-          issue_type: 'Example issue type 1',
-          field: 'Example issue field 1',
-          num_issues: 1,
-          status: 'Error'
-        },
-        {
-          issue: 'Example issue 2',
-          issue_type: 'Example issue type 2',
-          field: 'Example issue field 2',
-          num_issues: 1,
-          status: 'Needs fixing'
-        }
-      ])
 
       vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1').mockReturnValueOnce('task message 2')
 
-      await organisationsController.getDatasetTaskList(req, res, next)
+      organisationsController.prepareDatasetTaskListTemplateParams(req, res, next)
+      organisationsController.getDatasetTaskList(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/datasetTaskList.html', {
@@ -309,22 +236,6 @@ describe('OrganisationsController.js', () => {
         organisation: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset' }
       })
-    })
-
-    it('should catch errors and pass them on to the next function', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
-      const res = {}
-      const next = vi.fn()
-
-      // Mock the datasette.runQuery method to throw an error
-      datasette.runQuery.mockImplementation(() => {
-        throw new Error('example error')
-      })
-
-      await organisationsController.getDatasetTaskList(req, res, next)
-
-      expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(expect.any(Error))
     })
   })
 
@@ -359,7 +270,7 @@ describe('OrganisationsController.js', () => {
         params: requestParams,
         // middleware supplies the below
         entryNumber: 1,
-        entityCount: 3,
+        entityCount: { entity_count: 3 },
         issueEntitiesCount: 1,
         pageNumber: 1,
         orgInfo,
@@ -392,9 +303,9 @@ describe('OrganisationsController.js', () => {
         vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
       })
       vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
-      organisationsController.prepareIssueDetailsTemplateParams(req, {}, () => {})
 
-      await organisationsController.getIssueDetails(req, res, next)
+      organisationsController.prepareIssueDetailsTemplateParams(req, {}, () => {})
+      organisationsController.getIssueDetails(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', {
@@ -463,7 +374,7 @@ describe('OrganisationsController.js', () => {
         params: requestParams,
         // middleware supplies the below
         entryNumber: 1,
-        entityCount: 3,
+        entityCount: { entity_count: 3 },
         issueEntitiesCount: 1,
         pageNumber: 1,
         orgInfo,
@@ -496,9 +407,9 @@ describe('OrganisationsController.js', () => {
         vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
       })
       vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
-      organisationsController.prepareIssueDetailsTemplateParams(req, {}, () => {})
 
-      await organisationsController.getIssueDetails(req, res, next)
+      organisationsController.prepareIssueDetailsTemplateParams(req, {}, () => {})
+      organisationsController.getIssueDetails(req, res, next)
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', {
@@ -550,115 +461,36 @@ describe('OrganisationsController.js', () => {
         pageNumber: 1
       })
     })
-
-    it('should catch errors and pass them onto the next function', async () => {
-      const req = {
-        params: {
-          lpa: 'test-lpa',
-          dataset: 'test-dataset',
-          issue_type: 'test-issue-type',
-          resourceId: 'test-resource-id',
-          entityNumber: '1'
-        }
-      }
-      const res = {
-        render: vi.fn()
-      }
-      const next = vi.fn()
-
-      vi.mocked(performanceDbApi.getLatestResource).mockRejectedValue(new Error('Test error'))
-
-      await organisationsController.getIssueDetails(req, res, next)
-
-      expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(expect.any(Error))
-    })
   })
 
-  describe('getEndpointError', () => {
+  describe('getDatasetTaskListError', () => {
     it('should render http-error.html template with correct params', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
+      const resourceStatus = { status: '404', days_since_200: 3, endpoint_url: 'https://example.com', latest_log_entry_date: '2022-01-01T12:00:00.000Z' }
+      const organisation = { name: 'Example Organisation', organisation: 'ORG' }
+      const dataset = { name: 'Example Dataset', dataset: 'example-dataset' }
+      const req = {
+        params: { lpa: 'example-lpa', dataset: 'example-dataset' },
+        resourceStatus,
+        orgInfo: organisation,
+        dataset
+      }
       const res = { render: vi.fn() }
       const next = vi.fn()
-      const resourceStatus = { status: '404', days_since_200: 3, endpoint_url: 'https://example.com', latest_log_entry_date: '2022-01-01T12:00:00.000Z' }
 
-      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [{ name: 'Example Organisation', organisation: 'ORG' }] })
-      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [{ name: 'Example Dataset' }] })
-
-      await organisationsController.getEndpointError(req, res, next, { resourceStatus })
+      organisationsController.prepareDatasetTaskListErrorTemplateParams(req, res, next)
+      organisationsController.getDatasetTaskListError(req, res, next)
 
       const dataTimeRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z/
 
       expect(res.render).toHaveBeenCalledTimes(1)
       const renderArgs = res.render.mock.calls[0]
       expect(renderArgs[0]).toEqual('organisations/http-error.html')
-      expect(renderArgs[1].organisation).toEqual({ name: 'Example Organisation', organisation: 'ORG' })
-      expect(renderArgs[1].dataset).toEqual({ name: 'Example Dataset' })
+      expect(renderArgs[1].organisation).toEqual(organisation)
+      expect(renderArgs[1].dataset).toEqual(dataset)
       expect(renderArgs[1].errorData.endpoint_url).toEqual('https://example.com')
       expect(renderArgs[1].errorData.http_status).toEqual('404')
       expect(renderArgs[1].errorData.latest_log_entry_date).toMatch(dataTimeRegex)
       expect(renderArgs[1].errorData.latest_200_date).toMatch(dataTimeRegex)
-    })
-
-    it('should catch errors and pass them to the next function', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
-      const res = {}
-      const next = vi.fn()
-      const resourceStatus = { status: '404' }
-
-      vi.mocked(datasette.runQuery).mockRejectedValueOnce(new Error('example error'))
-
-      await organisationsController.getEndpointError(req, res, next, { resourceStatus })
-
-      expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(expect.any(Error))
-    })
-  })
-
-  describe('conditionalTaskListHandler', () => {
-    it('should call getEndpointError if resource status is not 200', async () => {
-      const getResourceStatusSpy = vi.spyOn(organisationsController, 'getEndpointError')
-      getResourceStatusSpy.mockResolvedValue({})
-
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
-      const res = { render: vi.fn() }
-      const next = vi.fn()
-
-      vi.mocked(performanceDbApi.getResourceStatus).mockResolvedValueOnce({ status: '404' })
-
-      await organisationsController.conditionalTaskListHandler(req, res, next)
-
-      expect(organisationsController.getEndpointError).toHaveBeenCalledTimes(1)
-      expect(organisationsController.getEndpointError).toHaveBeenCalledWith(req, res, next, { resourceStatus: { status: '404' } })
-    })
-
-    it('should call getDatasetTaskList if resource status is 200', async () => {
-      const getDatasetTaskListSpy = vi.spyOn(organisationsController, 'getDatasetTaskList')
-      getDatasetTaskListSpy.mockResolvedValue({})
-
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
-      const res = { render: vi.fn() }
-      const next = vi.fn()
-
-      vi.mocked(performanceDbApi.getResourceStatus).mockResolvedValueOnce({ status: '200' })
-
-      await organisationsController.conditionalTaskListHandler(req, res, next)
-
-      expect(organisationsController.getDatasetTaskList).toHaveBeenCalledTimes(1)
-      expect(organisationsController.getDatasetTaskList).toHaveBeenCalledWith(req, res, next)
-    })
-
-    it('should catch errors and pass them to the next function', async () => {
-      const req = { params: { lpa: 'example-lpa', dataset: 'example-dataset' } }
-      const res = {}
-      const next = vi.fn()
-
-      vi.mocked(performanceDbApi.getResourceStatus).mockRejectedValueOnce(new Error('example error'))
-
-      await organisationsController.conditionalTaskListHandler(req, res, next)
-
-      expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(expect.any(Error))
     })
   })
 })

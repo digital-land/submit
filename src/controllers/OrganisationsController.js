@@ -1,134 +1,52 @@
-import datasette from '../services/datasette.js'
 import performanceDbApi from '../services/performanceDbApi.js' // Assume you have an API service module
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { dataSubjects } from '../utils/utils.js'
 import { statusToTagClass } from '../filters/filters.js'
-import { render } from '../utils/custom-renderer.js'
-import { templateSchema } from '../routes/schemas.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import config from '../../config/index.js'
-import { getDatasetStats, getLatestDatasetGeometryEntriesForLpa } from '../services/DatasetService.js'
+import {
+  fetchIf,
+  fetchMany,
+  fetchOne,
+  logPageError,
+  parallel,
+  renderTemplate,
+  FetchOptions,
+  FetchOneFallbackPolicy
+} from './middleware.js'
+import { getDatasetStats } from '../services/DatasetService.js'
 
 // get a list of available datasets
-const availableDatasets = Object.values(dataSubjects)
-  .flatMap(dataSubject =>
-    dataSubject.dataSets
-      .filter(dataset => dataset.available)
-      .map(dataset => dataset.value)
-  )
-
-function validateAndRender (res, name, params) {
-  const schema = templateSchema.get(name) ?? v.any()
-  logger.info(`rendering '${name}' with schema=<${schema ? 'defined' : 'any'}>`, { type: types.App })
-  return render(res, name, schema, params)
-}
-
-/**
- * Middleware. Attempts to fetch data and short-circuits with 404 when
- * data for given query does not exist. Meant to be used to fetch singular records.
- *
- * `this` needs `{ query({ req, params }) => any, result: string }`
- *
- * where the `result` is the key under which result of the query will be stored in `req`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function fetchOne (req, res, next) {
-  logger.debug({ type: types.App, message: 'fetchOne', resultKey: this.result })
-  const query = this.query({ req, params: req.params })
-  const result = await datasette.runQuery(query)
-  if (result.formattedData.length === 0) {
-    // we can make the 404 more informative by informing the use what exactly was "not found"
-    res.status(404).render('errorPages/404', { })
-  } else {
-    req[this.result] = result.formattedData[0]
-    next()
-  }
-}
-
-/**
- * Middleware. Set `req.handlerName` to a string that will identify
- * the function that threw the error.
- *
- * @param {Error} err
- * @param {{handlerName: string}} req
- * @param {*} res
- * @param {*} next
- */
-const logPageError = (err, req, res, next) => {
-  console.assert(req.handlerName, 'handlerName missing ')
-  logger.warn({
-    message: `OrganisationsController.${req.handlerName}(): ${err.message}`,
-    endpoint: req.originalUrl,
-    errorStack: err.stack,
-    errorMessage: err.message,
-    type: types.App
-  })
-  next(err)
-}
-
-/**
- * Middleware. Validates and renders the template.
- *
- * `this` needs: `{ templateParams(req), template,  handlerName }`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- * @returns
- */
-function renderTemplate (req, res, next) {
-  const templateParams = this.templateParams(req)
-  try {
-    validateAndRender(res, this.template, templateParams)
-  } catch (err) {
-    req.handlerName = this.handlerName
-    next(err)
-  }
-}
-
-const getGetStarted = renderTemplate.bind(
-  {
-    templateParams (req) {
-      const { orgInfo: organisation, dataset } = req
-      return { organisation, dataset }
-    },
-    template: 'organisations/get-started.html',
-    handlerName: 'getStarted'
-  }
+const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
+  dataSubject.dataSets
+    .filter((dataset) => dataset.available)
+    .map((dataset) => dataset.value)
 )
 
-const fetchOrgInfo = fetchOne.bind({
+const getGetStarted = renderTemplate({
+  templateParams (req) {
+    const { orgInfo: organisation, dataset } = req
+    return { organisation, dataset }
+  },
+  template: 'organisations/get-started.html',
+  handlerName: 'getStarted'
+})
+
+const fetchOrgInfo = fetchOne({
   query: ({ params }) => {
-    return `SELECT name, organisation FROM organisation WHERE organisation = '${params.lpa}'`
+    return `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
 
-const fetchDatasetName = fetchOne.bind({
-  query: ({ params }) => {
-    return `SELECT name FROM dataset WHERE dataset = '${params.dataset}'`
-  },
-  result: 'dataset'
-})
-
-const fetchDatasetInfo = fetchOne.bind({
+const fetchDatasetInfo = fetchOne({
   query: ({ params }) => {
     return `SELECT name, dataset FROM dataset WHERE dataset = '${params.dataset}'`
   },
   result: 'dataset'
 })
-
-const fetchDatasetGeometries = async (req, res, next) => {
-  const datasetEntries = await getLatestDatasetGeometryEntriesForLpa(req.params.dataset, req.params.lpa)
-  req.geometries = datasetEntries.map(entry => entry.value)
-
-  next()
-}
 
 const fetchDatasetStats = async (req, res, next) => {
   req.stats = await getDatasetStats(req.params.dataset, req.params.lpa)
@@ -136,16 +54,31 @@ const fetchDatasetStats = async (req, res, next) => {
   next()
 }
 
-const getDatasetOverview = renderTemplate.bind(
+const getDatasetOverview = renderTemplate(
   {
     templateParams (req) {
-      const { orgInfo: organisation, dataset, geometries, stats } = req
-      return { organisation, dataset, geometries, stats }
+      const { orgInfo: organisation, dataset, stats } = req
+      return { organisation, dataset, stats }
     },
     template: 'organisations/dataset-overview.html',
     handlerName: 'datasetOverview'
   }
 )
+
+const fetchOrgInfoWithStatGeo = fetchOne({
+  query: ({ params }) => {
+    return /* sql */ `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
+  },
+  result: 'orgInfo'
+})
+
+/**
+ * Middleware.
+ */
+const fetchResourceStatus = fetchOne({
+  query: ({ params }) => performanceDbApi.resourceStatusQuery(params.lpa, params.dataset),
+  result: 'resourceStatus'
+})
 
 /**
  * Middleware.
@@ -158,7 +91,9 @@ const getDatasetOverview = renderTemplate.bind(
 async function fetchLpaOverview (req, res, next) {
   const { datasetsFilter } = config
   try {
-    const overview = await performanceDbApi.getLpaOverview(req.params.lpa, { datasetsFilter })
+    const overview = await performanceDbApi.getLpaOverview(req.params.lpa, {
+      datasetsFilter
+    })
     req.lpaOverview = overview
     next()
   } catch (error) {
@@ -167,22 +102,12 @@ async function fetchLpaOverview (req, res, next) {
 }
 
 /**
- * Middleware.
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
+ * Middleware. Updates req with `resource`.
  */
-async function fetchLatestResource (req, res, next) {
-  const { lpa, dataset } = req.params
-  try {
-    const resource = await performanceDbApi.getLatestResource(lpa, dataset)
-    req.resourceId = resource.resource
-    next()
-  } catch (error) {
-    next(error)
-  }
-}
+const fetchLatestResource = fetchOne({
+  query: ({ params }) => performanceDbApi.latestResourceQuery(params.lpa, params.dataset),
+  result: 'resource'
+})
 
 /**
  *
@@ -195,11 +120,15 @@ async function fetchLatestResource (req, res, next) {
  * @param {*} next
  */
 async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType, issue_field: issueField } = req.params
-  const resourceId = passedResourceId ?? req.resourceId
-  console.assert(resourceId, 'missng resourceId')
+  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { resource: resourceId } = req.resource
+  if (!resourceId) {
+    logger.debug('fetchIssues(): missing resourceId', { type: types.App, params: req.params, resource: req.resource })
+    throw Error('fetchIssues: missing resourceId')
+  }
+
   try {
-    const issues = await performanceDbApi.getIssues({ resource: req.resourceId, issueType, issueField }, datasetId)
+    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField }, datasetId)
     req.issues = issues
     next()
   } catch (error) {
@@ -232,40 +161,27 @@ async function reformatIssuesToBeByEntryNumber (req, res, next) {
  *
  * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
  *
- * Requires `resourceId` in request params or request (in that order).
+ * Requires `req.resource.resource`
  *
  * @param {*} req
  * @param {*} res
  * @param {*} next
  */
 async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, resourceId: passedResourceId, issue_type: issueType, issue_field: issueField } = req.params
-  const resourceId = passedResourceId ?? req.resourceId
-  console.assert(resourceId, 'missng resourceId')
+  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { resource: resourceId } = req.resource
+  console.assert(resourceId, 'missng resource id')
   const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
   req.issueEntitiesCount = parseInt(issueEntitiesCount)
   next()
 }
 
-/**
- *
- * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
- *
- * Requires `resourceId` in request params or request (in that order).
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function fetchEntityCount (req, res, next) {
-  const { dataset: datasetId, resourceId: passedResourceId } = req.params
-  const resourceId = passedResourceId ?? req.resourceId
-  console.assert(resourceId, 'missng resourceId')
-
-  const entityCount = await performanceDbApi.getEntityCount(resourceId, datasetId)
-  req.entityCount = entityCount
-  next()
-}
+const fetchEntityCount = fetchOne({
+  query: ({ req }) => performanceDbApi.entityCountQuery(req.resource.resource),
+  result: 'entityCount',
+  dataset: FetchOptions.fromParams,
+  fallbackPolicy: FetchOneFallbackPolicy.continue
+})
 
 /**
  *
@@ -286,42 +202,17 @@ async function fetchEntry (req, res, next) {
 
   // look at issue Entries and get the index of that entry - 1
 
-  const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
+  const entityNum =
+    Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
 
-  req.entryData = await performanceDbApi.getEntry(req.resourceId, entityNum, datasetId)
+  req.entryData = await performanceDbApi.getEntry(
+    req.resourceId,
+    entityNum,
+    datasetId
+  )
   req.entryNumber = entityNum
   next()
 }
-
-/**
- * Middleware. Does a conditional fetch. Optionally invokes `else` if condition is false.
- *
- * `this` needs: `{ fetchFn, condition: (req) => boolean, else?: (req) => void }`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function maybeFetch (req, res, next) {
-  if (this.condition(req)) {
-    // `next` will be called in our fetchFn middleware
-    const result = this.fetchFn(req, res, next)
-    if (result instanceof Promise) {
-      await result
-    }
-  } else {
-    if (this.else) {
-      this.else(req)
-    }
-    next()
-  }
-}
-
-const maybeFetchLatestResource = maybeFetch.bind({
-  fetchFn: fetchLatestResource,
-  else: (req) => { req.resourceId = req.params.resourceId },
-  condition: ({ params }) => !('resourceId' in params)
-})
 
 function prepareOverviewTemplateParams (req, res, next) {
   const { lpaOverview, orgInfo: organisation } = req
@@ -335,7 +226,7 @@ function prepareOverviewTemplateParams (req, res, next) {
 
   // add in any of the missing key 8 datasets
   const keys = Object.keys(lpaOverview.datasets)
-  availableDatasets.forEach(dataset => {
+  availableDatasets.forEach((dataset) => {
     if (!keys.includes(dataset)) {
       datasets.push({
         slug: dataset,
@@ -350,12 +241,16 @@ function prepareOverviewTemplateParams (req, res, next) {
   datasets.sort((a, b) => a.slug.localeCompare(b.slug))
 
   const totalDatasets = datasets.length
-  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce((accumulator, dataset) => {
-    if (dataset.endpoint) accumulator[0]++
-    if (dataset.status === 'Needs fixing') accumulator[1]++
-    if (dataset.status === 'Error') accumulator[2]++
-    return accumulator
-  }, [0, 0, 0])
+  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
+    datasets.reduce(
+      (accumulator, dataset) => {
+        if (dataset.endpoint) accumulator[0]++
+        if (dataset.status === 'Needs fixing') accumulator[1]++
+        if (dataset.status === 'Error') accumulator[2]++
+        return accumulator
+      },
+      [0, 0, 0]
+    )
 
   req.templateParams = {
     organisation,
@@ -369,7 +264,7 @@ function prepareOverviewTemplateParams (req, res, next) {
   next()
 }
 
-const getOverview = renderTemplate.bind({
+const getOverview = renderTemplate({
   templateParams (req) {
     if (!req.templateParams) throw new Error('missing templateParams')
     return req.templateParams
@@ -393,7 +288,7 @@ function validateQueryParams (req, res, next) {
     v.parse(this.schema || v.any(), req.params)
     next()
   } catch (error) {
-    res.status(400).render('errorPages/400', { })
+    res.status(400).render('errorPages/400', {})
   }
 }
 
@@ -406,7 +301,9 @@ export const IssueDetailsQueryParams = v.object({
   resourceId: v.optional(v.string())
 })
 
-const validateIssueDetailsQueryParams = validateQueryParams.bind({ schema: IssueDetailsQueryParams })
+const validateIssueDetailsQueryParams = validateQueryParams.bind({
+  schema: IssueDetailsQueryParams
+})
 
 /**
  *
@@ -433,7 +330,10 @@ const getIssueField = (text, html, classes) => {
  * @param {{value: string}?} issue
  * @returns {string}
  */
-const issueErrorMessageHtml = (errorMessage, issue) => `<p class="govuk-error-message">${errorMessage}</p>${issue ? issue.value ?? '' : ''}`
+const issueErrorMessageHtml = (errorMessage, issue) =>
+  `<p class="govuk-error-message">${errorMessage}</p>${
+    issue ? issue.value ?? '' : ''
+  }`
 
 /**
  *
@@ -448,14 +348,17 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
   let hasError = false
   let issueIndex
   if (issuesByEntryNumber[entryNumber]) {
-    issueIndex = issuesByEntryNumber[entryNumber].findIndex(issue => issue.field === row.field)
+    issueIndex = issuesByEntryNumber[entryNumber].findIndex(
+      (issue) => issue.field === row.field
+    )
     hasError = issueIndex >= 0
   }
 
   let valueHtml = ''
   let classes = ''
   if (hasError) {
-    const message = issuesByEntryNumber[entryNumber][issueIndex].message || issueType
+    const message =
+      issuesByEntryNumber[entryNumber][issueIndex].message || issueType
     valueHtml += issueErrorMessageHtml(message, null)
     classes += 'dl-summary-card-list__row--error'
   }
@@ -468,8 +371,9 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount } = req
+  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount: entityCountRow } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   let errorHeading
   let issueItems
@@ -494,7 +398,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
   for (const issue of entityIssues) {
-    if (!fields.find(field => field.key.text === issue.field)) {
+    if (!fields.find((field) => field.key.text === issue.field)) {
       const errorMessage = issue.message || issueType
       // TODO: pull the html out of here and into the template
       const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
@@ -504,7 +408,9 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
     }
   }
 
-  const geometries = entryData.filter(row => row.field === 'geometry').map(row => row.value)
+  const geometries = entryData
+    .filter((row) => row.field === 'geometry')
+    .map((row) => row.value)
   const entry = {
     title: `entry: ${entryNumber}`,
     fields,
@@ -561,30 +467,218 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
  * Middleware. Renders the issue details page with the list of issues, entry data,
  * and organisation and dataset details.
  */
-const getIssueDetails = renderTemplate.bind({
+const getIssueDetails = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/issueDetails.html',
   handlerName: 'getIssueDetails'
 })
 
-const getGetStartedMiddleware = [fetchOrgInfo, fetchDatasetName, getGetStarted, logPageError]
+const isResourceIdInParams = ({ params }) => !('resourceId' in params)
 
-const getDatasetOverviewMiddleware = [fetchOrgInfo, fetchDatasetName, fetchDatasetGeometries, fetchDatasetStats, getDatasetOverview, logPageError]
+const takeResourceIdFromParams = (req) => {
+  logger.debug('skipping resource fetch', { type: types.App, params: req.params })
+  req.resource = { resource: req.params.resourceId }
+}
 
-const getOverviewMiddleware = [fetchOrgInfo, fetchLpaOverview, prepareOverviewTemplateParams, getOverview, logPageError]
+const getGetStartedMiddleware = [
+  fetchOrgInfo,
+  fetchDatasetInfo,
+  getGetStarted,
+  logPageError
+]
+
+const getDatasetOverviewMiddleware = [fetchOrgInfo, fetchDatasetInfo, fetchDatasetStats, getDatasetOverview, logPageError]
+
+const getOverviewMiddleware = [
+  fetchOrgInfo,
+  fetchLpaOverview,
+  prepareOverviewTemplateParams,
+  getOverview,
+  logPageError
+]
 
 const getIssueDetailsMiddleware = [
   validateIssueDetailsQueryParams,
-  fetchOrgInfo,
-  fetchDatasetInfo,
-  maybeFetchLatestResource,
+  parallel([
+    fetchOrgInfo,
+    fetchDatasetInfo
+  ]),
+  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIssues,
   reformatIssuesToBeByEntryNumber,
-  fetchEntry,
-  fetchEntityCount,
-  fetchIssueEntitiesCount,
+  parallel([
+    fetchEntry,
+    fetchEntityCount,
+    fetchIssueEntitiesCount
+  ]),
   prepareIssueDetailsTemplateParams,
-  getIssueDetails
+  getIssueDetails,
+  logPageError
+]
+
+const fetchOrganisations = fetchMany({
+  query: ({ req, params }) => 'select name, organisation from organisation',
+  result: 'organisations'
+})
+
+/**
+ * Middleware. Updates req with `templateParams`.
+ *
+ * @param {{ organisations: {}[] }} req
+ * @param {*} res
+ * @param {*} next
+ */
+const prepareGetOrganisationsTemplateParams = (req, res, next) => {
+  const sortedResults = req.organisations.sort((a, b) => {
+    return a.name.localeCompare(b.name)
+  })
+
+  const alphabetisedOrgs = sortedResults.reduce((acc, current) => {
+    const firstLetter = current.name.charAt(0).toUpperCase()
+    acc[firstLetter] = acc[firstLetter] || []
+    acc[firstLetter].push(current)
+    return acc
+  }, {})
+
+  req.templateParams = { alphabetisedOrgs }
+
+  next()
+}
+
+const getOrganisations = renderTemplate({
+  templateParams: (req) => req.templateParams,
+  template: 'organisations/find.html',
+  handlerName: 'getOrganisations'
+})
+
+/**
+ * Was the resource accessed successfully via HTTP?
+ *
+ * @param {*} req
+ * @returns {boolean}
+ */
+const isResourceAccessible = (req) => req.resourceStatus.status === '200'
+const isResourceNotAccessible = (req) => !isResourceAccessible(req)
+
+const fetchLpaDatasetIssues = fetchMany({
+  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
+  result: 'issues'
+})
+
+const onlyIf = (condition, middlewareFn) => {
+  return async (req, res, next) => {
+    if (condition(req)) {
+      const result = middlewareFn(req, res, next)
+      if (result instanceof Promise) {
+        await result
+      }
+    } else {
+      next()
+    }
+  }
+}
+
+/**
+ * Middleware. Updates req with `templateParams`
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns { { templateParams: object }}
+ */
+const prepareDatasetTaskListTemplateParams = (req, res, next) => {
+  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
+  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
+  const { lpa, dataset: datasetId } = params
+  console.assert(req.resourceStatus.resource === req.resource.resource, 'mismatch between resourceStatus and resource data')
+  console.assert(typeof entityCount === 'number', 'entityCount should be a number')
+
+  const taskList = issues.map((issue) => {
+    return {
+      title: {
+        text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
+      },
+      href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}/${issue.field}`,
+      status: getStatusTag(issue.status)
+    }
+  })
+
+  req.templateParams = {
+    taskList,
+    organisation,
+    dataset
+  }
+
+  next()
+}
+
+/**
+ * Middleware. Updates req with `templateParams`
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {} next
+ * @returns {{ templateParams: object }}
+ */
+const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
+  const { orgInfo: organisation, dataset, resourceStatus: resource } = req
+
+  const daysSince200 = resource.days_since_200
+  const today = new Date()
+  const last200Date = new Date(
+    today.getTime() - daysSince200 * 24 * 60 * 60 * 1000
+  )
+  const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
+
+  req.templateParams = {
+    organisation,
+    dataset,
+    errorData: {
+      endpoint_url: resource.endpoint_url,
+      http_status: resource.status,
+      latest_log_entry_date: resource.latest_log_entry_date,
+      latest_200_date: last200Datetime
+    }
+  }
+
+  next()
+}
+
+const getDatasetTaskList = renderTemplate({
+  templateParams: (req) => req.templateParams,
+  template: 'organisations/datasetTaskList.html',
+  handlerName: 'getDatasetTaskList'
+})
+
+const getDatasetTaskListError = renderTemplate({
+  templateParams: (req) => req.templateParams,
+  template: 'organisations/http-error.html',
+  handlerName: 'getDatasetTaskListError'
+})
+
+const getOrganisationsMiddleware = [
+  fetchOrganisations,
+  prepareGetOrganisationsTemplateParams,
+  getOrganisations,
+  logPageError
+]
+
+const getDatasetTaskListMiddleware = [
+  fetchResourceStatus,
+  parallel([
+    fetchOrgInfoWithStatGeo,
+    fetchDatasetInfo]),
+  fetchIf(isResourceAccessible, fetchLatestResource),
+  parallel([
+    fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+    fetchIf(isResourceAccessible, fetchEntityCount)
+  ]),
+  onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
+  onlyIf(isResourceAccessible, getDatasetTaskList),
+
+  onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
+  onlyIf(isResourceNotAccessible, getDatasetTaskListError),
+  logPageError
 ]
 
 /**
@@ -603,166 +697,11 @@ function getStatusTag (status) {
 }
 
 const organisationsController = {
-
-  /**
-   * Handles the GET /organisations request
-   *
-   * @param {Request} req
-   * @param {Response} res
-   * @param {NextFunction} next
-   */
-  async getOrganisations (req, res, next) {
-    try {
-      const sql = 'select name, organisation from organisation'
-      const result = await datasette.runQuery(sql)
-
-      const sortedResults = result.formattedData.sort((a, b) => {
-        return a.name.localeCompare(b.name)
-      })
-
-      const alphabetisedOrgs = sortedResults.reduce((acc, current) => {
-        const firstLetter = current.name.charAt(0).toUpperCase()
-        acc[firstLetter] = acc[firstLetter] || []
-        acc[firstLetter].push(current)
-        return acc
-      }, {})
-
-      validateAndRender(res, 'organisations/find.html', { alphabetisedOrgs })
-    } catch (err) {
-      logger.warn('organisationsController.getOrganisations(): ' + err.message ?? err.errorMessage, { type: types.App })
-      next(err)
-    }
-  },
-
-  /**
- * Handles GET requests for the dataset task list page.
- *
- * @param {Express.Request} req - The incoming request object.
- * @param {Express.Response} res - The response object to send back to the client.
- * @param {Express.NextFunction} next - The next function in the middleware chain.
- *
- * Retrieves the organisation and dataset names from the database, fetches the issues for the given LPA and dataset,
- * and renders the dataset task list page with the list of tasks and organisation and dataset details.
- */
-  async getDatasetTaskList (req, res, next) {
-    const lpa = req.params.lpa
-    const datasetId = req.params.dataset
-
-    try {
-      const organisationResult = await datasette.runQuery(/* sql */ `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${lpa}'`)
-      const organisation = organisationResult.formattedData[0]
-
-      const datasetResult = await datasette.runQuery(`SELECT dataset, name FROM dataset WHERE dataset = '${datasetId}'`)
-      const dataset = datasetResult.formattedData[0]
-
-      const resource = await performanceDbApi.getLatestResource(lpa, datasetId)
-
-      const issues = await performanceDbApi.getLpaDatasetIssues(resource.resource, datasetId)
-
-      const entityCount = await performanceDbApi.getEntityCount(resource.resource, datasetId)
-
-      const taskList = issues.map((issue) => {
-        return {
-          title: {
-            text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
-          },
-          href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}/${issue.field}`,
-          status: getStatusTag(issue.status)
-        }
-      })
-
-      const params = {
-        taskList,
-        organisation,
-        dataset
-      }
-
-      validateAndRender(res, 'organisations/datasetTaskList.html', params)
-    } catch (e) {
-      logger.warn(`getDatasetTaskList() failed for lpa='${lpa}', datasetId='${datasetId}'`,
-        {
-          type: types.App,
-          errorMessage: e.message,
-          errorStack: e.stack
-        })
-      next(e)
-    }
-  },
-
-  /**
-   * Handles endpoint error responses for organizations.
-   *
-   * @param {Object} req - The incoming request object.
-   * @param {Object} res - The outgoing response object.
-   * @param {Function} next - The next middleware function in the chain.
-   * @param {Object} resourceStatus - An object containing information about the resource status.
-   *
-   * @returns {Promise<void>} A promise that resolves when the error response has been rendered.
-   *
-   * @throws {Error} If an error occurs while processing the request.
-   */
-  async getEndpointError (req, res, next, { resourceStatus }) {
-    const { lpa, dataset: datasetId } = req.params
-
-    try {
-      const organisationResult = await datasette.runQuery(`SELECT name, organisation FROM organisation WHERE organisation = '${lpa}'`)
-      const organisation = organisationResult.formattedData[0]
-
-      const datasetResult = await datasette.runQuery(`SELECT name FROM dataset WHERE dataset = '${datasetId}'`)
-      const dataset = datasetResult.formattedData[0]
-
-      const daysSince200 = resourceStatus.days_since_200
-      const today = new Date()
-      const last200Date = new Date(today.getTime() - (daysSince200 * 24 * 60 * 60 * 1000))
-      const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
-
-      const params = {
-        organisation,
-        dataset,
-        errorData: {
-          endpoint_url: resourceStatus.endpoint_url,
-          http_status: resourceStatus.status,
-          latest_log_entry_date: resourceStatus.latest_log_entry_date,
-          latest_200_date: last200Datetime
-        }
-      }
-      validateAndRender(res, 'organisations/http-error.html', params)
-    } catch (e) {
-      logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
-      next(e)
-    }
-  },
-
-  /**
-   * Handles conditional task list request.
-   *
-   * @param {object} req - The HTTP request object.
-   * @param {object} res - The HTTP response object.
-   * @param {function} next - The next middleware function in the chain.
-   *
-   * @throws {Error} - If an error occurs while processing the request.
-   *
-   * @description
-   * This function checks the resource status for a given LPA and dataset ID.
-   * If the resource status is 200, it calls the `getDatasetTaskList` function to retrieve the task list.
-   * Otherwise, it calls the `getEndpointError` function to handle the error.
-   */
-  async conditionalTaskListHandler (req, res, next) {
-    const { lpa, dataset: datasetId } = req.params
-
-    try {
-      const resourceStatus = await performanceDbApi.getResourceStatus(lpa, datasetId)
-
-      if (resourceStatus.status !== '200') {
-        return await organisationsController.getEndpointError(req, res, next, { resourceStatus })
-      } else {
-        return await organisationsController.getDatasetTaskList(req, res, next)
-      }
-    } catch (e) {
-      logger.warn(`conditionalTaskListHandler() failed for lpa='${lpa}', datasetId='${datasetId}'`, { type: types.App })
-      next(e)
-    }
-  },
+  prepareDatasetTaskListErrorTemplateParams,
+  prepareDatasetTaskListTemplateParams,
+  getDatasetTaskListError,
+  getDatasetTaskList,
+  getDatasetTaskListMiddleware,
 
   /**
    * Middleware chain for GET requests for the "Get Started" page.
@@ -780,7 +719,12 @@ const organisationsController = {
   getIssueDetailsMiddleware,
   getIssueDetails,
   prepareIssueDetailsTemplateParams,
-  IssueDetailsQueryParams
+  IssueDetailsQueryParams,
+
+  getOrganisationsMiddleware,
+  prepareGetOrganisationsTemplateParams,
+  fetchOrganisations,
+  getOrganisations
 }
 
 export default organisationsController

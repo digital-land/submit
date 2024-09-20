@@ -7,8 +7,8 @@ router.get('/:lpa/:dataset/get-started', OrganisationsController.getGetStartedMi
 router.get('/:lpa/:dataset/overview', OrganisationsController.getDatasetOverviewMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/:pageNumber', OrganisationsController.getIssueDetailsMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field', OrganisationsController.getIssueDetailsMiddleware)
-router.get('/:lpa/:dataset', OrganisationsController.conditionalTaskListHandler)
+router.get('/:lpa/:dataset', OrganisationsController.getDatasetTaskListMiddleware)
 router.get('/:lpa', OrganisationsController.getOverviewMiddleware)
-router.get('/', OrganisationsController.getOrganisations)
+router.get('/', OrganisationsController.getOrganisationsMiddleware)
 
 export default router
