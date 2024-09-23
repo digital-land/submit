@@ -1,6 +1,6 @@
-import performanceDbApi from '../services/performanceDbApi'
-import { fetchOrgInfo, logPageError } from './common.middleware'
-import { renderTemplate } from './middleware.builders'
+import performanceDbApi from '../services/performanceDbApi.js'
+import { fetchOrgInfo, logPageError } from './common.middleware.js'
+import { renderTemplate } from './middleware.builders.js'
 import { dataSubjects } from '../utils/utils.js'
 import config from '../../config/index.js'
 

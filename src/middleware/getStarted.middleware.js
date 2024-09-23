@@ -1,5 +1,5 @@
-import { fetchDatasetInfo, fetchOrgInfo, logPageError } from './common.middleware'
-import { renderTemplate } from './middleware.builders'
+import { fetchDatasetInfo, fetchOrgInfo, logPageError } from './common.middleware.js'
+import { renderTemplate } from './middleware.builders.js'
 
 const getGetStarted = renderTemplate({
   templateParams (req) {

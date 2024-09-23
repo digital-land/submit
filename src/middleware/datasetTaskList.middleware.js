@@ -1,5 +1,5 @@
-import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError } from './common.middleware'
-import { parallel, fetchOne, fetchIf, fetchMany, onlyIf, renderTemplate } from './middleware.builders'
+import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError } from './common.middleware.js'
+import { parallel, fetchOne, fetchIf, fetchMany, onlyIf, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 

@@ -1,5 +1,5 @@
-import { logPageError } from './common.middleware'
-import { fetchMany, renderTemplate } from './middleware.builders'
+import { logPageError } from './common.middleware.js'
+import { fetchMany, renderTemplate } from './middleware.builders.js'
 
 const fetchOrganisations = fetchMany({
   query: ({ req, params }) => 'select name, organisation from organisation',
