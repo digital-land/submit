@@ -108,3 +108,60 @@ code,
 code * {
   font-family: monospace;
 }
+
+.app-image-card {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: govuk-spacing(7);
+}
+
+.app-image-card--large {
+  @include govuk-media-query($from: desktop) {
+    flex-wrap: nowrap;
+
+    .app-image-card__image-wrapper {
+      max-width: 50%;
+      margin-right: govuk-spacing(4);
+    }
+  }
+}
+
+.app-image-card__image-wrapper {
+  width: 100%;
+  margin: 0;
+  @include govuk-responsive-margin(2, "bottom");
+}
+
+.app-image-card__text {
+  *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.app-masthead {
+  @include govuk-responsive-padding(6, "top");
+  @include govuk-responsive-padding(6, "bottom");
+  border-bottom: 1px solid govuk-colour("blue");
+  color: govuk-colour("white");
+  background-color: govuk-colour("blue");
+}
+
+.app-masthead__title {
+  color: govuk-colour("white");
+  @include govuk-responsive-margin(6, "bottom");
+}
+
+.app-masthead__description {
+  @include govuk-font(24);
+  margin-bottom: 0;
+  color: govuk-colour("white");
+}
+
+.app-masthead__image {
+  display: none;
+  @include govuk-media-query($from: desktop) {
+    display: block;
+    width: 100%;
+    margin-top: govuk-spacing(3);
+  }
+}
