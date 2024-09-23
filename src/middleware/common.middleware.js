@@ -1,7 +1,7 @@
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOne } from './middleware.builders.js'
+import { fetchOne, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -50,9 +50,16 @@ export const fetchLatestResource = fetchOne({
   result: 'resource'
 })
 
-const fetchEntityCount = fetchOne({
+export const fetchEntityCount = fetchOne({
   query: ({ req }) => performanceDbApi.entityCountQuery(req.resource.resource),
   result: 'entityCount',
   dataset: FetchOptions.fromParams,
   fallbackPolicy: FetchOneFallbackPolicy.continue
+})
+
+export const fetchOrgInfo = fetchOne({
+  query: ({ params }) => {
+    return `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
+  },
+  result: 'orgInfo'
 })
