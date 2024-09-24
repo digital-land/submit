@@ -4,6 +4,21 @@
 import logger from './logger.js'
 import { types } from './logging.js'
 
+/**
+ * Returns an array of verbose column objects from a given row and column field log.
+ *
+ * If either the column field log or issue logs are missing, returns a fallback array
+ * with warnings logged for missing data.
+ *
+ * @param {Object} row - The row object containing converted row data and issue logs.
+ * @param {Object} columnFieldLog - The column field log object.
+ * @returns {Array<Object>} An array of verbose column objects, each containing:
+ *   - `key`: the column key
+ *   - `value`: the column value
+ *   - `column`: the column name
+ *   - `field`: the field name
+ *   - `error`: an error message if data was missing
+ */
 const getVerboseColumns = (row, columnFieldLog) => {
   if (!columnFieldLog || !row.issue_logs) {
     // if the["column-field-log"] or issue_logs are missing, return what we can
