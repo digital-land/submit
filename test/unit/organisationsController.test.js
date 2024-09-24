@@ -277,7 +277,7 @@ describe('OrganisationsController.js', () => {
         dataset,
         entryData,
         issues,
-        resourceId: requestParams.resourceId,
+        resource: { resource: requestParams.resourceId },
         issuesByEntryNumber: {
           1: [
             {
@@ -381,7 +381,7 @@ describe('OrganisationsController.js', () => {
         dataset,
         entryData,
         issues,
-        resourceId: requestParams.resourceId,
+        resource: { resource: requestParams.resourceId },
         issuesByEntryNumber: {
           1: [
             {
