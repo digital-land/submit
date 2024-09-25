@@ -90,7 +90,7 @@ async function fetchEntry (req, res, next) {
       Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
 
   req.entryData = await performanceDbApi.getEntry(
-    req.resourceId,
+    req.resource.resource,
     entityNum,
     datasetId
   )
