@@ -1,7 +1,7 @@
 import { fetchDatasetInfo, fetchOrgInfo, logPageError } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 
-const getGetStarted = renderTemplate({
+export const getGetStarted = renderTemplate({
   templateParams (req) {
     const { orgInfo: organisation, dataset } = req
     return { organisation, dataset }
