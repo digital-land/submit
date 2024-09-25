@@ -20,7 +20,7 @@ async function getFieldStats (lpa, dataset) {
   const columnSummary = await datasetService.getColumnSummary(dataset, lpa)
   const specifications = await datasetService.getSpecifications()
   if (!(dataset in specifications)) {
-    logger.warn(`services/datasetService.getFieldStats(): cannot find specification for dataset: ${dataset}`, { type: types.app, dataset })
+    logger.warn(`services/datasetService.getFieldStats(): cannot find specification for dataset: ${dataset}`, { type: types.App, dataset })
     return null
   }
 
