@@ -118,7 +118,7 @@
         text: 'Data URL last accessed'
       },
       value: {
-        text: endpoint.lastAccessed
+        text: endpoint.lastAccessed | govukDateTime
       }
     } %}
   {% endif %}
@@ -131,7 +131,7 @@
       text: 'Data URL last updated'
     },
     value: {
-      text: endpoint.lastUpdated
+      text: endpoint.lastUpdated | govukDateTime
     }
   } %}
   {{ rows.push(lastUpdatedRow) }}
