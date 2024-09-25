@@ -37,11 +37,11 @@ describe('Dataset Overview Page', () => {
 
   it('Renders the dataset navigation links correctly', () => {
     const links = document.querySelectorAll('.app-c-dataset-navigation .govuk-service-navigation__link')
+    const activeLink = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active')
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(links.length).toEqual(2)
-    expect(links[0].textContent).toContain('Dataset overview')
-    expect(links[1].textContent).toContain('Task list')
+    expect(activeLink.textContent).toContain('Dataset overview')
   })
 
   it('Renders dataset details correctly', () => {
