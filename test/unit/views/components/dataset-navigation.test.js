@@ -33,7 +33,7 @@ describe('Dataset Navigation component', () => {
   it('Renders the dataset navigation links correctly', () => {
     const links = document.querySelectorAll('.app-c-dataset-navigation .govuk-service-navigation__link')
     const activeLink = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active')
-    const issueCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .govuk-tag')
+    const issueCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Dataset overview')
@@ -83,7 +83,7 @@ describe('Dataset Navigation component', () => {
     const documentWithIssues = domWithIssues.window.document
     const links = documentWithIssues.querySelectorAll('.app-c-dataset-navigation .govuk-service-navigation__link')
     const activeLink = documentWithIssues.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active')
-    const issueCount = documentWithIssues.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .govuk-tag')
+    const issueCount = documentWithIssues.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Task list')

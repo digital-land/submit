@@ -86,7 +86,7 @@ describe('Dataset Task List Page', () => {
   it('Renders the dataset navigation links correctly', () => {
     const links = document.querySelectorAll('.app-c-dataset-navigation .govuk-service-navigation__link')
     const activeLink = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active')
-    const issueCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .govuk-tag')
+    const issueCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(links.length).toEqual(2)
