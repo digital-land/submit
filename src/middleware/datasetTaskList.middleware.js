@@ -46,7 +46,7 @@ function getStatusTag (status) {
  * @param {*} next
  * @returns { { templateParams: object }}
  */
-const prepareDatasetTaskListTemplateParams = (req, res, next) => {
+export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
   const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
   const { lpa, dataset: datasetId } = params
@@ -86,7 +86,7 @@ const getDatasetTaskList = renderTemplate({
  * @param {} next
  * @returns {{ templateParams: object }}
  */
-const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
+export const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
   const { orgInfo: organisation, dataset, resourceStatus: resource } = req
 
   const daysSince200 = resource.days_since_200
