@@ -1,4 +1,14 @@
 .app-c-dataset-navigation {
-  background-color: #fff;
-  border-top: 1px solid #bfc1c3;
+  background-color: govuk-colour('white');
+  border-top: 1px solid govuk-colour('mid-grey');
+}
+
+.app-c-dataset-navigation__notification-badge {
+  background-color: govuk-colour('red');
+  border-radius: 7%;
+  color: govuk-colour('white');
+  text-align: center;
+  padding: 2px 5px;
+  font-size: 1rem;
+  margin-left: 5px;
 }
