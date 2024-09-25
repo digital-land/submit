@@ -1,0 +1,34 @@
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+
+{% macro datasetNavigation(params) %}
+  {% set organisation = params.organisation %}
+  {% set dataset = params.dataset %}
+  {% set badge %}
+    {% if params.issue_count > 0 %}
+      <span class="app-c-dataset-navigation__notification-badge">
+        {{ params.issue_count }} <span class="govuk-visually-hidden">{{ "issue" | pluralise(params.issue_count) }}</span>
+      </span>
+    {% endif %}
+  {% endset %}
+  {% set taskLink %}
+    <a href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}" class="govuk-service-navigation__link">
+      Task list
+    </a>
+    {{ badge | safe }}
+  {% endset %}
+
+  {{ govukServiceNavigation({
+    classes: "app-c-dataset-navigation govuk-!-margin-bottom-7",
+    navigation: [
+      {
+        href: "/organisations/" + organisation.organisation + "/" + dataset.dataset + "/overview",
+        text: "Dataset overview",
+        active: params.active === "dataset-overview"
+      },
+      {
+        html: taskLink,
+        active: params.active === "task-list"
+      }
+    ]
+  }) }}
+{% endmacro %}

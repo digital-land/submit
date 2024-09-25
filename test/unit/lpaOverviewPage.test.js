@@ -164,12 +164,10 @@ describe('LPA Overview Page', () => {
     it(`Renders the correct link on each dataset card for dataset='${dataset.slug}'`, () => {
       const expectedLink = datasetCards[i].querySelector('.govuk-task-list__link').href
 
-      if (dataset.status === 'Live') {
-        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}/overview`)
-      } else if (dataset.status === 'Not submitted') {
+      if (dataset.status === 'Not submitted') {
         expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}/get-started`)
       } else {
-        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}`)
+        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}/overview`)
       }
 
       const link = datasetCards[i].querySelector('.govuk-link')

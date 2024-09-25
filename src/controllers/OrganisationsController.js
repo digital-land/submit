@@ -57,8 +57,8 @@ const fetchDatasetStats = async (req, res, next) => {
 const getDatasetOverview = renderTemplate(
   {
     templateParams (req) {
-      const { orgInfo: organisation, dataset, stats } = req
-      return { organisation, dataset, stats }
+      const { orgInfo: organisation, dataset, stats, issues } = req
+      return { organisation, dataset, stats, issueCount: issues.length }
     },
     template: 'organisations/dataset-overview.html',
     handlerName: 'datasetOverview'
@@ -473,7 +473,20 @@ const getIssueDetails = renderTemplate({
   handlerName: 'getIssueDetails'
 })
 
+/**
+ * Was the resource accessed successfully via HTTP?
+ *
+ * @param {*} req
+ * @returns {boolean}
+ */
+const isResourceAccessible = (req) => req.resourceStatus.status === '200'
+const isResourceNotAccessible = (req) => !isResourceAccessible(req)
 const isResourceIdInParams = ({ params }) => !('resourceId' in params)
+
+const fetchLpaDatasetIssues = fetchMany({
+  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
+  result: 'issues'
+})
 
 const takeResourceIdFromParams = (req) => {
   logger.debug('skipping resource fetch', { type: types.App, params: req.params })
@@ -487,7 +500,18 @@ const getGetStartedMiddleware = [
   logPageError
 ]
 
-const getDatasetOverviewMiddleware = [fetchOrgInfo, fetchDatasetInfo, fetchDatasetStats, getDatasetOverview, logPageError]
+const getDatasetOverviewMiddleware = [
+  parallel([
+    fetchOrgInfo,
+    fetchDatasetInfo
+  ]),
+  fetchResourceStatus,
+  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
+  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+  fetchDatasetStats,
+  getDatasetOverview,
+  logPageError
+]
 
 const getOverviewMiddleware = [
   fetchOrgInfo,
@@ -549,20 +573,6 @@ const getOrganisations = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/find.html',
   handlerName: 'getOrganisations'
-})
-
-/**
- * Was the resource accessed successfully via HTTP?
- *
- * @param {*} req
- * @returns {boolean}
- */
-const isResourceAccessible = (req) => req.resourceStatus.status === '200'
-const isResourceNotAccessible = (req) => !isResourceAccessible(req)
-
-const fetchLpaDatasetIssues = fetchMany({
-  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
-  result: 'issues'
 })
 
 const onlyIf = (condition, middlewareFn) => {

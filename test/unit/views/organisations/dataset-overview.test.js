@@ -35,6 +35,15 @@ describe('Dataset Overview Page', () => {
     expect(document.querySelector('h1').textContent).toContain('World heritage site buffer zone')
   })
 
+  it('Renders the dataset navigation links correctly', () => {
+    const links = document.querySelectorAll('.app-c-dataset-navigation .govuk-service-navigation__link')
+    const activeLink = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active')
+
+    expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
+    expect(links.length).toEqual(2)
+    expect(activeLink.textContent).toContain('Dataset overview')
+  })
+
   it('Renders dataset details correctly', () => {
     expect(document.querySelector('h2.govuk-heading-m').textContent).toContain('Dataset details')
     const summaryListValues = document.querySelectorAll('dd.govuk-summary-list__value')
