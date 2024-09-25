@@ -13,7 +13,7 @@ const fetchOrganisations = fetchMany({
  * @param {*} res
  * @param {*} next
  */
-const prepareGetOrganisationsTemplateParams = (req, res, next) => {
+export const prepareGetOrganisationsTemplateParams = (req, res, next) => {
   const sortedResults = req.organisations.sort((a, b) => {
     return a.name.localeCompare(b.name)
   })
@@ -30,7 +30,7 @@ const prepareGetOrganisationsTemplateParams = (req, res, next) => {
   next()
 }
 
-const getOrganisations = renderTemplate({
+export const getOrganisations = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/find.html',
   handlerName: 'getOrganisations'
