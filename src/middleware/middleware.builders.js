@@ -1,3 +1,12 @@
+/**
+ * Middleware builders for data fetching, conditional execution, and template rendering.
+ *
+ * This file provides a set of reusable middleware functions and utility functions that
+ * can be composed together to create custom workflows for a web application.
+ * Includes functions for fetching data from a dataset, conditionally executing
+ * middleware, and rendering templates with validation.
+ */
+
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { templateSchema } from '../routes/schemas.js'
