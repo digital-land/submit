@@ -16,6 +16,8 @@
     {{organisation.name}} - {{dataset.name}} - Dataset overview
 {% endset %}
 
+{% set urlStyle = 'text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 400px; display: block;' %}
+
 {% block beforeContent %}
 
 {{ super() }}
@@ -84,7 +86,7 @@
       classes: 'padding-top'
     },
     value: {
-      html: '<a href="'+endpoint.endpoint+'">'+endpoint.endpoint+'</a>'
+      html: '<a  style="'+urlStyle+'" href="'+endpoint.endpoint+'">'+endpoint.endpoint+'</a>'
     },
     classes: 'padding-top'
   } %}
@@ -96,7 +98,7 @@
         text: 'Documentation URL'
       },
       value: {
-        html: '<a href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
+        html: '<a style="'+urlStyle+'" href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
       }
     } %}p
     {{ rows.push(documentationRow) }}
