@@ -14,10 +14,3 @@ $badgeBgColour: govuk-colour('red');
   font-size: 1rem;
   margin-left: 5px;
 }
-
-/* Hides text underline decoration for badge */
-.app-c-dataset-navigation .govuk-service-navigation__link:hover .app-c-dataset-navigation__notification-badge {
-  text-decoration: underline;
-  text-decoration-color: $badgeBgColour;
-  text-decoration-thickness: $govuk-link-hover-underline-thickness;
-}

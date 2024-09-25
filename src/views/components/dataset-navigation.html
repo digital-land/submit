@@ -10,6 +10,12 @@
       </span>
     {% endif %}
   {% endset %}
+  {% set taskLink %}
+    <a href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}" class="govuk-service-navigation__link">
+      Task list
+    </a>
+    {{ badge | safe }}
+  {% endset %}
 
   {{ govukServiceNavigation({
     classes: "app-c-dataset-navigation govuk-!-margin-bottom-7",
@@ -20,8 +26,7 @@
         active: params.active === "dataset-overview"
       },
       {
-        href: "/organisations/" + organisation.organisation + "/" + dataset.dataset,
-        html: "Task list " + badge,
+        html: taskLink,
         active: params.active === "task-list"
       }
     ]
