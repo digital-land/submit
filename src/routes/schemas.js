@@ -76,7 +76,8 @@ export const OrgDatasetOverview = v.strictObject({
   stats: v.strictObject({
     numberOfRecords: v.integer(),
     numberOfFieldsSupplied: v.integer()
-  })
+  }),
+  issueCount: v.integer()
 })
 
 export const OrgDatasetTaskList = v.strictObject({
