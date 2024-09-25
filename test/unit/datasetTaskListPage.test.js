@@ -91,7 +91,7 @@ describe('Dataset Task List Page', () => {
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(links.length).toEqual(2)
     expect(activeLink.textContent).toContain('Task list')
-    expect(issueCount.textContent).toContain('3')
+    expect(issueCount.textContent).toContain('3 issues')
   })
 
   const taskListItems = document.querySelectorAll('.govuk-task-list__item')

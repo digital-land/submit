@@ -87,7 +87,7 @@ describe('Dataset Navigation component', () => {
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Task list')
-    expect(issueCount.textContent).toContain('3')
+    expect(issueCount.textContent).toContain('3 issues')
     expect(links.length).toEqual(2)
   })
 })
