@@ -5,9 +5,9 @@
   {% set dataset = params.dataset %}
   {% set badge %}
     {% if params.issue_count > 0 %}
-      <strong class="app-c-dataset-navigation__notification-badge">
+      <span class="app-c-dataset-navigation__notification-badge">
         {{ params.issue_count }} <span class="govuk-visually-hidden">{{ "issue" | pluralise(params.issue_count) }}</span>
-      </strong>
+      </span>
     {% endif %}
   {% endset %}
 

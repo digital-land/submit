@@ -1,14 +1,23 @@
+$badgeBgColour: govuk-colour('red');
+
 .app-c-dataset-navigation {
   background-color: govuk-colour('white');
   border-top: 1px solid govuk-colour('mid-grey');
 }
 
 .app-c-dataset-navigation__notification-badge {
-  background-color: govuk-colour('red');
-  border-radius: 7%;
+  background-color: $badgeBgColour;
+  border-radius: 10%;
   color: govuk-colour('white');
   text-align: center;
   padding: 2px 5px;
   font-size: 1rem;
   margin-left: 5px;
+}
+
+/* Hides text underline decoration for badge */
+.app-c-dataset-navigation .govuk-service-navigation__link:hover .app-c-dataset-navigation__notification-badge {
+  text-decoration: underline;
+  text-decoration-color: $badgeBgColour;
+  text-decoration-thickness: $govuk-link-hover-underline-thickness;
 }
