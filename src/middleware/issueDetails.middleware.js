@@ -6,7 +6,7 @@ import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 
-const IssueDetailsQueryParams = v.object({
+export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
   dataset: v.string(),
   issue_type: v.string(),
@@ -182,7 +182,7 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
 /***
  * Middleware. Updates req with `templateParams`
  */
-function prepareIssueDetailsTemplateParams (req, res, next) {
+export function prepareIssueDetailsTemplateParams (req, res, next) {
   const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount: entityCountRow } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
@@ -279,7 +279,7 @@ function prepareIssueDetailsTemplateParams (req, res, next) {
  * Middleware. Renders the issue details page with the list of issues, entry data,
  * and organisation and dataset details.
  */
-const getIssueDetails = renderTemplate({
+export const getIssueDetails = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/issueDetails.html',
   handlerName: 'getIssueDetails'
