@@ -46,7 +46,7 @@ describe('organisations.middleware.js', () => {
       expect(next).toHaveBeenCalledOnce()
     })
   })
-  it('should call render with the find page', async () => {
+  it('should call render with the find page and correct template params', async () => {
     const req = {}
     const res = { render: vi.fn() }
     const next = vi.fn()

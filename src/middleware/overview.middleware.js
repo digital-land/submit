@@ -32,7 +32,7 @@ async function fetchLpaOverview (req, res, next) {
   }
 }
 
-function prepareOverviewTemplateParams (req, res, next) {
+export function prepareOverviewTemplateParams (req, res, next) {
   const { lpaOverview, orgInfo: organisation } = req
 
   const datasets = Object.entries(lpaOverview.datasets).map(([key, value]) => {
@@ -82,7 +82,7 @@ function prepareOverviewTemplateParams (req, res, next) {
   next()
 }
 
-const getOverview = renderTemplate({
+export const getOverview = renderTemplate({
   templateParams (req) {
     if (!req.templateParams) throw new Error('missing templateParams')
     return req.templateParams
