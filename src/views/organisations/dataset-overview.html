@@ -112,7 +112,7 @@
         classes: 'app-inset-text---error'
       },
       value: {
-        html: endpoint.lastAccessed + '<br><p class="govuk-error-message">There was a '+endpoint.error.code+' error accessing the data URL</p> <p class="app-inset-text__error"></p>'
+        html: (endpoint.lastAccessed | govukDateTime) + '<br><p class="govuk-error-message">There was a '+endpoint.error.code+' error accessing the data URL</p> <p class="app-inset-text__error"></p>'
       }
     } %}
   {% else %}
