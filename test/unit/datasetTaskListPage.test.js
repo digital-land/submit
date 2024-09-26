@@ -83,6 +83,17 @@ describe('Dataset Task List Page', () => {
     expect(document.querySelector('h1').textContent).toContain(params.dataset.name)
   })
 
+  it('Renders the dataset navigation links correctly', () => {
+    const links = document.querySelectorAll('.app-c-dataset-navigation .govuk-service-navigation__link')
+    const activeLink = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active')
+    const issueCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
+
+    expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
+    expect(links.length).toEqual(2)
+    expect(activeLink.textContent).toContain('Task list')
+    expect(issueCount.textContent).toContain('3 issues')
+  })
+
   const taskListItems = document.querySelectorAll('.govuk-task-list__item')
   it('Task list items are rendered correctly', () => {
     expect(taskListItems.length).toEqual(params.taskList.length)

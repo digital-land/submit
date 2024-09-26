@@ -1,5 +1,5 @@
-import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError } from './common.middleware.js'
-import { parallel, fetchOne, fetchIf, fetchMany, onlyIf, renderTemplate } from './middleware.builders.js'
+import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues } from './common.middleware.js'
+import { parallel, fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 
@@ -16,11 +16,6 @@ const fetchOrgInfoWithStatGeo = fetchOne({
     return /* sql */ `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
-})
-
-const fetchLpaDatasetIssues = fetchMany({
-  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
-  result: 'issues'
 })
 
 /**
