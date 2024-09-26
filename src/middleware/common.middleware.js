@@ -27,7 +27,7 @@ export const logPageError = (err, req, res, next) => {
 
 export const fetchDatasetInfo = fetchOne({
   query: ({ params }) => {
-    return `SELECT name, dataset FROM dataset WHERE dataset = '${params.dataset}'`
+    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${params.dataset}'`
   },
   result: 'dataset'
 })
