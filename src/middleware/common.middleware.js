@@ -1,7 +1,7 @@
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOne, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
+import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany } from './middleware.builders.js'
 import * as v from 'valibot'
 
 /**
@@ -32,8 +32,6 @@ export const fetchDatasetInfo = fetchOne({
   result: 'dataset'
 })
 
-export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
-
 /**
  * Was the resource accessed successfully via HTTP?
  *
@@ -42,6 +40,7 @@ export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
  */
 export const isResourceAccessible = (req) => req.resourceStatus.status === '200'
 export const isResourceNotAccessible = (req) => !isResourceAccessible(req)
+export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
 
 /**
  * Middleware. Updates req with `resource`.
@@ -88,3 +87,8 @@ export function validateQueryParams (req, res, next) {
     res.status(400).render('errorPages/400', {})
   }
 }
+
+export const fetchLpaDatasetIssues = fetchMany({
+  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
+  result: 'issues'
+})
