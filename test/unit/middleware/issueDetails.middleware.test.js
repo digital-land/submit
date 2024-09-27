@@ -8,7 +8,7 @@ vi.mock('../../../src/services/performanceDbApi.js')
 
 describe('issueDetails.middleware.js', () => {
   const orgInfo = { name: 'mock lpa', organisation: 'ORG' }
-  const dataset = { name: 'mock dataset', dataset: 'mock-dataset' }
+  const dataset = { name: 'mock dataset', dataset: 'mock-dataset', collection: 'mock-collection' }
   const entryData = [
     {
       field: 'start-date',
@@ -76,7 +76,8 @@ describe('issueDetails.middleware.js', () => {
         },
         dataset: {
           name: 'mock dataset',
-          dataset: 'mock-dataset'
+          dataset: 'mock-dataset',
+          collection: 'mock-collection'
         },
         errorHeading: 'mockMessageFor: 0',
         issueItems: [
@@ -175,7 +176,8 @@ describe('issueDetails.middleware.js', () => {
         },
         dataset: {
           name: 'mock dataset',
-          dataset: 'mock-dataset'
+          dataset: 'mock-dataset',
+          collection: 'mock-collection'
         },
         errorHeading: 'mockMessageFor: 0',
         issueItems: [
@@ -231,7 +233,8 @@ describe('issueDetails.middleware.js', () => {
           },
           dataset: {
             name: 'mock dataset',
-            dataset: 'mock-dataset'
+            dataset: 'mock-dataset',
+            collection: 'mock-collection'
           },
           errorHeading: 'mockMessageFor: 0',
           issueItems: [

@@ -11,7 +11,7 @@ const fetchColumnSummary = fetchMany({
     AND organisation = '${params.lpa}'
     limit 1000`,
   result: 'columnSummary',
-  dataset: () => 'performance'
+  dataset: FetchOptions.performanceDb
 })
 
 const fetchSpecification = fetchOne({

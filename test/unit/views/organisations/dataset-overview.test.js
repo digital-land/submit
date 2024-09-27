@@ -15,7 +15,8 @@ describe('Dataset Overview Page', () => {
     },
     dataset: {
       dataset: 'world-heritage-site-buffer-zone',
-      name: 'World heritage site buffer zone'
+      name: 'World heritage site buffer zone',
+      collection: 'world-heritage-site'
     },
     stats: {
       numberOfRecords: 10,
@@ -103,7 +104,8 @@ describe('Dataset Overview Page', () => {
       ...params,
       dataset: {
         dataset: 'article-4-direction-area',
-        name: 'Article 4 direction area'
+        name: 'Article 4 direction area',
+        collection: 'article-4-direction'
       }
     }
     const htmlWithGeometries = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithGeometries))
