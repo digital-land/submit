@@ -50,7 +50,10 @@ export const OrgOverviewPage = v.strictObject({
     issue_count: v.optional(v.number()),
     error: v.optional(v.nullable(NonEmptyString)),
     http_error: v.optional(NonEmptyString),
-    issue: v.optional(NonEmptyString)
+    issue: v.optional(NonEmptyString),
+    entity_count: v.optional(v.number()),
+    // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
+    numIssues: v.optional(v.number())
   })),
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),
