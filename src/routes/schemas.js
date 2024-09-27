@@ -103,7 +103,8 @@ export const OrgDatasetTaskList = v.strictObject({
   organisation: OrgField,
   dataset: v.strictObject({
     dataset: v.optional(NonEmptyString),
-    name: NonEmptyString
+    name: NonEmptyString,
+    collection: NonEmptyString
   })
 })
 
