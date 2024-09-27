@@ -1,5 +1,5 @@
 import { describe, it, vi, expect } from 'vitest'
-import { getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
+import { aggregateOverviewData, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
 
 // vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -10,26 +10,20 @@ vi.mock('../../../src/utils/utils.js', () => {
 })
 
 describe('overview.middleware', () => {
-  const exampleLpa = {
-    formattedData: [
-      { name: 'Example LPA', organisation: 'LPA' }
-    ]
-  }
+  const exampleLpa = { name: 'Example LPA', organisation: 'LPA' }
 
-  const perfDbApiResponse = {
-    name: 'test LPA',
-    datasets: {
-      dataset1: { endpoint: 'https://example.com', status: 'Live' },
-      dataset2: { endpoint: null, status: 'Needs fixing' },
-      dataset3: { endpoint: 'https://example.com', status: 'Error' }
-    }
-  }
+  const perfDbApiResponse = [
+    { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1' },
+    { endpoint: null, status: 'Needs fixing', dataset: 'dataset2' },
+    { endpoint: 'https://example.com', status: 'Error', dataset: 'dataset3' }
+  ]
+  // TODO: add test for perfDbApiResponse where 'dataset1' 2+ rows
 
   describe('prepareOverviewTemplateParams', () => {
     it('should render the overview page', async () => {
       const req = {
         params: { lpa: 'LPA' },
-        orgInfo: exampleLpa.formattedData[0],
+        orgInfo: exampleLpa,
         lpaOverview: perfDbApiResponse
       }
       const res = { render: vi.fn() }
@@ -39,9 +33,9 @@ describe('overview.middleware', () => {
       const expectedTemplateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
         datasets: expect.arrayContaining([
-          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
-          { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
-          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3' }
+          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
+          { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 },
+          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0 }
         ]),
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
@@ -50,6 +44,47 @@ describe('overview.middleware', () => {
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
+    })
+  })
+
+  describe('aggregateOverviewData()', () => {
+    it('presents correct number of issues for empty input', () => {
+      const aggregatedEmpty = aggregateOverviewData([])
+      expect(aggregatedEmpty.length).toBe(0)
+    })
+
+    it('counts the issues corretly', () => {
+      const exampleData = [
+        { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1', entity_count: 11 },
+        { endpoint: null, status: 'Error', dataset: 'dataset2', entity_count: 12, issue_count: 12 },
+        { endpoint: 'https://example.com/3', status: 'Needs fixing', dataset: 'dataset3', entity_count: 5, issue_count: 5, fields: 'foo' },
+        { endpoint: 'https://example.com/3', status: 'Needs fixing', dataset: 'dataset3', entity_count: 5, issue_count: 2, fields: 'bar' }
+      ]
+
+      const aggregated = aggregateOverviewData(exampleData)
+      aggregated.sort((a, b) => a.slug.localeCompare(b.slug))
+
+      expect(aggregated).toStrictEqual([
+        { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
+        { endpoint: null, status: 'Error', slug: 'dataset2', error: undefined, issue_count: 0 },
+        // we want [1 column 'foo' issue] + [2 field 'bar' issue] = 3
+        { endpoint: 'https://example.com/3', status: 'Needs fixing', slug: 'dataset3', error: undefined, issue_count: 3 }
+      ])
+    })
+
+    it('ensures dataset issues get to the surface', () => {
+      const exampleData = [
+        { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1', entity_count: 11 },
+        { endpoint: null, status: 'Error', dataset: 'dataset1', entity_count: 12, issue_count: 12 },
+        { endpoint: 'https://example.com/2', status: 'Live', dataset: 'dataset2', entity_count: 5, issue_count: 5, fields: 'foo' },
+        { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'dataset2', entity_count: 5, issue_count: 2, fields: 'bar' }
+      ]
+
+      const aggregated = aggregateOverviewData(exampleData)
+      aggregated.sort((a, b) => a.slug.localeCompare(b.slug))
+
+      expect(aggregated[0].status).toBe('Error')
+      expect(aggregated[1].status).toBe('Needs fixing')
     })
   })
 

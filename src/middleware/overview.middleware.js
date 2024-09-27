@@ -63,7 +63,10 @@ const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'
  * @param {object[]} lpaOverview
  * @returns {object[]}
  */
-function aggregateOverviewData (lpaOverview) {
+export function aggregateOverviewData (lpaOverview) {
+  if (!Array.isArray(lpaOverview)) {
+    throw new Error('lpaOverview should be an array')
+  }
   const grouped = _.groupBy(lpaOverview, 'dataset')
   const datasets = []
   for (const [dataset, rows] of Object.entries(grouped)) {
@@ -72,9 +75,11 @@ function aggregateOverviewData (lpaOverview) {
       if (row.status !== 'Needs fixing') {
         continue
       }
-      const numFields = (row.fields ?? '').split(',').length
-      if (row.issue_count >= row.entity_count) numIssues += numFields
-      else numIssues += row.issue_count
+      if (row.issue_count) {
+        const numFields = (row.fields ?? '').split(',').length
+        if (row.issue_count >= row.entity_count) numIssues += numFields
+        else numIssues += row.issue_count
+      }
     }
     const info = {
       slug: dataset,

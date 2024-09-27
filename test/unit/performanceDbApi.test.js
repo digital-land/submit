@@ -1,7 +1,10 @@
 import { vi, it, describe, expect, beforeEach } from 'vitest'
-import datasette from '../../src/services/datasette'
-// import performanceDbApi from
+// import { lpaOverviewQuery } from '../../src/services/performanceDbApi'
 import fs from 'fs'
+
+// function lpaOverviewQuery (a, b) {
+//   return ''
+// }
 
 vi.mock('../../config/index.js', () => {
   return {
@@ -15,6 +18,7 @@ vi.mock('fs')
 
 describe('performanceDbApi', () => {
   let performanceDbApi
+  let lpaOverviewQuery
   beforeEach(async () => {
     fs.createReadStream.mockImplementation((filePath) => {
       const entitiesFile = filePath.includes('entity')
@@ -40,49 +44,20 @@ describe('performanceDbApi', () => {
       }
     })
 
-    performanceDbApi = (await import('../../src/services/performanceDbApi')).default
+    const module = (await import('../../src/services/performanceDbApi'))
+    lpaOverviewQuery = module.lpaOverviewQuery
+    performanceDbApi = module.default
   })
-  describe('getLpaOverview', () => {
-    it('calls datasette.runQuery with the correct query', async () => {
-      const lpa = 'some-lpa-id'
-      const mockResponse = {
-        formattedData: [
-          {
-            organisation: 'some-organisation',
-            name: 'Some Organisation',
-            dataset: 'dataset-slug-1',
-            endpoint: 'https://example.com/endpoint-1',
-            exception: null,
-            http_status: undefined,
-            error: undefined,
-            status: 'Live'
-          }
-        ]
-      }
 
-      vi.spyOn(datasette, 'runQuery').mockResolvedValue(mockResponse)
-
-      await performanceDbApi.getLpaOverview(lpa)
-
-      expect(datasette.runQuery).toHaveBeenCalledTimes(1)
-      expect(datasette.runQuery).toHaveBeenCalledWith(expect.stringContaining(lpa))
-    })
-
-    it('adds the filter if a dataset list is passed into the params', async () => {
-      vi.spyOn(datasette, 'runQuery').mockResolvedValue({ formattedData: [{ name: '' }] })
-
-      await performanceDbApi.getLpaOverview('lpa', { datasetsFilter: ['mock1', 'mock2', 'mock3'] })
-
-      expect(datasette.runQuery).toHaveBeenCalledTimes(1)
-      expect(datasette.runQuery).toHaveBeenCalledWith(expect.stringContaining('AND rle.pipeline in (\'mock1\',\'mock2\',\'mock3\')'))
-    })
-
-    it('returns an error if the query fails', async () => {
-      const lpa = 'some-lpa-id'
-      const error = new Error('query failed')
-      vi.spyOn(datasette, 'runQuery').mockRejectedValue(error)
-
-      await expect(performanceDbApi.getLpaOverview(lpa)).rejects.toThrowError('query failed')
+  describe('lpaOverviewQuery', () => {
+    it('uses params in the query', () => {
+      const query = lpaOverviewQuery('local-authority:FOO', {
+        datasetsFilter: ['dataset-one', 'dataset-two'],
+        entityCounts: [{ dataset: 'dataset-three', resource: 'r1', entityCount: 10 }]
+      })
+      expect(query).toContain('local-authority:FOO')
+      expect(query).toContain('dataset-one')
+      expect(query).toContain('dataset-two')
     })
   })
 
