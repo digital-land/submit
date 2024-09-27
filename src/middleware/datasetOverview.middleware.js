@@ -19,7 +19,7 @@ const fetchSpecification = fetchOne({
   result: 'specification'
 })
 
-const pullOutDatasetSpecification = (req, res, next) => {
+export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
   const collectionSpecifications = json5.parse(specification.json)
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
@@ -44,7 +44,7 @@ const fetchEntityCount = fetchOne({
   dataset: FetchOptions.fromParams
 })
 
-const prepareDatasetOverviewTemplateParams = (req, res, next) => {
+export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const { orgInfo, specification, columnSummary, entityCount, sources, dataset } = req
 
   const matchingFields = columnSummary[0].matching_field?.split(',') ?? []
