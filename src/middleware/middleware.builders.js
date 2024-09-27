@@ -1,3 +1,12 @@
+/**
+ * Middleware builders for data fetching, conditional execution, and template rendering.
+ *
+ * This file provides a set of reusable middleware functions and utility functions that
+ * can be composed together to create custom workflows for a web application.
+ * Includes functions for fetching data from a dataset, conditionally executing
+ * middleware, and rendering templates with validation.
+ */
+
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { templateSchema } from '../routes/schemas.js'
@@ -7,8 +16,8 @@ import * as v from 'valibot'
 
 export const FetchOptions = {
   /**
-   * Use 'dataset' from requets params.
-   */
+     * Use 'dataset' from requets params.
+     */
   fromParams: Symbol('from-params')
 }
 
@@ -29,18 +38,18 @@ const fetchOneFallbackPolicy = (req, res, next) => {
 }
 
 /**
- * Collection of fallback policies for the {@link fetchOneFn} middleware.
- * The policy is enacted when zero records is returned from the data source.
- */
+     * Collection of fallback policies for the {@link fetchOneFn} middleware.
+     * The policy is enacted when zero records is returned from the data source.
+     */
 export const FetchOneFallbackPolicy = {
   /**
-   * Renders a 404 response.
-   */
+       * Renders a 404 response.
+       */
   'not-found-error': fetchOneFallbackPolicy,
 
   /**
-   * Proceeds by calling `next()`.
-   */
+       * Proceeds by calling `next()`.
+       */
   continue: (_req, _res, next) => next()
 }
 
@@ -77,14 +86,14 @@ async function fetchOneFn (req, res, next) {
 }
 
 /**
- * Middleware. Attempts to fetch a collection of data from datasette.
- *
- * `this` needs `{ query( {req, params } ) => any, result: string, dataset?: FetchParams | (req) => string }`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
+   * Middleware. Attempts to fetch a collection of data from datasette.
+   *
+   * `this` needs `{ query( {req, params } ) => any, result: string, dataset?: FetchParams | (req) => string }`
+   *
+   * @param {*} req
+   * @param {*} res
+   * @param {*} next
+   */
 export async function fetchManyFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
@@ -100,16 +109,16 @@ export async function fetchManyFn (req, res, next) {
 }
 
 /**
- * Middleware. Does a conditional fetch. Optionally invokes `else` if condition is false.
- *
- * `this` needs: `{ fetchFn, condition: (req) => boolean, else?: (req) => void }`
- *
- * `fetchFn` should be a middleware fn. Can be async.
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
+   * Middleware. Does a conditional fetch. Optionally invokes `else` if condition is false.
+   *
+   * `this` needs: `{ fetchFn, condition: (req) => boolean, else?: (req) => void }`
+   *
+   * `fetchFn` should be a middleware fn. Can be async.
+   *
+   * @param {*} req
+   * @param {*} res
+   * @param {*} next
+   */
 async function fetchIfFn (req, res, next) {
   if (this.condition(req)) {
     // `next` will be called in our fetchFn middleware
@@ -142,24 +151,25 @@ export const fetchIf = (condition, fetchFn, elseFn) => {
 }
 
 /**
- * Middleware. Set `req.handlerName` to a string that will identify
- * the function that threw the error.
+ * Fetches a single entity and stores it in `req` under key specified by `result` entry.
  *
- * @param {Error} err
- * @param {{handlerName: string}} req
- * @param {*} res
- * @param {*} next
+ * Use `fallbackPolicy` to handle zero record responses differently than the default 404 response.
+ * See {@link FetchOneFallbackPolicy}
+ *
+ * @param {{ query: ({ req, params}) => object, result: string, dataset?: FetchParams | (req) => string, fallbackPolicy?: (req, res, next) => void}} context
+ * @returns
  */
-export const logPageError = (err, req, res, next) => {
-  console.assert(req.handlerName, 'handlerName missing ')
-  logger.warn({
-    message: `OrganisationsController.${req.handlerName}(): ${err.message}`,
-    endpoint: req.originalUrl,
-    errorStack: err.stack,
-    errorMessage: err.message,
-    type: types.App
-  })
-  next(err)
+export function fetchOne (context) {
+  return fetchOneFn.bind(context)
+}
+
+/**
+   * Fetches a collection of records and stores them in `req` under key specified by `result` entry.
+   *
+   * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
+   */
+export function fetchMany (context) {
+  return fetchManyFn.bind(context)
 }
 
 /**
@@ -173,22 +183,22 @@ export const logPageError = (err, req, res, next) => {
 export function validateAndRender (res, name, params) {
   const schema = templateSchema.get(name) ?? v.any()
   logger.info(
-    `rendering '${name}' with schema=<${schema ? 'defined' : 'any'}>`,
-    { type: types.App }
+        `rendering '${name}' with schema=<${schema ? 'defined' : 'any'}>`,
+        { type: types.App }
   )
   return render(res, name, schema, params)
 }
 
 /**
- * Middleware. Validates and renders the template.
- *
- * `this` needs: `{ templateParams(req), template,  handlerName }`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- * @returns
- */
+   * Middleware. Validates and renders the template.
+   *
+   * `this` needs: `{ templateParams(req), template,  handlerName }`
+   *
+   * @param {*} req
+   * @param {*} res
+   * @param {*} next
+   * @returns
+   */
 export function renderTemplateFn (req, res, next) {
   const templateParams = this.templateParams(req)
   try {
@@ -198,6 +208,17 @@ export function renderTemplateFn (req, res, next) {
     req.handlerName = this.handlerName
     next(err)
   }
+}
+
+/**
+   * Validates and renders the template.
+   *
+   *
+   * @param {{templateParams: (req) => object, template: string,  handlerName: string}} context
+   * @returns {(req, res, next) => void} middleware
+   */
+export function renderTemplate (context) {
+  return renderTemplateFn.bind(context)
 }
 
 /**
@@ -238,47 +259,27 @@ async function parallelFn (req, res, next) {
 }
 
 /**
- * Returns a middleware that invokes the passed middlewares in parallel.
- *
- * Usage: when all sub-middlewre can be fetched independently, but we can't accept a partial success
- * (e.g. we require all middlewares to succeed).
- *
- * @param {((req,res,next) => void)[]} middlewares array of middleware functions
- * @returns {(req, res, next) => Promise<void>}
- */
+   * Returns a middleware that invokes the passed middlewares in parallel.
+   *
+   * Usage: when all sub-middlewre can be fetched independently, but we can't accept a partial success
+   * (e.g. we require all middlewares to succeed).
+   *
+   * @param {((req,res,next) => void)[]} middlewares array of middleware functions
+   * @returns {(req, res, next) => Promise<void>}
+   */
 export function parallel (middlewares) {
   return parallelFn.bind({ middlewares })
 }
 
-/**
- * Fetches a single entity and stores it in `req` under key specified by `result` entry.
- *
- * Use `fallbackPolicy` to handle zero record responses differently than the default 404 response.
- * See {@link FetchOneFallbackPolicy}
- *
- * @param {{ query: ({ req, params}) => object, result: string, dataset?: FetchParams | (req) => string, fallbackPolicy?: (req, res, next) => void}} context
- * @returns
- */
-export function fetchOne (context) {
-  return fetchOneFn.bind(context)
-}
-
-/**
- * Fetches a collection of records and stores them in `req` under key specified by `result` entry.
- *
- * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
- */
-export function fetchMany (context) {
-  return fetchManyFn.bind(context)
-}
-
-/**
- * Validates and renders the template.
- *
- *
- * @param {{templateParams: (req) => object, template: string,  handlerName: string}} context
- * @returns {(req, res, next) => void} middleware
- */
-export function renderTemplate (context) {
-  return renderTemplateFn.bind(context)
+export const onlyIf = (condition, middlewareFn) => {
+  return async (req, res, next) => {
+    if (condition(req)) {
+      const result = middlewareFn(req, res, next)
+      if (result instanceof Promise) {
+        await result
+      }
+    } else {
+      next()
+    }
+  }
 }

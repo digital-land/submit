@@ -2,10 +2,13 @@
 
 This document outlines convetions/rules of thumb for adding new routes/middleware to the app.
 
-Relevant modules: 
-- [controllers/middleware.js](../src/controllers/middleware.js)
+Relevant modules:
+- [middleware/*](../src/middleware)
+  - [common.middleware.js](../src/middleware/common.middleware.js) (common middlewares that are used by more than one middleware chain)
+  - [middleware.builders.js](../src/middleware/middleware.builders.js) (Middleware builders for data fetching, conditional execution, and template rendering.)
+  - middleware chains and any middleware that is used by only that chain should be put into its own file for example [middleware/issueDetails.middleware.js](../src/middleware/issueDetails.middleware.js)
 - [routes/schemas.js](../src/routes/schemas.js)
-- [OrganisationsController.js](../src/controllers/OrganisationsController.js) - contains usage examples of the two above
+
 
 ## Middleware chains
 
