@@ -165,6 +165,10 @@ describe('SubmitUrlController', async () => {
       it('should return false for URLs with a response larger than the max file size', async () => {
         expect(SubmitUrlController.urlResponseIsNotTooLarge({ headers: { 'content-length': config.validations.maxFileSize + 21 } })).toBe(false)
       })
+
+      it('should return true for URLs without a content length header', async () => {
+        expect(SubmitUrlController.urlResponseIsNotTooLarge({ headers: { } })).toBe(true)
+      })
     })
 
     describe('urlExists', () => {

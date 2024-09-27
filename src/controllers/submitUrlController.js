@@ -116,7 +116,14 @@ class SubmitUrlController extends UploadController {
    */
   static urlResponseIsNotTooLarge (response) {
     const contentLength = (response?.headers ?? {})['content-length']
+
     try {
+      // if the content length header is not provided, return true
+      if (!contentLength) {
+        console.warn(`urlResponseIsNotTooLarge(): response.config.url=${response.config.url}`, { type: types.App, errorMessage: 'Content-Length header not provided' })
+        return true
+      }
+
       return contentLength <= config.validations.maxFileSize
     } catch (err) {
       console.warn('urlResponseIsNotTooLarge()', { type: types.App, errorMessage: err.message, errorStack: err.stack, contentLength })
