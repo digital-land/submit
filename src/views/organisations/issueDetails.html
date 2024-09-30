@@ -75,7 +75,7 @@
       rows: entry.fields
     }) }}
 
-    {% if issueEntitiesCount > 1 %}
+    {% if pagination.items | length > 1 %}
       {{ govukPagination(pagination) }}
     {% endif %}
   </div>
