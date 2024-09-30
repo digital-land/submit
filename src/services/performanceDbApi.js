@@ -173,17 +173,6 @@ ORDER BY
  * @default
  */
 export default {
-  /**
-     * Get LPA overview
-     * @param {string} lpa - LPA ID
-     * @param {{datasetsFilter: string[], entityCounts: { dataset: string, resource: string, entityCount?: number}[]}} params
-     * @returns {Promise<LpaOverview>} LPA overview
-     */
-  getLpaOverview: async (lpa, params = {}) => {
-    const query = lpaOverviewQuery(params)
-    const result2 = await datasette.runQuery(query, 'performance')
-    return { datasets: {}, result2 }
-  },
 
   resourceStatusQuery (lpa, datasetId) {
     return /* sql */ `

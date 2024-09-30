@@ -28,7 +28,7 @@ export const StartPage = v.object({
 
 /**
  * The values of this enum should match values of the 'status' column
- * in the query in `performanceDbApi.getLpaOverview()`
+ * in the query in `fetchLpaOverview` middleware
  */
 export const datasetStatusEnum = {
   Live: 'Live',
