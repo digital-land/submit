@@ -1,0 +1,104 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set serviceType = 'Manage' %}
+{% set pageName = '' %}
+
+{% block main %}
+<div class="app-masthead">
+  <div class="govuk-width-container">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds-from-desktop">
+        <h1 class="govuk-heading-xl app-masthead__title">Submit and update your planning data</h1>
+
+        <p class="app-masthead__description">The Planning Data platform is a single national platform that indexes the
+          data and makes it available in a standardised
+          format.</p>
+
+        <a href="/organisations" role="button" draggable="false"
+          class="govuk-button govuk-button--inverse govuk-!-margin-top-6 govuk-!-margin-bottom-0 govuk-button--start"
+          data-module="govuk-button">
+          Submit and update your data now
+          <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19"
+            viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+          </svg>
+        </a>
+      </div>
+
+      <div class="govuk-grid-column-one-third-from-desktop">
+
+      </div>
+    </div>
+  </div>
+</div>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl govuk-!-margin-top-0">
+
+  <div class="govuk-grid-column-two-thirds">
+    <h2 class="govuk-heading-l">National planning data in one place</h2>
+
+    <p class="govuk-body">Having a national index of planning data means developers, housing associations, policy
+      colleagues, researchers and journalists can access the data they need simply and quickly.</p>
+
+    <p class="govuk-body">It means less overhead for local authorities and organisations, reducing the time spent
+      preparing for data requests and freedom of information requests.</p>
+
+    <p class="govuk-body">The data is updated from local authority websites every night, ensuring the data is up-to-date
+      and complete.</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl">
+
+  <div class="govuk-grid-column-two-thirds">
+    <h2 class="govuk-heading-l">You provide trusted and authoritative local data</h2>
+
+    <p class="govuk-body">Your organisation is responsible for providing authoritative local data, which is why you must
+      publish it on your website.
+    </p>
+
+    <p class="govuk-body">
+      You need to provide information about the data on your website including links to the data itself. This can be a
+      simple file hosted on your website, but it’s better if it is supplied through an API that links directly to your
+      planning database software.
+    </p>
+
+    <p class="govuk-body">
+      Whenever you make changes to the data on the URL you’ve given us, the platform will automatically index the data
+      and make the updates available to users.
+    </p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl">
+
+  <div class="govuk-grid-column-two-thirds">
+    <h2 class="govuk-heading-l">We help you to improve your data</h2>
+
+    <p class="govuk-body">
+      The submit and update service tells you which datasets you need to provide, gives you information about the data
+      you have provided and what you can do to improve the data quality.
+    </p>
+
+    <p class="govuk-body">
+      Your data doesn’t need to be complete or perfect to start. Any data we have from you means we can start to index
+      it and provide it on the platform. And we can help you to identify what data needs improvement and how to do it,
+      so you can focus your time on making things better.
+    </p>
+
+    <p class="govuk-body">
+      The dashboard gives you a clear view of the data you’ve supplied as well as other information we hold about your
+      local area.
+    </p>
+
+    <p class="govuk-body">As we grow the service we’ll add more features to help you to improve your data.</p>
+  </div>
+</div>
+{% endblock %}

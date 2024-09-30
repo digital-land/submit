@@ -218,7 +218,7 @@ export const templateSchema = new Map([
   ['errorPages/500', ErrorParams],
   ['errorPages/404', EmptyParams],
   ['privacy-notice.html', EmptyParams],
-  ['start.html', EmptyParams],
+  ['landing.html', EmptyParams],
   ['cookies.html', EmptyParams],
   ['accessibility.html', EmptyParams]
 ])
