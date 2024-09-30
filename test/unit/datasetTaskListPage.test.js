@@ -3,6 +3,8 @@ import nunjucks from 'nunjucks'
 import addFilters from '../../src/filters/filters'
 import { runGenericPageTests } from './generic-page.js'
 import jsdom from 'jsdom'
+import mocker from '../utils/mocker.js'
+import { OrgDatasetTaskList } from '../../src/routes/schemas.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -21,61 +23,15 @@ const datasetNameMapping = new Map()
 addFilters(nunjucksEnv, { datasetNameMapping })
 
 describe('Dataset Task List Page', () => {
-  const params = {
-    organisation: {
-      name: 'mock org',
-      organisation: 'mock-org'
-    },
-    dataset: {
-      name: 'Article 4 direction area'
-    },
-    taskList: [
-      {
-        title: {
-          text: '2 fields have future entry dates'
-        },
-        href: 'toDo',
-        status: {
-          tag: {
-            text: 'Error',
-            classes: 'govuk-tag--red'
-          }
-        }
-      },
-      {
-        title: {
-          text: '3 fields have invalid coordinates'
-        },
-        href: 'toDo',
-        status: {
-          tag: {
-            text: 'Issue',
-            classes: undefined
-          }
-        }
-      },
-      {
-        title: {
-          text: 'one field has an invalid decimal'
-        },
-        href: 'toDo',
-        status: {
-          tag: {
-            text: 'Warning',
-            classes: 'govuk-tag--blue'
-          }
-        }
-      }
-    ]
-  }
+  const params = mocker(OrgDatasetTaskList)
   const html = nunjucks.render('organisations/datasetTaskList.html', params)
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org - Article 4 direction area - Task list - Submit and update your planning data',
-    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org', href: '/organisations/mock-org' }, { text: 'Article 4 direction area' }]
+    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Task list - Submit and update your planning data`,
+    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org', href: `/organisations/${params.organisation.organisation}` }, { text: 'Article 4 direction area' }]
   })
 
   it('Renders the correct headings', () => {
@@ -91,7 +47,7 @@ describe('Dataset Task List Page', () => {
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(links.length).toEqual(2)
     expect(activeLink.textContent).toContain('Task list')
-    expect(issueCount.textContent).toContain('3 issues')
+    expect(issueCount.textContent).toContain(`${params.taskList.length} issue${params.taskList.length > 1 ? 's' : ''}`)
   })
 
   const taskListItems = document.querySelectorAll('.govuk-task-list__item')
@@ -107,7 +63,7 @@ describe('Dataset Task List Page', () => {
       expect(link.href).toContain(task.href)
       expect(status.textContent).toContain(task.status.tag.text)
       if (task.status.tag.classes) {
-        expect(statusStrong.classList.contains(task.status.tag.classes)).toBe(true)
+        expect(statusStrong.classList.toString()).toContain(task.status.tag.classes)
       }
     })
   })

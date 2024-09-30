@@ -30,7 +30,7 @@ export const StartPage = v.object({
  * The values of this enum should match values of the 'status' column
  * in the query in `performanceDbApi.getLpaOverview()`
  */
-const datasetStatusEnum = {
+export const datasetStatusEnum = {
   Live: 'Live',
   'Needs fixing': 'Needs fixing',
   Warning: 'Warning',
@@ -146,14 +146,14 @@ export const OrgIssueDetails = v.strictObject({
     })),
     items: v.array(v.variant('type', [
       v.strictObject({
-        type: v.literal('item'),
+        type: v.literal('number'),
         number: v.integer(),
         href: v.string(),
         current: v.boolean()
       }),
       v.strictObject({
         type: v.literal('ellipsis'),
-        ellipsis: v.boolean(),
+        ellipsis: v.literal(true),
         href: v.string()
       })
     ]))
