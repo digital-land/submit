@@ -46,7 +46,8 @@ describe('dataset details View', () => {
     },
     dataset: {
       name: 'mock dataset',
-      dataset: 'mock-dataset'
+      dataset: 'mock-dataset',
+      collection: 'mock-collection'
     },
     values: {
       dataset: 'mockDataset'

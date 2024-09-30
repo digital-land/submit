@@ -7,7 +7,7 @@ describe('get-started', () => {
       { name: 'Example LPA', organisation: 'LPA' }
     ]
   }
-  const exampleDataset = { name: 'Example Dataset', dataset: 'example-dataset' }
+  const exampleDataset = { name: 'Example Dataset', dataset: 'example-dataset', collection: 'example-collection' }
 
   it('should render the get-started template with the correct params', async () => {
     const req = {

@@ -18,7 +18,8 @@ export const FetchOptions = {
   /**
      * Use 'dataset' from requets params.
      */
-  fromParams: Symbol('from-params')
+  fromParams: Symbol('from-params'),
+  performanceDb: Symbol('performance-database')
 }
 
 const datasetOverride = (val, req) => {
@@ -28,6 +29,8 @@ const datasetOverride = (val, req) => {
   if (val === FetchOptions.fromParams) {
     console.assert(req.params.dataset, 'no "dataset" in request params')
     return req.params.dataset
+  } else if (val === FetchOptions.performanceDb) {
+    return 'performance'
   } else {
     return val(req)
   }
