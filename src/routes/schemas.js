@@ -146,14 +146,14 @@ export const OrgIssueDetails = v.strictObject({
     })),
     items: v.array(v.variant('type', [
       v.strictObject({
-        type: v.literal('item'),
+        type: v.literal('number'),
         number: v.integer(),
         href: v.string(),
         current: v.boolean()
       }),
       v.strictObject({
         type: v.literal('ellipsis'),
-        ellipsis: v.boolean(),
+        ellipsis: v.literal(true),
         href: v.string()
       })
     ]))
