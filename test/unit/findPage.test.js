@@ -4,6 +4,8 @@ import addFilters from '../../src/filters/filters'
 import jsdom from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
+import mock from '../utils/mocker.js'
+import { OrgFindPage } from '../../src/routes/schemas.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -20,32 +22,7 @@ const nunjucksEnv = nunjucks.configure([
 addFilters(nunjucksEnv, {})
 
 describe('Organisations Find Page', () => {
-  const params = {
-    alphabetisedOrgs: {
-      A: [
-        {
-          name: 'Aberdeen'
-        },
-        {
-          name: 'Aylesbury'
-        },
-        {
-          name: 'Ashford'
-        }
-      ],
-      B: [
-        {
-          name: 'Bath'
-        },
-        {
-          name: 'Birmingham'
-        },
-        {
-          name: 'Brighton'
-        }
-      ]
-    }
-  }
+  const params = mock(OrgFindPage)
 
   const html = nunjucks.render('organisations/find.html', params)
 
