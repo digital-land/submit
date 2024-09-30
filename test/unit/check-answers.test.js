@@ -1,10 +1,5 @@
 /* eslint-disable prefer-regex-literals */
 
-/*
-  ToDo:
-    This file could be updated to test using jsdom, and also with data generated from ../utils/mocker.js and valibot schemas
-*/
-
 import { describe, expect, it } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
