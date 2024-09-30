@@ -38,8 +38,8 @@ const datasetStatusEnum = {
   'Not submitted': 'Not submitted'
 }
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(NonEmptyString) })
-const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
+const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 
 export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
@@ -69,15 +69,24 @@ export const OrgGetStarted = v.strictObject({
 
 export const OrgDatasetOverview = v.strictObject({
   organisation: OrgField,
-  dataset: v.strictObject({
-    name: NonEmptyString,
-    dataset: NonEmptyString
-  }),
+  dataset: DatasetNameField,
   stats: v.strictObject({
     numberOfRecords: v.integer(),
-    numberOfFieldsSupplied: v.integer()
-  }),
-  issueCount: v.integer()
+    numberOfFieldsSupplied: v.integer(),
+    numberOfFieldsMatched: v.integer(),
+    numberOfExpectedFields: v.integer(),
+    endpoints: v.array(v.strictObject({
+      name: v.string(),
+      documentation_url: v.optional(v.string()),
+      endpoint: v.string(),
+      lastAccessed: v.string(),
+      lastUpdated: v.string(),
+      error: v.optional(v.strictObject({
+        code: v.integer(),
+        exception: v.string()
+      }))
+    }))
+  })
 })
 
 export const OrgDatasetTaskList = v.strictObject({
@@ -94,16 +103,14 @@ export const OrgDatasetTaskList = v.strictObject({
   organisation: OrgField,
   dataset: v.strictObject({
     dataset: v.optional(NonEmptyString),
-    name: NonEmptyString
+    name: NonEmptyString,
+    collection: NonEmptyString
   })
 })
 
 export const OrgEndpointError = v.strictObject({
   organisation: OrgField,
-  dataset: v.object({
-    name: NonEmptyString,
-    dataset: NonEmptyString
-  }),
+  dataset: DatasetNameField,
   errorData: v.strictObject({
     endpoint_url: v.url(),
     http_status: v.integer(),
@@ -179,10 +186,7 @@ export const ChooseDataset = v.strictObject({
 
 export const DatasetDetails = v.strictObject({
   organisation: OrgField,
-  dataset: v.strictObject({
-    name: NonEmptyString,
-    dataset: NonEmptyString
-  }),
+  dataset: DatasetNameField,
   values: v.strictObject({
     dataset: NonEmptyString
   }),

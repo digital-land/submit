@@ -13,7 +13,8 @@ describe('http-error.html', () => {
     },
     dataset: {
       name: 'mock-dataset',
-      dataset: 'mock-dataset'
+      dataset: 'mock-dataset',
+      collection: 'mock-collection'
     },
     errorData: {
       endpoint_url: 'https://example.com/data-url',
