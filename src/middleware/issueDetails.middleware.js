@@ -86,8 +86,7 @@ async function fetchEntry (req, res, next) {
 
   // look at issue Entries and get the index of that entry - 1
 
-  const entityNum =
-      Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
+  const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
 
   req.entryData = await performanceDbApi.getEntry(
     req.resource.resource,

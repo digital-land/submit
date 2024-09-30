@@ -27,7 +27,7 @@ export const logPageError = (err, req, res, next) => {
 
 export const fetchDatasetInfo = fetchOne({
   query: ({ params }) => {
-    return `SELECT name, dataset FROM dataset WHERE dataset = '${params.dataset}'`
+    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${params.dataset}'`
   },
   result: 'dataset'
 })
@@ -64,7 +64,7 @@ export const fetchEntityCount = fetchOne({
 
 export const fetchOrgInfo = fetchOne({
   query: ({ params }) => {
-    return `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
+    return `SELECT name, organisation, entity, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
