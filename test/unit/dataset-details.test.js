@@ -43,21 +43,6 @@ function errorTestFn ({
 describe('dataset details View', () => {
   const params = mock(DatasetDetails)
   params.errors = {}
-  // {
-  //   organisation: {
-  //     name: 'mock org',
-  //     organisation: 'mock-org'
-  //   },
-  //   dataset: {
-  //     name: 'mock dataset',
-  //     dataset: 'mock-dataset',
-  //     collection: 'mock-collection'
-  //   },
-  //   values: {
-  //     dataset: 'mockDataset'
-  //   },
-  //   errors: {}
-  // }
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
   const datasetName = params.values.dataset.toLowerCase()
 
