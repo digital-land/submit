@@ -3,7 +3,8 @@ import maplibregl from 'maplibre-gl'
 
 const fillColor = '#008'
 const lineColor = '#000000'
-const boundaryLineColor = '#000000'
+const boundaryLineColor = '#f00'
+const boundaryLineOpacity = 1
 const opacity = 0.4
 
 /**
@@ -161,7 +162,7 @@ class Map {
       paint: {
         'line-color': boundaryLineColor,
         'line-width': 2,
-        'line-opacity': opacity
+        'line-opacity': boundaryLineOpacity
       }
     }, this.firstMapLayerId)
   }

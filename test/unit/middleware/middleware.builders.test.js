@@ -1,14 +1,14 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import datasette from '../../src/services/datasette.js'
-import * as middleware from '../../src/controllers/middleware.js'
+import datasette from '../../../src/services/datasette.js'
+import * as middleware from '../../../src/middleware/middleware.builders.js'
 
-vi.mock('../../src/services/datasette.js', () => ({
+vi.mock('../../../src/services/datasette.js', () => ({
   default: {
     runQuery: vi.fn()
   }
 }))
 
-describe('Middleware', () => {
+describe('middleware.builders', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })

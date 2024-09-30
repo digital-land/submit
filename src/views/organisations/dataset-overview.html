@@ -1,5 +1,6 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "../components/dataset-navigation.html" import datasetNavigation %}
 {% extends "layouts/main.html" %}
 
 {% set showMap = [
@@ -15,6 +16,8 @@
 {% set pageName %}
     {{organisation.name}} - {{dataset.name}} - Dataset overview
 {% endset %}
+
+{% set urlStyle = 'text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 400px; display: block;' %}
 
 {% block beforeContent %}
 
@@ -42,6 +45,102 @@
 
 {% endblock %}
 
+{% set rows = [
+  {
+    key: {
+      text: "Number of records"
+    },
+    value: {
+      text: stats.numberOfRecords | default(0)
+    }
+  },
+  {
+    key: {
+      text: "Number of fields supplied"
+    },
+    value: {
+      text: stats.numberOfFieldsSupplied + '/' + stats.numberOfExpectedFields | default(0)
+    }
+  },
+  {
+    key: {
+      text: "Number of fields matched"
+    },
+    value: {
+      text: stats.numberOfFieldsMatched + '/' + stats.numberOfExpectedFields | default(0)
+    }
+  },
+  {
+    key: {
+      text: "Licence"
+    },
+    value: {
+      text: "Open Government Licence" 
+    }
+  }  
+] %}
+
+{% for endpoint in stats.endpoints %}
+  {% set endpointRow = {
+    key: {
+      text: 'Data URL',
+      classes: 'padding-top'
+    },
+    value: {
+      html: '<a  style="'+urlStyle+'" href="'+endpoint.endpoint+'">'+endpoint.endpoint+'</a>'
+    },
+    classes: 'padding-top'
+  } %}
+  {{ rows.push(endpointRow) }}
+
+  {% if endpoint.documentation_url %}
+    {% set documentationRow = {
+      key: {
+        text: 'Documentation URL'
+      },
+      value: {
+        html: '<a style="'+urlStyle+'" href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
+      }
+    } %}p
+    {{ rows.push(documentationRow) }}
+  {% endif %}
+
+  {% if endpoint.error %}
+    {% set lastAccessedRow = {
+      key: {
+        text: 'Data URL last accessed',
+        classes: 'app-inset-text---error'
+      },
+      value: {
+        html: (endpoint.lastAccessed | govukDateTime) + '<br><p class="govuk-error-message">There was a '+endpoint.error.code+' error accessing the data URL</p> <p class="app-inset-text__error"></p>'
+      }
+    } %}
+  {% else %}
+    {% set lastAccessedRow = {
+      key: {
+        text: 'Data URL last accessed'
+      },
+      value: {
+        text: endpoint.lastAccessed | govukDateTime
+      }
+    } %}
+  {% endif %}
+
+
+  {{ rows.push(lastAccessedRow) }}
+
+  {% set lastUpdatedRow = {
+    key: {
+      text: 'Data URL last updated'
+    },
+    value: {
+      text: endpoint.lastUpdated | govukDateTime
+    }
+  } %}
+  {{ rows.push(lastUpdatedRow) }}
+
+{% endfor %}
+
 {% block content %}
 
 <div class="govuk-grid-row">
@@ -51,49 +150,28 @@
     </div>
 </div>
 
-{% if showMap %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
+    {{ datasetNavigation({
+      active: "dataset-overview",
+      dataset: dataset,
+      organisation: organisation,
+      issue_count: issueCount
+    }) }}
+    {% if showMap %}
       <section>
         <h2 class="govuk-heading-m govuk-visually-hidden">Map of dataset</h2>
         <div id="map" class="app-map" role="region" aria-label="Map illustrating {{ dataset.name }} geometries. Use your keyboard to interact with the map. For screen reader users, use the arrow keys to navigate the map and the plus and minus keys to zoom in and out."></div>
       </section>
+    {% endif %}
   </div>
 </div>
-{% endif %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <section>
       <h2 class="govuk-heading-m">Dataset details</h2>
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Number of records"
-            },
-            value: {
-              text: stats.numberOfRecords | default(0)
-            }
-          },
-          {
-            key: {
-              text: "Number of fields supplied"
-            },
-            value: {
-              text: stats.numberOfFieldsSupplied | default(0)
-            }
-          },
-          {
-            key: {
-              text: "License"
-            },
-            value: {
-              text: "Open Government Licence"
-            }
-          }
-        ]
-      }) }}
+      {{ govukSummaryList({ rows: rows }) }}
     </section>
   </div>
 </div>
