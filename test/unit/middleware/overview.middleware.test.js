@@ -17,7 +17,6 @@ describe('overview.middleware', () => {
     { endpoint: null, status: 'Needs fixing', dataset: 'dataset2' },
     { endpoint: 'https://example.com', status: 'Error', dataset: 'dataset3' }
   ]
-  // TODO: add test for perfDbApiResponse where 'dataset1' 2+ rows
 
   describe('prepareOverviewTemplateParams', () => {
     it('should render the overview page', async () => {
