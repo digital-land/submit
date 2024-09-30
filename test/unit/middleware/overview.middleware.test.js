@@ -85,6 +85,21 @@ describe('overview.middleware', () => {
       expect(aggregated[0].status).toBe('Error')
       expect(aggregated[1].status).toBe('Needs fixing')
     })
+
+    it('handles multiple fields', () => {
+      const exampleData = [
+        { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'dataset1', entity_count: 5, issue_count: 5, fields: 'foo,bar' },
+        { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'dataset2', entity_count: 5, issue_count: 2, fields: 'baz,qux' }
+      ]
+
+      const aggregated = aggregateOverviewData(exampleData)
+      aggregated.sort((a, b) => a.slug.localeCompare(b.slug))
+
+      expect(aggregated[0].status).toBe('Needs fixing')
+      expect(aggregated[0].issue_count).toBe(2) // 2 columns affected
+      expect(aggregated[1].status).toBe('Needs fixing')
+      expect(aggregated[0].issue_count).toBe(2) // 2 rows affected (in the same two fields)
+    })
   })
 
   describe('getOverview', () => {
