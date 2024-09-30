@@ -4,8 +4,8 @@ import addFilters from '../../src/filters/filters'
 import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
-import mock from '../utils/mocker.js'
 import { OrgIssueDetails } from '../../src/routes/schemas.js'
+import mocker from '../utils/mocker.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
@@ -23,7 +23,7 @@ const datasetNameMapping = new Map()
 addFilters(nunjucksEnv, { datasetNameMapping })
 
 describe('issueDetails.html', () => {
-  const params = mock(OrgIssueDetails)
+  const params = mocker(OrgIssueDetails)
 
   params.pagination = undefined
   params.issueEntitiesCount = undefined
@@ -51,7 +51,7 @@ describe('issueDetails.html', () => {
 
   describe('error summary', () => {
     it('should render the correct heading', () => {
-      expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(params.errorHeading)
+      expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(params.errorHeading || 'There is a problem')
     })
 
     it('should render the correct heading if none is supplied', () => {
@@ -130,20 +130,19 @@ describe('issueDetails.html', () => {
       number: 1,
       href: 'organisations/mock-org/mock-dataset/mock issue/1'
     }
-    const multiPageHtml = nunjucks.render('organisations/issueDetails.html', {
-      ...params,
-      pagination: {
-        previous,
-        next,
-        items
-      },
-      issueEntitiesCount: 10,
-      entityNumber: 2
-    })
+    params.pagination = {
+      previous,
+      next,
+      items
+    }
+    params.issueEntitiesCount = 10
+    params.entityNumber = 2
+    const multiPageHtml = nunjucks.render('organisations/issueDetails.html', params)
     // const multiPageDom = new JSDOM(multiPageHtml)
     // const multiPageDocument = multiPageDom.window.document
+    const paginationTitleSection = params.issueEntitiesCount > 1 ? `(Page ${params.pageNumber} of ${params.issueEntitiesCount}) ` : ''
     runGenericPageTests(multiPageHtml, {
-      pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues (Page 2 of 10) - ${config.serviceNames.submit}`,
+      pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues ${paginationTitleSection}- ${config.serviceNames.submit}`,
       breadcrumbs: [
         { text: 'Home', href: '/' },
         { text: 'Organisations', href: '/organisations' },
