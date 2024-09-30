@@ -5,9 +5,11 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 import { testValidationErrorMessage } from './validation-tests.js'
-import { mockDataSubjects } from './data.js'
 import { render } from '../../src/utils/custom-renderer.js'
 import * as v from 'valibot'
+
+import mock from '../utils/mocker.js'
+import { DatasetDetails } from '../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
@@ -39,31 +41,33 @@ function errorTestFn ({
 }
 
 describe('dataset details View', () => {
-  const params = {
-    organisation: {
-      name: 'mock org',
-      organisation: 'mock-org'
-    },
-    dataset: {
-      name: 'mock dataset',
-      dataset: 'mock-dataset',
-      collection: 'mock-collection'
-    },
-    values: {
-      dataset: 'mockDataset'
-    },
-    errors: {}
-  }
+  const params = mock(DatasetDetails)
+  params.errors = {}
+  // {
+  //   organisation: {
+  //     name: 'mock org',
+  //     organisation: 'mock-org'
+  //   },
+  //   dataset: {
+  //     name: 'mock dataset',
+  //     dataset: 'mock-dataset',
+  //     collection: 'mock-collection'
+  //   },
+  //   values: {
+  //     dataset: 'mockDataset'
+  //   },
+  //   errors: {}
+  // }
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
-  const datasetName = mockDataSubjects.mockDataset.dataSets[0].value
+  const datasetName = params.values.dataset.toLowerCase()
 
   runGenericPageTests(html, {
-    pageTitle: `Enter ${datasetName.toLowerCase()} details - Submit and update your planning data`
+    pageTitle: `Enter ${datasetName} details - Submit and update your planning data`
   })
 
   it('should render the correct header', () => {
     const regex = new RegExp(
-      `<h1 class="govuk-heading-l".*${datasetName.toLowerCase()} details.*</h1>`,
+      `<h1 class="govuk-heading-l".*${datasetName} details.*</h1>`,
       'g'
     )
 
