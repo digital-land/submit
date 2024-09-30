@@ -8,7 +8,7 @@
 {% set serviceType = 'Submit'%}
 
 {% if issueEntitiesCount > 1 %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{entityNumber}} of {{issueEntitiesCount}}){% endset %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}
 {% else %}
   {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
 {%endif%}
