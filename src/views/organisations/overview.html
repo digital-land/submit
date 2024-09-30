@@ -69,24 +69,24 @@
         <li class="govuk-task-list__item govuk-task-list__item--with-link">
           <div class="govuk-task-list__name-and-hint">
             <h2 class="govuk-heading-m">
-              {% if dataset.endpoint %}
+              {% if dataset.status == 'Not submitted' %}
                 <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/get-started">
                   {{dataset.slug | datasetSlugToReadableName}}
                 </a>
               {% else %}
                 <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/get-started">
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
                   {{dataset.slug | datasetSlugToReadableName}}
                 </a>
               {% endif %}
             </h2>
             <div class="govuk-task-list__hint">
-              {% if dataset.endpoint is null %}
+              {% if dataset.status == 'Not submitted' %}
                 <p>Data URL not submitted</p>
-              {% elif dataset.error %}
+              {% elif dataset.status == 'Error' %}
                 <p>{{dataset.error}}</p>
-              {% elif dataset.issue_count > 0 %}
+              {% elif dataset.status == 'Needs fixing' > 0 %}
                 <p>There are {{ dataset.issue_count }} {{ "issue" | pluralise(dataset.issue_count) }} in this dataset</p>
               {% else %}
                 <p>Data URL submitted</p>
