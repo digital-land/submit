@@ -1,25 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
+import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
 import mock from '../utils/mocker.js'
 import { OrgFindPage } from '../../src/routes/schemas.js'
 
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
-
-addFilters(nunjucksEnv, {})
+const nunjucks = setupNunjucks({})
 
 describe('Organisations Find Page', () => {
   const params = mock(OrgFindPage)
