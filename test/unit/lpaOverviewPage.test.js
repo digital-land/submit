@@ -3,102 +3,39 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import jsdom from 'jsdom'
 import { makeDatasetSlugToReadableNameFilter } from '../../src/filters/makeDatasetSlugToReadableNameFilter.js'
+import mocker from '../utils/mocker.js'
+import { datasetStatusEnum, OrgOverviewPage } from '../../src/routes/schemas.js'
 
 const datasetNameMapping = new Map()
 const nunjucks = setupNunjucks({ datasetNameMapping })
 
-describe('LPA Overview Page', () => {
-  const params = {
-    organisation: {
-      name: 'mock org',
-      organisation: 'mock-org'
-    },
-    datasetsWithEndpoints: 2,
-    totalDatasets: 8,
-    datasetsWithErrors: 2,
-    datasetsWithIssues: 2,
-    datasets: [
-      {
-        slug: 'article-4-direction',
-        endpoint: null,
-        status: 'Not submitted',
-        issue_count: 0
-      },
-      {
-        slug: 'article-4-direction-area',
-        endpoint: null,
-        status: 'Not submitted'
-      },
-      {
-        slug: 'conservation-area',
-        endpoint: 'http://conservation-area.json',
-        status: 'Needs fixing',
-        error: null,
-        issue: 'Endpoint has not been updated since 21 May 2023',
-        issue_count: 1
-      },
-      {
-        slug: 'conservation-area-document',
-        endpoint: 'http://conservation-area-document.json',
-        status: 'Live',
-        error: null,
-        issue_count: 0
-      },
-      {
-        slug: 'listed-building-outline',
-        endpoint: 'http://listed-building-outline.json',
-        status: 'Live',
-        error: null,
-        issue_count: 0
-      },
-      {
-        slug: 'tree',
-        endpoint: 'http://tree.json',
-        error: null,
-        status: 'Needs fixing',
-        issue: 'There are 20 issues in this dataset',
-        issue_count: 1
-      },
-      {
-        slug: 'tree-preservation-order',
-        endpoint: 'http://tree-preservation-order.json',
-        http_error: '404',
-        error: 'There was 404 error accessing the data URL',
-        status: 'Error',
-        issue_count: 0
-      },
-      {
-        slug: 'tree-preservation-zone',
-        endpoint: 'http://tree-preservation-zone.json',
-        status: 'Error',
-        error: '400',
-        issue_count: 0
-      }
-    ]
-  }
+const seed = new Date().getTime()
+
+describe(`LPA Overview Page (seed: ${seed})`, () => {
+  const params = mocker(OrgOverviewPage, seed)
   const html = nunjucks.render('organisations/overview.html', params)
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'mock org overview - Submit and update your planning data',
-    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org' }]
+    pageTitle: `${params.organisation.name} overview - Submit and update your planning data`,
+    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: params.organisation.name }]
   })
 
   const statsBoxes = document.querySelector('.dataset-status').children
   it('Datasets provided gives the correct value', () => {
-    expect(statsBoxes[0].textContent).toContain('2/8')
+    expect(statsBoxes[0].textContent).toContain(`${params.datasetsWithEndpoints}/${params.totalDatasets}`)
     expect(statsBoxes[0].textContent).toContain('datasets submitted')
   })
 
   it('Datasets with errors gives the correct value', () => {
-    expect(statsBoxes[1].textContent).toContain('2')
+    expect(statsBoxes[1].textContent).toContain(params.datasetsWithErrors)
     expect(statsBoxes[1].textContent).toContain('data URL with errors')
   })
 
   it('Datasets with issues gives the correct value', () => {
-    expect(statsBoxes[2].textContent).toContain('2')
+    expect(statsBoxes[2].textContent).toContain(params.datasetsWithIssues)
     expect(statsBoxes[2].textContent).toContain('datasets need fixing')
   })
 
@@ -118,13 +55,14 @@ describe('LPA Overview Page', () => {
       let expectedHint = 'Data URL submitted'
       if (dataset.status === 'Not submitted') {
         expectedHint = 'Data URL not submitted'
-      } else if (dataset.error) {
-        expectedHint = dataset.error
-      } else if (dataset.issue_count === 1) {
+      } else if (dataset.status === 'Error') {
+        expectedHint = dataset.error || ''
+      } else if (dataset.status === 'Error' && dataset.issue_count <= 1) {
         expectedHint = `There are ${dataset.issue_count} issue in this dataset`
-      } else if (dataset.issue_count > 1) {
+      } else if (dataset.status === 'Error' && dataset.issue_count > 1) {
         expectedHint = `There are ${dataset.issue_count} issues in this dataset`
       }
+
       expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent.trim()).toContain(expectedHint)
     })
   })
@@ -148,14 +86,11 @@ describe('LPA Overview Page', () => {
 
   params.datasets.forEach((dataset, i) => {
     it(`Renders the correct status on each dataset card for dataset='${dataset.slug}'`, () => {
-      let expectedStatus = 'Live'
-      if (dataset.status === 'Not submitted') {
-        expectedStatus = 'Not submitted'
-      } else if (dataset.status === 'Error') {
-        expectedStatus = dataset.status
-      } else if (dataset.status === 'Needs fixing') {
-        expectedStatus = 'Needs fixing'
+      if (!(dataset.status in datasetStatusEnum)) {
+        throw new Error(`Unknown dataset status: ${dataset.status}`)
       }
+
+      const expectedStatus = datasetStatusEnum[dataset.status]
 
       const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
       expect(statusIndicator.textContent.trim()).toContain(expectedStatus)
@@ -165,9 +100,9 @@ describe('LPA Overview Page', () => {
       const expectedLink = datasetCards[i].querySelector('.govuk-task-list__link').href
 
       if (dataset.status === 'Not submitted') {
-        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}/get-started`)
+        expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.slug}/get-started`)
       } else {
-        expect(expectedLink).toEqual(`/organisations/mock-org/${dataset.slug}/overview`)
+        expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.slug}/overview`)
       }
 
       const link = datasetCards[i].querySelector('.govuk-link')

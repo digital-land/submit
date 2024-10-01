@@ -1,103 +1,31 @@
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
+import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
+import { OrgIssueDetails } from '../../src/routes/schemas.js'
+import mocker from '../utils/mocker.js'
 
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
+const nunjucks = setupNunjucks({})
 
-const datasetNameMapping = new Map()
-addFilters(nunjucksEnv, { datasetNameMapping })
+const seed = new Date().getTime()
 
-describe('issueDetails.html', () => {
-  const organisation = {
-    name: 'mock org',
-    organisation: 'mock-org'
-  }
+describe(`issueDetails.html(seed: ${seed})`, () => {
+  const params = mocker(OrgIssueDetails, seed)
 
-  const dataset = {
-    name: 'mock Dataset',
-    dataset: 'mock-dataset'
-  }
-
-  const errorHeading = 'Example error heading'
-  const issueItems = [
-    {
-      html: '2 fields are missing values in entry 949',
-      href: 'todo'
-    },
-    {
-      html: '3 fields are missing values in entry 950',
-      href: 'todo'
-    }
-  ]
-
-  const entry = {
-    title: '20 and 20A Whitbourne Springs',
-    fields: [
-      {
-        key: {
-          text: 'description'
-        },
-        value: {
-          html: '20 and 20A Whitbourne Springs'
-        },
-        classes: ''
-      },
-      {
-        key: {
-          text: 'document-url'
-        },
-        value: {
-          html: '<p class="govuk-error-message">document-url missing</p>'
-        },
-        classes: 'dl-summary-card-list__row--error'
-      },
-      {
-        key: {
-          text: 'documentation-url'
-        },
-        value: {
-          html: '<p class="govuk-error-message">documentation-url missing</p>'
-        },
-        classes: 'dl-summary-card-list__row--error'
-      }
-    ]
-  }
-
-  const issueType = 'mock issue'
-
-  const params = {
-    organisation,
-    dataset,
-    errorHeading,
-    issueItems,
-    entry,
-    issueType
-  }
+  params.issueEntitiesCount = undefined
 
   const html = nunjucks.render('organisations/issueDetails.html', params)
   const dom = new JSDOM(html)
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `mock org - mock Dataset - Issues - ${config.serviceNames.submit}`,
+    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues - ${config.serviceNames.submit}`,
     breadcrumbs: [
       { text: 'Home', href: '/' },
       { text: 'Organisations', href: '/organisations' },
-      { text: 'mock org', href: '/organisations/mock-org' },
-      { text: 'mock Dataset', href: '/organisations/mock-org/mock-dataset' },
+      { text: params.organisation.name, href: `/organisations/${params.organisation.organisation}` },
+      { text: params.dataset.name, href: `/organisations/${params.organisation.organisation}/${params.dataset.dataset}` },
       { text: 'mock issue' }
     ]
   })
@@ -109,7 +37,7 @@ describe('issueDetails.html', () => {
 
   describe('error summary', () => {
     it('should render the correct heading', () => {
-      expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(errorHeading)
+      expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(params.errorHeading || 'There is a problem')
     })
 
     it('should render the correct heading if none is supplied', () => {
@@ -127,24 +55,24 @@ describe('issueDetails.html', () => {
     it('should render the issue items', () => {
       const issueList = document.querySelector('.govuk-error-summary__list')
       const issueItemElements = [...issueList.children]
-      expect(issueItemElements.length).toBe(issueItems.length)
+      expect(issueItemElements.length).toBe(params.issueItems.length)
 
       issueItemElements.forEach((element, index) => {
-        expect(element.textContent).toContain(issueItems[index].html)
+        expect(element.textContent).toContain(params.issueItems[index].html)
       })
     })
   })
 
   it('should render the entry details', () => {
     const cardHeader = document.querySelector('.govuk-summary-card__title')
-    expect(cardHeader.textContent).toContain('20 and 20A Whitbourne Springs')
+    expect(cardHeader.textContent).toContain(params.entry.title)
 
     const cardBody = document.querySelector('.govuk-summary-list')
     const entryFields = [...cardBody.children]
-    expect(entryFields.length).toBe(entry.fields.length)
+    expect(entryFields.length).toBe(params.entry.fields.length)
 
     entryFields.forEach((element, index) => {
-      expect(element.innerHTML).toContain(entry.fields[index].value.html)
+      expect(element.innerHTML).toContain(params.entry.fields[index].value.html)
     })
   })
 
@@ -181,32 +109,28 @@ describe('issueDetails.html', () => {
       }
     ]
     const next = {
-      number: 3,
       href: 'organisations/mock-org/mock-dataset/mock issue/3'
     }
     const previous = {
-      number: 1,
       href: 'organisations/mock-org/mock-dataset/mock issue/1'
     }
-    const multiPageHtml = nunjucks.render('organisations/issueDetails.html', {
-      ...params,
-      pagination: {
-        previous,
-        next,
-        items
-      },
-      issueEntitiesCount: 10,
-      entityNumber: 2
-    })
+    params.pagination = {
+      previous,
+      next,
+      items
+    }
+    params.issueEntitiesCount = 10
+    const multiPageHtml = nunjucks.render('organisations/issueDetails.html', params)
     // const multiPageDom = new JSDOM(multiPageHtml)
     // const multiPageDocument = multiPageDom.window.document
+    const paginationTitleSection = params.issueEntitiesCount > 1 ? `(Page ${params.pageNumber} of ${params.issueEntitiesCount}) ` : ''
     runGenericPageTests(multiPageHtml, {
-      pageTitle: `mock org - mock Dataset - Issues (Page 2 of 10) - ${config.serviceNames.submit}`,
+      pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues ${paginationTitleSection}- ${config.serviceNames.submit}`,
       breadcrumbs: [
         { text: 'Home', href: '/' },
         { text: 'Organisations', href: '/organisations' },
-        { text: 'mock org', href: '/organisations/mock-org' },
-        { text: 'mock Dataset', href: '/organisations/mock-org/mock-dataset' },
+        { text: params.organisation.name, href: `/organisations/${params.organisation.organisation}` },
+        { text: params.dataset.name, href: `/organisations/${params.organisation.organisation}/${params.dataset.dataset}` },
         { text: 'mock issue' }
       ]
     })
@@ -251,15 +175,15 @@ describe('issueDetails.html', () => {
   describe('Dataset visualisation: Maps', () => {
     it('should render a map when geometries are passed in', () => {
       const paramWithGeometry = {
-        organisation,
-        dataset,
-        errorHeading,
-        issueItems,
+        organisation: params.organisation,
+        dataset: params.dataset,
+        errorHeading: params.errorHeading,
+        issueItems: params.issueItems,
         entry: {
-          ...entry,
+          ...params.entry,
           geometries: ['POINT(0 0)']
         },
-        issueType
+        issueType: params.issueType
       }
 
       const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)
@@ -269,20 +193,20 @@ describe('issueDetails.html', () => {
 
       expect(map).not.toBeNull()
       expect(map.getAttribute('role')).toEqual('region')
-      expect(map.getAttribute('aria-label')).toEqual('Static map showing mock Dataset for mock org.')
+      expect(map.getAttribute('aria-label')).toEqual(`Static map showing ${params.dataset.name} for ${params.organisation.name}.`)
     })
 
     it('should not render a map when no geometries are passed in', () => {
       const paramWithGeometry = {
-        organisation,
-        dataset,
-        errorHeading,
-        issueItems,
+        organisation: params.organisation,
+        dataset: params.dataset,
+        errorHeading: params.errorHeading,
+        issueItems: params.issueItems,
         entry: {
-          ...entry,
+          ...params.entry,
           geometries: []
         },
-        issueType
+        issueType: params.issueType
       }
 
       const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)

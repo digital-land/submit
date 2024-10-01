@@ -269,7 +269,7 @@ describe('issueDetails.middleware.js', () => {
               current: true,
               href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1',
               number: 1,
-              type: 'item'
+              type: 'number'
             }]
           },
           issueEntitiesCount: 1,
