@@ -40,8 +40,10 @@ function errorTestFn ({
   }
 }
 
-describe('dataset details View', () => {
-  const params = mock(DatasetDetails)
+const seed = new Date().getTime()
+
+describe(`dataset details View (seed: ${seed})`, () => {
+  const params = mock(DatasetDetails, seed)
   params.errors = {}
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
   const datasetName = params.values.dataset.toLowerCase()

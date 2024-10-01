@@ -9,8 +9,10 @@ const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 const dateRegex = /\d{1,2} \w{3,9} \d{4} at \d{1,2}(?::\d{2})?(?:am|pm)/g
 
-describe('http-error.html', () => {
-  const params = mock(OrgEndpointError)
+const seed = new Date().getTime()
+
+describe(`http-error.html(seed: ${seed})`, () => {
+  const params = mock(OrgEndpointError, seed)
 
   const html = nunjucks.render('organisations/http-error.html', params)
   const dom = new JSDOM(html)

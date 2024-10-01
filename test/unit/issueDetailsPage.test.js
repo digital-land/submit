@@ -8,8 +8,10 @@ import mocker from '../utils/mocker.js'
 
 const nunjucks = setupNunjucks({})
 
-describe('issueDetails.html', () => {
-  const params = mocker(OrgIssueDetails)
+const seed = new Date().getTime()
+
+describe(`issueDetails.html(seed: ${seed})`, () => {
+  const params = mocker(OrgIssueDetails, seed)
 
   params.issueEntitiesCount = undefined
 

@@ -8,8 +8,10 @@ import { OrgFindPage } from '../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({})
 
-describe('Organisations Find Page', () => {
-  const params = mock(OrgFindPage)
+const seed = new Date().getTime()
+
+describe(`Organisations Find Page (seed: ${seed})`, () => {
+  const params = mock(OrgFindPage, seed)
 
   const html = nunjucks.render('organisations/find.html', params)
 
