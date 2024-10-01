@@ -1,3 +1,6 @@
+// Generates fake data based on a given schema, with controllable randomness for testing and demo purposes.
+// Takes a schema and an optional seed, and returns fake data based on the schema.
+
 import { toJSONSchema } from '@gcornut/valibot-json-schema'
 import { JSONSchemaFaker } from 'json-schema-faker'
 import { date, number, string } from 'valibot'
@@ -17,6 +20,7 @@ export default (schema, seed) => {
 
   resetRandomNumberGenerator()
 
+  // this runs each and every time jsonSchemaFaker generates a random value, therefore to avoid all values being the same, we need it to change each time
   JSONSchemaFaker.option({
     random: () => {
       return generateNextRandomNumber(seed)
