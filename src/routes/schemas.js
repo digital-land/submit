@@ -41,6 +41,22 @@ export const datasetStatusEnum = {
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 
+const tableParams = v.strictObject({
+  columns: v.array(NonEmptyString),
+  rows: v.array(v.strictObject({
+    columns: v.objectWithRest(
+      {},
+      v.strictObject({
+        error: v.optional(v.object({
+          message: v.string()
+        })),
+        value: v.string()
+      })
+    )
+  })),
+  fields: v.array(NonEmptyString)
+})
+
 export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
   datasets: v.array(v.strictObject({
@@ -162,6 +178,18 @@ export const OrgIssueDetails = v.strictObject({
   pageNumber: v.integer()
 })
 
+export const OrgIssueTable = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  errorHeading: v.optional(NonEmptyString),
+  issueItems: v.array(v.strictObject({
+    html: v.string(),
+    href: v.url()
+  })),
+  issueType: NonEmptyString,
+  tableParams
+})
+
 export const CheckAnswers = v.strictObject({
   values: v.strictObject({
     lpa: NonEmptyString,
@@ -213,6 +241,7 @@ export const templateSchema = new Map([
   ['organisations/datasetTaskList.html', OrgDatasetTaskList],
   ['organisations/http-error.html', OrgEndpointError],
   ['organisations/issueDetails.html', OrgIssueDetails],
+  ['organisations/issueTable.html', OrgIssueTable],
 
   ['errorPages/503', UptimeParams],
   ['errorPages/500', ErrorParams],

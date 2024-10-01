@@ -1,0 +1,105 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+
+{% from "../components/table.html" import table %}
+
+{% set serviceType = 'Submit'%}
+
+{% if issueEntitiesCount > 1 %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}
+{% else %}
+  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
+{%endif%}
+
+{% block beforeContent %}
+
+{{ super() }}
+
+{{ govukBreadcrumbs({
+  items: [
+    {
+      text: "Home",
+      href: "/"
+    },
+    {
+      text: "Organisations",
+      href: '/organisations'
+    },
+    {
+      text: organisation.name,
+      href: '/organisations/' + organisation.organisation
+    },
+    {
+      text: dataset.name | capitalize,
+      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
+    },
+    {
+      text: issueType | capitalize
+    }
+  ]
+}) }}
+
+{% endblock %}
+
+{% block content %}
+
+
+<div class="govuk-grid-row">
+  {% include "includes/_dataset-page-header.html" %}
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukErrorSummary({
+      titleText: errorHeading if errorHeading else 'There is a problem',
+      errorList: issueItems
+    }) }}
+
+    {% if false and entry.geometries and entry.geometries.length %}
+      <div
+        id="map"
+        class="app-map"
+        role="region"
+        aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
+      </div>
+    {% endif %}
+
+    {{ table(tableParams) }}
+
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h3 class="govuk-heading-m">
+      How to improve {{ organisation.name }}’s data
+    </h3>
+
+    <ol class="govuk-list govuk-list--number">
+      <li>Fix the errors indicated</li>
+      <li>Use the <a href="/check">check service</a> to make sure the data meets
+        the standard</li>
+      <li>Publish the updated data on the data URL</li>
+    </ol>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  {% if entry.geometries and entry.geometries.length %}
+    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
+    <script>
+      window.serverContext = {
+        containerId: 'map',
+        geometries: {{ entry.geometries | dump | safe }},
+        mapType: "static"
+      }
+    </script>
+    <script src="/public/js/map.bundle.js"></script>
+  {% endif %}
+{% endblock %}
