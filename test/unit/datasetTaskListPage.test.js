@@ -1,29 +1,16 @@
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
+import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './generic-page.js'
 import jsdom from 'jsdom'
 import mocker from '../utils/mocker.js'
 import { OrgDatasetTaskList } from '../../src/routes/schemas.js'
 
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
+const nunjucks = setupNunjucks({})
 
-const datasetNameMapping = new Map()
+const seed = new Date().getTime()
 
-addFilters(nunjucksEnv, { datasetNameMapping })
-
-describe('Dataset Task List Page', () => {
-  const params = mocker(OrgDatasetTaskList)
+describe(`Dataset Task List Page (seed: ${seed})`, () => {
+  const params = mocker(OrgDatasetTaskList, seed)
   const html = nunjucks.render('organisations/datasetTaskList.html', params)
 
   const dom = new jsdom.JSDOM(html)
@@ -69,8 +56,8 @@ describe('Dataset Task List Page', () => {
   })
 
   it('renders correctly when no taskList items are passed in', () => {
-    const organisation = { name: 'Test Organisation', statistical_geography: '12345678' }
-    const dataset = { name: 'Test Dataset', dataset: 'test-dataset' }
+    const organisation = { name: 'Test Organisation', statistical_geography: '12345678', organisation: 'test organisation' }
+    const dataset = { name: 'Test Dataset', dataset: 'test-dataset', collection: 'test-dataset' }
     const taskList = []
 
     const html = nunjucks.render('organisations/datasetTaskList.html', {

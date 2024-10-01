@@ -1,35 +1,18 @@
 // getStartedPage.test.js
 
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
 import { runGenericPageTests } from './generic-page.js'
 import jsdom from 'jsdom'
 import mocker from '../utils/mocker.js'
 import { OrgGetStarted } from '../../src/routes/schemas.js'
+import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
+const nunjucks = setupNunjucks({})
 
-const datasetNameMapping = new Map([
-  ['article-4-direction', 'Article 4 Direction'],
-  ['article-4-direction-area', 'Article 4 Direction Area']
-  // ...
-])
+const seed = new Date().getTime()
 
-addFilters(nunjucksEnv, { datasetNameMapping })
-
-describe('Get Started Page', () => {
-  const params = mocker(OrgGetStarted)
+describe(`Get Started Page (seed: ${seed})`, () => {
+  const params = mocker(OrgGetStarted, seed)
   const html = nunjucks.render('organisations/get-started.html', params)
 
   const dom = new jsdom.JSDOM(html)
