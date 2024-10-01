@@ -1,33 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
+import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
 import { OrgIssueDetails } from '../../src/routes/schemas.js'
 import mocker from '../utils/mocker.js'
 
-const nunjucksEnv = nunjucks.configure([
-  'src/views',
-  'src/views/check',
-  'src/views/submit',
-  'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
-], {
-  dev: true,
-  noCache: true,
-  watch: true
-})
-
-const datasetNameMapping = new Map()
-addFilters(nunjucksEnv, { datasetNameMapping })
+const nunjucks = setupNunjucks({})
 
 describe('issueDetails.html', () => {
   const params = mocker(OrgIssueDetails)
 
-  params.pagination = undefined
   params.issueEntitiesCount = undefined
-  params.entityNumber = undefined
 
   const html = nunjucks.render('organisations/issueDetails.html', params)
   const dom = new JSDOM(html)
@@ -123,11 +107,9 @@ describe('issueDetails.html', () => {
       }
     ]
     const next = {
-      number: 3,
       href: 'organisations/mock-org/mock-dataset/mock issue/3'
     }
     const previous = {
-      number: 1,
       href: 'organisations/mock-org/mock-dataset/mock issue/1'
     }
     params.pagination = {
@@ -136,7 +118,6 @@ describe('issueDetails.html', () => {
       items
     }
     params.issueEntitiesCount = 10
-    params.entityNumber = 2
     const multiPageHtml = nunjucks.render('organisations/issueDetails.html', params)
     // const multiPageDom = new JSDOM(multiPageHtml)
     // const multiPageDocument = multiPageDom.window.document
