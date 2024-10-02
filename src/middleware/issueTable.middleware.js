@@ -1,5 +1,5 @@
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchDatasetInfo, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
 import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
 
 const validateIssueTableQueryParams = (req, res, next) => {
@@ -14,8 +14,9 @@ const fetchEntitiesWithIssues = fetchMany({
 })
 
 const prepareIssueTableTemplateParams = (req, res, next) => {
-  const { issue_type: issueType } = req.params
-  const { entitiesWithIssues, specification } = req
+  const { issue_type: issueType, issue_field: issueField } = req.params
+  const { entitiesWithIssues, specification, entityCount: entityCountRow } = req
+  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   const tableParams = {
     columns: specification.fields.map(field => field.field),
@@ -53,10 +54,12 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
     })
   }
 
+  const errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: entitiesWithIssues.length, entityCount, field: issueField }, true)
+
   req.templateParams = {
     organisation: req.orgInfo,
     dataset: req.dataset,
-    errorHeading: 'error Heading (ToDo)',
+    errorHeading,
     issueItems: [],
     issueType,
     tableParams
@@ -80,6 +83,7 @@ export default [
   fetchEntitiesWithIssues,
   fetchSpecification,
   pullOutDatasetSpecification,
+  fetchEntityCount,
   prepareIssueTableTemplateParams,
   getIssueTable,
   logPageError
