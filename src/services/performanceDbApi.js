@@ -402,5 +402,34 @@ ORDER BY
     const query = this.entityCountQuery(orgEntity)
     const result = await datasette.runQuery(query, dataset)
     return result.formattedData[0].entity_count
+  },
+
+  entitiesAndIssuesQuery (resource) {
+    return /* sql */ `
+      SELECT
+          e.*,
+          fr.entry_number,
+          '{' || GROUP_CONCAT(
+            '"' || i.field || '": "' || i.issue_type || '"',
+            ',' || CHAR(10)
+          ) || '}' AS issues
+        from
+          entity e
+          LEFT JOIN (
+            SELECT
+              DISTINCT fr.entry_number,
+              f.entity
+            FROM
+              fact_resource fr
+              INNER JOIN fact f ON fr.fact = f.fact
+            WHERE
+              fr.resource = '${resource}'
+          ) fr ON fr.entity = e.entity
+          LEFT JOIN issue i ON i.entry_number = fr.entry_number
+        WHERE
+          i.resource = '${resource}'
+        GROUP BY
+          (e.entity)
+      `
   }
 }

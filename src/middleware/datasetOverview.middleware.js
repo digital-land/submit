@@ -1,8 +1,7 @@
-import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, logPageError, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
 import { fetchOne, fetchIf, fetchMany, parallel, renderTemplate, FetchOptions } from './middleware.builders.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import json5 from 'json5'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `select * from endpoint_dataset_resource_summary
@@ -13,19 +12,6 @@ const fetchColumnSummary = fetchMany({
   result: 'columnSummary',
   dataset: FetchOptions.performanceDb
 })
-
-const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
-  result: 'specification'
-})
-
-export const pullOutDatasetSpecification = (req, res, next) => {
-  const { specification } = req
-  const collectionSpecifications = json5.parse(specification.json)
-  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
-  req.specification = datasetSpecification
-  next()
-}
 
 const fetchSources = fetchMany({
   query: ({ params }) => `

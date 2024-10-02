@@ -1,16 +1,57 @@
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
+import performanceDbApi from '../services/performanceDbApi.js'
+import { fetchDatasetInfo, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
 
 const validateIssueTableQueryParams = (req, res, next) => {
   next()
 }
 
-const fetchEntitiesWithIssues = (req, res, next) => {
-  next()
-}
+// given an lpa and a dataset, we want to get all the entities with issues, and their accompanying issues
+const fetchEntitiesWithIssues = fetchMany({
+  query: ({ req, params }) => performanceDbApi.entitiesAndIssuesQuery(req.resource.resource),
+  result: 'entitiesWithIssues',
+  dataset: FetchOptions.fromParams
+})
 
 const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType } = req.params
+  const { entitiesWithIssues, specification } = req
+
+  const tableParams = {
+    columns: specification.fields.map(field => field.field),
+    fields: specification.fields.map(field => field.field),
+    rows: entitiesWithIssues.map(entity => {
+      const columns = {}
+
+      specification.fields.forEach(fieldObject => {
+        const { field } = fieldObject
+        if (entity[field]) {
+          columns[field] = { value: entity[field] }
+        } else {
+          columns[field] = { value: '' }
+        }
+      })
+
+      let issues
+      try {
+        issues = JSON.parse(entity.issues)
+      } catch (e) {
+        console.log(e)
+      }
+
+      Object.entries(issues).forEach(([field, issueType]) => {
+        if (columns[field]) {
+          columns[field].error = { message: issueType }
+        } else {
+          columns[field] = { value: '', error: { message: issueType } }
+        }
+      })
+
+      return {
+        columns
+      }
+    })
+  }
 
   req.templateParams = {
     organisation: req.orgInfo,
@@ -18,48 +59,7 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
     errorHeading: 'error Heading (ToDo)',
     issueItems: [],
     issueType,
-    tableParams: {
-      columns: ['col1', 'col2', 'col3'],
-      rows: [
-        {
-          columns: {
-            field1: {
-              error: undefined,
-              value: 'value11'
-            },
-            field2: {
-              error: {
-                message: 'error in value12'
-              },
-              value: 'value12'
-            },
-            field3: {
-              error: undefined,
-              value: 'value13'
-            }
-          }
-        },
-        {
-          columns: {
-            field1: {
-              error: undefined,
-              value: 'value21'
-            },
-            field2: {
-              error: undefined,
-              value: 'value22'
-            },
-            field3: {
-              error: {
-                message: 'error in value23'
-              },
-              value: 'value23'
-            }
-          }
-        }
-      ],
-      fields: ['field1', 'field2', 'field3']
-    }
+    tableParams
   }
   next()
 }
@@ -77,10 +77,9 @@ export default [
     fetchDatasetInfo
   ]),
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
-  parallel([
-    fetchEntitiesWithIssues,
-    fetchEntityCount
-  ]),
+  fetchEntitiesWithIssues,
+  fetchSpecification,
+  pullOutDatasetSpecification,
   prepareIssueTableTemplateParams,
   getIssueTable,
   logPageError

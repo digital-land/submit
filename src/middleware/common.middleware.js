@@ -3,6 +3,7 @@ import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany } from './middleware.builders.js'
 import * as v from 'valibot'
+import json5 from 'json5'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -92,3 +93,16 @@ export const fetchLpaDatasetIssues = fetchMany({
   query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
   result: 'issues'
 })
+
+export const fetchSpecification = fetchOne({
+  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
+  result: 'specification'
+})
+
+export const pullOutDatasetSpecification = (req, res, next) => {
+  const { specification } = req
+  const collectionSpecifications = json5.parse(specification.json)
+  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
+  req.specification = datasetSpecification
+  next()
+}
