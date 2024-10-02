@@ -4,7 +4,7 @@ import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 
 const fetchColumnSummary = fetchMany({
-  query: ({ params }) => `select * from column_field_summary
+  query: ({ params }) => `select * from endpoint_dataset_resource_summary
     where resource != ''
     and pipeline = '${params.dataset}'
     AND organisation = '${params.lpa}'
@@ -46,16 +46,16 @@ const fetchEntityCount = fetchOne({
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const { orgInfo, specification, columnSummary, entityCount, sources, dataset } = req
 
-  const matchingFields = columnSummary[0].matching_field?.split(',') ?? []
-  const nonMatchingFields = columnSummary[0].non_matching_field?.split(',') ?? []
-  const allFields = [...matchingFields, ...nonMatchingFields]
+  const mappingFields = columnSummary[0].mapping_field?.split(';') ?? []
+  const nonMappingFields = columnSummary[0].non_mapping_field?.split(';') ?? []
+  const allFields = [...mappingFields, ...nonMappingFields]
 
   const numberOfFieldsSupplied = specification.fields.map(field => field.field).reduce((acc, current) => {
     return allFields.includes(current) ? acc + 1 : acc
   }, 0)
 
   const numberOfFieldsMatched = specification.fields.map(field => field.field).reduce((acc, current) => {
-    return matchingFields.includes(current) ? acc + 1 : acc
+    return mappingFields.includes(current) ? acc + 1 : acc
   }, 0)
 
   const numberOfExpectedFields = specification.fields.length
