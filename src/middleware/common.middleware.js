@@ -57,7 +57,7 @@ export const takeResourceIdFromParams = (req) => {
 }
 
 export const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.resource.resource),
+  query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
   result: 'entityCount',
   dataset: FetchOptions.fromParams,
   fallbackPolicy: FetchOneFallbackPolicy.continue

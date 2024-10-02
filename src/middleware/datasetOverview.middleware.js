@@ -1,7 +1,6 @@
-import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchOne, fetchIf, fetchMany, parallel, renderTemplate, FetchOptions } from './middleware.builders.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchIf, fetchMany, parallel, renderTemplate, FetchOptions } from './middleware.builders.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
-import performanceDbApi from '../services/performanceDbApi.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `select * from endpoint_dataset_resource_summary
@@ -22,12 +21,6 @@ const fetchSources = fetchMany({
     AND (rhe.resource_end_date >= current_timestamp OR rhe.resource_end_date is null)
   `,
   result: 'sources'
-})
-
-const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
-  result: 'entityCount',
-  dataset: FetchOptions.fromParams
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
