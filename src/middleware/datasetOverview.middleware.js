@@ -5,7 +5,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import json5 from 'json5'
 
 const fetchColumnSummary = fetchMany({
-  query: ({ params }) => `select * from column_field_summary
+  query: ({ params }) => `select * from endpoint_dataset_resource_summary
     where resource != ''
     and pipeline = '${params.dataset}'
     AND organisation = '${params.lpa}'
