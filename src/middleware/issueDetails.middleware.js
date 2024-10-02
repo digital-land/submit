@@ -250,7 +250,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
       }
     } else {
       return {
-        type: 'item',
+        type: 'number',
         number: item,
         href: `${BaseSubpath}${item}`,
         current: pageNumber === parseInt(item)
