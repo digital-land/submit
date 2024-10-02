@@ -16,14 +16,14 @@
                         {% for field in params.fields %}
                             {% set columnData = row.columns[field] %}
                             <td class="govuk-table__cell app-wrap">
-                                
+                                {% set cellText = columnData.html | safe if columnData.html else columnData.value%}
                                 {% if columnData.error %}
                                     {{ govukInsetText({
                                         classes: "app-inset-text---error",
-                                        html: '<p class="app-inset-text__value">'+columnData.value | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | prettifyColumnName +'</p>'
+                                        html: '<p class="app-inset-text__value">'+cellText | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | prettifyColumnName +'</p>'
                                     }) }}
-                                {% elseif columnData.value %}
-                                    {{ columnData.value }}
+                                {% elseif cellText %}
+                                    {{ cellText }}
                                 {% endif %}
                             </td>
                         {% endfor %}
