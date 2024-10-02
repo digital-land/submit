@@ -14,19 +14,23 @@ const fetchEntitiesWithIssues = fetchMany({
 })
 
 const prepareIssueTableTemplateParams = (req, res, next) => {
-  const { issue_type: issueType, issue_field: issueField } = req.params
+  const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
   const { entitiesWithIssues, specification, entityCount: entityCountRow } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   const tableParams = {
     columns: specification.fields.map(field => field.field),
     fields: specification.fields.map(field => field.field),
-    rows: entitiesWithIssues.map(entity => {
+    rows: entitiesWithIssues.map((entity, index) => {
       const columns = {}
 
       specification.fields.forEach(fieldObject => {
         const { field } = fieldObject
-        if (entity[field]) {
+        if (field === 'reference') {
+          const entityPageNumber = index + 1
+          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/${entityPageNumber}`
+          columns[field] = { html: `<a href="${entityLink}">${entity[field]}</a>` }
+        } else if (entity[field]) {
           columns[field] = { value: entity[field] }
         } else {
           columns[field] = { value: '' }
