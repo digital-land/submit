@@ -46,11 +46,12 @@ const tableParams = v.strictObject({
   rows: v.array(v.strictObject({
     columns: v.objectWithRest(
       {},
-      v.strictObject({
+      v.object({
         error: v.optional(v.object({
           message: v.string()
         })),
-        value: v.string()
+        value: v.optional(v.string()),
+        html: v.optional(v.string())
       })
     )
   })),
