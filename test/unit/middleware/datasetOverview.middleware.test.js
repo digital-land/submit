@@ -36,7 +36,7 @@ describe('Dataset Overview Middleware', () => {
         ...req,
         orgInfo: { name: 'mock-org' },
         specification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
-        columnSummary: [{ matching_field: 'field1', non_matching_field: 'field3' }],
+        columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
         sources: [
           { endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: '200', endpoint_entry_date: 'LU1', latest_log_entry_date: 'LA1' },
