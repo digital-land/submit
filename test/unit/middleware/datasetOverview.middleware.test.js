@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { prepareDatasetOverviewTemplateParams, pullOutDatasetSpecification } from '../../../src/middleware/datasetOverview.middleware.js'
+import { prepareDatasetOverviewTemplateParams } from '../../../src/middleware/datasetOverview.middleware.js'
 
 describe('Dataset Overview Middleware', () => {
   const req = {
@@ -14,21 +14,6 @@ describe('Dataset Overview Middleware', () => {
     }
   }
   const res = {}
-
-  describe('pullOutDatasetSpecification', () => {
-    it('', () => {
-      const reqWithSpecification = {
-        ...req,
-        specification: {
-          json: JSON.stringify([
-            { dataset: 'mock-dataset', foo: 'bar' }
-          ])
-        }
-      }
-      pullOutDatasetSpecification(reqWithSpecification, res, () => {})
-      expect(reqWithSpecification.specification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
-    })
-  })
 
   describe('prepareDatasetOverviewTemplateParams', () => {
     it('should prepare template params for dataset overview', async () => {
