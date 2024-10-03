@@ -86,7 +86,7 @@
                 <p>Data URL not submitted</p>
               {% elif dataset.status == 'Error' %}
                 <p>{{dataset.error}}</p>
-              {% elif dataset.status == 'Needs fixing' > 0 %}
+              {% elif dataset.status == 'Needs fixing' %}
                 <p>There are {{ dataset.issue_count }} {{ "issue" | pluralise(dataset.issue_count) }} in this dataset</p>
               {% else %}
                 <p>Data URL submitted</p>

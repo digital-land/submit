@@ -55,6 +55,8 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       let expectedHint = 'Data URL submitted'
       if (dataset.status === 'Not submitted') {
         expectedHint = 'Data URL not submitted'
+      } else if (dataset.status === 'Needs fixing') {
+        expectedHint = 'in this dataset'
       } else if (dataset.status === 'Error') {
         expectedHint = dataset.error || ''
       } else if (dataset.status === 'Error' && dataset.issue_count <= 1) {
