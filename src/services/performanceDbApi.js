@@ -111,7 +111,7 @@ export function lpaOverviewQuery (lpa, params) {
     }
   }
   if (entityCountsSelects.length === 0) {
-    // add bogus select, to ensure the resulting SQL will be valid
+    // add bogus select, to ensure the resulting SQL is valid
     entityCountsSelects.push(entityCountSelectFragment('none', 'none', 0))
   }
 
