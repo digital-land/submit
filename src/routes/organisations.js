@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.get('/:lpa/:dataset/get-started', OrganisationsController.getGetStartedMiddleware)
 router.get('/:lpa/:dataset/overview', OrganisationsController.getDatasetOverviewMiddleware)
-router.get('/:lpa/:dataset/:issue_type/:issue_field/:pageNumber', OrganisationsController.getIssueDetailsMiddleware)
+router.get('/:lpa/:dataset/:issue_type/:issue_field/entity/:pageNumber', OrganisationsController.getIssueDetailsMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field', OrganisationsController.getIssueTableMiddleware)
 router.get('/:lpa/:dataset', OrganisationsController.getDatasetTaskListMiddleware)
 router.get('/:lpa', OrganisationsController.getOverviewMiddleware)

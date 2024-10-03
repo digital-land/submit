@@ -3,10 +3,10 @@ import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, 
 import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
 
 const validateIssueTableQueryParams = (req, res, next) => {
+  // ToDo
   next()
 }
 
-// given an lpa and a dataset, we want to get all the entities with issues, and their accompanying issues
 const fetchEntitiesWithIssues = fetchMany({
   query: ({ req, params }) => performanceDbApi.entitiesAndIssuesQuery(req.resource.resource),
   result: 'entitiesWithIssues',
@@ -28,7 +28,7 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
         const { field } = fieldObject
         if (field === 'reference') {
           const entityPageNumber = index + 1
-          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/${entityPageNumber}`
+          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entity/${entityPageNumber}`
           columns[field] = { html: `<a href="${entityLink}">${entity[field]}</a>` }
         } else if (entity[field]) {
           columns[field] = { value: entity[field] }
