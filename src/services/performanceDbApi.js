@@ -155,7 +155,7 @@ SELECT
 FROM 
   reporting_latest_endpoints rle
 LEFT JOIN
-  issue_summary i ON rle.resource = i.resource AND rle.pipeline = i.dataset
+  endpoint_dataset_issue_type_summary i ON rle.resource = i.resource AND rle.pipeline = i.dataset
 LEFT OUTER JOIN
   entity_counts ec ON ec.resource = rle.resource AND ec.dataset = rle.pipeline
 WHERE
