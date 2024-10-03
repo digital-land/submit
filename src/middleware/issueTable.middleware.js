@@ -1,11 +1,20 @@
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
+import * as v from 'valibot'
 
-const validateIssueTableQueryParams = (req, res, next) => {
-  // ToDo
-  next()
-}
+export const IssueTableQueryParams = v.object({
+  lpa: v.string(),
+  dataset: v.string(),
+  issue_type: v.string(),
+  issue_field: v.string(),
+  pageNumber: v.optional(v.string()),
+  resourceId: v.optional(v.string())
+})
+
+const validateIssueTableQueryParams = validateQueryParams.bind({
+  schema: IssueTableQueryParams
+})
 
 const fetchEntitiesWithIssues = fetchMany({
   query: ({ req, params }) => performanceDbApi.entitiesAndIssuesQuery(req.resource.resource),
