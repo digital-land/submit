@@ -7,7 +7,7 @@ import getFullServiceName from './getFullServiceName.js'
 import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadableNameFilter.js'
 import pluralize from 'pluralize'
 
-/** maps dataset status (as returned by performanceDbApi/getLpaOverview()) to a
+/** maps dataset status (as returned by `fetchLpaOverview` middleware to a
  * CSS class used by the govuk-tag component
  */
 const statusToTagClassMapping = {

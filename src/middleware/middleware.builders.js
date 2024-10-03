@@ -19,7 +19,10 @@ export const FetchOptions = {
      * Use 'dataset' from requets params.
      */
   fromParams: Symbol('from-params'),
-  performanceDb: Symbol('performance-database')
+  /**
+   * Use the performance database
+   */
+  performanceDb: Symbol('performance-db')
 }
 
 const datasetOverride = (val, req) => {

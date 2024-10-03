@@ -85,9 +85,87 @@ const datasetIssuesQuery = (resource, datasetId) => {
  */
 
 /**
- * @typedef {object} LpaOverview
+ * @typedef {object} LpaOverview // this needs to be updated
  * @property {{ [dataset: string]: Dataset }} datasets
  */
+
+const entityCountSelectFragment = (dataset, resource, entityCount) => `select '${dataset}' as d, '${resource}' as r, ${entityCount} as e`
+
+/**
+ *
+ * @param {string} lpa
+ * @param {{datasetsFilter: string[], entityCounts: { dataset: string, resource: string, entityCount?: number}[]}} params
+ * @returns
+ */
+export function lpaOverviewQuery (lpa, params) {
+  let datasetClause = ''
+  if (params.datasetsFilter) {
+    const datasetString = params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')
+    datasetClause = `AND rle.pipeline in (${datasetString})`
+  }
+
+  const entityCountsSelects = []
+  for (const { resource, dataset, entityCount } of params.entityCounts) {
+    if (entityCount && entityCount >= 0) {
+      entityCountsSelects.push(entityCountSelectFragment(dataset, resource, entityCount))
+    }
+  }
+  if (entityCountsSelects.length === 0) {
+    // add bogus select, to ensure the resulting SQL is valid
+    entityCountsSelects.push(entityCountSelectFragment('none', 'none', 0))
+  }
+
+  return /* sql */`
+with entity_counts as (
+select d as dataset, r as resource, e as entity_count
+from (
+  ${entityCountsSelects.join(' union ')}
+)
+)
+SELECT
+  REPLACE(rle.organisation, '-eng', '') as organisation,
+  rle.name,
+  rle.pipeline as dataset,
+  rle.endpoint,
+  rle.resource,
+  rle.exception,
+  rle.status as http_status,
+  coalesce(ec.entity_count, 0) as entity_count,
+  i.count_issues as issue_count,
+  i.responsibility,
+  i.fields,
+  case
+      when (rle.status is null) then 'Not submitted'
+      when (rle.status != '200') then 'Error'
+      when (i.severity = 'error') then 'Needs fixing'
+      else 'Live'
+  end as status,
+  case
+      when ((cast(rle.status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.status)
+      else null
+  end as error,
+  case
+      when (i.severity = 'info') then ''
+      else i.issue_type
+  end as issue_type,
+  case
+      when (i.severity = 'info') then ''
+      else i.severity
+  end as severity
+FROM 
+  reporting_latest_endpoints rle
+LEFT JOIN
+  endpoint_dataset_issue_type_summary i ON rle.resource = i.resource AND rle.pipeline = i.dataset
+LEFT OUTER JOIN
+  entity_counts ec ON ec.resource = rle.resource AND ec.dataset = rle.pipeline
+WHERE
+  REPLACE(rle.organisation, '-eng', '') = '${lpa}'
+  AND (i.severity is NULL OR i.severity not in ('info'))
+  ${datasetClause}
+ORDER BY
+  rle.organisation,
+  rle.name;`
+}
 
 /**
  * Performance DB API service
@@ -95,97 +173,6 @@ const datasetIssuesQuery = (resource, datasetId) => {
  * @default
  */
 export default {
-  /**
-     * Get LPA overview
-     * @param {string} lpa - LPA ID
-     * @returns {Promise<LpaOverview>} LPA overview
-     */
-  getLpaOverview: async (lpa, params = {}) => {
-    let datasetClause = ''
-    if (params.datasetsFilter) {
-      const datasetString = params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')
-      datasetClause = `AND rle.pipeline in (${datasetString})`
-    }
-
-    const query =
-    /* sql */
-    `
-    SELECT
-    p.organisation,
-    o.name,
-    p.dataset,
-    rle.pipeline,
-    rle.endpoint,
-    rle.resource,
-    rle.exception,
-    rle.status as http_status,
-  case
-      when (rle.status is null) then 'Not Submitted'
-      when (rle.status != '200') then 'Error'
-      when (it.severity = 'error') then 'Needs fixing'
-      else 'Live'
-  end as status,
-    case
-        when ((cast(rle.status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.status)
-        else null
-  end as error,
-  case
-      when (it.severity = 'info') then ''
-      else i.issue_type
-  end as issue_type,
-  case
-      when (it.severity = 'info') then ''
-      else it.severity
-  end as severity,
-  it.responsibility,
-  COUNT(
-      case
-      when it.severity != 'info' and it.severity != 'warning' then 1
-      else null
-      end
-  ) as issue_count
-FROM
-    provision p
-LEFT JOIN
-    organisation o ON o.organisation = p.organisation
-LEFT JOIN
-    reporting_latest_endpoints rle
-    ON REPLACE(rle.organisation, '-eng', '') = p.organisation
-    AND rle.pipeline = p.dataset
-LEFT JOIN
-    issue i ON rle.resource = i.resource AND rle.pipeline = i.dataset
-LEFT JOIN
-    issue_type it ON i.issue_type = it.issue_type AND it.severity != 'info'
-WHERE
-    p.organisation = '${lpa}'
-    ${datasetClause}
-GROUP BY
-    p.organisation,
-    p.dataset,
-    o.name,
-    rle.pipeline,
-    rle.endpoint
-ORDER BY
-    p.organisation,
-    o.name;
-`
-    const result = await datasette.runQuery(query)
-    if (result.formattedData.length === 0) {
-      logger.info(`No records found for LPA=${lpa}`)
-    }
-
-    const datasets = result.formattedData.reduce((accumulator, row) => {
-      accumulator[row.dataset] = {
-        endpoint: row.endpoint,
-        status: row.status,
-        issue_count: row.issue_count,
-        error: row.error
-      }
-      return accumulator
-    }, {})
-
-    return { datasets }
-  },
 
   resourceStatusQuery (lpa, datasetId) {
     return /* sql */ `
@@ -288,6 +275,55 @@ ORDER BY
     const result = await datasette.runQuery(sql)
 
     return result.formattedData[0]
+  },
+
+  /**
+   * Query for obtaining resource ids for given datasets
+   *
+   * @param {*} lpa
+   * @param {{datasetsFilter: string[]}} params
+   * @returns {string} SQL
+   */
+  latestResourcesQuery: (lpa, params) => {
+    let datasetClause = ''
+    if (params.datasetsFilter) {
+      const datasetString = params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')
+      datasetClause = `AND rle.pipeline in (${datasetString})`
+    }
+
+    return /* sql */ `
+    select
+      rle.pipeline as dataset, 
+      rle.resource as resource
+    from reporting_latest_endpoints rle
+    where
+      REPLACE(organisation, '-eng', '') = '${lpa}'
+      ${datasetClause}`
+  },
+
+  /**
+    *
+    * @param {{resource: string, dataset: string}[]} resources
+    * @returns {Promise<{ resource: string, dataset: string, entityCount?: number}[]>}
+    */
+  async getEntityCounts (resources) {
+    const requests = resources.map(({ resource, dataset }) => {
+      const q = datasette.runQuery(this.entityCountQuery(resource), dataset)
+      return q
+        .then(result => {
+          if (result.formattedData.length === 0) {
+            logger.info({ message: 'getEntityCounts(): No results for resource.', resource, dataset, type: types.App })
+            return { resource, dataset }
+          }
+          return { resource, dataset, entityCount: result.formattedData[0].entity_count }
+        })
+        .catch((error) => {
+          logger.warn('getEntityCounts(): could not obtain entity counts. Proceeding without them.',
+            { type: types.App, errorMessage: error.message, errorStack: error.stack })
+          return { resource, dataset }
+        })
+    })
+    return (await Promise.allSettled(requests)).map(p => p.value)
   },
 
   /**

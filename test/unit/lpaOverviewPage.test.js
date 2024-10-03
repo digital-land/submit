@@ -59,8 +59,10 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
         expectedHint = 'in this dataset'
       } else if (dataset.status === 'Error') {
         expectedHint = dataset.error || ''
-      } else if (dataset.status === 'Error' && dataset.issue_count <= 1) {
-        expectedHint = `There are ${dataset.issue_count} issue in this dataset`
+      } else if (dataset.status === 'Error' && dataset.issue_count === 0) {
+        expectedHint = `There are ${dataset.issue_count} issues in this dataset`
+      } else if (dataset.status === 'Error' && dataset.issue_count === 1) {
+        expectedHint = `There is ${dataset.issue_count} issue in this dataset`
       } else if (dataset.status === 'Error' && dataset.issue_count > 1) {
         expectedHint = `There are ${dataset.issue_count} issues in this dataset`
       }
