@@ -1,10 +1,5 @@
 import { vi, it, describe, expect, beforeEach } from 'vitest'
-// import { lpaOverviewQuery } from '../../src/services/performanceDbApi'
 import fs from 'fs'
-
-// function lpaOverviewQuery (a, b) {
-//   return ''
-// }
 
 vi.mock('../../config/index.js', () => {
   return {
