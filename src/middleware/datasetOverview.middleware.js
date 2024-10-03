@@ -7,7 +7,7 @@ import json5 from 'json5'
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `select * from endpoint_dataset_resource_summary
     where resource != ''
-    and endpoint_date_date = ''
+    and endpoint_end_date = ''
     and pipeline = '${params.dataset}'
     AND organisation = '${params.lpa}'
     limit 1000`,
