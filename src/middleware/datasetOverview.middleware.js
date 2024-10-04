@@ -5,6 +5,7 @@ import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `select * from endpoint_dataset_resource_summary
     where resource != ''
+    and endpoint_end_date = ''
     and pipeline = '${params.dataset}'
     AND organisation = '${params.lpa}'
     limit 1000`,

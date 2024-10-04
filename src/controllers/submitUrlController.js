@@ -22,6 +22,7 @@ class SubmitUrlController extends UploadController {
       }
       logger.info({
         message: 'SubmitUrlController: local validation failed during url submission',
+        endpoint: req.originalUrl,
         error: JSON.stringify(error),
         submittedUrl: `${req.body.url ?? '<no url provided>'}`,
         type: types.DataValidation
@@ -120,7 +121,7 @@ class SubmitUrlController extends UploadController {
     try {
       // if the content length header is not provided, return true
       if (!contentLength) {
-        console.warn(`urlResponseIsNotTooLarge(): response.config.url=${response.config.url}`, { type: types.App, errorMessage: 'Content-Length header not provided' })
+        console.info('urlResponseIsNotTooLarge(): Content-Length header not provided', { type: types.App })
         return true
       }
 
