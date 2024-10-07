@@ -1,4 +1,4 @@
-# Check planning and housing data for England
+# Submit and update planning and housing data for England
 
 Project is a web application for validating and submitting planning and housing data for England.
 
