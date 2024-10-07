@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from './sharedTests/generic-page.js'
 import config from '../../config/index.js'
 import mock from '../utils/mocker.js'
 import { OrgFindPage } from '../../src/routes/schemas.js'

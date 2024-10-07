@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from './sharedTests/generic-page.js'
 import mock from '../utils/mocker.js'
 import { OrgEndpointError } from '../../src/routes/schemas.js'
 

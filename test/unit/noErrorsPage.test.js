@@ -8,7 +8,7 @@ import jsdom from 'jsdom'
 import errorResponse from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json'
 import errorResponseDetails from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors-details.json'
 import ResponseDetails from '../../src/models/responseDetails.js'
-import paginationTemplateTests from './paginationTemplateTests.js'
+import paginationTemplateTests from './sharedTests/paginationTemplateTests.js'
 import prettifyColumnName from '../../src/filters/prettifyColumnName.js'
 
 const nunjucksEnv = nunjucks.configure([

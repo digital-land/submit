@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import jsdom from 'jsdom'
-import { runGenericPageTests } from '../../generic-page.js'
+import { runGenericPageTests } from '../../sharedTests/generic-page.js'
 import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
 import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 
