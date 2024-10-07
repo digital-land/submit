@@ -86,7 +86,7 @@ async function fetchEntry (req, res, next) {
     entryNumber,
     datasetId
   )
-  req.entryNumber = entryNumber
+
   next()
 }
 
@@ -156,22 +156,21 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount: entityCountRow } = req
-  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { entryData, issueEntitiesCount, issuesByEntryNumber, entityCount: entityCountRow } = req
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField, entryNumber } = req.params
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   let errorHeading
   let issueItems
 
-  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entity/`
+  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
 
   if (Object.keys(issuesByEntryNumber).length < entityCount) {
     errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-    issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
-      const pageNum = i + 1
+    issueItems = Object.keys(issuesByEntryNumber).map((entryNumber, i) => {
       return {
         html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
-        href: `${BaseSubpath}${pageNum}`
+        href: `${BaseSubpath}${entryNumber}`
       }
     })
   } else {
@@ -181,7 +180,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   }
 
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
-  const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
+  const entityIssues = issuesByEntryNumber[entryNumber] || []
   for (const issue of entityIssues) {
     if (!fields.find((field) => field.key.text === issue.field)) {
       const errorMessage = issue.message || issueType
@@ -202,16 +201,22 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     geometries
   }
 
-  const paginationObj = {}
+  const paginationObj = {
+    items: []
+  }
+
+  const entryNumbers = Object.keys(issuesByEntryNumber)
+  const pageNumber = entryNumbers.findIndex(currentEntryNumber => currentEntryNumber === entryNumber) + 1
+
   if (pageNumber > 1) {
     paginationObj.previous = {
-      href: `${BaseSubpath}${pageNumber - 1}`
+      href: `${BaseSubpath}${entryNumbers[pageNumber - 1]}`
     }
   }
 
   if (pageNumber < issueEntitiesCount) {
     paginationObj.next = {
-      href: `${BaseSubpath}${pageNumber + 1}`
+      href: `${BaseSubpath}${entryNumbers[pageNumber + 1]}`
     }
   }
 
@@ -226,7 +231,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
       return {
         type: 'number',
         number: item,
-        href: `${BaseSubpath}${item}`,
+        href: `${BaseSubpath}${entryNumbers[item - 1]}`,
         current: pageNumber === parseInt(item)
       }
     }
@@ -242,8 +247,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     issueType,
     issueField,
     pagination: paginationObj,
-    issueEntitiesCount,
-    pageNumber
+    issueEntitiesCount
   }
 
   next()
