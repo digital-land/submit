@@ -28,11 +28,16 @@ const setDefaultQueryParams = (req, res, next) => {
 
 const fetchEntitiesWithIssues = fetchMany({
   query: ({ req, params }) => {
-    const paginationSettings = {
+    const pagination = {
       limit: paginationPageLength,
       offset: paginationPageLength * (params.pageNumber - 1)
     }
-    return performanceDbApi.entitiesAndIssuesQuery(req.resource.resource, paginationSettings)
+    return performanceDbApi.entitiesAndIssuesQuery({
+      resource: req.resource.resource,
+      issueType: req.params.issue_type,
+      issueField: req.params.issue_field,
+      pagination
+    })
   },
   result: 'entitiesWithIssues',
   dataset: FetchOptions.fromParams

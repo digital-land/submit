@@ -440,7 +440,7 @@ export default {
     return result.formattedData[0].entity_count
   },
 
-  entitiesAndIssuesQuery (resource, pagination) {
+  entitiesAndIssuesQuery ({ resource, pagination, issueType, issueField }) {
     return /* sql */ `
       SELECT
           e.*,
@@ -462,8 +462,10 @@ export default {
               fr.resource = '${resource}'
           ) fr ON fr.entity = e.entity
           LEFT JOIN issue i ON i.entry_number = fr.entry_number
-        WHERE
-          i.resource = '${resource}'
+        WHERE i.resource = '${resource}'
+        AND i.issue_type = '${issueType}'
+        AND i.field = '${issueField}'
+
         GROUP BY
           (e.entity)
         LIMIT ${pagination.limit}
