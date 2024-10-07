@@ -58,6 +58,28 @@ const tableParams = v.strictObject({
   fields: v.array(NonEmptyString)
 })
 
+const paginationParams = v.optional(v.strictObject({
+  previous: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  next: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  items: v.array(v.variant('type', [
+    v.strictObject({
+      type: v.literal('number'),
+      number: v.integer(),
+      href: v.string(),
+      current: v.boolean()
+    }),
+    v.strictObject({
+      type: v.literal('ellipsis'),
+      ellipsis: v.literal(true),
+      href: v.string()
+    })
+  ]))
+}))
+
 export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
   datasets: v.array(v.strictObject({
@@ -148,6 +170,7 @@ export const OrgIssueDetails = v.strictObject({
     href: v.url()
   })),
   issueType: NonEmptyString,
+  issueField: NonEmptyString,
   entry: v.strictObject({
     title: NonEmptyString,
     fields: v.array(v.strictObject({
@@ -157,27 +180,7 @@ export const OrgIssueDetails = v.strictObject({
     })),
     geometries: v.optional(v.array(v.string()))
   }),
-  pagination: v.optional(v.strictObject({
-    previous: v.optional(v.strictObject({
-      href: v.string()
-    })),
-    next: v.optional(v.strictObject({
-      href: v.string()
-    })),
-    items: v.array(v.variant('type', [
-      v.strictObject({
-        type: v.literal('number'),
-        number: v.integer(),
-        href: v.string(),
-        current: v.boolean()
-      }),
-      v.strictObject({
-        type: v.literal('ellipsis'),
-        ellipsis: v.literal(true),
-        href: v.string()
-      })
-    ]))
-  })),
+  pagination: paginationParams,
   issueEntitiesCount: v.integer(),
   pageNumber: v.integer()
 })
@@ -191,7 +194,8 @@ export const OrgIssueTable = v.strictObject({
     href: v.url()
   })),
   issueType: NonEmptyString,
-  tableParams
+  tableParams,
+  pagination: paginationParams
 })
 
 export const CheckAnswers = v.strictObject({

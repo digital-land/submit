@@ -440,7 +440,7 @@ export default {
     return result.formattedData[0].entity_count
   },
 
-  entitiesAndIssuesQuery (resource) {
+  entitiesAndIssuesQuery (resource, pagination) {
     return /* sql */ `
       SELECT
           e.*,
@@ -466,6 +466,8 @@ export default {
           i.resource = '${resource}'
         GROUP BY
           (e.entity)
+        LIMIT ${pagination.limit}
+        OFFSET ${pagination.offset}
       `
   }
 }

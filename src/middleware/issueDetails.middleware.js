@@ -1,7 +1,7 @@
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
@@ -79,40 +79,14 @@ async function reformatIssuesToBeByEntryNumber (req, res, next) {
  *
  */
 async function fetchEntry (req, res, next) {
-  const { dataset: datasetId, pageNumber } = req.params
-  const { issuesByEntryNumber } = req
-  const pageNum = pageNumber ? parseInt(pageNumber) : 1
-  req.pageNumber = pageNum
-
-  // look at issue Entries and get the index of that entry - 1
-
-  const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
+  const { dataset: datasetId, entryNumber } = req.params
 
   req.entryData = await performanceDbApi.getEntry(
     req.resource.resource,
-    entityNum,
+    entryNumber,
     datasetId
   )
-  req.entryNumber = entityNum
-  next()
-}
-
-/**
- *
- * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
- *
- * Requires `req.resource.resource`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  console.assert(resourceId, 'missng resource id')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
-  req.issueEntitiesCount = parseInt(issueEntitiesCount)
+  req.entryNumber = entryNumber
   next()
 }
 
@@ -266,6 +240,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     issueItems,
     entry,
     issueType,
+    issueField,
     pagination: paginationObj,
     issueEntitiesCount,
     pageNumber

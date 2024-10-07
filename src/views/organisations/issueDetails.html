@@ -36,7 +36,11 @@
       href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
     },
     {
-      text: issueType | capitalize
+      text: issueType | capitalize,
+      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField
+    },
+    {
+      text: entry.title | capitalize
     }
   ]
 }) }}

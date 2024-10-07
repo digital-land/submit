@@ -1,7 +1,10 @@
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import { pagination } from '../utils/pagination.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
+
+const paginationPageLength = 50
 
 export const IssueTableQueryParams = v.object({
   lpa: v.string(),
@@ -16,15 +19,28 @@ const validateIssueTableQueryParams = validateQueryParams.bind({
   schema: IssueTableQueryParams
 })
 
+const setDefaultQueryParams = (req, res, next) => {
+  if (!req.params.pageNumber) {
+    req.params.pageNumber = 1
+  }
+  next()
+}
+
 const fetchEntitiesWithIssues = fetchMany({
-  query: ({ req, params }) => performanceDbApi.entitiesAndIssuesQuery(req.resource.resource),
+  query: ({ req, params }) => {
+    const paginationSettings = {
+      limit: paginationPageLength,
+      offset: paginationPageLength * (params.pageNumber - 1)
+    }
+    return performanceDbApi.entitiesAndIssuesQuery(req.resource.resource, paginationSettings)
+  },
   result: 'entitiesWithIssues',
   dataset: FetchOptions.fromParams
 })
 
 const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
-  const { entitiesWithIssues, specification, entityCount: entityCountRow } = req
+  const { entitiesWithIssues, specification, entityCount: entityCountRow, issueEntitiesCount, pagination } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   const tableParams = {
@@ -36,8 +52,7 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
       specification.fields.forEach(fieldObject => {
         const { field } = fieldObject
         if (field === 'reference') {
-          const entityPageNumber = index + 1
-          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entity/${entityPageNumber}`
+          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${entity.entry_number}`
           columns[field] = { html: `<a href="${entityLink}">${entity[field]}</a>` }
         } else if (entity[field]) {
           columns[field] = { value: entity[field] }
@@ -67,7 +82,7 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
     })
   }
 
-  const errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: entitiesWithIssues.length, entityCount, field: issueField }, true)
+  const errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
 
   req.templateParams = {
     organisation: req.orgInfo,
@@ -75,8 +90,52 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
     errorHeading,
     issueItems: [],
     issueType,
-    tableParams
+    tableParams,
+    pagination
   }
+  next()
+}
+
+const createPaginationTemplatePrams = (req, res, next) => {
+  const { issueEntitiesCount } = req
+  const { pageNumber, lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+
+  const totalPages = Math.ceil(issueEntitiesCount / paginationPageLength)
+
+  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
+
+  const paginationObj = {}
+  if (pageNumber > 1) {
+    paginationObj.previous = {
+      href: `${BaseSubpath}${pageNumber - 1}`
+    }
+  }
+
+  if (pageNumber < totalPages) {
+    paginationObj.next = {
+      href: `${BaseSubpath}${pageNumber + 1}`
+    }
+  }
+
+  paginationObj.items = pagination(totalPages, pageNumber).map(item => {
+    if (item === '...') {
+      return {
+        type: 'ellipsis',
+        ellipsis: true,
+        href: '#'
+      }
+    } else {
+      return {
+        type: 'number',
+        number: item,
+        href: `${BaseSubpath}${item}`,
+        current: pageNumber === parseInt(item)
+      }
+    }
+  })
+
+  req.pagination = paginationObj
+
   next()
 }
 
@@ -88,15 +147,18 @@ const getIssueTable = renderTemplate({
 
 export default [
   validateIssueTableQueryParams,
+  setDefaultQueryParams,
   parallel([
     fetchOrgInfo,
     fetchDatasetInfo
   ]),
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchEntitiesWithIssues,
+  fetchIssueEntitiesCount,
   fetchSpecification,
   pullOutDatasetSpecification,
   fetchEntityCount,
+  createPaginationTemplatePrams,
   prepareIssueTableTemplateParams,
   getIssueTable,
   logPageError
