@@ -41,7 +41,7 @@ describe('Table Component', () => {
           columns: {
             field1: {
               error: false,
-              value: 'value21'
+              html: '<h1>value21</h1>'
             },
             field2: {
               error: false,
@@ -92,7 +92,11 @@ describe('Table Component', () => {
       expect(columns.length).toEqual(Object.keys(rowData.columns).length)
 
       Object.values(rowData.columns).forEach((field, j) => {
-        expect(columns[j].textContent).toContain(field.value)
+        if (field.value) {
+          expect(columns[j].textContent).toContain(field.value)
+        } else if (field.html) {
+          expect(columns[j].innerHTML).toContain(field.html)
+        }
 
         if (field.error) {
           expect(columns[j].textContent).toContain(field.error.message)
