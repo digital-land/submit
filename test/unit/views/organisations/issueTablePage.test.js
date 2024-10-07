@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
+import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from './generic-page.js'
 import config from '../../config/index.js'
