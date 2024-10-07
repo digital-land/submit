@@ -183,7 +183,8 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
           ...params.entry,
           geometries: ['POINT(0 0)']
         },
-        issueType: params.issueType
+        issueType: params.issueType,
+        issueField: params.issueField
       }
 
       const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)
@@ -206,7 +207,8 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
           ...params.entry,
           geometries: []
         },
-        issueType: params.issueType
+        issueType: params.issueType,
+        issueField: params.issueField
       }
 
       const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)

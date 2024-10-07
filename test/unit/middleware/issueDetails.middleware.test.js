@@ -13,12 +13,12 @@ describe('issueDetails.middleware.js', () => {
     {
       field: 'start-date',
       value: '02-02-2022',
-      entry_number: 1
+      entry_number: 10
     }
   ]
   const issues = [
     {
-      entry_number: 0,
+      entry_number: 10,
       field: 'start-date',
       value: '02-02-2022'
     }
@@ -32,27 +32,25 @@ describe('issueDetails.middleware.js', () => {
         issue_type: 'test-issue-type',
         issue_field: 'test-issue-field',
         resourceId: 'test-resource-id',
-        entityNumber: '1'
+        entryNumber: '10'
       }
       const req = {
         params: requestParams,
         // middleware supplies the below
-        entryNumber: 1,
         entityCount: { entity_count: 3 },
         issueEntitiesCount: 1,
-        pageNumber: 1,
         orgInfo,
         dataset,
         entryData,
         issues,
         resource: { resource: requestParams.resourceId },
         issuesByEntryNumber: {
-          1: [
+          10: [
             {
               field: 'start-date',
               value: '02-02-2022',
               line_number: 1,
-              entry_number: 1,
+              entry_number: 10,
               message: 'mock message',
               issue_type: 'mock type'
             }
@@ -79,15 +77,15 @@ describe('issueDetails.middleware.js', () => {
           dataset: 'mock-dataset',
           collection: 'mock-collection'
         },
-        errorHeading: 'mockMessageFor: 0',
+        errorHeading: 'mockMessageFor: 10',
         issueItems: [
           {
-            html: 'mock task message 1 in record 1',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
+            html: 'mock task message 1 in record 10',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10'
           }
         ],
         entry: {
-          title: 'entry: 1',
+          title: 'entry: 10',
           fields: [
             {
               key: { text: 'start-date' },
@@ -98,16 +96,16 @@ describe('issueDetails.middleware.js', () => {
           geometries: []
         },
         issueType: 'test-issue-type',
+        issueField: 'test-issue-field',
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10',
             number: 1,
             type: 'number'
           }]
         },
-        issueEntitiesCount: 1,
-        pageNumber: 1
+        issueEntitiesCount: 1
       }
 
       expect(req.templateParams).toEqual(expectedTempalteParams)
@@ -118,12 +116,12 @@ describe('issueDetails.middleware.js', () => {
         {
           field: 'start-date',
           value: '02-02-2022',
-          entry_number: 1
+          entry_number: 10
         },
         {
           field: 'geometry',
           value: 'POINT(0 0)',
-          entry_number: 1
+          entry_number: 10
         }
       ]
       const requestParams = {
@@ -132,27 +130,26 @@ describe('issueDetails.middleware.js', () => {
         issue_type: 'test-issue-type',
         issue_field: 'test-issue-field',
         resourceId: 'test-resource-id',
-        entityNumber: '1'
+        entryNumber: '10'
       }
       const req = {
         params: requestParams,
         // middleware supplies the below
-        entryNumber: 1,
+        entryNumber: 10,
         entityCount: { entity_count: 3 },
         issueEntitiesCount: 1,
-        pageNumber: 1,
         orgInfo,
         dataset,
         entryData,
         issues,
         resource: { resource: requestParams.resourceId },
         issuesByEntryNumber: {
-          1: [
+          10: [
             {
               field: 'start-date',
               value: '02-02-2022',
               line_number: 1,
-              entry_number: 1,
+              entry_number: 10,
               message: 'mock message',
               issue_type: 'mock type'
             }
@@ -160,6 +157,7 @@ describe('issueDetails.middleware.js', () => {
         }
         // errorHeading -- set  in prepare* fn
       }
+
       v.parse(IssueDetailsQueryParams, req.params)
 
       issues.forEach(issue => {
@@ -179,15 +177,15 @@ describe('issueDetails.middleware.js', () => {
           dataset: 'mock-dataset',
           collection: 'mock-collection'
         },
-        errorHeading: 'mockMessageFor: 0',
+        errorHeading: 'mockMessageFor: 10',
         issueItems: [
           {
-            html: 'mock task message 1 in record 1',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
+            html: 'mock task message 1 in record 10',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10'
           }
         ],
         entry: {
-          title: 'entry: 1',
+          title: 'entry: 10',
           fields: [
             {
               key: { text: 'start-date' },
@@ -207,16 +205,16 @@ describe('issueDetails.middleware.js', () => {
           geometries: ['POINT(0 0)']
         },
         issueType: 'test-issue-type',
+        issueField: 'test-issue-field',
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10',
             number: 1,
             type: 'number'
           }]
         },
-        issueEntitiesCount: 1,
-        pageNumber: 1
+        issueEntitiesCount: 1
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
@@ -264,6 +262,7 @@ describe('issueDetails.middleware.js', () => {
             geometries: ['POINT(0 0)']
           },
           issueType: 'test-issue-type',
+          issueField: 'test-issue-field',
           pagination: {
             items: [{
               current: true,
