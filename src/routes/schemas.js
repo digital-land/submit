@@ -73,6 +73,7 @@ export const OrgGetStarted = v.strictObject({
 export const OrgDatasetOverview = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
+  issueCount: v.integer(),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
     numberOfFieldsSupplied: v.integer(),

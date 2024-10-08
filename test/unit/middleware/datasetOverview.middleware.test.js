@@ -41,12 +41,22 @@ describe('Dataset Overview Middleware', () => {
         sources: [
           { endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: '200', endpoint_entry_date: 'LU1', latest_log_entry_date: 'LA1' },
           { endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: '404', exception: 'exception', endpoint_entry_date: 'LU2', latest_log_entry_date: 'LA2' }
+        ],
+        issues: [
+          {
+            issue: 'Example issue 1',
+            issue_type: 'Example issue type 1',
+            field: 'Example issue field 1',
+            num_issues: 1,
+            status: 'Error'
+          }
         ]
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
       expect(reqWithResults.templateParams).toEqual({
         organisation: { name: 'mock-org' },
         dataset: reqWithResults.dataset,
+        issueCount: 1,
         stats: {
           numberOfFieldsSupplied: 1,
           numberOfFieldsMatched: 1,
