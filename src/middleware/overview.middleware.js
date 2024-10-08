@@ -1,6 +1,6 @@
 import performanceDbApi, { lpaOverviewQuery } from '../services/performanceDbApi.js'
 import { fetchOrgInfo, logPageError } from './common.middleware.js'
-import { fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
+import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { dataSubjects } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
@@ -154,10 +154,8 @@ export const getOverview = renderTemplate({
 })
 
 export default [
-  parallel([
-    fetchOrgInfo,
-    fetchLatestResources]
-  ),
+  fetchOrgInfo,
+  fetchLatestResources,
   fetchEntityCounts,
   fetchLpaOverview,
   prepareOverviewTemplateParams,
