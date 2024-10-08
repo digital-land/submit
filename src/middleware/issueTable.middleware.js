@@ -1,4 +1,5 @@
 import performanceDbApi from '../services/performanceDbApi.js'
+import logger from '../utils/logger.js'
 import { pagination } from '../utils/pagination.js'
 import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
@@ -19,7 +20,7 @@ const validateIssueTableQueryParams = validateQueryParams.bind({
   schema: IssueTableQueryParams
 })
 
-const setDefaultQueryParams = (req, res, next) => {
+export const setDefaultQueryParams = (req, res, next) => {
   if (!req.params.pageNumber) {
     req.params.pageNumber = 1
   }
@@ -43,7 +44,7 @@ const fetchEntitiesWithIssues = fetchMany({
   dataset: FetchOptions.fromParams
 })
 
-const prepareIssueTableTemplateParams = (req, res, next) => {
+export const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
   const { entitiesWithIssues, specification, entityCount: entityCountRow, issueEntitiesCount, pagination } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
@@ -70,7 +71,7 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
       try {
         issues = JSON.parse(entity.issues)
       } catch (e) {
-        console.log(e)
+        logger.warn('issueTableMiddleware:prepareIssueTableParams - entity issues is not valid json', { entityIssues: entity.issues })
       }
 
       Object.entries(issues).forEach(([field, issueType]) => {
@@ -101,7 +102,7 @@ const prepareIssueTableTemplateParams = (req, res, next) => {
   next()
 }
 
-const createPaginationTemplatePrams = (req, res, next) => {
+export const createPaginationTemplatePrams = (req, res, next) => {
   const { issueEntitiesCount } = req
   const { pageNumber, lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
@@ -144,7 +145,7 @@ const createPaginationTemplatePrams = (req, res, next) => {
   next()
 }
 
-const getIssueTable = renderTemplate({
+export const getIssueTable = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/issueTable.html',
   handlerName: 'getIssueTable'
