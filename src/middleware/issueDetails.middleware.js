@@ -286,10 +286,8 @@ export const getIssueDetails = renderTemplate({
 
 export default [
   validateIssueDetailsQueryParams,
-  parallel([
-    fetchOrgInfo,
-    fetchDatasetInfo
-  ]),
+  fetchOrgInfo,
+  fetchDatasetInfo,
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIssues,
   reformatIssuesToBeByEntryNumber,

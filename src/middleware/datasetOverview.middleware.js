@@ -111,10 +111,8 @@ const getDatasetOverview = renderTemplate(
 )
 
 export default [
-  parallel([
-    fetchOrgInfo,
-    fetchDatasetInfo
-  ]),
+  fetchOrgInfo,
+  fetchDatasetInfo,
   parallel([
     fetchColumnSummary,
     fetchResourceStatus,
