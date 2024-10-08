@@ -4,10 +4,26 @@ import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 
 const fetchColumnSummary = fetchMany({
-  query: ({ params }) => `select * from endpoint_dataset_resource_summary
-    where resource != ''
-    and endpoint_end_date = ''
-    and pipeline = '${params.dataset}'
+  query: ({ params }) => `
+    SELECT
+      edrs.*
+    FROM
+      endpoint_dataset_resource_summary edrs
+      INNER JOIN (
+        SELECT
+          endpoint,
+          dataset,
+          organisation,
+          end_date as endpoint_end_date
+        FROM
+          endpoint_dataset_summary
+        WHERE
+          end_date = ''
+      ) as t1 on t1.endpoint = edrs.endpoint
+      AND replace(t1.organisation, '-eng', '') = edrs.organisation
+    WHERE
+    edrs.resource != ''
+    AND pipeline = '${params.dataset}'
     AND organisation = '${params.lpa}'
     limit 1000`,
   result: 'columnSummary',
