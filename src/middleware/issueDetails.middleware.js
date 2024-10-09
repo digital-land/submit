@@ -77,11 +77,9 @@ const getIssueField = (text, html, classes) => {
  * @param {*} row
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
-const processEntryRow = (issueType, issuesByEntryNumber, row) => {
+const processEntryRow = (issueType, issuesByEntryNumber = {}, row) => {
   const { entry_number: entryNumber } = row
   console.assert(entryNumber, 'precessEntryRow(): entry_number not in row')
-
-  issuesByEntryNumber = issuesByEntryNumber || {}
 
   let hasError = false
   let issueIndex
