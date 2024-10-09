@@ -21,6 +21,7 @@ const fetchColumnSummary = fetchMany({
           end_date = ''
       ) as t1 on t1.endpoint = edrs.endpoint
       AND replace(t1.organisation, '-eng', '') = edrs.organisation
+      AND t1.dataset = edrs.dataset
     WHERE
     edrs.resource != ''
     AND pipeline = '${params.dataset}'
