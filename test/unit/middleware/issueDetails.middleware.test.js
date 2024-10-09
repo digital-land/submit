@@ -34,7 +34,7 @@ describe('issueDetails.middleware.js', () => {
         issue_type: 'test-issue-type',
         issue_field: 'test-issue-field',
         resourceId: 'test-resource-id',
-        entryNumber: '10'
+        pageNumber: '1'
       }
       const req = {
         params: requestParams,
@@ -45,6 +45,7 @@ describe('issueDetails.middleware.js', () => {
         dataset,
         entryData,
         issues,
+        entryNumber: 10,
         resource: { resource: requestParams.resourceId },
         issuesByEntryNumber: {
           10: [
@@ -104,7 +105,7 @@ describe('issueDetails.middleware.js', () => {
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
             number: 1,
             type: 'number'
           }]
@@ -134,7 +135,7 @@ describe('issueDetails.middleware.js', () => {
         issue_type: 'test-issue-type',
         issue_field: 'test-issue-field',
         resourceId: 'test-resource-id',
-        entryNumber: '10'
+        pageNumber: '1'
       }
       const req = {
         params: requestParams,
@@ -211,7 +212,7 @@ describe('issueDetails.middleware.js', () => {
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
             number: 1,
             type: 'number'
           }]

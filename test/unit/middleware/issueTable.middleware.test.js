@@ -174,7 +174,7 @@ describe('issueTable.middleware.js', () => {
           {
             columns: {
               reference: {
-                html: `<a href="/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/entry/${req.entitiesWithIssues[0].entry_number}">${req.entitiesWithIssues[0].reference}</a>`
+                html: `<a href="/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/entry/${1}">${req.entitiesWithIssues[0].reference}</a>`
               },
               'start-date': {
                 value: req.entitiesWithIssues[0]['start-date'],
