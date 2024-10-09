@@ -63,6 +63,10 @@ export function setupNunjucks ({ app, datasetNameMapping }) {
     globalValues.smartlookRegion = config.smartlook.region
   }
 
+  if ('googleAnalytics' in config) {
+    globalValues.googleAnalyticsMeasurementId = config.googleAnalytics.measurementId
+  }
+
   Object.keys(globalValues).forEach((key) => {
     nunjucksEnv.addGlobal(key, globalValues[key])
   })
