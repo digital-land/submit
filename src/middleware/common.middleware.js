@@ -3,7 +3,6 @@ import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany } from './middleware.builders.js'
 import * as v from 'valibot'
-import json5 from 'json5'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -101,7 +100,7 @@ export const fetchSpecification = fetchOne({
 
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
-  const collectionSpecifications = json5.parse(specification.json)
+  const collectionSpecifications = JSON.parse(specification.json)
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   req.specification = datasetSpecification
   next()
