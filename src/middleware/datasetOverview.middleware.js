@@ -24,8 +24,8 @@ const fetchColumnSummary = fetchMany({
       AND t1.dataset = edrs.dataset
     WHERE
     edrs.resource != ''
-    AND pipeline = '${params.dataset}'
-    AND organisation = '${params.lpa}'
+    AND edrs.pipeline = '${params.dataset}'
+    AND edrs.organisation = '${params.lpa}'
     limit 1000`,
   result: 'columnSummary',
   dataset: FetchOptions.performanceDb
