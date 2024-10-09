@@ -1,7 +1,7 @@
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
 import { pagination } from '../utils/pagination.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceIdInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchIssues, fetchLatestResource, fetchOrgInfo, fetchSpecification, formatErrorSummaryParams, isResourceIdInParams, logPageError, pullOutDatasetSpecification, reformatIssuesToBeByEntryNumber, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -46,8 +46,7 @@ const fetchEntitiesWithIssues = fetchMany({
 
 export const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
-  const { entitiesWithIssues, specification, entityCount: entityCountRow, issueEntitiesCount, pagination } = req
-  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
+  const { entitiesWithIssues, specification, pagination, errorSummary } = req
 
   const tableParams = {
     columns: specification.fields.map(field => field.field),
@@ -88,13 +87,10 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
     })
   }
 
-  const errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-
   req.templateParams = {
     organisation: req.orgInfo,
     dataset: req.dataset,
-    errorHeading,
-    issueItems: [],
+    errorSummary,
     issueType,
     tableParams,
     pagination
@@ -162,8 +158,11 @@ export default [
   fetchEntitiesWithIssues,
   fetchIssueEntitiesCount,
   fetchSpecification,
+  fetchIssues,
+  reformatIssuesToBeByEntryNumber,
   pullOutDatasetSpecification,
   fetchEntityCount,
+  formatErrorSummaryParams,
   createPaginationTemplatePrams,
   prepareIssueTableTemplateParams,
   getIssueTable,

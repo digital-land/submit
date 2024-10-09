@@ -1,7 +1,5 @@
 import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchIssues, fetchLatestResource, fetchOrgInfo, formatErrorSummaryParams, isResourceIdInParams, logPageError, reformatIssuesToBeByEntryNumber, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
@@ -18,54 +16,6 @@ export const IssueDetailsQueryParams = v.object({
 const validateIssueDetailsQueryParams = validateQueryParams.bind({
   schema: IssueDetailsQueryParams
 })
-
-/**
- *
- * Middleware. Updates `req` with `issues`.
- *
- * Requires `resourceId` in request params or request (in that order).
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  if (!resourceId) {
-    logger.debug('fetchIssues(): missing resourceId', { type: types.App, params: req.params, resource: req.resource })
-    throw Error('fetchIssues: missing resourceId')
-  }
-
-  try {
-    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField }, datasetId)
-    req.issues = issues
-    next()
-  } catch (error) {
-    next(error)
-  }
-}
-
-/**
- *
- * Middleware. Updates `req` with `issues`.
- *
- * Requires `issues` in request.
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function reformatIssuesToBeByEntryNumber (req, res, next) {
-  const { issues } = req
-  const issuesByEntryNumber = issues.reduce((acc, current) => {
-    acc[current.entry_number] = acc[current.entry_number] || []
-    acc[current.entry_number].push(current)
-    return acc
-  }, {})
-  req.issuesByEntryNumber = issuesByEntryNumber
-  next()
-}
 
 /**
  *
@@ -130,6 +80,9 @@ const getIssueField = (text, html, classes) => {
 const processEntryRow = (issueType, issuesByEntryNumber, row) => {
   const { entry_number: entryNumber } = row
   console.assert(entryNumber, 'precessEntryRow(): entry_number not in row')
+
+  issuesByEntryNumber = issuesByEntryNumber || {}
+
   let hasError = false
   let issueIndex
   if (issuesByEntryNumber[entryNumber]) {
@@ -156,28 +109,10 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, issueEntitiesCount, issuesByEntryNumber, entityCount: entityCountRow } = req
+  const { entryData, issueEntitiesCount, issuesByEntryNumber, errorSummary } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField, entryNumber } = req.params
-  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
-
-  let errorHeading
-  let issueItems
 
   const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
-
-  if (Object.keys(issuesByEntryNumber).length < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-    issueItems = Object.keys(issuesByEntryNumber).map((entryNumber, i) => {
-      return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
-        href: `${BaseSubpath}${entryNumber}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-    }]
-  }
 
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = issuesByEntryNumber[entryNumber] || []
@@ -241,8 +176,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   req.templateParams = {
     organisation: req.orgInfo,
     dataset: req.dataset,
-    errorHeading,
-    issueItems,
+    errorSummary,
     entry,
     issueType,
     issueField,
@@ -275,6 +209,7 @@ export default [
     fetchEntityCount,
     fetchIssueEntitiesCount
   ]),
+  formatErrorSummaryParams,
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError

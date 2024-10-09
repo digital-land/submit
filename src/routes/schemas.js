@@ -41,6 +41,14 @@ export const datasetStatusEnum = {
 export const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 export const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 
+export const errorSummaryField = v.strictObject({
+  heading: v.optional(v.string()),
+  items: v.array(v.strictObject({
+    html: v.string(),
+    href: v.url()
+  }))
+})
+
 const tableParams = v.strictObject({
   columns: v.array(NonEmptyString),
   rows: v.array(v.strictObject({
@@ -165,11 +173,7 @@ export const OrgEndpointError = v.strictObject({
 export const OrgIssueDetails = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  errorHeading: v.optional(NonEmptyString),
-  issueItems: v.array(v.strictObject({
-    html: v.string(),
-    href: v.url()
-  })),
+  errorSummary: errorSummaryField,
   issueType: NonEmptyString,
   issueField: NonEmptyString,
   entry: v.strictObject({
@@ -189,11 +193,7 @@ export const OrgIssueDetails = v.strictObject({
 export const OrgIssueTable = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  errorHeading: v.optional(NonEmptyString),
-  issueItems: v.array(v.strictObject({
-    html: v.string(),
-    href: v.url()
-  })),
+  errorSummary: errorSummaryField,
   issueType: NonEmptyString,
   tableParams,
   pagination: paginationParams

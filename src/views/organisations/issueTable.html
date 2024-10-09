@@ -55,8 +55,8 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukErrorSummary({
-      titleText: errorHeading if errorHeading else 'There is a problem',
-      errorList: issueItems
+      titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',
+      errorList: errorSummary.items
     }) }}
 
     {% if false and entry.geometries and entry.geometries.length %}

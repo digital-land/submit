@@ -1,11 +1,9 @@
 import { describe, it, vi, expect } from 'vitest'
-
-import performanceDbApi from '../../../src/services/performanceDbApi.js'
 import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, createPaginationTemplatePrams } from '../../../src/middleware/issueTable.middleware.js'
 // import { pagination } from '../../../src/utils/pagination.js'
 
 import mocker from '../../utils/mocker.js'
-import { DatasetNameField, OrgField } from '../../../src/routes/schemas.js'
+import { DatasetNameField, errorSummaryField, OrgField } from '../../../src/routes/schemas.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 vi.mock('../../../src/utils/pagination.js', () => {
@@ -127,11 +125,13 @@ describe('issueTable.middleware.js', () => {
     const mockedParams = mocker(IssueTableQueryParams)
     const mockedOrg = mocker(OrgField)
     const mockedDataset = mocker(DatasetNameField)
+    const mockedErrorSummary = mocker(errorSummaryField)
 
     const req = {
       params: mockedParams,
       orgInfo: mockedOrg,
       dataset: mockedDataset,
+      errorSummary: mockedErrorSummary,
       entitiesWithIssues: [
         {
           entry_number: 10,
@@ -159,9 +159,6 @@ describe('issueTable.middleware.js', () => {
     const next = vi.fn()
 
     it('should correctly set the template params', async () => {
-      const errorHeading = 'errorHeading'
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue(errorHeading)
-
       prepareIssueTableTemplateParams(req, res, next)
 
       const tableParams = {
@@ -193,8 +190,7 @@ describe('issueTable.middleware.js', () => {
       const expectedTemplateParams = {
         organisation: req.orgInfo,
         dataset: req.dataset,
-        errorHeading,
-        issueItems: [],
+        errorSummary: req.errorSummary,
         issueType: req.params.issue_type,
         tableParams,
         pagination: req.pagination

@@ -3,6 +3,8 @@ import * as v from 'valibot'
 
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
 import { getIssueDetails, IssueDetailsQueryParams, prepareIssueDetailsTemplateParams } from '../../../src/middleware/issueDetails.middleware.js'
+import mocker from '../../utils/mocker.js'
+import { DatasetNameField, errorSummaryField, OrgField } from '../../../src/routes/schemas.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -55,8 +57,16 @@ describe('issueDetails.middleware.js', () => {
               issue_type: 'mock type'
             }
           ]
+        },
+        errorSummary: {
+          heading: 'mockHeading',
+          items: [
+            {
+              html: 'mock task message 1 in record 10',
+              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10'
+            }
+          ]
         }
-        // errorHeading -- set  in prepare* fn
       }
       v.parse(IssueDetailsQueryParams, req.params)
 
@@ -77,13 +87,7 @@ describe('issueDetails.middleware.js', () => {
           dataset: 'mock-dataset',
           collection: 'mock-collection'
         },
-        errorHeading: 'mockMessageFor: 10',
-        issueItems: [
-          {
-            html: 'mock task message 1 in record 10',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10'
-          }
-        ],
+        errorSummary: req.errorSummary,
         entry: {
           title: 'entry: 10',
           fields: [
@@ -143,19 +147,23 @@ describe('issueDetails.middleware.js', () => {
         entryData,
         issues,
         resource: { resource: requestParams.resourceId },
+        errorSummary: {
+          heading: 'mock heading',
+          items: [
+            {
+              html: 'mock task message 1 in record 10',
+              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10'
+            }
+          ]
+        },
         issuesByEntryNumber: {
           10: [
             {
               field: 'start-date',
-              value: '02-02-2022',
-              line_number: 1,
-              entry_number: 10,
-              message: 'mock message',
-              issue_type: 'mock type'
+              message: 'mock message'
             }
           ]
         }
-        // errorHeading -- set  in prepare* fn
       }
 
       v.parse(IssueDetailsQueryParams, req.params)
@@ -177,13 +185,7 @@ describe('issueDetails.middleware.js', () => {
           dataset: 'mock-dataset',
           collection: 'mock-collection'
         },
-        errorHeading: 'mockMessageFor: 10',
-        issueItems: [
-          {
-            html: 'mock task message 1 in record 10',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10'
-          }
-        ],
+        errorSummary: req.errorSummary,
         entry: {
           title: 'entry: 10',
           fields: [
@@ -223,24 +225,15 @@ describe('issueDetails.middleware.js', () => {
 
   describe('getIssueDetails', () => {
     it('should call render using the provided template params and correct view', () => {
+      const mockedOrg = mocker(OrgField)
+      const mockedDataset = mocker(DatasetNameField)
+      const mockErrorSummary = mocker(errorSummaryField)
+
       const req = {
         templateParams: {
-          organisation: {
-            name: 'mock lpa',
-            organisation: 'ORG'
-          },
-          dataset: {
-            name: 'mock dataset',
-            dataset: 'mock-dataset',
-            collection: 'mock-collection'
-          },
-          errorHeading: 'mockMessageFor: 0',
-          issueItems: [
-            {
-              html: 'mock task message 1 in record 1',
-              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
-            }
-          ],
+          organisation: mockedOrg,
+          dataset: mockedDataset,
+          errorSummary: mockErrorSummary,
           entry: {
             title: 'entry: 1',
             fields: [
