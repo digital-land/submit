@@ -113,9 +113,8 @@ const getDatasetTaskListError = renderTemplate({
 
 export default [
   fetchResourceStatus,
-  parallel([
-    fetchOrgInfoWithStatGeo,
-    fetchDatasetInfo]),
+  fetchOrgInfoWithStatGeo,
+  fetchDatasetInfo,
   fetchIf(isResourceAccessible, fetchLatestResource),
   parallel([
     fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
