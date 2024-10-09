@@ -4,12 +4,12 @@ import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 
-export const IssueDetailsQueryParams = v.object({
+export const IssueDetailsQueryParams = v.strictObject({
   lpa: v.string(),
   dataset: v.string(),
   issue_type: v.string(),
   issue_field: v.string(),
-  pageNumber: v.optional(v.string()),
+  pageNumber: v.string(),
   resourceId: v.optional(v.string())
 })
 
@@ -21,7 +21,7 @@ const validateIssueDetailsQueryParams = validateQueryParams.bind({
  *
  * Middleware. Updates `req` with `entryData`
  *
- * Requires `pageNumber`, `dataset` and
+ * Requires `dataset` and `entityNumber`
  *
  * @param {*} req
  * @param {*} res
@@ -29,7 +29,8 @@ const validateIssueDetailsQueryParams = validateQueryParams.bind({
  *
  */
 async function fetchEntry (req, res, next) {
-  const { dataset: datasetId, entryNumber } = req.params
+  const { dataset: datasetId } = req.params
+  const { entryNumber } = req
 
   req.entryData = await performanceDbApi.getEntry(
     req.resource.resource,
@@ -103,12 +104,55 @@ const processEntryRow = (issueType, issuesByEntryNumber = {}, row) => {
   return getIssueField(row.field, valueHtml, classes)
 }
 
-/***
- * Middleware. Updates req with `templateParams`
+/**
+ * Middleware. Extracts the entry number from the page number in the request.
+ *
+ * @param {object} req - The request object
+ * @param {object} res - The response object
+ * @param {function} next - The next middleware function
+ *
+ * @throws {Error} If the page number cannot be parsed as an integer
+ * @throws {Error} If the entry number is not found (404)
+ */
+export function getEntryNumberFromPageNumber (req, res, next) {
+  const { issuesByEntryNumber } = req
+  const { pageNumber } = req.params
+
+  const pageNumberAsInt = parseInt(pageNumber)
+  if (isNaN(pageNumberAsInt)) {
+    const error = new Error('page number could not be parsed as an integer')
+    return next(error)
+  }
+
+  const issuesByEntryNumberIndex = pageNumberAsInt - 1
+  const pageNumberToEntryNumberMap = Object.keys(issuesByEntryNumber)
+
+  if (issuesByEntryNumberIndex < 0 || issuesByEntryNumberIndex >= pageNumberToEntryNumberMap.length) {
+    const error = new Error('not found')
+    error.status = 404
+    return next(error)
+  }
+
+  req.entryNumber = pageNumberToEntryNumberMap[issuesByEntryNumberIndex]
+  next()
+}
+
+/**
+ * Middleware. Prepares template parameters for the issue details page.
+ *
+ * @param {object} req - The request object
+ * @param {object} res - The response object (not used)
+ * @param {function} next - The next middleware function
+ *
+ * @summary Extracts relevant data from the request and organizes it into a template parameters object.
+ * @description This middleware function prepares the template parameters for the issue details page.
+ * It extracts the entry data, issue entities count, issues by entry number, error summary, and other relevant data
+ * from the request, and organizes it into a template parameters object that can be used to render the page.
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, issueEntitiesCount, issuesByEntryNumber, errorSummary } = req
-  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField, entryNumber } = req.params
+  const { entryData, issueEntitiesCount, issuesByEntryNumber, errorSummary, entryNumber } = req
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField, pageNumber: pageNumberString } = req.params
+  const pageNumber = parseInt(pageNumberString)
 
   const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
 
@@ -139,17 +183,16 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   }
 
   const entryNumbers = Object.keys(issuesByEntryNumber)
-  const pageNumber = entryNumbers.findIndex(currentEntryNumber => currentEntryNumber === entryNumber) + 1
 
   if (pageNumber > 1) {
     paginationObj.previous = {
-      href: `${BaseSubpath}${entryNumbers[pageNumber - 1]}`
+      href: `${BaseSubpath}${pageNumber - 1}`
     }
   }
 
-  if (pageNumber < issueEntitiesCount) {
+  if (pageNumber < entryNumbers.length) {
     paginationObj.next = {
-      href: `${BaseSubpath}${entryNumbers[pageNumber + 1]}`
+      href: `${BaseSubpath}${pageNumber + 1}`
     }
   }
 
@@ -164,7 +207,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
       return {
         type: 'number',
         number: item,
-        href: `${BaseSubpath}${entryNumbers[item - 1]}`,
+        href: `${BaseSubpath}${item}`,
         current: pageNumber === parseInt(item)
       }
     }
@@ -202,6 +245,7 @@ export default [
   fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIssues,
   reformatIssuesToBeByEntryNumber,
+  getEntryNumberFromPageNumber,
   parallel([
     fetchEntry,
     fetchEntityCount,

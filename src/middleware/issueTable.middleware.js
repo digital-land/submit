@@ -44,6 +44,13 @@ const fetchEntitiesWithIssues = fetchMany({
   dataset: FetchOptions.fromParams
 })
 
+/**
+ * Middleware function to prepare issue table template params
+ *
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Next function in the middleware chain
+ */
 export const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
   const { entitiesWithIssues, specification, pagination, errorSummary } = req
@@ -57,7 +64,8 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
       specification.fields.forEach(fieldObject => {
         const { field } = fieldObject
         if (field === 'reference') {
-          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${entity.entry_number}`
+          const pageNumber = index + 1
+          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${pageNumber}`
           columns[field] = { html: `<a href="${entityLink}">${entity[field]}</a>` }
         } else if (entity[field]) {
           columns[field] = { value: entity[field] }
@@ -98,6 +106,20 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
   next()
 }
 
+/**
+ * Creates pagination template parameters for the request.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function in the chain.
+ *
+ * @description
+ * This middleware function extracts pagination-related parameters from the request,
+ * calculates the total number of pages, and creates a pagination object that can be used
+ * to render pagination links in the template.
+ *
+ * @returns {void}
+ */
 export const createPaginationTemplatePrams = (req, res, next) => {
   const { issueEntitiesCount } = req
   const { pageNumber, lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
