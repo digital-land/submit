@@ -128,20 +128,20 @@ SELECT
   rle.pipeline as dataset,
   rle.endpoint,
   rle.resource,
-  rle.exception,
-  rle.status as http_status,
+  rle.latest_exception as exception,
+  rle.latest_status as http_status,
   coalesce(ec.entity_count, 0) as entity_count,
   i.count_issues as issue_count,
   i.responsibility,
   i.fields,
   case
-      when (rle.status is null) then 'Not submitted'
-      when (rle.status != '200') then 'Error'
+      when (rle.latest_status is null) then 'Not submitted'
+      when (rle.latest_status != '200') then 'Error'
       when (i.severity = 'error') then 'Needs fixing'
       else 'Live'
   end as status,
   case
-      when ((cast(rle.status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.status)
+      when ((cast(rle.latest_status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.latest_status)
       else null
   end as error,
   case
@@ -176,7 +176,7 @@ export default {
 
   resourceStatusQuery (lpa, datasetId) {
     return /* sql */ `
-    select resource, endpoint_url, status, latest_log_entry_date, days_since_200 
+    select resource, endpoint_url, latest_status as status, latest_log_entry_date, days_since_200 
     from reporting_latest_endpoints
     WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
     AND pipeline = '${datasetId}'`
@@ -255,7 +255,7 @@ export default {
 
   latestResourceQuery: (lpa, dataset) => {
     return /* sql */ `
-    SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
+    SELECT rle.resource, rle.latest_status as status, rle.endpoint, rle.endpoint_url, rle.days_since_200, rle.latest_exception as exception
     FROM reporting_latest_endpoints rle
     LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
     LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
