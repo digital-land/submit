@@ -46,7 +46,7 @@ export const pullOutDatasetSpecification = (req, res, next) => {
 
 const fetchSources = fetchMany({
   query: ({ params }) => `
-    select rhe.endpoint, rhe.endpoint_url, rhe.latest_status as status, rhe.latest_exception as exception, rhe.resource, rhe.latest_log_entry_date, rhe.endpoint_entry_date, rhe.endpoint_end_date, rhe.resource_start_date, rhe.resource_end_date, s.documentation_url
+    select rhe.endpoint, rhe.endpoint_url, rhe.status, rhe.exception, rhe.resource, rhe.latest_log_entry_date, rhe.endpoint_entry_date, rhe.endpoint_end_date, rhe.resource_start_date, rhe.resource_end_date, s.documentation_url
     from reporting_historic_endpoints rhe
     LEFT JOIN source s ON rhe.endpoint = s.endpoint
     where REPLACE(rhe.organisation, '-eng', '') = '${params.lpa}' and rhe.pipeline = '${params.dataset}'
