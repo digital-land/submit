@@ -21,7 +21,7 @@ const validateIssueDetailsQueryParams = validateQueryParams.bind({
  *
  * Middleware. Updates `req` with `entryData`
  *
- * Requires `dataset` and `entityNumber`
+ * Requires `dataset` and `entryNumber`
  *
  * @param {*} req
  * @param {*} res
@@ -121,6 +121,7 @@ export function getEntryNumberFromPageNumber (req, res, next) {
   const pageNumberAsInt = parseInt(pageNumber)
   if (isNaN(pageNumberAsInt)) {
     const error = new Error('page number could not be parsed as an integer')
+    error.status = 400
     return next(error)
   }
 

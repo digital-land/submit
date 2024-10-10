@@ -74,7 +74,7 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
         }
       })
 
-      let issues
+      let issues = {}
       try {
         issues = JSON.parse(entity.issues)
       } catch (e) {
