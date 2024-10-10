@@ -64,8 +64,8 @@ const fetchEntityCount = fetchOne({
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const { orgInfo, specification, columnSummary, entityCount, sources, dataset, issues } = req
 
-  const mappingFields = columnSummary[0].mapping_field?.split(';') ?? []
-  const nonMappingFields = columnSummary[0].non_mapping_field?.split(';') ?? []
+  const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
+  const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
   const allFields = [...mappingFields, ...nonMappingFields]
 
   const numberOfFieldsSupplied = specification.fields.map(field => field.field).reduce((acc, current) => {
