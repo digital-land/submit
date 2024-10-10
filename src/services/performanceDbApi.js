@@ -69,7 +69,7 @@ const datasetIssuesQuery = (resource, datasetId) => {
   LEFT JOIN
     issue_type it ON i.issue_type = it.issue_type
   WHERE
-      i.resource = '${resource}' 
+      i.resource = '${resource}'
       AND i.dataset = '${datasetId}'
       AND (it.severity == 'error')
   GROUP BY i.issue_type, i.field
@@ -128,20 +128,20 @@ SELECT
   rle.pipeline as dataset,
   rle.endpoint,
   rle.resource,
-  rle.exception,
-  rle.status as http_status,
+  rle.latest_exception,
+  rle.latest_status as http_status,
   coalesce(ec.entity_count, 0) as entity_count,
   i.count_issues as issue_count,
   i.responsibility,
   i.fields,
   case
-      when (rle.status is null) then 'Not submitted'
-      when (rle.status != '200') then 'Error'
+      when (rle.latest_status is null) then 'Not submitted'
+      when (rle.latest_status != '200') then 'Error'
       when (i.severity = 'error') then 'Needs fixing'
       else 'Live'
   end as status,
   case
-      when ((cast(rle.status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.status)
+      when ((cast(rle.latest_status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.latest_status)
       else null
   end as error,
   case
@@ -152,7 +152,7 @@ SELECT
       when (i.severity = 'info') then ''
       else i.severity
   end as severity
-FROM 
+FROM
   reporting_latest_endpoints rle
 LEFT JOIN
   endpoint_dataset_issue_type_summary i ON rle.resource = i.resource AND rle.pipeline = i.dataset
@@ -176,7 +176,7 @@ export default {
 
   resourceStatusQuery (lpa, datasetId) {
     return /* sql */ `
-    select resource, endpoint_url, status, latest_log_entry_date, days_since_200 
+    select resource, endpoint_url, status, latest_log_entry_date, days_since_200
     from reporting_latest_endpoints
     WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
     AND pipeline = '${datasetId}'`
@@ -293,7 +293,7 @@ export default {
 
     return /* sql */ `
     select
-      rle.pipeline as dataset, 
+      rle.pipeline as dataset,
       rle.resource as resource
     from reporting_latest_endpoints rle
     where
@@ -421,7 +421,7 @@ export default {
 
   entityCountQuery (orgEntity) {
     return /* sql */ `
-      select count(entity) as entity_count 
+      select count(entity) as entity_count
       from entity
       WHERE organisation_entity = '${orgEntity}'
     `
