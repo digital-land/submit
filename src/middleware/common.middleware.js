@@ -211,10 +211,18 @@ export const getEntryNumbersWithIssues = (req, res, next) => {
 }
 
 export const fetchEntitiesFromOrganisationAndEntryNumbers = fetchMany({
-  query: ({ req, params }) => performanceDbApi.fetchEntityNumbersFromEntryNumbers({ entryNumbers: req.entryNumbersWithIssues, organisationEntity: req.orgInfo.entity }),
+  query: ({ req, params }) => performanceDbApi.fetchEntitiesFromEntryNumbers({ entryNumbers: req.entryNumbersWithIssues, organisationEntity: req.orgInfo.entity, pagination: req.pagination }),
   result: 'entities',
   dataset: FetchOptions.fromParams
 })
+
+export const getPaginationOptions = (resultsCount) => (req, res, next) => {
+  const { pageNumber } = req.params
+
+  req.pagination = { offset: pageNumber * resultsCount, limit: resultsCount }
+
+  next()
+}
 
 export const extractJsonFieldFromEntities = (req, res, next) => {
   const { entities } = req

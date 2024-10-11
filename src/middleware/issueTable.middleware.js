@@ -12,6 +12,7 @@ import {
   fetchSpecification,
   formatErrorSummaryParams,
   getEntryNumbersWithIssues,
+  getPaginationOptions,
   isResourceIdNotInParams,
   logPageError,
   nestEntityFields,
@@ -24,7 +25,7 @@ import {
 import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
-const paginationPageLength = 50
+const paginationPageLength = 20
 
 export const IssueTableQueryParams = v.object({
   lpa: v.string(),
@@ -42,6 +43,8 @@ const validateIssueTableQueryParams = validateQueryParams.bind({
 export const setDefaultQueryParams = (req, res, next) => {
   if (!req.params.pageNumber) {
     req.params.pageNumber = 1
+  } else {
+    req.params.pageNumber = parseInt(req.params.pageNumber)
   }
   next()
 }
@@ -166,6 +169,7 @@ export default [
   fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchSpecification,
   pullOutDatasetSpecification,
+  getPaginationOptions(paginationPageLength),
   fetchIssues,
   getEntryNumbersWithIssues,
   fetchEntitiesFromOrganisationAndEntryNumbers,

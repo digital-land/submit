@@ -450,46 +450,15 @@ export default {
     return result.formattedData[0].entity_count
   },
 
-  entitiesAndIssuesQuery ({ resource, pagination, issueType, issueField }) {
-    return /* sql */ `
-      SELECT
-          e.*,
-          fr.entry_number,
-          '{' || GROUP_CONCAT(
-            '"' || i.field || '": "' || i.issue_type || '"',
-            ',' || CHAR(10)
-          ) || '}' AS issues
-        from
-          entity e
-          LEFT JOIN (
-            SELECT
-              DISTINCT fr.entry_number,
-              f.entity
-            FROM
-              fact_resource fr
-              INNER JOIN fact f ON fr.fact = f.fact
-            WHERE
-              fr.resource = '${resource}'
-          ) fr ON fr.entity = e.entity
-          LEFT JOIN issue i ON i.entry_number = fr.entry_number
-        WHERE i.resource = '${resource}'
-        AND i.issue_type = '${issueType}'
-        AND i.field = '${issueField}'
-
-        GROUP BY
-          (e.entity)
-        LIMIT ${pagination.limit}
-        OFFSET ${pagination.offset}
-      `
-  },
-
-  fetchEntityNumbersFromEntryNumbers ({ entryNumbers, organisationEntity }) {
+  fetchEntitiesFromEntryNumbers ({ entryNumbers, organisationEntity, pagination }) {
     return /* sql */ `
       select DISTINCT f.entity, fr.entry_number, fr.resource, e.* from fact f
       LEFT JOIN fact_resource fr ON f.fact = fr.fact
       LEFT JOIN entity e ON f.entity = e.entity
       WHERE e.organisation_entity = ${organisationEntity}
       AND entry_number in (${entryNumbers.join(', ')})
+      LIMIT ${pagination.limit}
+      OFFSET ${pagination.offset}
     `
   }
 }
