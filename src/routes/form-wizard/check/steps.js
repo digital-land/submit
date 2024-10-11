@@ -1,10 +1,11 @@
 // ToDo: Split this into two form wizards
 import PageController from '../../../controllers/pageController.js'
-import datasetController from '../../../controllers/datasetController.js'
+import datasetController, { requiresGeometryTypeToBeSelected } from '../../../controllers/datasetController.js'
 import uploadFileController from '../../../controllers/uploadFileController.js'
 import submitUrlController from '../../../controllers/submitUrlController.js'
 import statusController from '../../../controllers/statusController.js'
 import resultsController from '../../../controllers/resultsController.js'
+import deepLinkController from '../../../controllers/deepLinkController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -20,17 +21,13 @@ export default {
     template: 'check/start.html',
     noPost: true
   },
-  // '/data-subject': {
-  //   ...baseSettings,
-  //   fields: ['data-subject'],
-  //   next: 'dataset'
-  // },
   '/dataset': {
     ...baseSettings,
     controller: datasetController,
     fields: ['dataset', 'data-subject'],
+    checkJourney: false,
     next: [
-      { field: 'dataset', fn: 'requiresGeometryTypeToBeSelected', next: 'geometry-type' },
+      { field: 'dataset', fn: requiresGeometryTypeToBeSelected, next: 'geometry-type' },
       'upload-method'
     ],
     backLink: './'
@@ -39,7 +36,8 @@ export default {
     ...baseSettings,
     fields: ['geomType'],
     next: 'upload-method',
-    backLink: './dataset'
+    backLink: './dataset',
+    checkJourney: false
   },
   '/upload-method': {
     ...baseSettings,
@@ -48,21 +46,24 @@ export default {
       { field: 'upload-method', op: '===', value: 'url', next: 'url' },
       'upload'
     ],
-    backLink: './dataset'
+    backLink: './dataset',
+    checkJourney: false
   },
   '/url': {
     ...baseSettings,
     controller: submitUrlController,
     fields: ['url', 'request_id'],
     next: (req, res) => `status/${req.sessionModel.get('request_id')}`,
-    backLink: './upload-method'
+    backLink: './upload-method',
+    checkJourney: false
   },
   '/upload': {
     ...baseSettings,
     controller: uploadFileController,
     fields: ['datafile', 'request_id'],
     next: (req, res) => `status/${req.sessionModel.get('request_id')}`,
-    backLink: './upload-method'
+    backLink: './upload-method',
+    checkJourney: false
   },
   '/status/:id': {
     ...baseSettings,
@@ -90,5 +91,22 @@ export default {
     noPost: true,
     checkJourney: false, // ToDo: it would be useful here if we make sure they have selected if their results are ok from the previous step
     template: 'check/confirmation.html'
+  },
+  // This step allows to fill in some of the required data via query params.
+  // This way we can link from a dataset issues page to the Check Tool without
+  // the user having to go through the whole process again.
+  // This means it doesn't render a page, but redirects the client to the next step
+  '/link': {
+    ...baseSettings,
+    controller: deepLinkController,
+    next: [
+      { field: 'dataset', fn: requiresGeometryTypeToBeSelected, next: 'geometry-type' },
+      'upload-method'
+    ],
+    entryPoint: true,
+    resetJourney: true,
+    reset: true,
+    skip: true,
+    checkJourney: false
   }
 }

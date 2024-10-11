@@ -4,7 +4,7 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
-
+{% from '../../components/dataset-banner.html' import datasetBanner %}
 {% from "../../components/table.html" import table %}
 
 
@@ -33,6 +33,11 @@
 
 
 {% block content %}
+
+  {% if options.deepLink %}
+    {{ datasetBanner(options.deepLink) }}
+  {% endif %}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">
