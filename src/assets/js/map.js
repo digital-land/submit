@@ -33,6 +33,9 @@ class Map {
       interactive: opts.interactive ?? true
     })
 
+    // Add map controls
+    this.addControls(opts.interactive)
+
     this.map.on('load', () => {
       // Store the first symbol layer id
       this.setFirstMapLayerId()
@@ -47,6 +50,15 @@ class Map {
       // Move the map to the bounding box
       if (this.bbox) this.setMapViewToBoundingBox()
     })
+  }
+
+  addControls (interactive = true) {
+    this.map.addControl(new maplibregl.ScaleControl(), 'bottom-left')
+
+    if (interactive) {
+      this.map.addControl(new maplibregl.NavigationControl())
+      this.map.addControl(new maplibregl.FullscreenControl())
+    }
   }
 
   setFirstMapLayerId () {
