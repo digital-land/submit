@@ -364,18 +364,28 @@ export default {
      * @param {string} [database="digital-land"] - Database to query (defaults to "digital-land")
      * @returns {Promise<Object>} - Promise resolving to an object with formatted data
      */
-  async getIssues ({
-    resource,
-    issueType,
-    issueField
-  }, database = 'digital-land') {
-    const sql = `
-    SELECT i.field, i.line_number, entry_number, message, issue_type, value
-    FROM issue i
-    WHERE resource = '${resource}'
-    AND issue_type = '${issueType}'
-    AND field = '${issueField}'
-  `
+  async getIssues ({ organisation, dataset, resource, issueType, issueField }, database = 'digital-land') {
+    let sql = `
+      SELECT i.field, i.line_number, entry_number, message, issue_type, value
+      FROM issue i
+      LEFT JOIN reporting_historic_endpoints rhe ON rhe.resource = i.resource
+      WHERE REPLACE(rhe.organisation, '-eng', '') = '${organisation}'
+      AND rhe.pipeline = '${dataset}'
+    `
+
+    if (resource) {
+      sql += ` AND i.resource = '${resource}'`
+    }
+
+    if (issueType) {
+      sql += ` AND i.issue_type = '${issueType}'`
+    }
+
+    if (issueField) {
+      sql += ` AND i.field = '${issueField}'`
+    }
+
+    // (no changes below this line)
 
     const result = await datasette.runQuery(sql, database)
 
@@ -471,5 +481,15 @@ export default {
         LIMIT ${pagination.limit}
         OFFSET ${pagination.offset}
       `
+  },
+
+  fetchEntityNumbersFromEntryNumbers ({ entryNumbers, organisationEntity }) {
+    return /* sql */ `
+      select DISTINCT f.entity, fr.entry_number, fr.resource, e.* from fact f
+      LEFT JOIN fact_resource fr ON f.fact = fr.fact
+      LEFT JOIN entity e ON f.entity = e.entity
+      WHERE e.organisation_entity = ${organisationEntity}
+      AND entry_number in (${entryNumbers.join(', ')})
+    `
   }
 }

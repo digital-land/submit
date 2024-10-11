@@ -1,8 +1,27 @@
-import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
 import { pagination } from '../utils/pagination.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchIssueEntitiesCount, fetchIssues, fetchLatestResource, fetchOrgInfo, fetchSpecification, formatErrorSummaryParams, isResourceIdNotInParams, logPageError, pullOutDatasetSpecification, reformatIssuesToBeByEntryNumber, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
-import { fetchIf, fetchMany, FetchOptions, parallel, renderTemplate } from './middleware.builders.js'
+import {
+  addIssuesToEntities,
+  extractJsonFieldFromEntities,
+  fetchDatasetInfo,
+  fetchEntitiesFromOrganisationAndEntryNumbers,
+  fetchEntityCount,
+  fetchIssueEntitiesCount,
+  fetchIssues,
+  fetchLatestResource,
+  fetchOrgInfo,
+  fetchSpecification,
+  formatErrorSummaryParams,
+  getEntryNumbersWithIssues,
+  isResourceIdNotInParams,
+  logPageError,
+  nestEntityFields,
+  pullOutDatasetSpecification,
+  reformatIssuesToBeByEntryNumber,
+  replaceUnderscoreWithHyphenForEntities,
+  takeResourceIdFromParams,
+  validateQueryParams
+} from './common.middleware.js'
+import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
 const paginationPageLength = 50
@@ -27,23 +46,6 @@ export const setDefaultQueryParams = (req, res, next) => {
   next()
 }
 
-const fetchEntitiesWithIssues = fetchMany({
-  query: ({ req, params }) => {
-    const pagination = {
-      limit: paginationPageLength,
-      offset: paginationPageLength * (params.pageNumber - 1)
-    }
-    return performanceDbApi.entitiesAndIssuesQuery({
-      resource: req.resource.resource,
-      issueType: req.params.issue_type,
-      issueField: req.params.issue_field,
-      pagination
-    })
-  },
-  result: 'entitiesWithIssues',
-  dataset: FetchOptions.fromParams
-})
-
 /**
  * Middleware function to prepare issue table template params
  *
@@ -53,12 +55,12 @@ const fetchEntitiesWithIssues = fetchMany({
  */
 export const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
-  const { entitiesWithIssues, specification, pagination, errorSummary } = req
+  const { entities, specification, pagination, errorSummary } = req
 
   const tableParams = {
     columns: specification.fields.map(field => field.field),
     fields: specification.fields.map(field => field.field),
-    rows: entitiesWithIssues.map((entity, index) => {
+    rows: entities.map((entity, index) => {
       const columns = {}
 
       specification.fields.forEach(fieldObject => {
@@ -66,26 +68,11 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
         if (field === 'reference') {
           const pageNumber = index + 1
           const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${pageNumber}`
-          columns[field] = { html: `<a href="${entityLink}">${entity[field]}</a>` }
+          columns[field] = { html: `<a href="${entityLink}">${entity[field].value}</a>`, error: entity[field].issue }
         } else if (entity[field]) {
-          columns[field] = { value: entity[field] }
+          columns[field] = { value: entity[field].value, error: entity[field].issue }
         } else {
           columns[field] = { value: '' }
-        }
-      })
-
-      let issues = {}
-      try {
-        issues = JSON.parse(entity.issues)
-      } catch (e) {
-        logger.warn('issueTableMiddleware:prepareIssueTableParams - entity issues is not valid json', { entityIssues: entity.issues })
-      }
-
-      Object.entries(issues).forEach(([field, issueType]) => {
-        if (columns[field]) {
-          columns[field].error = { message: issueType }
-        } else {
-          columns[field] = { value: '', error: { message: issueType } }
         }
       })
 
@@ -177,13 +164,18 @@ export default [
     fetchDatasetInfo
   ]),
   fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
-  fetchEntitiesWithIssues,
-  fetchIssueEntitiesCount,
   fetchSpecification,
-  fetchIssues,
-  reformatIssuesToBeByEntryNumber,
   pullOutDatasetSpecification,
+  fetchIssues,
+  getEntryNumbersWithIssues,
+  fetchEntitiesFromOrganisationAndEntryNumbers,
+  extractJsonFieldFromEntities,
+  replaceUnderscoreWithHyphenForEntities,
+  nestEntityFields,
+  addIssuesToEntities,
+  fetchIssueEntitiesCount,
   fetchEntityCount,
+  reformatIssuesToBeByEntryNumber,
   formatErrorSummaryParams,
   createPaginationTemplatePrams,
   prepareIssueTableTemplateParams,

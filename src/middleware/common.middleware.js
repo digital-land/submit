@@ -126,25 +126,21 @@ export async function fetchIssueEntitiesCount (req, res, next) {
 }
 
 /**
-*
-* Middleware. Updates `req` with `issues`.
-*
-* Requires `resourceId` in request params or request (in that order).
-*
-* @param {*} req
-* @param {*} res
-* @param {*} next
-*/
+ * Fetches issues from the performance database and updates the request object with the result.
+ *
+ * This middleware requires the `resourceId` to be present in the request params or request object.
+ *
+ * @param {object} req - The HTTP request object
+ * @param {object} res - The HTTP response object
+ * @param {function} next - The next middleware function in the stack
+ *
+ * @throws {Error} If `resourceId` is missing from the request
+ */
 export async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  if (!resourceId) {
-    logger.debug('fetchIssues(): missing resourceId', { type: types.App, params: req.params, resource: req.resource })
-    throw Error('fetchIssues: missing resourceId')
-  }
+  const { dataset, issue_type: issueType, issue_field: issueField, lpa } = req.params
 
   try {
-    req.issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField }, datasetId)
+    req.issues = await performanceDbApi.getIssues({ organisation: lpa, dataset, issueType, issueField })
     next()
   } catch (error) {
     next(error)
@@ -201,5 +197,81 @@ export function formatErrorSummaryParams (req, res, next) {
     heading: errorHeading,
     items: issueItems
   }
+  next()
+}
+
+export const getEntryNumbersWithIssues = (req, res, next) => {
+  const { issues } = req
+
+  const entryNumbersWithIssues = [...new Set(issues.map(issue => issue.entry_number))]
+
+  req.entryNumbersWithIssues = entryNumbersWithIssues
+
+  next()
+}
+
+export const fetchEntitiesFromOrganisationAndEntryNumbers = fetchMany({
+  query: ({ req, params }) => performanceDbApi.fetchEntityNumbersFromEntryNumbers({ entryNumbers: req.entryNumbersWithIssues, organisationEntity: req.orgInfo.entity }),
+  result: 'entities',
+  dataset: FetchOptions.fromParams
+})
+
+export const extractJsonFieldFromEntities = (req, res, next) => {
+  const { entities } = req
+
+  req.entities = entities.map(entity => {
+    const jsonField = entity.json
+    delete entity.json
+    const parsedJson = JSON.parse(jsonField)
+    entity = { ...entity, ...parsedJson }
+    return entity
+  })
+
+  next()
+}
+
+export const replaceUnderscoreWithHyphenForEntities = (req, res, next) => {
+  const { entities } = req
+
+  entities.forEach(entity => {
+    Object.keys(entity).forEach(key => {
+      if (key.includes('_')) {
+        const newKey = key.replace(/_/g, '-')
+        entity[newKey] = entity[key]
+        delete entity[key]
+      }
+    })
+  })
+
+  next()
+}
+
+export const nestEntityFields = (req, res, next) => {
+  const { entities, specification } = req
+
+  req.entities = entities.map(entity => {
+    specification.fields.forEach(field => {
+      entity[field.field] = { value: entity[field.field] }
+    })
+    return entity
+  })
+
+  next()
+}
+
+export const addIssuesToEntities = (req, res, next) => {
+  const { entities, issues } = req
+
+  req.entitiesWithIssues = entities.map(entity => {
+    const entityIssues = issues.filter(issue => issue.entryNumber === entity.entryNumber)
+
+    entityIssues.forEach(issue => {
+      entity[issue.field].value = issue.value
+      entity[issue.field].issue = issue
+    })
+
+    return entity
+  })
+
   next()
 }
