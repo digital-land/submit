@@ -1,5 +1,4 @@
-import DatasetController from '../../src/controllers/datasetController.js'
-
+import DatasetController, { requiresGeometryTypeToBeSelected } from '../../src/controllers/datasetController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 describe('DatasetController', () => {
@@ -10,13 +9,22 @@ describe('DatasetController', () => {
       route: '/dataset'
     })
 
-    vi.mock('../../src/utils/utils.js', () => {
+    vi.mock(import('../../src/utils/utils.js'), async (importOriginal) => {
+      const { availableDatasets, makeDatasetsLookup } = await importOriginal()
+      const dataSubjects = {
+        subject1: {
+          available: true,
+          dataSets:
+            [{ available: true, text: 'B', value: 'B', requiresGeometryTypeSelection: true },
+              { available: false, text: 'D', value: 'D', requiresGeometryTypeSelection: false }]
+        },
+        subject2: { available: false, dataSets: [{ available: true, text: 'C', value: 'C', requiresGeometryTypeSelection: false }] },
+        subject3: { available: true, dataSets: [{ available: true, text: 'A', value: 'A', requiresGeometryTypeSelection: true }] }
+      }
       return {
-        dataSubjects: {
-          subject1: { available: true, dataSets: [{ available: true, text: 'B', value: 'B', requiresGeometryTypeSelection: true }, { available: false, text: 'A', value: 'A', requiresGeometryTypeSelection: false }] },
-          subject2: { available: false, dataSets: [{ available: true, text: 'C', value: 'C', requiresGeometryTypeSelection: false }] },
-          subject3: { available: true, dataSets: [{ available: true, text: 'A', value: 'A', requiresGeometryTypeSelection: true }] }
-        }
+        availableDatasets,
+        dataSubjects,
+        datasets: makeDatasetsLookup(dataSubjects)
       }
     })
   })
@@ -58,14 +66,14 @@ describe('DatasetController', () => {
   it('Correctly determines whether a geometry type selection is required', () => {
   // Mock req with dataset that requires geometry type selection
     const req1 = { body: { dataset: 'B' } }
-    expect(datasetController.requiresGeometryTypeToBeSelected(req1)).toEqual(true)
+    expect(requiresGeometryTypeToBeSelected(req1)).toEqual(true)
 
     // Mock req with dataset that does not require geometry type selection
-    const req2 = { body: { dataset: 'A' } }
-    expect(datasetController.requiresGeometryTypeToBeSelected(req2)).toEqual(false)
+    const req2 = { body: { dataset: 'D' } }
+    expect(requiresGeometryTypeToBeSelected(req2)).toEqual(false)
 
     // Mock req with no dataset
     const req3 = { body: {} }
-    expect(datasetController.requiresGeometryTypeToBeSelected(req3)).toEqual(false)
+    expect(requiresGeometryTypeToBeSelected(req3)).toEqual(false)
   })
 })

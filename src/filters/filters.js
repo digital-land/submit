@@ -5,6 +5,7 @@ import toErrorList from './toErrorList.js'
 import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
 import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadableNameFilter.js'
+import { checkToolDeepLink } from './checkToolDeepLink.js'
 import pluralize from 'pluralize'
 
 /** maps dataset status (as returned by `fetchLpaOverview` middleware to a
@@ -40,6 +41,7 @@ const addFilters = (nunjucksEnv, { datasetNameMapping }) => {
   nunjucksEnv.addFilter('getFullServiceName', getFullServiceName)
   nunjucksEnv.addFilter('statusToTagClass', statusToTagClass)
   nunjucksEnv.addFilter('pluralise', pluralize)
+  nunjucksEnv.addFilter('checkToolDeepLink', checkToolDeepLink)
 }
 
 export default addFilters

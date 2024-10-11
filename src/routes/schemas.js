@@ -14,7 +14,7 @@ export const ErrorParams = v.strictObject({
   err: v.object({})
 })
 
-const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
+export const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
 
 export const Base = v.object({
   // serviceName: NonEmptyString,

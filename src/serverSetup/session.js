@@ -1,13 +1,11 @@
 import session from 'express-session'
 import { createClient } from 'redis'
 import RedisStore from 'connect-redis'
-import cookieParser from 'cookie-parser'
 import config from '../../config/index.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 
 export async function setupSession (app) {
-  app.use(cookieParser())
   let sessionStore
   if ('redis' in config) {
     const urlPrefix = `redis${config.redis.secure ? 's' : ''}`

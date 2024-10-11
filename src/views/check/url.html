@@ -4,6 +4,7 @@
 {% from 'govuk/components/input/macro.njk' import govukInput %}
 {% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from 'components/dataset-banner.html' import datasetBanner %}
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'URL' %}
@@ -32,6 +33,11 @@
 {% endblock %}
 
 {% block content %}
+
+  {% if options.deepLink %}
+      {{ datasetBanner(options.deepLink) }}
+  {% endif %}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       {% if error %}
