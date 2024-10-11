@@ -170,7 +170,7 @@ export async function reformatIssuesToBeByEntryNumber (req, res, next) {
 
 export function formatErrorSummaryParams (req, res, next) {
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { issuesByEntryNumber, entityCount: entityCountRow, issueEntitiesCount } = req
+  const { issuesByEntryNumber, entityCount: entityCountRow, issues } = req
 
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
@@ -180,7 +180,7 @@ export function formatErrorSummaryParams (req, res, next) {
   let issueItems
 
   if (Object.keys(issuesByEntryNumber).length < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount, field: issueField }, true)
     issueItems = Object.keys(issuesByEntryNumber).map((entryNumber, i) => {
       return {
         html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
@@ -189,7 +189,7 @@ export function formatErrorSummaryParams (req, res, next) {
     })
   } else {
     issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount, field: issueField }, true)
     }]
   }
 
@@ -215,6 +215,16 @@ export const fetchEntitiesFromOrganisationAndEntryNumbers = fetchMany({
   result: 'entities',
   dataset: FetchOptions.fromParams
 })
+
+export const paginateEntitiesAndPullOutCount = (req, res, next) => {
+  const { entities, pagination } = req
+
+  req.entitiesWithIssuesCount = entities.length
+
+  req.entities = entities.slice(pagination.offset, pagination.offset + pagination.limit)
+
+  next()
+}
 
 export const getPaginationOptions = (resultsCount) => (req, res, next) => {
   const { pageNumber } = req.params

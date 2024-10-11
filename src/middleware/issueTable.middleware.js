@@ -5,7 +5,6 @@ import {
   fetchDatasetInfo,
   fetchEntitiesFromOrganisationAndEntryNumbers,
   fetchEntityCount,
-  fetchIssueEntitiesCount,
   fetchIssues,
   fetchLatestResource,
   fetchOrgInfo,
@@ -16,6 +15,7 @@ import {
   isResourceIdNotInParams,
   logPageError,
   nestEntityFields,
+  paginateEntitiesAndPullOutCount,
   pullOutDatasetSpecification,
   reformatIssuesToBeByEntryNumber,
   replaceUnderscoreWithHyphenForEntities,
@@ -111,10 +111,10 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
  * @returns {void}
  */
 export const createPaginationTemplatePrams = (req, res, next) => {
-  const { issueEntitiesCount } = req
+  const { entitiesWithIssuesCount } = req
   const { pageNumber, lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
-  const totalPages = Math.ceil(issueEntitiesCount / paginationPageLength)
+  const totalPages = Math.floor(entitiesWithIssuesCount / paginationPageLength)
 
   const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
 
@@ -173,11 +173,11 @@ export default [
   fetchIssues,
   getEntryNumbersWithIssues,
   fetchEntitiesFromOrganisationAndEntryNumbers,
+  paginateEntitiesAndPullOutCount,
   extractJsonFieldFromEntities,
   replaceUnderscoreWithHyphenForEntities,
   nestEntityFields,
   addIssuesToEntities,
-  fetchIssueEntitiesCount,
   fetchEntityCount,
   reformatIssuesToBeByEntryNumber,
   formatErrorSummaryParams,

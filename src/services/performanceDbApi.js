@@ -457,8 +457,10 @@ export default {
       LEFT JOIN entity e ON f.entity = e.entity
       WHERE e.organisation_entity = ${organisationEntity}
       AND entry_number in (${entryNumbers.join(', ')})
-      LIMIT ${pagination.limit}
-      OFFSET ${pagination.offset}
     `
+    // Can't have pagination here as we need to know the count of all the entities with issues anyway, something for the performance db?
+    //   LIMIT ${pagination.limit}
+    //   OFFSET ${pagination.offset}
+    // `
   }
 }
