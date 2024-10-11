@@ -132,12 +132,12 @@ describe('issueTable.middleware.js', () => {
       orgInfo: mockedOrg,
       dataset: mockedDataset,
       errorSummary: mockedErrorSummary,
-      entitiesWithIssues: [
+      entities: [
         {
           entry_number: 10,
-          'start-date': 'start-date',
-          reference: 'reference',
-          issues: '{"start-date": "invalid"}'
+          'start-date': { value: 'start-date', issue: { message: 'invalid', value: 'invalid-start-date' } },
+          reference: { value: 'reference' }
+
         }
       ],
       specification: {
@@ -174,13 +174,15 @@ describe('issueTable.middleware.js', () => {
           {
             columns: {
               reference: {
-                html: `<a href="/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/entry/${1}">${req.entitiesWithIssues[0].reference}</a>`
+                error: undefined,
+                html: `<a href="/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/entry/${1}">${req.entities[0].reference.value}</a>`
               },
               'start-date': {
-                value: req.entitiesWithIssues[0]['start-date'],
                 error: {
-                  message: 'invalid'
-                }
+                  message: 'invalid',
+                  value: 'invalid-start-date'
+                },
+                value: req.entities[0]['start-date'].value
               }
             }
           }
