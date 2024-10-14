@@ -23,9 +23,13 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-l">
-        {{options.requestParams.dataset}}
-      </span>
+
+      {% if options.deepLink %}
+        {{ datasetBanner(options.deepLink) }}
+      {% else %}
+        <span class="govuk-caption-l">{{options.requestParams.dataset}}</span>
+      {% endif %}
+
       <h1 class="govuk-heading-l">
         {{pageName}}
       </h1>

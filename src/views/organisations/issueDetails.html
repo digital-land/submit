@@ -4,7 +4,6 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from 'components/dataset-banner.html' import datasetBanner %}
 
 {% set serviceType = 'Submit'%}
 
@@ -45,10 +44,6 @@
 {% endblock %}
 
 {% block content %}
-
-{% if options.deepLink %}
-  {{ datasetBanner(options.deepLink) }}
-{% endif %}
 
 <div class="govuk-grid-row">
   {% include "includes/_dataset-page-header.html" %}
