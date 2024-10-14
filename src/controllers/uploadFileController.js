@@ -64,7 +64,7 @@ class UploadFileController extends UploadController {
 
       logger.info('UploadFileController: file submitted for processing:', { type: 'fileUploaded', name: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })
 
-      super.post(req, res, next)
+      await super.post(req, res, next)
     } catch (error) {
       next(error)
     }
