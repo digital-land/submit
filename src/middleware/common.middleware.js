@@ -93,11 +93,6 @@ export function validateQueryParams (req, res, next) {
   }
 }
 
-export const fetchLpaDatasetIssues = fetchMany({
-  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resources, params.dataset),
-  result: 'issues'
-})
-
 export const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
   result: 'specification'
@@ -127,27 +122,6 @@ export async function fetchIssueEntitiesCount (req, res, next) {
   console.assert(resourceId, 'missng resource id')
   const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
   req.issueEntitiesCount = parseInt(issueEntitiesCount)
-  next()
-}
-
-/**
- *
- * Middleware. Updates `req` with `issues`.
- *
- * Requires `issues` in request.
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-export async function reformatIssuesToBeByEntryNumber (req, res, next) {
-  const { issuesWithReferences } = req
-  const issuesByEntryNumber = issuesWithReferences.reduce((acc, current) => {
-    acc[current.entry_number] = acc[current.entry_number] || []
-    acc[current.entry_number].push(current)
-    return acc
-  }, {})
-  req.issuesByEntryNumber = issuesByEntryNumber
   next()
 }
 
@@ -188,22 +162,7 @@ export function formatErrorSummaryParams (req, res, next) {
   next()
 }
 
-export const getEntryNumbersWithIssues = (req, res, next) => {
-  const { issues } = req
-
-  const entryNumbersWithIssues = [...new Set(issues.map(issue => issue.entry_number))]
-
-  req.entryNumbersWithIssues = entryNumbersWithIssues
-
-  next()
-}
-
-export const fetchEntitiesFromOrganisationAndEntryNumbers = fetchMany({
-  query: ({ req, params }) => performanceDbApi.fetchEntitiesFromEntryNumbers({ entryNumbers: req.entryNumbersWithIssues, organisationEntity: req.orgInfo.entity, pagination: req.pagination }),
-  result: 'entities',
-  dataset: FetchOptions.fromParams
-})
-
+// as we want the number of entities with issues anyway, we do the pagination here instead of after. need this count in the performance db ideally
 export const paginateEntitiesAndPullOutCount = (req, res, next) => {
   const { entities, pagination } = req
   const { pageNumber } = req.params
@@ -307,16 +266,6 @@ export const fetchIssuesWithCounts = fetchMany({
   result: 'issuesWithCounts'
 })
 
-export const fetchIssues = fetchMany({
-  query: ({ req, params }) => performanceDbApi.issuesQuery({
-    resources: req.resources.map(resourceObj => resourceObj.resource),
-    dataset: params.dataset,
-    issueType: params.issue_type,
-    issueField: params.issue_field
-  }),
-  result: 'issues'
-})
-
 export const fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield = fetchMany({
   query: ({ req, params }) => performanceDbApi.issuesWithReferenceFromResourcesDatasetIssueTypeFieldQuery({
     resources: req.resources.map(resourceObj => resourceObj.resource),
@@ -338,5 +287,3 @@ export const fetchIssuesWithoutReferences = fetchMany({
   result: 'issuesWithoutReferences',
   dataset: FetchOptions.fromParams
 })
-
-// export const getReferencesOfIssueEntities

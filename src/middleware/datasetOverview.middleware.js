@@ -1,6 +1,7 @@
-import { fetchActiveResourcesForOrganisationAndDataset, fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdNotInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchActiveResourcesForOrganisationAndDataset, fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdNotInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
 import { fetchIf, fetchMany, renderTemplate, FetchOptions } from './middleware.builders.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
+import performanceDbApi from '../services/performanceDbApi.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -106,6 +107,11 @@ const getDatasetOverview = renderTemplate(
     handlerName: 'datasetOverview'
   }
 )
+
+export const fetchLpaDatasetIssues = fetchMany({
+  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resources, params.dataset),
+  result: 'issues'
+})
 
 export default [
   fetchOrgInfo,
