@@ -1,5 +1,5 @@
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdNotInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchIf, fetchMany, parallel, renderTemplate, FetchOptions } from './middleware.builders.js'
+import { fetchActiveResourcesForOrganisationAndDataset, fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdNotInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchIf, fetchMany, renderTemplate, FetchOptions } from './middleware.builders.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 
 const fetchColumnSummary = fetchMany({
@@ -110,11 +110,10 @@ const getDatasetOverview = renderTemplate(
 export default [
   fetchOrgInfo,
   fetchDatasetInfo,
-  parallel([
-    fetchColumnSummary,
-    fetchResourceStatus,
-    fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams)
-  ]),
+  fetchColumnSummary,
+  fetchResourceStatus,
+  fetchActiveResourcesForOrganisationAndDataset,
+  fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
   fetchSpecification,
   pullOutDatasetSpecification,

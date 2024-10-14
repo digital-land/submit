@@ -94,7 +94,7 @@ export function validateQueryParams (req, res, next) {
 }
 
 export const fetchLpaDatasetIssues = fetchMany({
-  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
+  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resources, params.dataset),
   result: 'issues'
 })
 

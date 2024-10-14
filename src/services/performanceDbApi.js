@@ -45,7 +45,7 @@ function getAllRowsMessages () {
 
 // ===========================================
 
-const datasetIssuesQuery = (resource, datasetId) => {
+const datasetIssuesQuery = (resources, datasetId) => {
   return /* sql */ `
     SELECT
     i.field,
@@ -69,7 +69,7 @@ const datasetIssuesQuery = (resource, datasetId) => {
   LEFT JOIN
     issue_type it ON i.issue_type = it.issue_type
   WHERE
-      i.resource = '${resource}'
+      i.resource in ('${resources.join("', '")}')
       AND i.dataset = '${datasetId}'
       AND (it.severity == 'error')
   GROUP BY i.issue_type, i.field

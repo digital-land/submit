@@ -104,6 +104,7 @@ export const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
   next()
 }
 
+// ToDo: do we need to add this back in to the middleware chain?
 // const getDatasetTaskListError = renderTemplate({
 //   templateParams: (req) => req.templateParams,
 //   template: 'organisations/http-error.html',
