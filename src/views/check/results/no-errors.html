@@ -34,12 +34,11 @@
 
 {% block content %}
 
-  {% if options.deepLink %}
-    {{ datasetBanner(options.deepLink) }}
-  {% endif %}
-
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      {% if options.deepLink %}
+        {{ datasetBanner(options.deepLink) }}
+      {% endif %}
       <h1 class="govuk-heading-l">
         {{pageName}}
       </h1>
