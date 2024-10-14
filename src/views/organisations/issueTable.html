@@ -74,7 +74,9 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
-    {{ table(tableParams) }}
+    {% if tableParams.rows.length > 0 %}
+      {{ table(tableParams) }}
+    {% endif %}
   </div>
 </div>
 

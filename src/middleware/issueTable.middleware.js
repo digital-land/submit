@@ -20,7 +20,8 @@ import {
   validateQueryParams,
   fetchActiveResourcesForOrganisationAndDataset,
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
-  fetchEntitiesFromIssuesWithReferences
+  fetchEntitiesFromIssuesWithReferences,
+  fetchIssuesWithoutReferences
 } from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -171,6 +172,7 @@ export default [
   fetchActiveResourcesForOrganisationAndDataset,
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
   fetchEntitiesFromIssuesWithReferences,
+  fetchIssuesWithoutReferences,
   fetchIf(hasEntities, paginateEntitiesAndPullOutCount),
   formatErrorSummaryParams,
   fetchIf(hasEntities, extractJsonFieldFromEntities),

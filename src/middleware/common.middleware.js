@@ -175,7 +175,7 @@ export async function reformatIssuesToBeByEntryNumber (req, res, next) {
 
 export function formatErrorSummaryParams (req, res, next) {
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { entityCount: entityCountRow, issuesWithReferences, entities } = req
+  const { entityCount: entityCountRow, issuesWithReferences, issuesWithoutReferences, entities } = req
 
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
@@ -184,7 +184,12 @@ export function formatErrorSummaryParams (req, res, next) {
   let errorHeading
   let issueItems
 
-  if (entities.length < entityCount) {
+  // if the entities length is 0, this means the entry never became an entity, so we shouldn't show the table or links to the entity details page
+  if (entities.length === 0) {
+    issueItems = [{
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issuesWithoutReferences.length, entityCount, field: issueField }, true)
+    }]
+  } else if (entities.length < entityCount) {
     errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: entities.length, entityCount, field: issueField }, true)
     issueItems = entities.map((entity, index) => {
       return {
@@ -321,6 +326,17 @@ export const fetchEntitiesFromIssuesWithReferences = fetchMany({
     organisationEntity: req.orgInfo.entity
   }),
   result: 'entities',
+  dataset: FetchOptions.fromParams
+})
+
+export const fetchIssuesWithoutReferences = fetchMany({
+  query: ({ req, params }) => performanceDbApi.fetchIssuesWithoutReferences({
+    resources: req.resources.map(resourceObj => resourceObj.resource),
+    dataset: params.dataset,
+    issueType: params.issue_type,
+    issueField: params.issue_field
+  }),
+  result: 'issuesWithoutReferences',
   dataset: FetchOptions.fromParams
 })
 

@@ -421,6 +421,20 @@ export default {
     `
   },
 
+  fetchIssuesWithoutReferences ({ resources, dataset, issueType, issueField }) {
+    return /* sql */ `
+      SELECT DISTINCT i.message, i.value, i.field, i.issue_type, i.entry_number, i.resource, f.value as reference
+      FROM issue i
+      LEFT JOIN fact_resource fr ON i.entry_number = fr.entry_number AND i.resource = fr.resource
+      LEFT JOIN fact f ON fr.fact = f.fact
+      WHERE i.resource  in ('${resources.join("', '")}')
+      AND dataset  = '${dataset}'
+      AND issue_type  = '${issueType}'
+      AND i.field  = '${issueField}'
+      AND f.field is NULL
+    `
+  },
+
   /**
      *
      * @param {*} resourceId

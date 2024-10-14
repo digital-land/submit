@@ -1,5 +1,5 @@
 import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues } from './common.middleware.js'
-import { parallel, fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
+import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 
@@ -116,13 +116,10 @@ export default [
   fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,
   fetchIf(isResourceAccessible, fetchLatestResource),
-  parallel([
-    fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-    fetchIf(isResourceAccessible, fetchEntityCount)
-  ]),
+  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+  fetchIf(isResourceAccessible, fetchEntityCount),
   onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
   onlyIf(isResourceAccessible, getDatasetTaskList),
-
   onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
   onlyIf(isResourceNotAccessible, getDatasetTaskListError),
   logPageError
