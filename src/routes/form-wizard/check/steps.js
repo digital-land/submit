@@ -1,6 +1,9 @@
 // ToDo: Split this into two form wizards
 import PageController from '../../../controllers/pageController.js'
-import datasetController, { requiresGeometryTypeToBeSelected } from '../../../controllers/datasetController.js'
+import datasetController, {
+  requiresGeometryTypeToBeSelected,
+  requiresGeometryTypeToBeSelectedViaDeepLink
+} from '../../../controllers/datasetController.js'
 import uploadFileController from '../../../controllers/uploadFileController.js'
 import submitUrlController from '../../../controllers/submitUrlController.js'
 import statusController from '../../../controllers/statusController.js'
@@ -100,7 +103,7 @@ export default {
     ...baseSettings,
     controller: deepLinkController,
     next: [
-      { field: 'dataset', fn: requiresGeometryTypeToBeSelected, next: 'geometry-type' },
+      { field: 'dataset', fn: requiresGeometryTypeToBeSelectedViaDeepLink, next: 'geometry-type' },
       'upload-method'
     ],
     entryPoint: true,

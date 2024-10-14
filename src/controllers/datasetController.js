@@ -7,11 +7,21 @@ import PageController from './pageController.js'
 import { dataSubjects, datasets, availableDatasets } from '../utils/utils.js'
 
 /**
- * @param req
+ * @param {Object} req
  * @returns {boolean}
  */
 export function requiresGeometryTypeToBeSelected (req) {
   const dataset = req.body.dataset
+  const dataSet = datasets.get(dataset)
+  return dataSet?.requiresGeometryTypeSelection || false
+}
+
+/**
+ * @param {Object} req - The HTTP request object.
+ * @returns {boolean}
+ */
+export function requiresGeometryTypeToBeSelectedViaDeepLink (req) {
+  const { dataset } = req.query
   const dataSet = datasets.get(dataset)
   return dataSet?.requiresGeometryTypeSelection || false
 }
