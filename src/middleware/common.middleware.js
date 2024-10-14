@@ -175,7 +175,7 @@ export async function reformatIssuesToBeByEntryNumber (req, res, next) {
 
 export function formatErrorSummaryParams (req, res, next) {
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { issuesByEntryNumber, entityCount: entityCountRow, issuesWithReferences } = req
+  const { entityCount: entityCountRow, issuesWithReferences, entities } = req
 
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
@@ -184,12 +184,12 @@ export function formatErrorSummaryParams (req, res, next) {
   let errorHeading
   let issueItems
 
-  if (Object.keys(issuesByEntryNumber).length < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issuesWithReferences.length, entityCount, field: issueField }, true)
-    issueItems = Object.keys(issuesByEntryNumber).map((entryNumber, i) => {
+  if (entities.length < entityCount) {
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: entities.length, entityCount, field: issueField }, true)
+    issueItems = entities.map((entity, index) => {
       return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
-        href: `${BaseSubpath}${entryNumber}`
+        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in entity ${entity?.reference?.value || entity?.reference}`,
+        href: `${BaseSubpath}${index + 1}`
       }
     })
   } else {

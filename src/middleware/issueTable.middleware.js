@@ -15,7 +15,6 @@ import {
   nestEntityFields,
   paginateEntitiesAndPullOutCount,
   pullOutDatasetSpecification,
-  reformatIssuesToBeByEntryNumber,
   replaceUnderscoreWithHyphenForEntities,
   takeResourceIdFromParams,
   validateQueryParams,
@@ -23,7 +22,7 @@ import {
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
   fetchEntitiesFromIssuesWithReferences
 } from './common.middleware.js'
-import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
+import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
 const paginationPageLength = 20
@@ -160,21 +159,11 @@ export const getIssueTable = renderTemplate({
   handlerName: 'getIssueTable'
 })
 
-// const getEntitiesWithIssuesMiddlewareChain = [
-//   fetchResourcesFromOrganisationAndDataset,
-//   fetchIssuesFromResourcesDatasetIssuetypefield,
-//   // have a list of issues with resource, and entry number
-//   getReferencesOfIssueEntities,
-//   getEntitiesFromRefernces
-// ]
-
 export default [
   validateIssueTableQueryParams,
   setDefaultQueryParams,
-  parallel([
-    fetchOrgInfo,
-    fetchDatasetInfo
-  ]),
+  fetchOrgInfo,
+  fetchDatasetInfo,
   fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchSpecification,
   pullOutDatasetSpecification,
@@ -188,7 +177,6 @@ export default [
   fetchIf(hasEntities, nestEntityFields),
   fetchIf(hasEntities, addIssuesToEntities),
   fetchEntityCount,
-  reformatIssuesToBeByEntryNumber,
   formatErrorSummaryParams,
   createPaginationTemplatePrams,
   prepareIssueTableTemplateParams,
