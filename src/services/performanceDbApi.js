@@ -263,6 +263,20 @@ export default {
     AND rle.pipeline = '${dataset}'`
   },
 
+  activeResourcesForOrganisationAndDatasetQuery: (lpa, dataset) => {
+    return /* sql */`
+      select
+        rhe.endpoint, rhe.endpoint_url, rhe.resource, rhe.status
+      from
+        reporting_historic_endpoints rhe
+      LEFT JOIN resource_organisation ro ON rhe.resource = ro.resource
+      LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
+      WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
+      AND pipeline = '${dataset}'
+      AND rhe.endpoint_end_date == ''
+    `
+  },
+
   /**
      * Retrieves the latest resource information for a given LPA and dataset.
      *
@@ -364,6 +378,7 @@ export default {
      * @param {string} [database="digital-land"] - Database to query (defaults to "digital-land")
      * @returns {Promise<Object>} - Promise resolving to an object with formatted data
      */
+
   async getIssues ({ organisation, dataset, resource, issueType, issueField }, database = 'digital-land') {
     let sql = `
       SELECT i.field, i.line_number, entry_number, message, issue_type, value
@@ -390,6 +405,20 @@ export default {
     const result = await datasette.runQuery(sql, database)
 
     return result.formattedData
+  },
+
+  issuesWithReferenceFromResourcesDatasetIssueTypeFieldQuery ({ resources, dataset, issueType, issueField }) {
+    return /* sql */ `
+      SELECT DISTINCT i.message, i.value, i.field, i.issue_type, i.entry_number, f.value as reference
+      FROM issue i
+      LEFT JOIN fact_resource fr ON i.entry_number = fr.entry_number AND i.resource = fr.resource
+      LEFT JOIN fact f ON fr.fact = f.fact
+      WHERE i.resource  in ('${resources.join("', '")}')
+      AND dataset  = '${dataset}'
+      AND issue_type  = '${issueType}'
+      AND i.field  = '${issueField}'
+      AND f.field = 'reference'
+    `
   },
 
   /**
@@ -462,5 +491,23 @@ export default {
     //   LIMIT ${pagination.limit}
     //   OFFSET ${pagination.offset}
     // `
+  },
+
+  fetchEntityFromEntryNumber ({ entryNumber, organisationEntity }) {
+    return /* sql */ `
+      select DISTINCT f.entity, fr.entry_number, fr.resource, e.* from fact f
+      LEFT JOIN fact_resource fr ON f.fact = fr.fact
+      LEFT JOIN entity e ON f.entity = e.entity
+      AND e.organisation_entity = ${organisationEntity}
+      AND entry_number = ${entryNumber}
+    `
+  },
+
+  fetchEntitiesFromReferencesAndOrganisationEntity ({ references, organisationEntity }) {
+    return /* sql */ `
+      select * from entity 
+      WHERE reference in ('${references.join("', '")}')
+      AND organisation_entity = ${organisationEntity}
+    `
   }
 }

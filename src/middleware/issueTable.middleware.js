@@ -3,15 +3,13 @@ import {
   addIssuesToEntities,
   extractJsonFieldFromEntities,
   fetchDatasetInfo,
-  fetchEntitiesFromOrganisationAndEntryNumbers,
   fetchEntityCount,
-  fetchIssues,
   fetchLatestResource,
   fetchOrgInfo,
   fetchSpecification,
   formatErrorSummaryParams,
-  getEntryNumbersWithIssues,
   getPaginationOptions,
+  hasEntities,
   isResourceIdNotInParams,
   logPageError,
   nestEntityFields,
@@ -20,7 +18,10 @@ import {
   reformatIssuesToBeByEntryNumber,
   replaceUnderscoreWithHyphenForEntities,
   takeResourceIdFromParams,
-  validateQueryParams
+  validateQueryParams,
+  fetchActiveResourcesForOrganisationAndDataset,
+  fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
+  fetchEntitiesFromIssuesWithReferences
 } from './common.middleware.js'
 import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -159,6 +160,14 @@ export const getIssueTable = renderTemplate({
   handlerName: 'getIssueTable'
 })
 
+// const getEntitiesWithIssuesMiddlewareChain = [
+//   fetchResourcesFromOrganisationAndDataset,
+//   fetchIssuesFromResourcesDatasetIssuetypefield,
+//   // have a list of issues with resource, and entry number
+//   getReferencesOfIssueEntities,
+//   getEntitiesFromRefernces
+// ]
+
 export default [
   validateIssueTableQueryParams,
   setDefaultQueryParams,
@@ -170,14 +179,14 @@ export default [
   fetchSpecification,
   pullOutDatasetSpecification,
   getPaginationOptions(paginationPageLength),
-  fetchIssues,
-  getEntryNumbersWithIssues,
-  fetchEntitiesFromOrganisationAndEntryNumbers,
-  paginateEntitiesAndPullOutCount,
-  extractJsonFieldFromEntities,
-  replaceUnderscoreWithHyphenForEntities,
-  nestEntityFields,
-  addIssuesToEntities,
+  fetchActiveResourcesForOrganisationAndDataset,
+  fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
+  fetchEntitiesFromIssuesWithReferences,
+  fetchIf(hasEntities, paginateEntitiesAndPullOutCount),
+  fetchIf(hasEntities, extractJsonFieldFromEntities),
+  fetchIf(hasEntities, replaceUnderscoreWithHyphenForEntities),
+  fetchIf(hasEntities, nestEntityFields),
+  fetchIf(hasEntities, addIssuesToEntities),
   fetchEntityCount,
   reformatIssuesToBeByEntryNumber,
   formatErrorSummaryParams,

@@ -50,6 +50,11 @@ export const fetchLatestResource = fetchOne({
   result: 'resource'
 })
 
+export const fetchActiveResourcesForOrganisationAndDataset = fetchMany({
+  query: ({ params }) => performanceDbApi.activeResourcesForOrganisationAndDatasetQuery(params.lpa, params.dataset),
+  result: 'resources'
+})
+
 export const takeResourceIdFromParams = (req) => {
   logger.debug('skipping resource fetch', { type: types.App, params: req.params })
   req.resource = { resource: req.params.resourceId }
@@ -158,8 +163,8 @@ export async function fetchIssues (req, res, next) {
  * @param {*} next
  */
 export async function reformatIssuesToBeByEntryNumber (req, res, next) {
-  const { issues } = req
-  const issuesByEntryNumber = issues.reduce((acc, current) => {
+  const { issuesWithReferences } = req
+  const issuesByEntryNumber = issuesWithReferences.reduce((acc, current) => {
     acc[current.entry_number] = acc[current.entry_number] || []
     acc[current.entry_number].push(current)
     return acc
@@ -170,7 +175,7 @@ export async function reformatIssuesToBeByEntryNumber (req, res, next) {
 
 export function formatErrorSummaryParams (req, res, next) {
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { issuesByEntryNumber, entityCount: entityCountRow, issues } = req
+  const { issuesByEntryNumber, entityCount: entityCountRow, issuesWithReferences } = req
 
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
@@ -180,7 +185,7 @@ export function formatErrorSummaryParams (req, res, next) {
   let issueItems
 
   if (Object.keys(issuesByEntryNumber).length < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount, field: issueField }, true)
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issuesWithReferences.length, entityCount, field: issueField }, true)
     issueItems = Object.keys(issuesByEntryNumber).map((entryNumber, i) => {
       return {
         html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
@@ -189,7 +194,7 @@ export function formatErrorSummaryParams (req, res, next) {
     })
   } else {
     issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount, field: issueField }, true)
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issuesWithReferences.length, entityCount, field: issueField }, true)
     }]
   }
 
@@ -218,10 +223,13 @@ export const fetchEntitiesFromOrganisationAndEntryNumbers = fetchMany({
 
 export const paginateEntitiesAndPullOutCount = (req, res, next) => {
   const { entities, pagination } = req
+  const { pageNumber } = req.params
+
+  const paginationIndex = pageNumber - 1
 
   req.entitiesWithIssuesCount = entities.length
 
-  req.entities = entities.slice(pagination.offset, pagination.offset + pagination.limit)
+  req.entities = entities.slice(pagination.offset * paginationIndex, pagination.offset * paginationIndex + pagination.limit)
 
   next()
 }
@@ -278,10 +286,10 @@ export const nestEntityFields = (req, res, next) => {
 }
 
 export const addIssuesToEntities = (req, res, next) => {
-  const { entities, issues } = req
+  const { entities, issuesWithReferences } = req
 
   req.entitiesWithIssues = entities.map(entity => {
-    const entityIssues = issues.filter(issue => issue.entryNumber === entity.entryNumber)
+    const entityIssues = issuesWithReferences.filter(issue => issue.entryNumber === entity.entryNumber)
 
     entityIssues.forEach(issue => {
       entity[issue.field].value = issue.value
@@ -293,3 +301,27 @@ export const addIssuesToEntities = (req, res, next) => {
 
   next()
 }
+
+export const hasEntities = (req, res, next) => req.entities !== undefined
+
+export const fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield = fetchMany({
+  query: ({ req, params }) => performanceDbApi.issuesWithReferenceFromResourcesDatasetIssueTypeFieldQuery({
+    resources: req.resources.map(resourceObj => resourceObj.resource),
+    dataset: params.dataset,
+    issueType: params.issue_type,
+    issueField: params.issue_field
+  }),
+  result: 'issuesWithReferences',
+  dataset: FetchOptions.fromParams
+})
+
+export const fetchEntitiesFromIssuesWithReferences = fetchMany({
+  query: ({ req }) => performanceDbApi.fetchEntitiesFromReferencesAndOrganisationEntity({
+    references: req.issuesWithReferences.map(issueWithReference => issueWithReference.reference),
+    organisationEntity: req.orgInfo.entity
+  }),
+  result: 'entities',
+  dataset: FetchOptions.fromParams
+})
+
+// export const getReferencesOfIssueEntities
