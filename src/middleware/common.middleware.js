@@ -131,28 +131,6 @@ export async function fetchIssueEntitiesCount (req, res, next) {
 }
 
 /**
- * Fetches issues from the performance database and updates the request object with the result.
- *
- * This middleware requires the `resourceId` to be present in the request params or request object.
- *
- * @param {object} req - The HTTP request object
- * @param {object} res - The HTTP response object
- * @param {function} next - The next middleware function in the stack
- *
- * @throws {Error} If `resourceId` is missing from the request
- */
-export async function fetchIssues (req, res, next) {
-  const { dataset, issue_type: issueType, issue_field: issueField, lpa } = req.params
-
-  try {
-    req.issues = await performanceDbApi.getIssues({ organisation: lpa, dataset, issueType, issueField })
-    next()
-  } catch (error) {
-    next(error)
-  }
-}
-
-/**
  *
  * Middleware. Updates `req` with `issues`.
  *
@@ -309,6 +287,36 @@ export const addIssuesToEntities = (req, res, next) => {
 
 export const hasEntities = (req, res, next) => req.entities !== undefined
 
+export const fetchEntitiesFromIssuesWithReferences = fetchMany({
+  query: ({ req }) => performanceDbApi.fetchEntitiesFromReferencesAndOrganisationEntity({
+    references: req.issuesWithReferences.map(issueWithReference => issueWithReference.reference),
+    organisationEntity: req.orgInfo.entity
+  }),
+  result: 'entities',
+  dataset: FetchOptions.fromParams
+})
+
+export const fetchIssuesWithCounts = fetchMany({
+  query: ({ req, params }) => performanceDbApi.issuesWithCountsQuery({
+    resources: req.resources.map(resourceObj => resourceObj.resource),
+    dataset: params.dataset,
+    issueType: params.issue_type,
+    issueField: params.issue_field,
+    statusList: ['Error', 'Needs fixing', 'Warning']
+  }),
+  result: 'issuesWithCounts'
+})
+
+export const fetchIssues = fetchMany({
+  query: ({ req, params }) => performanceDbApi.issuesQuery({
+    resources: req.resources.map(resourceObj => resourceObj.resource),
+    dataset: params.dataset,
+    issueType: params.issue_type,
+    issueField: params.issue_field
+  }),
+  result: 'issues'
+})
+
 export const fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield = fetchMany({
   query: ({ req, params }) => performanceDbApi.issuesWithReferenceFromResourcesDatasetIssueTypeFieldQuery({
     resources: req.resources.map(resourceObj => resourceObj.resource),
@@ -317,15 +325,6 @@ export const fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield = fetch
     issueField: params.issue_field
   }),
   result: 'issuesWithReferences',
-  dataset: FetchOptions.fromParams
-})
-
-export const fetchEntitiesFromIssuesWithReferences = fetchMany({
-  query: ({ req }) => performanceDbApi.fetchEntitiesFromReferencesAndOrganisationEntity({
-    references: req.issuesWithReferences.map(issueWithReference => issueWithReference.reference),
-    organisationEntity: req.orgInfo.entity
-  }),
-  result: 'entities',
   dataset: FetchOptions.fromParams
 })
 

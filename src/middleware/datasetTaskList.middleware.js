@@ -1,5 +1,5 @@
-import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues } from './common.middleware.js'
-import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
+import { fetchDatasetInfo, fetchEntityCount, logPageError, fetchActiveResourcesForOrganisationAndDataset, fetchIssuesWithCounts } from './common.middleware.js'
+import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 
@@ -42,13 +42,12 @@ function getStatusTag (status) {
  * @returns { { templateParams: object }}
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
+  const { issuesWithCounts, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
   const { lpa, dataset: datasetId } = params
-  console.assert(req.resourceStatus.resource === req.resource.resource, 'mismatch between resourceStatus and resource data')
   console.assert(typeof entityCount === 'number', 'entityCount should be a number')
 
-  const taskList = issues.map((issue) => {
+  const taskList = issuesWithCounts.map((issue) => {
     return {
       title: {
         text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
@@ -105,22 +104,20 @@ export const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
   next()
 }
 
-const getDatasetTaskListError = renderTemplate({
-  templateParams: (req) => req.templateParams,
-  template: 'organisations/http-error.html',
-  handlerName: 'getDatasetTaskListError'
-})
+// const getDatasetTaskListError = renderTemplate({
+//   templateParams: (req) => req.templateParams,
+//   template: 'organisations/http-error.html',
+//   handlerName: 'getDatasetTaskListError'
+// })
 
 export default [
   fetchResourceStatus,
   fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,
-  fetchIf(isResourceAccessible, fetchLatestResource),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-  fetchIf(isResourceAccessible, fetchEntityCount),
-  onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
-  onlyIf(isResourceAccessible, getDatasetTaskList),
-  onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
-  onlyIf(isResourceNotAccessible, getDatasetTaskListError),
+  fetchActiveResourcesForOrganisationAndDataset,
+  fetchIssuesWithCounts,
+  fetchEntityCount,
+  prepareDatasetTaskListTemplateParams,
+  getDatasetTaskList,
   logPageError
 ]

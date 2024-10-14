@@ -368,43 +368,47 @@ export default {
     return result.formattedData[0].count
   },
 
-  /**
-     * Retrieves issues from the performance database.
-     *
-     * @param {Object} params - Object with parameters for the query
-     * @param {string} params.resource - Resource to filter issues by
-     * @param {string} params.issueType - Issue type to filter by
-     * @param {string} params.issueField - Field to filter by
-     * @param {string} [database="digital-land"] - Database to query (defaults to "digital-land")
-     * @returns {Promise<Object>} - Promise resolving to an object with formatted data
-     */
-
-  async getIssues ({ organisation, dataset, resource, issueType, issueField }, database = 'digital-land') {
-    let sql = `
-      SELECT i.field, i.line_number, entry_number, message, issue_type, value
-      FROM issue i
-      LEFT JOIN reporting_historic_endpoints rhe ON rhe.resource = i.resource
-      WHERE REPLACE(rhe.organisation, '-eng', '') = '${organisation}'
-      AND rhe.pipeline = '${dataset}'
+  issuesQuery ({ resources, dataset, issueType, issueField }) {
+    let query = `
+      SELECT DISTINCT message, value, field, issue_type, entry_number, resource
+      FROM issue
+      WHERE resource  in ('${resources.join("', '")}')
     `
+    if (dataset) query += ` AND dataset  = '${dataset}'`
+    if (issueType) query += ` AND issue_type  = '${issueType}'`
+    if (issueField) query += ` AND field  = '${issueField}'`
 
-    if (resource) {
-      sql += ` AND i.resource = '${resource}'`
-    }
+    return query
+  },
 
-    if (issueType) {
-      sql += ` AND i.issue_type = '${issueType}'`
-    }
+  issuesWithCountsQuery  ({ resources, dataset, issueType, issueField, statusList }) {
+    let query = `
+      SELECT 
+        field, 
+        i.issue_type, 
+        CASE
+        WHEN COUNT(
+          CASE
+            WHEN it.severity == 'error' THEN 1
+            ELSE null
+          END
+        ) > 0 THEN 'Needs fixing'
+        ELSE 'Live'
+        END AS status, 
+        count(line_number) as num_issues
+      FROM issue i
+      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+      WHERE resource  in ('${resources.join("', '")}')
+    `
+    if (dataset) query += ` AND dataset  = '${dataset}'`
+    if (issueType) query += ` AND i.issue_type  = '${issueType}'`
+    if (issueField) query += ` AND i.field  = '${issueField}'`
 
-    if (issueField) {
-      sql += ` AND i.field = '${issueField}'`
-    }
+    query += ' GROUP BY i.field, i.issue_type'
 
-    // (no changes below this line)
+    if (statusList) query += ` HAVING status in ('${statusList.join("', '")}')`
 
-    const result = await datasette.runQuery(sql, database)
-
-    return result.formattedData
+    return query
   },
 
   issuesWithReferenceFromResourcesDatasetIssueTypeFieldQuery ({ resources, dataset, issueType, issueField }) {
