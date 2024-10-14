@@ -1,4 +1,7 @@
-import DatasetController, { requiresGeometryTypeToBeSelected } from '../../src/controllers/datasetController.js'
+import DatasetController, {
+  requiresGeometryTypeToBeSelected,
+  requiresGeometryTypeToBeSelectedViaDeepLink
+} from '../../src/controllers/datasetController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 describe('DatasetController', () => {
@@ -75,5 +78,19 @@ describe('DatasetController', () => {
     // Mock req with no dataset
     const req3 = { body: {} }
     expect(requiresGeometryTypeToBeSelected(req3)).toEqual(false)
+  })
+
+  it('Correctly determines whether a geometry type selection is required via deep link', () => {
+    // Mock req with dataset that requires geometry type selection
+    const req1 = { query: { dataset: 'B' } }
+    expect(requiresGeometryTypeToBeSelectedViaDeepLink(req1)).toEqual(true)
+
+    // Mock req with dataset that does not require geometry type selection
+    const req2 = { query: { dataset: 'D' } }
+    expect(requiresGeometryTypeToBeSelectedViaDeepLink(req2)).toEqual(false)
+
+    // Mock req with no dataset
+    const req3 = { query: {} }
+    expect(requiresGeometryTypeToBeSelectedViaDeepLink(req3)).toEqual(false)
   })
 })
