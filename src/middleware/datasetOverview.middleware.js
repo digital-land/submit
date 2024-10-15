@@ -152,7 +152,10 @@ const getDatasetOverview = renderTemplate(
 )
 
 export const fetchLpaDatasetIssues = fetchMany({
-  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resources, params.dataset),
+  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(
+    req.resources.map(resource => resource.resource),
+    params.dataset
+  ),
   result: 'issues'
 })
 
