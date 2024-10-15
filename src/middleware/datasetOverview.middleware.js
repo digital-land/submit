@@ -73,6 +73,7 @@ const fetchSources = fetchMany({
         AND (
           rhe.resource_end_date >= current_timestamp
           OR rhe.resource_end_date IS NULL
+          OR rhe.resource_end_date = ''
         )
     )
     SELECT
