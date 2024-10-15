@@ -50,6 +50,14 @@ export const setDefaultQueryParams = (req, res, next) => {
   next()
 }
 
+export const addEntityPageNumberToEntity = (req, res, next) => {
+  const { entities } = req
+
+  req.entities = entities.map((entity, index) => ({ ...entity, entityPageNumber: index + 1 }))
+
+  next()
+}
+
 export const setPagePageOptions = (pageLength) => (req, res, next) => {
   const { entitiesWithIssuesCount } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
@@ -81,8 +89,7 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
       specification.fields.forEach(fieldObject => {
         const { field } = fieldObject
         if (field === 'reference') {
-          const pageNumber = index + 1
-          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${pageNumber}`
+          const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${entity.entityPageNumber}`
           columns[field] = { html: `<a href="${entityLink}">${entity[field].value}</a>`, error: entity[field].issue }
         } else if (entity[field]) {
           columns[field] = { value: entity[field].value, error: entity[field].issue }
@@ -127,6 +134,7 @@ export default [
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
   fetchEntitiesFromIssuesWithReferences,
   fetchIssuesWithoutReferences,
+  fetchIf(hasEntities, addEntityPageNumberToEntity),
   fetchIf(hasEntities, paginateEntitiesAndPullOutCount),
   formatErrorSummaryParams,
   fetchIf(hasEntities, extractJsonFieldFromEntities),

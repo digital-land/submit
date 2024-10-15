@@ -1,5 +1,5 @@
 import { describe, it, vi, expect } from 'vitest'
-import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, setPagePageOptions } from '../../../src/middleware/issueTable.middleware.js'
+import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, setPagePageOptions, addEntityPageNumberToEntity } from '../../../src/middleware/issueTable.middleware.js'
 // import { pagination } from '../../../src/utils/pagination.js'
 
 import mocker from '../../utils/mocker.js'
@@ -39,6 +39,29 @@ describe('issueTable.middleware.js', () => {
       setDefaultQueryParams(req, {}, next)
       expect(req.params.pageNumber).toEqual(2)
       expect(next).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('addEntityPageNumberToEntity', () => {
+    it('adds entityPageNumber to each entity', () => {
+      const req = {
+        entities: [
+          { id: 1, name: 'Entity 1' },
+          { id: 2, name: 'Entity 2' },
+          { id: 3, name: 'Entity 3' }
+        ]
+      }
+      const res = {}
+      const next = vi.fn()
+
+      addEntityPageNumberToEntity(req, res, next)
+
+      expect(req.entities).toEqual([
+        { id: 1, name: 'Entity 1', entityPageNumber: 1 },
+        { id: 2, name: 'Entity 2', entityPageNumber: 2 },
+        { id: 3, name: 'Entity 3', entityPageNumber: 3 }
+      ])
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -82,8 +105,8 @@ describe('issueTable.middleware.js', () => {
         {
           entry_number: 10,
           'start-date': { value: 'start-date', issue: { message: 'invalid', value: 'invalid-start-date' } },
-          reference: { value: 'reference' }
-
+          reference: { value: 'reference' },
+          entityPageNumber: 1
         }
       ],
       specification: {
