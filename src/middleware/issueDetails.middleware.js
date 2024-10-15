@@ -34,7 +34,7 @@ export const IssueDetailsQueryParams = v.strictObject({
   resourceId: v.optional(v.string())
 })
 
-const validateIssueDetailsQueryParams = validateQueryParams.bind({
+const validateIssueDetailsQueryParams = validateQueryParams({
   schema: IssueDetailsQueryParams
 })
 

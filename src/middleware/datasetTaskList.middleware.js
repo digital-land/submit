@@ -1,7 +1,8 @@
-import { fetchDatasetInfo, fetchEntityCount, logPageError, fetchActiveResourcesForOrganisationAndDataset, fetchIssuesWithCounts } from './common.middleware.js'
+import { fetchDatasetInfo, fetchEntityCount, logPageError, fetchActiveResourcesForOrganisationAndDataset, fetchIssuesWithCounts, validateQueryParams } from './common.middleware.js'
 import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
+import * as v from 'valibot'
 
 /**
  * Fetches the resource status
@@ -111,7 +112,15 @@ export const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
 //   handlerName: 'getDatasetTaskListError'
 // })
 
+const validateParams = validateQueryParams({
+  schema: v.object({
+    lpa: v.string(),
+    dataset: v.string()
+  })
+})
+
 export default [
+  validateParams,
   fetchResourceStatus,
   fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,
