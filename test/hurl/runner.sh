@@ -1,5 +1,3 @@
-#!/bin/sh
-
 # arguments:
 #  FILE_OR_DIR  - optional, name of the file to run, if not provided, runs all scripts
 #
