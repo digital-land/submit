@@ -46,7 +46,7 @@ describe('issueTable.middleware.js', () => {
     it('should correctly set next when there is more than one page', () => {
       const req = {
         params: { pageNumber: 1, lpa: 'lpa', dataset: 'datasetId', issue_type: 'issueType', issue_field: 'issueField' },
-        issueEntitiesCount: 60
+        entities: { length: 60 }
       }
       const res = {}
       const next = vi.fn()

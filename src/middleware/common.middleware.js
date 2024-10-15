@@ -177,9 +177,11 @@ export const paginateEntitiesAndPullOutCount = (req, res, next) => {
 }
 
 export const getPaginationOptions = (resultsCount) => (req, res, next) => {
-  const { pageNumber } = req.params
+  let { pageNumber } = req.params
 
-  req.pagination = { offset: pageNumber * resultsCount, limit: resultsCount }
+  pageNumber = pageNumber || 1
+
+  req.pagination = { offset: (pageNumber - 1) * resultsCount, limit: resultsCount }
 
   next()
 }
@@ -189,6 +191,10 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
 
   req.entities = entities.map(entity => {
     const jsonField = entity.json
+    if (!jsonField || jsonField === '') {
+      logger.info(`common.middleware/extractJsonField: No json field for entity ${entity.toString()}`)
+      return entity
+    }
     delete entity.json
     const parsedJson = JSON.parse(jsonField)
     entity = { ...entity, ...parsedJson }

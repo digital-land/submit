@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`formatErrorSummaryParams > formats error summary params with all entities 1`] = `"10 issue of type testIssueType"`;
+
+exports[`formatErrorSummaryParams > formats error summary params with no entities 1`] = `"1 issue of type testIssueType"`;
+
+exports[`formatErrorSummaryParams > formats error summary params with some entities 1`] = `"2 issue of type testIssueType"`;
+
+exports[`formatErrorSummaryParams > formats error summary params with some entities 2`] = `"1 issue of type testIssueType in entity 1"`;
+
+exports[`formatErrorSummaryParams > formats error summary params with some entities 3`] = `"/organisations/testLpa/testDataset/testIssueType/testIssueField/entry/1"`;

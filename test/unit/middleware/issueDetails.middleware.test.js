@@ -45,7 +45,7 @@ describe('issueDetails.middleware.js', () => {
         dataset,
         entryData,
         issues,
-        entryNumber: 10,
+        pageNumber: 10,
         resource: { resource: requestParams.resourceId },
         issuesByEntryNumber: {
           10: [
@@ -65,6 +65,22 @@ describe('issueDetails.middleware.js', () => {
             {
               html: 'mock task message 1 in record 10',
               href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/10'
+            }
+          ]
+        },
+        entities: [
+          {
+            reference: '1',
+            'start-date': 'invalid'
+          }
+        ],
+        specification: {
+          fields: [
+            {
+              field: 'reference'
+            },
+            {
+              field: 'start-date'
             }
           ]
         }
@@ -140,7 +156,7 @@ describe('issueDetails.middleware.js', () => {
       const req = {
         params: requestParams,
         // middleware supplies the below
-        entryNumber: 10,
+        pageNumber: 2,
         entityCount: { entity_count: 3 },
         issueEntitiesCount: 1,
         orgInfo,
@@ -162,6 +178,26 @@ describe('issueDetails.middleware.js', () => {
             {
               field: 'start-date',
               message: 'mock message'
+            }
+          ]
+        },
+        entities: [
+          {
+            reference: '1',
+            startDate: 'invalid'
+          },
+          {
+            reference: '2',
+            startDate: 'invalid'
+          }
+        ],
+        specification: {
+          fields: [
+            {
+              field: 'reference'
+            },
+            {
+              field: 'start-date'
             }
           ]
         }
