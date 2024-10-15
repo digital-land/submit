@@ -1,5 +1,5 @@
 import { describe, it, vi, expect } from 'vitest'
-import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, createPaginationTemplateParams } from '../../../src/middleware/issueTable.middleware.js'
+import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, setPagePageOptions } from '../../../src/middleware/issueTable.middleware.js'
 // import { pagination } from '../../../src/utils/pagination.js'
 
 import mocker from '../../utils/mocker.js'
@@ -42,88 +42,28 @@ describe('issueTable.middleware.js', () => {
     })
   })
 
-  describe('createPaginationTemplatePrams', () => {
-    it('should correctly set next when there is more than one page', () => {
+  describe('setPagePageOptions', () => {
+    it('sets request parameters for pagination', () => {
+      const pageLength = 20
+      const setPagePageOptionsMiddleware = setPagePageOptions(pageLength)
       const req = {
+        entitiesWithIssuesCount: 50,
         params: {
-          pageNumber: 1,
-          lpa: 'some-lpa',
-          dataset: 'some-dataset-id',
-          issue_type: 'some-issue-type',
-          issue_field: 'some-issue-field'
-        },
-        entitiesWithIssuesCount: 200
-      }
-      const res = {}
-      const next = vi.fn()
-
-      const BaseSubpath = `/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/`
-
-      createPaginationTemplateParams(req, res, next)
-
-      expect(req.pagination.previous).not.toBeDefined()
-      expect(req.pagination.next).toBeDefined()
-      expect(req.pagination.next).toEqual({
-        href: `${BaseSubpath}${2}`
-      })
-    })
-
-    it('should correct set previous when the current pageNumber is greater than 1', () => {
-      const req = {
-        params: { pageNumber: 2, lpa: 'lpa', dataset: 'datasetId', issue_type: 'issueType', issue_field: 'issueField' },
-        issueEntitiesCount: 60
-      }
-      const res = {}
-      const next = vi.fn()
-
-      const BaseSubpath = `/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/`
-
-      createPaginationTemplateParams(req, res, next)
-
-      expect(req.pagination.next).not.toBeDefined()
-      expect(req.pagination.previous).toBeDefined()
-      expect(req.pagination.previous).toEqual({
-        href: `${BaseSubpath}${1}`
-      })
-    })
-
-    it('should correctly set the items', () => {
-      const req = {
-        params: { pageNumber: 4, lpa: 'lpa', dataset: 'datasetId', issue_type: 'issueType', issue_field: 'issueField' },
-        issueEntitiesCount: 60
-      }
-      const res = {}
-      const next = vi.fn()
-
-      const BaseSubpath = `/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/`
-
-      createPaginationTemplateParams(req, res, next)
-
-      expect(req.pagination.items).toEqual([
-        {
-          current: false,
-          href: `${BaseSubpath}1`,
-          number: 1,
-          type: 'number'
-        },
-        {
-          ellipsis: true,
-          href: '#',
-          type: 'ellipsis'
-        },
-        {
-          current: true,
-          href: `${BaseSubpath}4`,
-          number: 4,
-          type: 'number'
-        },
-        {
-          current: false,
-          href: `${BaseSubpath}5`,
-          number: 5,
-          type: 'number'
+          lpa: 'lpa-123',
+          dataset: 'dataset-456',
+          issue_type: 'issue-type',
+          issue_field: 'issue-field'
         }
-      ])
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setPagePageOptionsMiddleware(req, res, next)
+
+      expect(req.resultsCount).toBe(50)
+      expect(req.urlSubPath).toBe('/organisations/lpa-123/dataset-456/issue-type/issue-field/')
+      expect(req.paginationPageLength).toBe(pageLength)
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 

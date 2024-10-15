@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { addIssuesToEntities, extractJsonFieldFromEntities, formatErrorSummaryParams, getPaginationOptions, isResourceAccessible, isResourceIdNotInParams, isResourceNotAccessible, logPageError, nestEntityFields, paginateEntitiesAndPullOutCount, pullOutDatasetSpecification, replaceUnderscoreWithHyphenForEntities, takeResourceIdFromParams } from '../../../src/middleware/common.middleware'
+import { addIssuesToEntities, createPaginationTemplateParams, extractJsonFieldFromEntities, formatErrorSummaryParams, getPaginationOptions, isResourceAccessible, isResourceIdNotInParams, isResourceNotAccessible, logPageError, nestEntityFields, paginateEntitiesAndPullOutCount, pullOutDatasetSpecification, replaceUnderscoreWithHyphenForEntities, takeResourceIdFromParams } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 
 vi.mock('../../../src/utils/logger')
@@ -196,6 +196,54 @@ describe('pagination', () => {
       const next = vi.fn()
 
       paginateEntitiesAndPullOutCount(req, res, next)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('createPaginationTemplateParams', () => {
+    it('creates pagination object with correct parameters', () => {
+      const req = {
+        resultsCount: 100,
+        urlSubPath: '/api/results/',
+        paginationPageLength: 10,
+        params: { pageNumber: 2 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      createPaginationTemplateParams(req, res, next)
+
+      expect(req.pagination).toEqual({
+        previous: { href: '/api/results/1' },
+        next: { href: '/api/results/3' },
+        items: [
+          { type: 'number', number: 1, href: '/api/results/1', current: false },
+          { type: 'number', number: 2, href: '/api/results/2', current: true },
+          { type: 'number', number: 3, href: '/api/results/3', current: false },
+          { type: 'ellipsis', ellipsis: true, href: '#' },
+          { type: 'number', number: 10, href: '/api/results/10', current: false }
+        ]
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles edge cases for pagination', () => {
+      const req = {
+        resultsCount: 10,
+        urlSubPath: '/api/results/',
+        paginationPageLength: 10,
+        params: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      createPaginationTemplateParams(req, res, next)
+
+      expect(req.pagination).toEqual({
+        items: [
+          { type: 'number', number: 1, href: '/api/results/1', current: true }
+        ]
+      })
       expect(next).toHaveBeenCalledTimes(1)
     })
   })
