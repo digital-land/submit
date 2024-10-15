@@ -4,6 +4,7 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
 
 {% set serviceType = 'Submit'%}
 
@@ -59,6 +60,11 @@
     {{ govukErrorSummary({
       titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',
       errorList: errorSummary.items
+    }) }}
+
+    {{ govukBackLink({
+      text: "Back",
+      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField
     }) }}
 
     {% if entry.geometries and entry.geometries.length %}
