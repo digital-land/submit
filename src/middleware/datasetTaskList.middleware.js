@@ -1,5 +1,5 @@
 import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues, validateQueryParams } from './common.middleware.js'
-import { parallel, fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
+import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 import * as v from 'valibot'
@@ -125,10 +125,8 @@ export default [
   fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,
   fetchIf(isResourceAccessible, fetchLatestResource),
-  parallel([
-    fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-    fetchIf(isResourceAccessible, fetchEntityCount)
-  ]),
+  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+  fetchIf(isResourceAccessible, fetchEntityCount),
   onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
   onlyIf(isResourceAccessible, getDatasetTaskList),
 

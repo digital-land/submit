@@ -44,11 +44,12 @@ validations: {
 datasetsFilter: [
     'article-4-direction',
     'article-4-direction-area',
+    'brownfield-land',
     'conservation-area',
     'conservation-area-document',
     'tree-preservation-order',
     'tree-preservation-zone',
     'tree',
     'listed-building',
-    'listed-building-outline'   
+    'listed-building-outline'
 ]

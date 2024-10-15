@@ -1,5 +1,5 @@
 import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, logPageError, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchOne, fetchIf, fetchMany, parallel, renderTemplate, FetchOptions } from './middleware.builders.js'
+import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions } from './middleware.builders.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 
@@ -173,11 +173,9 @@ const getDatasetOverview = renderTemplate(
 export default [
   fetchOrgInfo,
   fetchDatasetInfo,
-  parallel([
-    fetchColumnSummary,
-    fetchResourceStatus,
-    fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams)
-  ]),
+  fetchColumnSummary,
+  fetchResourceStatus,
+  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
   fetchSpecification,
   pullOutDatasetSpecification,

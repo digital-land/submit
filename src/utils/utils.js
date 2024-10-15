@@ -21,6 +21,21 @@ export const dataSubjects = {
       }
     ]
   },
+  'brownfield-land': {
+    available: true,
+    dataSets: [
+      {
+        value: 'brownfield-land',
+        text: 'Brownfield land',
+        available: true
+      },
+      {
+        value: 'brownfield-site',
+        text: 'Brownfield site',
+        available: false
+      }
+    ]
+  },
   'conservation-area': {
     available: true,
     dataSets: [

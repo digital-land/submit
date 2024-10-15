@@ -1,11 +1,14 @@
 import parse from 'wellknown'
 import maplibregl from 'maplibre-gl'
 
-const fillColor = '#008'
 const lineColor = '#000000'
+const fillColor = '#008'
+const fillOpacity = 0.4
 const boundaryLineColor = '#f00'
 const boundaryLineOpacity = 1
-const opacity = 0.4
+const pointOpacity = 0.8
+const pointRadius = 5
+const pointColor = '#008'
 
 /**
  * Creates a Map instance.
@@ -97,7 +100,7 @@ class Map {
           layout: {},
           paint: {
             'fill-color': fillColor,
-            'fill-opacity': opacity
+            'fill-opacity': fillOpacity
           }
         }, this.firstMapLayerId)
 
@@ -117,9 +120,9 @@ class Map {
           type: 'circle',
           source: name,
           paint: {
-            'circle-radius': 10,
-            'circle-color': fillColor,
-            'circle-opacity': opacity
+            'circle-radius': pointRadius,
+            'circle-color': pointColor,
+            'circle-opacity': pointOpacity
           }
         }, this.firstMapLayerId)
       }
@@ -143,8 +146,20 @@ class Map {
         layout: {},
         paint: {
           'fill-color': fillColor,
-          'fill-opacity': opacity
+          'fill-opacity': fillOpacity
         }
+      }, this.firstMapLayerId)
+
+      this.map.addLayer({
+        id: `${name}-point`,
+        type: 'circle',
+        source: name,
+        paint: {
+          'circle-radius': pointRadius,
+          'circle-color': pointColor,
+          'circle-opacity': pointOpacity
+        },
+        filter: ['==', '$type', 'Point']
       }, this.firstMapLayerId)
 
       this.map.addLayer({
