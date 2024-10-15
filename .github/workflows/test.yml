@@ -57,6 +57,22 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      - uses: ./.github/actions/hurl-setup
+      - name: Run hurl tests
+        env:
+          HURL_app_host: http://localhost:8085
+          HURL_report_dir: hurl-test-report
+        run: |
+          mkdir -p test/hurl/common
+          curl --location -o test/hurl/geox-geoy-example.csv https://gist.githubusercontent.com/rosado/3994e2420857d5c6b0e3bd8dc1488aa1/raw/bf1b52316f66a480a6d116c993ffd57d119094f9/geox-geoy-example.csv
+          test/hurl/runner.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hurl-test-report
+          path: hurl-test-report/
+          retention-days: 30
+
       - uses: ./.github/actions/playwright-setup
       - name: Run integration tests
         run: npm run test:integration      
