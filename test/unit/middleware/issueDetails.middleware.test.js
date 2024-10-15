@@ -107,7 +107,7 @@ describe('issueDetails.middleware.js', () => {
       expect(req.templateParams.entry).toBeDefined()
       expect(req.templateParams.entry.title).toBe('entry: entry-1')
       expect(req.templateParams.entry.fields).toHaveLength(5)
-      expect(req.templateParams.entry.geometries).toEqual(['geom-1'])
+      expect(req.templateParams.entry.geometries).toEqual('geom-1')
       expect(req.templateParams.entry.fields[0].key.text).toBe('reference')
       expect(req.templateParams.entry.fields[0].value.html).toBe('entry-1')
       expect(req.templateParams.entry.fields[0].classes).toBe('')
@@ -166,7 +166,7 @@ describe('issueDetails.middleware.js', () => {
                 }
               }
             ],
-            geometries: ['POINT(0 0)']
+            geometries: 'POINT(0 0)'
           },
           issueType: 'test-issue-type',
           issueField: 'test-issue-field',

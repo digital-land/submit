@@ -183,7 +183,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
         errorSummary: params.errorSummary,
         entry: {
           ...params.entry,
-          geometries: ['POINT(0 0)']
+          geometries: 'POINT(0 0)'
         },
         issueType: params.issueType,
         issueField: params.issueField
@@ -206,7 +206,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
         errorSummary: params.errorSummary,
         entry: {
           ...params.entry,
-          geometries: []
+          geometries: ''
         },
         issueType: params.issueType,
         issueField: params.issueField
