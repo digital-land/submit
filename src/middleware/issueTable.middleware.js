@@ -111,7 +111,7 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
  *
  * @returns {void}
  */
-export const createPaginationTemplatePrams = (req, res, next) => {
+export const createPaginationTemplateParams = (req, res, next) => {
   const { entitiesWithIssuesCount } = req
   const { pageNumber, lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
@@ -180,7 +180,7 @@ export default [
   fetchIf(hasEntities, nestEntityFields),
   fetchIf(hasEntities, addIssuesToEntities),
   fetchEntityCount,
-  createPaginationTemplatePrams,
+  createPaginationTemplateParams,
   prepareIssueTableTemplateParams,
   getIssueTable,
   logPageError

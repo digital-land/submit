@@ -1,5 +1,5 @@
 import { describe, it, vi, expect } from 'vitest'
-import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, createPaginationTemplatePrams } from '../../../src/middleware/issueTable.middleware.js'
+import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, createPaginationTemplateParams } from '../../../src/middleware/issueTable.middleware.js'
 // import { pagination } from '../../../src/utils/pagination.js'
 
 import mocker from '../../utils/mocker.js'
@@ -45,15 +45,21 @@ describe('issueTable.middleware.js', () => {
   describe('createPaginationTemplatePrams', () => {
     it('should correctly set next when there is more than one page', () => {
       const req = {
-        params: { pageNumber: 1, lpa: 'lpa', dataset: 'datasetId', issue_type: 'issueType', issue_field: 'issueField' },
-        entities: { length: 60 }
+        params: {
+          pageNumber: 1,
+          lpa: 'some-lpa',
+          dataset: 'some-dataset-id',
+          issue_type: 'some-issue-type',
+          issue_field: 'some-issue-field'
+        },
+        entitiesWithIssuesCount: 200
       }
       const res = {}
       const next = vi.fn()
 
       const BaseSubpath = `/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/`
 
-      createPaginationTemplatePrams(req, res, next)
+      createPaginationTemplateParams(req, res, next)
 
       expect(req.pagination.previous).not.toBeDefined()
       expect(req.pagination.next).toBeDefined()
@@ -72,7 +78,7 @@ describe('issueTable.middleware.js', () => {
 
       const BaseSubpath = `/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/`
 
-      createPaginationTemplatePrams(req, res, next)
+      createPaginationTemplateParams(req, res, next)
 
       expect(req.pagination.next).not.toBeDefined()
       expect(req.pagination.previous).toBeDefined()
@@ -91,7 +97,7 @@ describe('issueTable.middleware.js', () => {
 
       const BaseSubpath = `/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/`
 
-      createPaginationTemplatePrams(req, res, next)
+      createPaginationTemplateParams(req, res, next)
 
       expect(req.pagination.items).toEqual([
         {
