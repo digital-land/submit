@@ -101,6 +101,11 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   const fields = specification.fields.map(({ field }) => {
     let valueHtml = ''
     let classes = ''
+    if (!entity[field]) {
+      entity[field] = {
+        value: ''
+      }
+    }
     if (entity[field].issue) {
       valueHtml += issueErrorMessageHtml(entity[field].issue.message, null)
       classes += 'dl-summary-card-list__row--error'
