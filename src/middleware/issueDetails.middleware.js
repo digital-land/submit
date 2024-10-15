@@ -72,7 +72,7 @@ export const setPagePaginationOptions = (req, res, next) => {
   const { issueEntitiesCount } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
-  req.resultsCount = issueEntitiesCount.length
+  req.resultsCount = issueEntitiesCount
   req.urlSubPath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
   req.paginationPageLength = 1
 

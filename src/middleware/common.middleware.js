@@ -203,7 +203,8 @@ export const getPaginationOptions = (resultsCount) => (req, res, next) => {
  */
 export const createPaginationTemplateParams = (req, res, next) => {
   const { resultsCount, urlSubPath, paginationPageLength } = req
-  const { pageNumber } = req.params
+  let { pageNumber } = req.params
+  pageNumber = parseInt(pageNumber)
 
   const totalPages = Math.floor(resultsCount / paginationPageLength)
 

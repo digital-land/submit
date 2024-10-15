@@ -1,4 +1,5 @@
 import {
+  validateQueryParams,
   addIssuesToEntities,
   extractJsonFieldFromEntities,
   fetchDatasetInfo,
@@ -16,7 +17,6 @@ import {
   pullOutDatasetSpecification,
   replaceUnderscoreWithHyphenForEntities,
   takeResourceIdFromParams,
-  validateQueryParams,
   fetchActiveResourcesForOrganisationAndDataset,
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
   fetchEntitiesFromIssuesWithReferences,
@@ -37,7 +37,7 @@ export const IssueTableQueryParams = v.object({
   resourceId: v.optional(v.string())
 })
 
-const validateIssueTableQueryParams = validateQueryParams.bind({
+const validateIssueTableQueryParams = validateQueryParams({
   schema: IssueTableQueryParams
 })
 
