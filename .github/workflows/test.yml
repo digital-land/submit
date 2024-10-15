@@ -64,7 +64,7 @@ jobs:
           HURL_report_dir: hurl-test-report
         run: |
           mkdir -p test/hurl/common
-          curl --location -o test/hurl/geox-geoy-example.csv https://gist.githubusercontent.com/rosado/3994e2420857d5c6b0e3bd8dc1488aa1/raw/bf1b52316f66a480a6d116c993ffd57d119094f9/geox-geoy-example.csv
+          curl --location -o test/hurl/common/geox-geoy-example.csv https://gist.githubusercontent.com/rosado/3994e2420857d5c6b0e3bd8dc1488aa1/raw/bf1b52316f66a480a6d116c993ffd57d119094f9/geox-geoy-example.csv
           test/hurl/runner.sh
 
       - uses: actions/upload-artifact@v4
