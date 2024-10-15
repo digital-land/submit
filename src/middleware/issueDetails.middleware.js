@@ -2,7 +2,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
-import { fetchIf, parallel, renderTemplate } from './middleware.builders.js'
+import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 
@@ -291,11 +291,9 @@ export default [
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIssues,
   reformatIssuesToBeByEntryNumber,
-  parallel([
-    fetchEntry,
-    fetchEntityCount,
-    fetchIssueEntitiesCount
-  ]),
+  fetchEntry,
+  fetchEntityCount,
+  fetchIssueEntitiesCount,
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError
