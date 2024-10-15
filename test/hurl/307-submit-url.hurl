@@ -13,7 +13,7 @@ connect.sid: {{ session-id }}
 HTTP 200
 [Asserts]
 xpath "string(/html/head/title)" contains "How do you want to provide your data"
-xpath "string(/html/body/div[2]/main/div[1]/div/span)" contains "Some Organisation"
+xpath "string(/html/body/div[2]/main/div/div/form/span)" contains "Conservation area dataset"
 
 POST {{ app_host }}{{ upload-method-location }}
 [Cookies]
