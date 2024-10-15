@@ -117,7 +117,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   const entry = {
     title: `entry: ${entity.reference.value}`,
     fields,
-    geometries: [entity.geometry.value]
+    geometries: entity.geometry.value
   }
 
   // schema: OrgIssueDetails

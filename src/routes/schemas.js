@@ -183,7 +183,7 @@ export const OrgIssueDetails = v.strictObject({
       value: v.strictObject({ html: v.string() }),
       classes: v.string()
     })),
-    geometries: v.optional(v.array(v.string()))
+    geometries: v.optional(v.string())
   }),
   pagination: paginationParams,
   issueEntitiesCount: v.integer(),
