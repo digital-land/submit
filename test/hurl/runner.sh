@@ -7,8 +7,6 @@
 #  HURL_app_host - optional, defaults to "http://localhost:5000"
 #  HURL_report_dir - optional
 
-set -euo pipefail
-
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 app_host="${HURL_app_host:-"http://localhost:5000"}"
