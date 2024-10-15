@@ -3,6 +3,7 @@ import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany } from './middleware.builders.js'
 import * as v from 'valibot'
+import { pagination } from '../utils/pagination.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -182,6 +183,61 @@ export const getPaginationOptions = (resultsCount) => (req, res, next) => {
   pageNumber = pageNumber || 1
 
   req.pagination = { offset: (pageNumber - 1) * resultsCount, limit: resultsCount }
+
+  next()
+}
+
+/**
+ * Creates pagination template parameters for the request.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function in the chain.
+ *
+ * @description
+ * This middleware function extracts pagination-related parameters from the request,
+ * calculates the total number of pages, and creates a pagination object that can be used
+ * to render pagination links in the template.
+ *
+ * @returns {void}
+ */
+export const createPaginationTemplateParams = (req, res, next) => {
+  const { resultsCount, urlSubPath, paginationPageLength } = req
+  const { pageNumber } = req.params
+
+  const totalPages = Math.floor(resultsCount / paginationPageLength)
+
+  const paginationObj = {}
+  if (pageNumber > 1) {
+    paginationObj.previous = {
+      href: `${urlSubPath}${pageNumber - 1}`
+    }
+  }
+
+  if (pageNumber < totalPages) {
+    paginationObj.next = {
+      href: `${urlSubPath}${pageNumber + 1}`
+    }
+  }
+
+  paginationObj.items = pagination(totalPages, pageNumber).map(item => {
+    if (item === '...') {
+      return {
+        type: 'ellipsis',
+        ellipsis: true,
+        href: '#'
+      }
+    } else {
+      return {
+        type: 'number',
+        number: item,
+        href: `${urlSubPath}${item}`,
+        current: pageNumber === parseInt(item)
+      }
+    }
+  })
+
+  req.pagination = paginationObj
 
   next()
 }

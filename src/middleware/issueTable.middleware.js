@@ -1,4 +1,3 @@
-import { pagination } from '../utils/pagination.js'
 import {
   addIssuesToEntities,
   extractJsonFieldFromEntities,
@@ -21,7 +20,8 @@ import {
   fetchActiveResourcesForOrganisationAndDataset,
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
   fetchEntitiesFromIssuesWithReferences,
-  fetchIssuesWithoutReferences
+  fetchIssuesWithoutReferences,
+  createPaginationTemplateParams
 } from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -47,6 +47,17 @@ export const setDefaultQueryParams = (req, res, next) => {
   } else {
     req.params.pageNumber = parseInt(req.params.pageNumber)
   }
+  next()
+}
+
+export const setPagePageOptions = (pageLength) => (req, res, next) => {
+  const { entitiesWithIssuesCount } = req
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+
+  req.resultsCount = entitiesWithIssuesCount
+  req.urlSubPath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
+  req.paginationPageLength = pageLength
+
   next()
 }
 
@@ -97,63 +108,6 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
   next()
 }
 
-/**
- * Creates pagination template parameters for the request.
- *
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @param {Function} next - The next middleware function in the chain.
- *
- * @description
- * This middleware function extracts pagination-related parameters from the request,
- * calculates the total number of pages, and creates a pagination object that can be used
- * to render pagination links in the template.
- *
- * @returns {void}
- */
-export const createPaginationTemplateParams = (req, res, next) => {
-  const { entitiesWithIssuesCount } = req
-  const { pageNumber, lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-
-  const totalPages = Math.floor(entitiesWithIssuesCount / paginationPageLength)
-
-  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
-
-  const paginationObj = {}
-  if (pageNumber > 1) {
-    paginationObj.previous = {
-      href: `${BaseSubpath}${pageNumber - 1}`
-    }
-  }
-
-  if (pageNumber < totalPages) {
-    paginationObj.next = {
-      href: `${BaseSubpath}${pageNumber + 1}`
-    }
-  }
-
-  paginationObj.items = pagination(totalPages, pageNumber).map(item => {
-    if (item === '...') {
-      return {
-        type: 'ellipsis',
-        ellipsis: true,
-        href: '#'
-      }
-    } else {
-      return {
-        type: 'number',
-        number: item,
-        href: `${BaseSubpath}${item}`,
-        current: pageNumber === parseInt(item)
-      }
-    }
-  })
-
-  req.pagination = paginationObj
-
-  next()
-}
-
 export const getIssueTable = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/issueTable.html',
@@ -180,6 +134,7 @@ export default [
   fetchIf(hasEntities, nestEntityFields),
   fetchIf(hasEntities, addIssuesToEntities),
   fetchEntityCount,
+  setPagePageOptions(paginationPageLength),
   createPaginationTemplateParams,
   prepareIssueTableTemplateParams,
   getIssueTable,

@@ -1,5 +1,6 @@
 import {
   addIssuesToEntities,
+  createPaginationTemplateParams,
   extractJsonFieldFromEntities,
   fetchActiveResourcesForOrganisationAndDataset,
   fetchDatasetInfo,
@@ -23,7 +24,6 @@ import {
 } from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
-import { pagination } from '../utils/pagination.js'
 
 export const IssueDetailsQueryParams = v.strictObject({
   lpa: v.string(),
@@ -44,7 +44,7 @@ const validateIssueDetailsQueryParams = validateQueryParams.bind({
  * @param {{value: string}?} issue
  * @returns {string}
  */
-const issueErrorMessageHtml = (errorMessage, issue) =>
+export const issueErrorMessageHtml = (errorMessage, issue) =>
     `<p class="govuk-error-message">${errorMessage}</p>${
       issue ? issue.value ?? '' : ''
     }`
@@ -56,7 +56,7 @@ const issueErrorMessageHtml = (errorMessage, issue) =>
  * @param {*} classes
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
-const getIssueField = (text, html, classes) => {
+export const getIssueField = (text, html, classes = '') => {
   return {
     key: {
       text
@@ -66,6 +66,17 @@ const getIssueField = (text, html, classes) => {
     },
     classes
   }
+}
+
+export const setPagePaginationOptions = (req, res, next) => {
+  const { issueEntitiesCount } = req
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+
+  req.resultsCount = issueEntitiesCount.length
+  req.urlSubPath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
+  req.paginationPageLength = 1
+
+  next()
 }
 
 /**
@@ -81,11 +92,9 @@ const getIssueField = (text, html, classes) => {
  * from the request, and organizes it into a template parameters object that can be used to render the page.
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entities, issueEntitiesCount, errorSummary, specification } = req
-  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField, pageNumber: pageNumberString } = req.params
+  const { entities, issueEntitiesCount, errorSummary, specification, pagination } = req
+  const { issue_type: issueType, issue_field: issueField, pageNumber: pageNumberString } = req.params
   const pageNumber = parseInt(pageNumberString)
-
-  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
 
   const entity = entities[pageNumber - 1]
 
@@ -106,39 +115,6 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     geometries: [entity.geometry.value]
   }
 
-  const paginationObj = {
-    items: []
-  }
-
-  if (pageNumber > 1) {
-    paginationObj.previous = {
-      href: `${BaseSubpath}${pageNumber - 1}`
-    }
-  }
-
-  if (pageNumber < entities.length) {
-    paginationObj.next = {
-      href: `${BaseSubpath}${pageNumber + 1}`
-    }
-  }
-
-  paginationObj.items = pagination(issueEntitiesCount, pageNumber).map(item => {
-    if (item === '...') {
-      return {
-        type: 'ellipsis',
-        ellipsis: true,
-        href: '#'
-      }
-    } else {
-      return {
-        type: 'number',
-        number: item,
-        href: `${BaseSubpath}${item}`,
-        current: pageNumber === parseInt(item)
-      }
-    }
-  })
-
   // schema: OrgIssueDetails
   req.templateParams = {
     organisation: req.orgInfo,
@@ -147,7 +123,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     entry,
     issueType,
     issueField,
-    pagination: paginationObj,
+    pagination,
     issueEntitiesCount
   }
 
@@ -182,6 +158,8 @@ export default [
   fetchEntityCount,
   fetchIssueEntitiesCount,
   formatErrorSummaryParams,
+  setPagePaginationOptions,
+  createPaginationTemplateParams,
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError
