@@ -80,14 +80,14 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
   const { entities, specification, pagination, errorSummary } = req
 
+  const columnHeaders = [...new Set(specification.fields.map(field => field['dataset-field'] || field.field))]
+
   const tableParams = {
-    columns: specification.fields.map(field => field.field),
-    fields: specification.fields.map(field => field.field),
+    columns: columnHeaders,
+    fields: columnHeaders,
     rows: entities.map((entity, index) => {
       const columns = {}
-
-      specification.fields.forEach(fieldObject => {
-        const { field } = fieldObject
+      columnHeaders.forEach(field => {
         if (field === 'reference') {
           const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${entity.entityPageNumber}`
           columns[field] = { html: `<a href="${entityLink}">${entity[field].value}</a>`, error: entity[field].issue }

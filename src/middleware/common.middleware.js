@@ -282,7 +282,14 @@ export const nestEntityFields = (req, res, next) => {
 
   req.entities = entities.map(entity => {
     specification.fields.forEach(field => {
-      entity[field.field] = { value: entity[field.field] }
+      if ('dataset-field' in field) {
+        entity[field['dataset-field']] = { value: entity[field['dataset-field']] }
+      } else if (field.field in entity) {
+        entity[field.field] = { value: entity[field.field] }
+      } else {
+        logger.warn(`Common.middleware:nestEntityFields - ${field.field} has no 'dataset-field' property set in specification`)
+        entity[field.field] = { value: '' }
+      }
     })
     return entity
   })
@@ -291,14 +298,16 @@ export const nestEntityFields = (req, res, next) => {
 }
 
 export const addIssuesToEntities = (req, res, next) => {
-  const { entities, issuesWithReferences } = req
+  const { entities, issuesWithReferences, specification } = req
 
   req.entitiesWithIssues = entities.map(entity => {
     const entityIssues = issuesWithReferences.filter(issue => issue.entryNumber === entity.entryNumber)
 
     entityIssues.forEach(issue => {
-      entity[issue.field].value = issue.value
-      entity[issue.field].issue = issue
+      const specificationEntry = specification.fields.find(field => field.field === issue.field)
+      const datasetField = specificationEntry['dataset-field'] || specificationEntry.field
+      entity[datasetField].value = issue.value
+      entity[datasetField].issue = issue
     })
 
     return entity
