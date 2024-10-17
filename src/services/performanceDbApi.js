@@ -273,7 +273,7 @@ export default {
       LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
       WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
       AND pipeline = '${dataset}'
-      AND rhe.endpoint_end_date == ''
+      AND (rhe.endpoint_end_date == '' OR rhe.endpoint_end_date is NULL)
     `
   },
 
