@@ -281,15 +281,9 @@ export const nestEntityFields = (req, res, next) => {
   const { entities, specification } = req
 
   req.entities = entities.map(entity => {
-    specification.fields.forEach(field => {
-      if ('dataset-field' in field) {
-        entity[field['dataset-field']] = { value: entity[field['dataset-field']] }
-      } else if (field.field in entity) {
-        entity[field.field] = { value: entity[field.field] }
-      } else {
-        logger.warn(`Common.middleware:nestEntityFields - ${field.field} has no 'dataset-field' property set in specification`)
-        entity[field.field] = { value: '' }
-      }
+    const columnHeaders = [...new Set(specification.fields.map(field => field['dataset-field'] || field.field))]
+    columnHeaders.forEach(field => {
+      entity[field] = { value: entity[field] }
     })
     return entity
   })
@@ -304,8 +298,13 @@ export const addIssuesToEntities = (req, res, next) => {
     const entityIssues = issuesWithReferences.filter(issue => issue.entryNumber === entity.entryNumber)
 
     entityIssues.forEach(issue => {
-      const specificationEntry = specification.fields.find(field => field.field === issue.field)
-      const datasetField = specificationEntry['dataset-field'] || specificationEntry.field
+      let datasetField
+      if (issue.field === 'GeoX,GeoY') { // special case for brownfield land
+        datasetField = 'point'
+      } else {
+        const specificationEntry = specification.fields.find(field => field.field === issue.field)
+        datasetField = specificationEntry ? specificationEntry['dataset-field'] : specificationEntry?.field || issue.field
+      }
       entity[datasetField].value = issue.value
       entity[datasetField].issue = issue
     })
@@ -362,4 +361,24 @@ export const fetchIssuesWithoutReferences = fetchMany({
 
 export function validateQueryParams (context) {
   return validateQueryParamsFn.bind(context)
+}
+
+export const fetchFieldMappings = fetchMany({
+  query: () => 'select * from transform',
+  result: 'fieldMappings'
+})
+
+export const addDatabaseFieldToSpecification = (req, res, next) => {
+  const { specification, fieldMappings } = req
+
+  req.specification.fields = specification.fields.map(fieldObj => {
+    if (['GeoX', 'GeoY'].includes(fieldObj.field)) { // special case for brownfield land
+      return { 'dataset-field': 'Point', ...fieldObj }
+    }
+
+    const databaseField = fieldMappings.find(mapping => mapping.field === fieldObj.field) || fieldObj.field
+    return { 'dataset-field': databaseField.replacement_field, ...fieldObj }
+  })
+
+  next()
 }
