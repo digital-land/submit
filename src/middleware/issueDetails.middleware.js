@@ -1,4 +1,6 @@
 import {
+  addDatabaseFieldToSpecification,
+  addDatasetFieldsToIssues,
   addIssuesToEntities,
   createPaginationTemplateParams,
   extractJsonFieldFromEntities,
@@ -6,6 +8,7 @@ import {
   fetchDatasetInfo,
   fetchEntitiesFromIssuesWithReferences,
   fetchEntityCount,
+  fetchFieldMappings,
   fetchIssueEntitiesCount,
   fetchIssuesWithoutReferences,
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
@@ -104,20 +107,20 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
 
   const entity = entities[pageNumber - 1]
 
-  const fields = specification.fields.map(({ field }) => {
+  const fields = specification.fields.map(({ datasetField }) => {
     let valueHtml = ''
     let classes = ''
-    if (!entity[field]) {
-      entity[field] = {
+    if (!entity[datasetField]) {
+      entity[datasetField] = {
         value: ''
       }
     }
-    if (entity[field].issue) {
-      valueHtml += issueErrorMessageHtml(entity[field].issue.message, null)
+    if (entity[datasetField].issue) {
+      valueHtml += issueErrorMessageHtml(entity[datasetField].issue.message, null)
       classes += 'dl-summary-card-list__row--error'
     }
-    valueHtml += entity[field].value || ''
-    return getIssueField(field, valueHtml, classes)
+    valueHtml += entity[datasetField].value || ''
+    return getIssueField(datasetField, valueHtml, classes)
   })
 
   const entry = {
@@ -158,10 +161,13 @@ export default [
   fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchSpecification,
   pullOutDatasetSpecification,
+  fetchFieldMappings,
+  addDatabaseFieldToSpecification,
   fetchActiveResourcesForOrganisationAndDataset,
-  fetchIssuesWithoutReferences,
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
   fetchEntitiesFromIssuesWithReferences,
+  fetchIssuesWithoutReferences,
+  addDatasetFieldsToIssues,
   fetchIf(hasEntities, extractJsonFieldFromEntities),
   fetchIf(hasEntities, replaceUnderscoreWithHyphenForEntities),
   fetchIf(hasEntities, nestEntityFields),

@@ -279,7 +279,7 @@ export const nestEntityFields = (req, res, next) => {
   const { entities, specification } = req
 
   req.entities = entities.map(entity => {
-    const columnHeaders = [...new Set(specification.fields.map(field => field['dataset-field'] || field.field))]
+    const columnHeaders = [...new Set(specification.fields.map(field => field.datasetField || field.field))]
     columnHeaders.forEach(field => {
       entity[field] = { value: entity[field] }
     })
@@ -298,7 +298,7 @@ export const addDatasetFieldsToIssues = (req, res, next) => {
       datasetField = 'point'
     } else {
       const specificationEntry = specification.fields.find(field => field.field === issue.field)
-      datasetField = specificationEntry ? specificationEntry['dataset-field'] : specificationEntry?.field || issue.field
+      datasetField = specificationEntry ? specificationEntry.datasetField : specificationEntry?.field || issue.field
     }
     return { ...issue, datasetField }
   })
@@ -381,12 +381,12 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
 
   req.specification.fields = specification.fields.map(fieldObj => {
     if (['GeoX', 'GeoY'].includes(fieldObj.field)) { // special case for brownfield land
-      return { 'dataset-field': 'point', ...fieldObj }
+      return { datasetField: 'point', ...fieldObj }
     }
 
     const fieldMapping = fieldMappings.find(mapping => mapping.field === fieldObj.field)
     const databaseField = fieldMapping?.replacement_field || fieldObj.field
-    return { 'dataset-field': databaseField, ...fieldObj }
+    return { datasetField: databaseField, ...fieldObj }
   })
 
   next()

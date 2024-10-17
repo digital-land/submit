@@ -81,7 +81,7 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
   const { entities, specification, pagination, errorSummary } = req
 
-  const columnHeaders = [...new Set(specification.fields.map(field => field['dataset-field'] || field.field))]
+  const columnHeaders = [...new Set(specification.fields.map(field => field.datasetField || field.field))]
 
   const tableParams = {
     columns: columnHeaders,

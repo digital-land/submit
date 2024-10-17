@@ -1,5 +1,5 @@
 import { describe, it, vi, expect } from 'vitest'
-import { prepareIssueTableTemplateParams, IssueTableQueryParams, setDefaultQueryParams, setPagePageOptions, addEntityPageNumberToEntity } from '../../../src/middleware/issueTable.middleware.js'
+import { prepareIssueTableTemplateParams, IssueTableQueryParams, setPagePageOptions, addEntityPageNumberToEntity } from '../../../src/middleware/issueTable.middleware.js'
 // import { pagination } from '../../../src/utils/pagination.js'
 
 import mocker from '../../utils/mocker.js'
@@ -15,33 +15,6 @@ vi.mock('../../../src/utils/pagination.js', () => {
 })
 
 describe('issueTable.middleware.js', () => {
-  describe('setDefaultQueryParams', () => {
-    it('sets the page number when none is set', () => {
-      const req = {
-        params: {}
-      }
-      const next = vi.fn()
-
-      setDefaultQueryParams(req, {}, next)
-
-      expect(req.params.pageNumber).toEqual(1)
-      expect(next).toHaveBeenCalledOnce()
-    })
-
-    it('sets does not change the page number when one is set', () => {
-      const req = {
-        params: {
-          pageNumber: 2
-        }
-      }
-      const next = vi.fn()
-
-      setDefaultQueryParams(req, {}, next)
-      expect(req.params.pageNumber).toEqual(2)
-      expect(next).toHaveBeenCalledOnce()
-    })
-  })
-
   describe('addEntityPageNumberToEntity', () => {
     it('adds entityPageNumber to each entity', () => {
       const req = {

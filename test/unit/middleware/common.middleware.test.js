@@ -448,8 +448,8 @@ describe('addDatasetFieldsToIssues', () => {
       ],
       specification: {
         fields: [
-          { field: 'name', 'dataset-field': 'fullName' },
-          { field: 'age', 'dataset-field': 'Age' }
+          { field: 'name', datasetField: 'fullName' },
+          { field: 'age', datasetField: 'Age' }
         ]
       }
     }
@@ -520,7 +520,7 @@ describe('addDatasetFieldsToIssues', () => {
       ],
       specification: {
         fields: [
-          { field: 'name', 'dataset-field': 'fullName' }
+          { field: 'name', datasetField: 'fullName' }
         ]
       }
     }
@@ -619,11 +619,11 @@ describe('addDatabaseFieldToSpecification', () => {
     expect(req.specification.fields).toHaveLength(2)
     expect(req.specification.fields[0]).toEqual({
       field: 'name',
-      'dataset-field': 'full_name'
+      datasetField: 'full_name'
     })
     expect(req.specification.fields[1]).toEqual({
       field: 'address',
-      'dataset-field': 'physical_address'
+      datasetField: 'physical_address'
     })
   })
 
@@ -644,11 +644,11 @@ describe('addDatabaseFieldToSpecification', () => {
     expect(req.specification.fields).toHaveLength(2)
     expect(req.specification.fields[0]).toEqual({
       field: 'GeoX',
-      'dataset-field': 'point'
+      datasetField: 'point'
     })
     expect(req.specification.fields[1]).toEqual({
       field: 'GeoY',
-      'dataset-field': 'point'
+      datasetField: 'point'
     })
   })
 
@@ -668,7 +668,7 @@ describe('addDatabaseFieldToSpecification', () => {
     expect(req.specification.fields).toHaveLength(1)
     expect(req.specification.fields[0]).toEqual({
       field: 'unknownField',
-      'dataset-field': 'unknownField'
+      datasetField: 'unknownField'
     })
   })
 
