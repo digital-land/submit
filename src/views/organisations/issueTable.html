@@ -4,7 +4,8 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% from "../components/table.html" import table %}
 
 {% set serviceType = 'Submit'%}
 
@@ -37,11 +38,7 @@
       href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
     },
     {
-      text: issueType | capitalize,
-      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField
-    },
-    {
-      text: entry.title | capitalize
+      text: issueType | capitalize
     }
   ]
 }) }}
@@ -49,6 +46,7 @@
 {% endblock %}
 
 {% block content %}
+
 
 <div class="govuk-grid-row">
   {% include "includes/_dataset-page-header.html" %}
@@ -61,12 +59,7 @@
       errorList: errorSummary.items
     }) }}
 
-    {{ govukBackLink({
-      text: "Back",
-      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField
-    }) }}
-
-    {% if entry.geometries and entry.geometries.length %}
+    {% if false and entry.geometries and entry.geometries.length %}
       <div
         id="map"
         class="app-map"
@@ -75,20 +68,26 @@
       </div>
     {% endif %}
 
-    {{ govukSummaryList({
-      card: {
-        title: {
-          text: entry.title
-        }
-      },
-      rows: entry.fields
-    }) }}
+    
+  </div>
+</div>
 
-    {% if pagination.items | length > 1 %}
-      {{ govukPagination(pagination) }}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    {% if tableParams.rows.length > 0 %}
+      {{ table(tableParams) }}
     {% endif %}
   </div>
 </div>
+
+
+{% if pagination.items | length > 1 %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukPagination(pagination) }}
+  </div>
+</div>
+{% endif %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">

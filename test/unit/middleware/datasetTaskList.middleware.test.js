@@ -19,7 +19,7 @@ describe('datasetTaskList.middleware.js', () => {
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset' },
         resource: { resource: 'mock-resource' },
-        issues: [
+        issuesWithCounts: [
           {
             issue: 'Example issue 1',
             issue_type: 'Example issue type 1',

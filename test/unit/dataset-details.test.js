@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from './sharedTests/generic-page.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 import { render } from '../../src/utils/custom-renderer.js'

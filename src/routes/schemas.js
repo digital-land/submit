@@ -38,8 +38,55 @@ export const datasetStatusEnum = {
   'Not submitted': 'Not submitted'
 }
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
-const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
+export const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
+export const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
+
+export const errorSummaryField = v.strictObject({
+  heading: v.optional(v.string()),
+  items: v.array(v.strictObject({
+    html: v.string(),
+    href: v.url()
+  }))
+})
+
+const tableParams = v.strictObject({
+  columns: v.array(NonEmptyString),
+  rows: v.array(v.strictObject({
+    columns: v.objectWithRest(
+      {},
+      v.object({
+        error: v.optional(v.object({
+          message: v.string()
+        })),
+        value: v.optional(v.string()),
+        html: v.optional(v.string())
+      })
+    )
+  })),
+  fields: v.array(NonEmptyString)
+})
+
+const paginationParams = v.optional(v.strictObject({
+  previous: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  next: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  items: v.array(v.variant('type', [
+    v.strictObject({
+      type: v.literal('number'),
+      number: v.integer(),
+      href: v.string(),
+      current: v.boolean()
+    }),
+    v.strictObject({
+      type: v.literal('ellipsis'),
+      ellipsis: v.literal(true),
+      href: v.string()
+    })
+  ]))
+}))
 
 export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
@@ -126,12 +173,9 @@ export const OrgEndpointError = v.strictObject({
 export const OrgIssueDetails = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  errorHeading: v.optional(NonEmptyString),
-  issueItems: v.array(v.strictObject({
-    html: v.string(),
-    href: v.url()
-  })),
+  errorSummary: errorSummaryField,
   issueType: NonEmptyString,
+  issueField: NonEmptyString,
   entry: v.strictObject({
     title: NonEmptyString,
     fields: v.array(v.strictObject({
@@ -139,31 +183,20 @@ export const OrgIssueDetails = v.strictObject({
       value: v.strictObject({ html: v.string() }),
       classes: v.string()
     })),
-    geometries: v.optional(v.array(v.string()))
+    geometries: v.optional(v.string())
   }),
-  pagination: v.optional(v.strictObject({
-    previous: v.optional(v.strictObject({
-      href: v.string()
-    })),
-    next: v.optional(v.strictObject({
-      href: v.string()
-    })),
-    items: v.array(v.variant('type', [
-      v.strictObject({
-        type: v.literal('number'),
-        number: v.integer(),
-        href: v.string(),
-        current: v.boolean()
-      }),
-      v.strictObject({
-        type: v.literal('ellipsis'),
-        ellipsis: v.literal(true),
-        href: v.string()
-      })
-    ]))
-  })),
+  pagination: paginationParams,
   issueEntitiesCount: v.integer(),
   pageNumber: v.integer()
+})
+
+export const OrgIssueTable = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  errorSummary: errorSummaryField,
+  issueType: NonEmptyString,
+  tableParams,
+  pagination: paginationParams
 })
 
 export const CheckAnswers = v.strictObject({
@@ -217,6 +250,7 @@ export const templateSchema = new Map([
   ['organisations/datasetTaskList.html', OrgDatasetTaskList],
   ['organisations/http-error.html', OrgEndpointError],
   ['organisations/issueDetails.html', OrgIssueDetails],
+  ['organisations/issueTable.html', OrgIssueTable],
 
   ['errorPages/503', UptimeParams],
   ['errorPages/500', ErrorParams],

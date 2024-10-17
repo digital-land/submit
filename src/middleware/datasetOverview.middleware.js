@@ -1,5 +1,5 @@
-import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, logPageError, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions } from './middleware.builders.js'
+import { fetchActiveResourcesForOrganisationAndDataset, fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, fetchSpecification, isResourceAccessible, isResourceIdNotInParams, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchIf, fetchMany, renderTemplate, FetchOptions } from './middleware.builders.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 
@@ -30,19 +30,6 @@ const fetchColumnSummary = fetchMany({
   result: 'columnSummary',
   dataset: FetchOptions.performanceDb
 })
-
-const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
-  result: 'specification'
-})
-
-export const pullOutDatasetSpecification = (req, res, next) => {
-  const { specification } = req
-  const collectionSpecifications = JSON.parse(specification.json)
-  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
-  req.specification = datasetSpecification
-  next()
-}
 
 const fetchSources = fetchMany({
   query: ({ params }) => `
@@ -96,12 +83,6 @@ const fetchSources = fetchMany({
       latest_log_entry_date DESC;
   `,
   result: 'sources'
-})
-
-const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
-  result: 'entityCount',
-  dataset: FetchOptions.fromParams
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
@@ -170,12 +151,21 @@ const getDatasetOverview = renderTemplate(
   }
 )
 
+export const fetchLpaDatasetIssues = fetchMany({
+  query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(
+    req.resources.map(resource => resource.resource),
+    params.dataset
+  ),
+  result: 'issues'
+})
+
 export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchColumnSummary,
   fetchResourceStatus,
-  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
+  fetchActiveResourcesForOrganisationAndDataset,
+  fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
   fetchSpecification,
   pullOutDatasetSpecification,
