@@ -365,14 +365,17 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
       return { datasetField: 'point', ...fieldObj }
     }
 
-    const fieldMapping = fieldMappings.filter(mapping => mapping.field === fieldObj.field)
+    const fieldMappingsForField = fieldMappings.filter(mapping => mapping.field === fieldObj.field)
+
+    const datasetFields = fieldMappingsForField.map(mapping => mapping.replacement_field).filter(Boolean)
+
+    if (datasetFields.length === 0) {
+      // no dataset fields found, add the field anyway with datasetField set to the same value as fieldObj.field
+      return { datasetField: fieldObj.field, ...fieldObj }
+    }
 
     // sometimes a field maps to more than one dataset field, so we need to account for that
-    const specificationEntriesWithDatasetFields = []
-    fieldMapping.forEach(mapping => {
-      const databaseField = mapping?.replacement_field || fieldObj.field
-      specificationEntriesWithDatasetFields.push({ datasetField: databaseField, ...fieldObj })
-    })
+    const specificationEntriesWithDatasetFields = datasetFields.map(datasetField => ({ datasetField, ...fieldObj }))
     return specificationEntriesWithDatasetFields
   })
 
