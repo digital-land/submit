@@ -360,14 +360,20 @@ export const fetchFieldMappings = fetchMany({
 export const addDatabaseFieldToSpecification = (req, res, next) => {
   const { specification, fieldMappings } = req
 
-  req.specification.fields = specification.fields.map(fieldObj => {
+  req.specification.fields = specification.fields.flatMap(fieldObj => {
     if (['GeoX', 'GeoY'].includes(fieldObj.field)) { // special case for brownfield land
       return { datasetField: 'point', ...fieldObj }
     }
 
-    const fieldMapping = fieldMappings.find(mapping => mapping.field === fieldObj.field)
-    const databaseField = fieldMapping?.replacement_field || fieldObj.field
-    return { datasetField: databaseField, ...fieldObj }
+    const fieldMapping = fieldMappings.filter(mapping => mapping.field === fieldObj.field)
+
+    // sometimes a field maps to more than one dataset field, so we need to account for that
+    const specificationEntriesWithDatasetFields = []
+    fieldMapping.forEach(mapping => {
+      const databaseField = mapping?.replacement_field || fieldObj.field
+      specificationEntriesWithDatasetFields.push({ datasetField: databaseField, ...fieldObj })
+    })
+    return specificationEntriesWithDatasetFields
   })
 
   next()
