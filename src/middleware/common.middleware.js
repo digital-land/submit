@@ -386,8 +386,9 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
       return { 'dataset-field': 'point', ...fieldObj }
     }
 
-    const databaseField = fieldMappings.find(mapping => mapping.field === fieldObj.field) || fieldObj.field
-    return { 'dataset-field': databaseField.replacement_field, ...fieldObj }
+    const fieldMapping = fieldMappings.find(mapping => mapping.field === fieldObj.field)
+    const databaseField = fieldMapping?.replacement_field || fieldObj.field
+    return { 'dataset-field': databaseField, ...fieldObj }
   })
 
   next()
