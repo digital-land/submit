@@ -30,7 +30,7 @@ export const IssueDetailsQueryParams = v.strictObject({
   dataset: v.string(),
   issue_type: v.string(),
   issue_field: v.string(),
-  pageNumber: v.string(),
+  pageNumber: v.pipe(v.string(), v.transform(parseInt), v.number(), v.integer(), v.minValue(1)),
   resourceId: v.optional(v.string())
 })
 
@@ -93,8 +93,14 @@ export const setPagePaginationOptions = (req, res, next) => {
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
   const { entities, issueEntitiesCount, errorSummary, specification, pagination } = req
-  const { issue_type: issueType, issue_field: issueField, pageNumber: pageNumberString } = req.params
-  const pageNumber = parseInt(pageNumberString)
+  const { issue_type: issueType, issue_field: issueField, pageNumber } = req.params
+
+  if (pageNumber > entities.length) {
+    const error = new Error('pageNumber out of bounds')
+    error.status = 400
+    next(error)
+    return
+  }
 
   const entity = entities[pageNumber - 1]
 

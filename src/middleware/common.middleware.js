@@ -178,9 +178,7 @@ export const paginateEntitiesAndPullOutCount = (req, res, next) => {
 }
 
 export const getPaginationOptions = (resultsCount) => (req, res, next) => {
-  let { pageNumber } = req.params
-
-  pageNumber = pageNumber || 1
+  const { pageNumber } = req.params
 
   req.pagination = { offset: (pageNumber - 1) * resultsCount, limit: resultsCount }
 

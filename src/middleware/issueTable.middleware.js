@@ -36,7 +36,7 @@ export const IssueTableQueryParams = v.object({
   dataset: v.string(),
   issue_type: v.string(),
   issue_field: v.string(),
-  pageNumber: v.optional(v.string()),
+  pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.number(), v.integer(), v.minValue(1))),
   resourceId: v.optional(v.string())
 })
 
@@ -47,8 +47,6 @@ const validateIssueTableQueryParams = validateQueryParams({
 export const setDefaultQueryParams = (req, res, next) => {
   if (!req.params.pageNumber) {
     req.params.pageNumber = 1
-  } else {
-    req.params.pageNumber = parseInt(req.params.pageNumber)
   }
   next()
 }
