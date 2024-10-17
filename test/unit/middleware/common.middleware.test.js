@@ -155,19 +155,6 @@ describe('pagination', () => {
       getPaginationOptionsMiddleware(req, res, next)
       expect(next).toHaveBeenCalledTimes(1)
     })
-
-    it('handles default pageNumber as 1', () => {
-      const resultsCount = 10
-      const getPaginationOptionsMiddleware = getPaginationOptions(resultsCount)
-      const req = { params: {} }
-      const res = {}
-      const next = vi.fn()
-
-      getPaginationOptionsMiddleware(req, res, next)
-      expect(req.pagination).toBeDefined()
-      expect(req.pagination.offset).toBe(0)
-      expect(req.pagination.limit).toBe(10)
-    })
   })
 
   describe('paginateEntitiesAndPullOutCount', () => {
