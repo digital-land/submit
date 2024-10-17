@@ -94,6 +94,35 @@ export const dataSubjects = {
   }
 }
 
+export function makeDatasetsLookup (dataSubjects) {
+  const lookup = new Map()
+  for (const [key, dataSubject] of Object.entries(dataSubjects)) {
+    for (const dataSet of dataSubject.dataSets) {
+      lookup.set(dataSet.value, { ...dataSet, dataSubject: key })
+    }
+  }
+
+  return lookup
+}
+
+/**
+ * @type {Map<string, {value: string, text: string, available: boolean, dataSubject: string, requiresGeometryTypeSelection?: boolean}>}
+ */
+export const datasets = makeDatasetsLookup(dataSubjects)
+
+/**
+ *
+ * @param dataSubjects
+ * @returns {FlatArray<*[], 1>[]} datasets sorted by 'text' property
+ */
+export function availableDatasets (dataSubjects) {
+  const availableDataSubjects = Object.values(dataSubjects).filter(dataSubject => dataSubject.available)
+  const dataSets = Object.values(availableDataSubjects).map(dataSubject => dataSubject.dataSets).flat()
+  const availableDatasets = dataSets.filter(dataSet => dataSet.available)
+  availableDatasets.sort((a, b) => a.text.localeCompare(b.text))
+  return availableDatasets
+}
+
 export const finishedProcessingStatuses = [
   'COMPLETE',
   'FAILED'

@@ -21,7 +21,7 @@ serviceName: 'Submit and update your planning data'
 # NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
 serviceNames: {
     submit: 'Submit and update your planning data',
-    check: 'Check planning and housing data for England',
+    check: 'Submit and update your planning data',
     manage: 'Submit and update your planning data'
 }
 checkService:

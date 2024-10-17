@@ -2,6 +2,7 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from 'components/dataset-banner.html' import datasetBanner %}
 
 {% extends "layouts/main.html" %}
 
@@ -23,6 +24,7 @@
 {% endblock %}
 
 {% block content %}
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       {% if error %}
@@ -37,6 +39,10 @@
         }) }}
       {% endif %}
       <form novalidate method="post">
+
+        {% if options.deepLink %}
+          {{ datasetBanner(options.deepLink) }}
+        {% endif %}
 
         {{ govukRadios({
           name: "geomType",

@@ -1,7 +1,8 @@
-import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues } from './common.middleware.js'
+import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues, validateQueryParams } from './common.middleware.js'
 import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
+import * as v from 'valibot'
 
 /**
  * Fetches the resource status
@@ -111,7 +112,15 @@ const getDatasetTaskListError = renderTemplate({
   handlerName: 'getDatasetTaskListError'
 })
 
+const validateParams = validateQueryParams({
+  schema: v.object({
+    lpa: v.string(),
+    dataset: v.string()
+  })
+})
+
 export default [
+  validateParams,
   fetchResourceStatus,
   fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,

@@ -1,6 +1,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "./checkingFileMacro.html" import checkingFileContent %}
 {% from "./fileCheckedMacro.html" import fileCheckedContent %}
+{% from '../../components/dataset-banner.html' import datasetBanner %}
 
 {% extends "layouts/main.html" %}
 
@@ -20,6 +21,9 @@
 {% block content %}
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds" aria-live="assertive">
+      {% if options.deepLink %}
+        {{ datasetBanner(options.deepLink) }}
+      {% endif %}
       {{ pageContent }}
     </div>
 

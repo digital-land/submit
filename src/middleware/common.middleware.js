@@ -79,13 +79,17 @@ export const fetchOrgInfo = fetchOne({
  * @param {*} res
  * @param {*} next
  */
-export function validateQueryParams (req, res, next) {
+export function validateQueryParamsFn (req, res, next) {
   try {
     v.parse(this.schema || v.any(), req.params)
     next()
   } catch (error) {
     res.status(400).render('errorPages/400', {})
   }
+}
+
+export function validateQueryParams (context) {
+  return validateQueryParamsFn.bind(context)
 }
 
 export const fetchLpaDatasetIssues = fetchMany({

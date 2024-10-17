@@ -56,7 +56,7 @@ const fetchEntityCounts = async (req, res, next) => {
 const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'].map((status, i) => [status, i]))
 
 /**
- * The overview data can contain multiple rows per dataset
+ * The overview data can contain multiple rows per dataset,
  * and we want a collection of with one item per dataset,
  * because that's how we display it on the page.
  *
@@ -94,7 +94,7 @@ export function aggregateOverviewData (lpaOverview) {
 }
 
 /**
- * Calculates overal "health" of the datasets (not)provided by an organisation.
+ * Calculates overall "health" of the datasets (not)provided by an organisation.
  *
  * @param {[number, number, number]} accumulator
  * @param {{ endpoint?: string, status: string }} dataset

@@ -10,13 +10,15 @@ describe('ChooseDatasetController', () => {
       route: '/dataset'
     })
 
-    vi.mock('../../src/utils/utils.js', () => {
+    vi.mock(import('../../src/utils/utils.js'), async (importOriginal) => {
+      const { availableDatasets } = await importOriginal()
       return {
         dataSubjects: {
           subject1: { available: true, dataSets: [{ available: true, text: 'B', value: 'B', requiresGeometryTypeSelection: true }, { available: false, text: 'A', value: 'A', requiresGeometryTypeSelection: false }] },
           subject2: { available: false, dataSets: [{ available: true, text: 'C', value: 'C', requiresGeometryTypeSelection: false }] },
           subject3: { available: true, dataSets: [{ available: true, text: 'A', value: 'A', requiresGeometryTypeSelection: true }] }
-        }
+        },
+        availableDatasets
       }
     })
   })
