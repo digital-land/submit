@@ -64,11 +64,11 @@ describe('issueDetails.middleware.js', () => {
       errorSummary: 'Mock error summary',
       specification: {
         fields: [
-          { field: 'reference', label: 'Reference' },
-          { field: 'geometry', label: 'Geometry' },
-          { field: 'field1', label: 'Field 1' },
-          { field: 'field2', label: 'Field 2' },
-          { field: 'field3', label: 'Field 3' }
+          { field: 'reference', datasetField: 'reference', label: 'Reference' },
+          { field: 'geometry', datasetField: 'geometry', label: 'Geometry' },
+          { field: 'field1', datasetField: 'field1', label: 'Field 1' },
+          { field: 'field2', datasetField: 'field2', label: 'Field 2' },
+          { field: 'field3', datasetField: 'field3', label: 'Field 3' }
         ]
       },
       params: {
