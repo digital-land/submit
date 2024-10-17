@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { addIssuesToEntities, createPaginationTemplateParams, extractJsonFieldFromEntities, formatErrorSummaryParams, getPaginationOptions, isResourceAccessible, isResourceIdNotInParams, isResourceNotAccessible, logPageError, nestEntityFields, paginateEntitiesAndPullOutCount, pullOutDatasetSpecification, replaceUnderscoreWithHyphenForEntities, takeResourceIdFromParams } from '../../../src/middleware/common.middleware'
+import { addDatabaseFieldToSpecification, addDatasetFieldsToIssues, addIssuesToEntities, createPaginationTemplateParams, extractJsonFieldFromEntities, formatErrorSummaryParams, getPaginationOptions, isResourceAccessible, isResourceIdNotInParams, isResourceNotAccessible, logPageError, nestEntityFields, paginateEntitiesAndPullOutCount, pullOutDatasetSpecification, replaceUnderscoreWithHyphenForEntities, takeResourceIdFromParams } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 
 vi.mock('../../../src/utils/logger')
@@ -439,6 +439,99 @@ describe('nestEntityFields', () => {
   })
 })
 
+describe('addDatasetFieldsToIssues', () => {
+  it('adds dataset field to issues', () => {
+    const req = {
+      issuesWithReferences: [
+        { entryNumber: 1, field: 'name', value: 'nameIssueValue' },
+        { entryNumber: 2, field: 'age', value: 'ageIssueValue' }
+      ],
+      specification: {
+        fields: [
+          { field: 'name', 'dataset-field': 'fullName' },
+          { field: 'age', 'dataset-field': 'Age' }
+        ]
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatasetFieldsToIssues(req, res, next)
+    expect(req.issuesWithReferences).toHaveLength(2)
+    expect(req.issuesWithReferences[0]).toEqual({
+      entryNumber: 1,
+      field: 'name',
+      value: 'nameIssueValue',
+      datasetField: 'fullName'
+    })
+    expect(req.issuesWithReferences[1]).toEqual({
+      entryNumber: 2,
+      field: 'age',
+      value: 'ageIssueValue',
+      datasetField: 'Age'
+    })
+  })
+
+  it('handles special case for GeoX,GeoY field', () => {
+    const req = {
+      issuesWithReferences: [
+        { entryNumber: 1, field: 'GeoX,GeoY', value: ' GeoX,GeoY issue value' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatasetFieldsToIssues(req, res, next)
+    expect(req.issuesWithReferences).toHaveLength(1)
+    expect(req.issuesWithReferences[0]).toEqual({
+      entryNumber: 1,
+      field: 'GeoX,GeoY',
+      value: ' GeoX,GeoY issue value',
+      datasetField: 'point'
+    })
+  })
+
+  it('handles issues with no matching specification field', () => {
+    const req = {
+      issuesWithReferences: [
+        { entryNumber: 1, field: 'unknownField', value: 'unknownFieldValue' }
+      ],
+      specification: {
+        fields: []
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatasetFieldsToIssues(req, res, next)
+    expect(req.issuesWithReferences).toHaveLength(1)
+    expect(req.issuesWithReferences[0]).toEqual({
+      entryNumber: 1,
+      field: 'unknownField',
+      value: 'unknownFieldValue',
+      datasetField: 'unknownField'
+    })
+  })
+
+  it('calls next function', () => {
+    const req = {
+      issuesWithReferences: [
+        { entryNumber: 1, field: 'name', value: 'nameIssueValue' }
+      ],
+      specification: {
+        fields: [
+          { field: 'name', 'dataset-field': 'fullName' }
+        ]
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatasetFieldsToIssues(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('addIssuesToEntities', () => {
   it('adds issues to entities correctly', () => {
     const req = {
@@ -447,9 +540,9 @@ describe('addIssuesToEntities', () => {
         { entryNumber: 2, name: { value: 'Jane' }, age: { value: 25 } }
       ],
       issuesWithReferences: [
-        { entryNumber: 1, field: 'name', value: 'nameIssueValue' },
-        { entryNumber: 1, field: 'age', value: 'ageIssueValue' },
-        { entryNumber: 2, field: 'name', value: 'nameIssueValue2' }
+        { entryNumber: 1, field: 'name', datasetField: 'name', value: 'nameIssueValue' },
+        { entryNumber: 1, field: 'age', datasetField: 'age', value: 'ageIssueValue' },
+        { entryNumber: 2, field: 'name', datasetField: 'name', value: 'nameIssueValue2' }
       ]
     }
     const res = {}
@@ -460,12 +553,12 @@ describe('addIssuesToEntities', () => {
     expect(req.entitiesWithIssues).toHaveLength(2)
     expect(req.entitiesWithIssues[0]).toEqual({
       entryNumber: 1,
-      name: { value: 'nameIssueValue', issue: { entryNumber: 1, field: 'name', value: 'nameIssueValue' } },
-      age: { value: 'ageIssueValue', issue: { entryNumber: 1, field: 'age', value: 'ageIssueValue' } }
+      name: { value: 'nameIssueValue', issue: { entryNumber: 1, field: 'name', datasetField: 'name', value: 'nameIssueValue' } },
+      age: { value: 'ageIssueValue', issue: { entryNumber: 1, field: 'age', datasetField: 'age', value: 'ageIssueValue' } }
     })
     expect(req.entitiesWithIssues[1]).toEqual({
       entryNumber: 2,
-      name: { value: 'nameIssueValue2', issue: { entryNumber: 2, field: 'name', value: 'nameIssueValue2' } },
+      name: { value: 'nameIssueValue2', issue: { entryNumber: 2, field: 'name', datasetField: 'name', value: 'nameIssueValue2' } },
       age: { value: 25 }
     })
   })
@@ -476,7 +569,7 @@ describe('addIssuesToEntities', () => {
         { entryNumber: 1, name: { value: 'John' } }
       ],
       issuesWithReferences: [
-        { entryNumber: 1, field: 'name', value: 'Invalid name' }
+        { entryNumber: 1, field: 'name', value: 'Invalid name', datasetField: 'name' }
       ]
     }
     const res = {}
@@ -502,5 +595,98 @@ describe('addIssuesToEntities', () => {
       entryNumber: 1,
       name: { value: 'John' }
     })
+  })
+})
+
+describe('addDatabaseFieldToSpecification', () => {
+  it('adds database field to specification fields', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'name' },
+          { field: 'address' }
+        ]
+      },
+      fieldMappings: [
+        { field: 'name', replacement_field: 'full_name' },
+        { field: 'address', replacement_field: 'physical_address' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(2)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'name',
+      'dataset-field': 'full_name'
+    })
+    expect(req.specification.fields[1]).toEqual({
+      field: 'address',
+      'dataset-field': 'physical_address'
+    })
+  })
+
+  it('handles special case for GeoX and GeoY fields', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'GeoX' },
+          { field: 'GeoY' }
+        ]
+      },
+      fieldMappings: []
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(2)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'GeoX',
+      'dataset-field': 'point'
+    })
+    expect(req.specification.fields[1]).toEqual({
+      field: 'GeoY',
+      'dataset-field': 'point'
+    })
+  })
+
+  it('handles fields with no matching field mapping', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'unknownField' }
+        ]
+      },
+      fieldMappings: []
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(1)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'unknownField',
+      'dataset-field': 'unknownField'
+    })
+  })
+
+  it('calls next function', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'name' }
+        ]
+      },
+      fieldMappings: [
+        { field: 'name', replacement_field: 'full_name' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
   })
 })
