@@ -9,20 +9,16 @@ import {
   fetchEntitiesFromIssuesWithReferences,
   fetchEntityCount,
   fetchFieldMappings,
-  fetchIssueEntitiesCount,
   fetchIssuesWithoutReferences,
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
-  fetchLatestResource,
   fetchOrgInfo,
   fetchSpecification,
   formatErrorSummaryParams,
   hasEntities,
-  isResourceIdNotInParams,
   logPageError,
   nestEntityFields,
   pullOutDatasetSpecification,
   replaceUnderscoreWithHyphenForEntities,
-  takeResourceIdFromParams,
   validateQueryParams
 } from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
@@ -72,10 +68,10 @@ export const getIssueField = (text, html, classes = '') => {
 }
 
 export const setPagePaginationOptions = (req, res, next) => {
-  const { issueEntitiesCount } = req
+  const { entities } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
-  req.resultsCount = issueEntitiesCount
+  req.resultsCount = entities.length
   req.urlSubPath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
   req.paginationPageLength = 1
 
@@ -95,7 +91,7 @@ export const setPagePaginationOptions = (req, res, next) => {
  * from the request, and organizes it into a template parameters object that can be used to render the page.
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entities, issueEntitiesCount, errorSummary, specification, pagination } = req
+  const { entities, errorSummary, specification, pagination } = req
   const { issue_type: issueType, issue_field: issueField, pageNumber } = req.params
 
   if (pageNumber > entities.length) {
@@ -138,7 +134,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     issueType,
     issueField,
     pagination,
-    issueEntitiesCount
+    issueEntitiesCount: entities.length
   }
 
   next()
@@ -158,7 +154,6 @@ export default [
   validateIssueDetailsQueryParams,
   fetchOrgInfo,
   fetchDatasetInfo,
-  fetchIf(isResourceIdNotInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchSpecification,
   pullOutDatasetSpecification,
   fetchFieldMappings,
@@ -173,7 +168,6 @@ export default [
   fetchIf(hasEntities, nestEntityFields),
   fetchIf(hasEntities, addIssuesToEntities),
   fetchEntityCount,
-  fetchIssueEntitiesCount,
   formatErrorSummaryParams,
   setPagePaginationOptions,
   createPaginationTemplateParams,

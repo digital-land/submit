@@ -107,25 +107,6 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   next()
 }
 
-/**
- *
- * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
- *
- * Requires `req.resource.resource`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-export async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  console.assert(resourceId, 'missng resource id')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
-  req.issueEntitiesCount = parseInt(issueEntitiesCount)
-  next()
-}
-
 export function formatErrorSummaryParams (req, res, next) {
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
   const { entityCount: entityCountRow, issuesWithReferences, issuesWithoutReferences, entities } = req

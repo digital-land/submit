@@ -351,14 +351,14 @@ export default {
      * @returns {Promise<number>} Count of entities with issues
      */
   async getEntitiesWithIssuesCount ({
-    resource,
+    resources,
     issueType,
     issueField
   }, database = 'digital-land') {
     const sql = `
     SELECT count(DISTINCT entry_number) as count
     FROM issue
-    WHERE resource = '${resource}'
+    WHERE resource in ('${resources.join("',' ")}')
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
   `
