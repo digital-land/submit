@@ -315,7 +315,7 @@ export const addIssuesToEntities = (req, res, next) => {
     const entityIssues = issuesWithReferences.filter(issue => issue.entryNumber === entity.entryNumber)
 
     entityIssues.forEach(issue => {
-      entity[issue.datasetField].value = issue.value || entity[issue.datasetField].value
+      entity[issue.datasetField].value = issue.value || entity[issue.datasetField].value || ''
       entity[issue.datasetField].issue = issue
     })
 
