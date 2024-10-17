@@ -291,22 +291,32 @@ export const nestEntityFields = (req, res, next) => {
   next()
 }
 
+export const addDatasetFieldsToIssues = (req, res, next) => {
+  const { issuesWithReferences, specification } = req
+
+  req.issuesWithReferences = issuesWithReferences.map(issue => {
+    let datasetField
+    if (issue.field === 'GeoX,GeoY') { // special case for brownfield land
+      datasetField = 'point'
+    } else {
+      const specificationEntry = specification.fields.find(field => field.field === issue.field)
+      datasetField = specificationEntry ? specificationEntry['dataset-field'] : specificationEntry?.field || issue.field
+    }
+    return { ...issue, datasetField }
+  })
+
+  next()
+}
+
 export const addIssuesToEntities = (req, res, next) => {
-  const { entities, issuesWithReferences, specification } = req
+  const { entities, issuesWithReferences } = req
 
   req.entitiesWithIssues = entities.map(entity => {
     const entityIssues = issuesWithReferences.filter(issue => issue.entryNumber === entity.entryNumber)
 
     entityIssues.forEach(issue => {
-      let datasetField
-      if (issue.field === 'GeoX,GeoY') { // special case for brownfield land
-        datasetField = 'point'
-      } else {
-        const specificationEntry = specification.fields.find(field => field.field === issue.field)
-        datasetField = specificationEntry ? specificationEntry['dataset-field'] : specificationEntry?.field || issue.field
-      }
-      entity[datasetField].value = issue.value
-      entity[datasetField].issue = issue
+      entity[issue.datasetField].value = issue.value
+      entity[issue.datasetField].issue = issue
     })
 
     return entity
@@ -373,7 +383,7 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
 
   req.specification.fields = specification.fields.map(fieldObj => {
     if (['GeoX', 'GeoY'].includes(fieldObj.field)) { // special case for brownfield land
-      return { 'dataset-field': 'Point', ...fieldObj }
+      return { 'dataset-field': 'point', ...fieldObj }
     }
 
     const databaseField = fieldMappings.find(mapping => mapping.field === fieldObj.field) || fieldObj.field

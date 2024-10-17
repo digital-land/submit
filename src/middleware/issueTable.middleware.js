@@ -23,7 +23,8 @@ import {
   fetchIssuesWithoutReferences,
   createPaginationTemplateParams,
   fetchFieldMappings,
-  addDatabaseFieldToSpecification
+  addDatabaseFieldToSpecification,
+  addDatasetFieldsToIssues
 } from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -138,6 +139,7 @@ export default [
   fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
   fetchEntitiesFromIssuesWithReferences,
   fetchIssuesWithoutReferences,
+  addDatasetFieldsToIssues,
   fetchIf(hasEntities, addEntityPageNumberToEntity),
   fetchIf(hasEntities, paginateEntitiesAndPullOutCount),
   formatErrorSummaryParams,
