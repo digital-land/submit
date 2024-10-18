@@ -1,7 +1,7 @@
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany } from './middleware.builders.js'
+import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
 /**
@@ -47,7 +47,8 @@ export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
  */
 export const fetchLatestResource = fetchOne({
   query: ({ params }) => performanceDbApi.latestResourceQuery(params.lpa, params.dataset),
-  result: 'resource'
+  result: 'resource',
+  fallbackPolicy: FetchOneFallbackPolicy.continue
 })
 
 export const takeResourceIdFromParams = (req) => {
@@ -95,4 +96,10 @@ export function validateQueryParams (context) {
 export const fetchLpaDatasetIssues = fetchMany({
   query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
   result: 'issues'
+})
+
+export const getDatasetTaskListError = renderTemplate({
+  templateParams: (req) => req.templateParams,
+  template: 'organisations/http-error.html',
+  handlerName: 'getDatasetTaskListError'
 })
