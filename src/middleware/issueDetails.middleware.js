@@ -103,7 +103,9 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
 
   const entity = entities[pageNumber - 1]
 
-  const fields = specification.fields.map(({ datasetField }) => {
+  const datasetFields = [...new Set(specification.fields.map(({ datasetField }) => datasetField))]
+
+  const fields = datasetFields.map(datasetField => {
     let valueHtml = ''
     let classes = ''
     if (!entity[datasetField]) {
