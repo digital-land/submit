@@ -118,13 +118,15 @@ export function formatErrorSummaryParams (req, res, next) {
   let errorHeading
   let issueItems
 
+  const totalIssues = issuesWithReferences.length + issuesWithoutReferences.length
+
   // if the entities length is 0, this means the entry never became an entity, so we shouldn't show the table or links to the entity details page
   if (entities.length === 0) {
     issueItems = [{
       html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issuesWithoutReferences.length, entityCount, field: issueField }, true)
     }]
-  } else if (entities.length < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: entities.length, entityCount, field: issueField }, true)
+  } else if (totalIssues < entityCount) {
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount, field: issueField }, true)
     issueItems = entities.map((entity, index) => {
       return {
         html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in entity ${entity?.reference?.value || entity?.reference}`,
@@ -133,7 +135,7 @@ export function formatErrorSummaryParams (req, res, next) {
     })
   } else {
     issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issuesWithReferences.length, entityCount, field: issueField }, true)
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount, field: issueField }, true)
     }]
   }
 
