@@ -274,6 +274,7 @@ export default {
       WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
       AND pipeline = '${dataset}'
       AND (rhe.endpoint_end_date == '' OR rhe.endpoint_end_date is NULL)
+      AND (rhe.resource_end_date == '' OR rhe.resource_end_date is NULL)
     `
   },
 
