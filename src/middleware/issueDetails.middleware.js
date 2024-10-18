@@ -1,17 +1,35 @@
-import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import {
+  addDatabaseFieldToSpecification,
+  addDatasetFieldsToIssues,
+  addIssuesToEntities,
+  createPaginationTemplateParams,
+  extractJsonFieldFromEntities,
+  fetchActiveResourcesForOrganisationAndDataset,
+  fetchDatasetInfo,
+  fetchEntitiesFromIssuesWithReferences,
+  fetchEntityCount,
+  fetchFieldMappings,
+  fetchIssuesWithoutReferences,
+  fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
+  fetchOrgInfo,
+  fetchSpecification,
+  formatErrorSummaryParams,
+  hasEntities,
+  logPageError,
+  nestEntityFields,
+  pullOutDatasetSpecification,
+  replaceUnderscoreWithHyphenForEntities,
+  validateQueryParams
+} from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
-import { pagination } from '../utils/pagination.js'
 
-export const IssueDetailsQueryParams = v.object({
+export const IssueDetailsQueryParams = v.strictObject({
   lpa: v.string(),
   dataset: v.string(),
   issue_type: v.string(),
   issue_field: v.string(),
-  pageNumber: v.optional(v.string()),
+  pageNumber: v.pipe(v.string(), v.transform(parseInt), v.number(), v.integer(), v.minValue(1)),
   resourceId: v.optional(v.string())
 })
 
@@ -21,108 +39,11 @@ const validateIssueDetailsQueryParams = validateQueryParams({
 
 /**
  *
- * Middleware. Updates `req` with `issues`.
- *
- * Requires `resourceId` in request params or request (in that order).
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  if (!resourceId) {
-    logger.debug('fetchIssues(): missing resourceId', { type: types.App, params: req.params, resource: req.resource })
-    throw Error('fetchIssues: missing resourceId')
-  }
-
-  try {
-    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField }, datasetId)
-    req.issues = issues
-    next()
-  } catch (error) {
-    next(error)
-  }
-}
-
-/**
- *
- * Middleware. Updates `req` with `issues`.
- *
- * Requires `issues` in request.
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function reformatIssuesToBeByEntryNumber (req, res, next) {
-  const { issues } = req
-  const issuesByEntryNumber = issues.reduce((acc, current) => {
-    acc[current.entry_number] = acc[current.entry_number] || []
-    acc[current.entry_number].push(current)
-    return acc
-  }, {})
-  req.issuesByEntryNumber = issuesByEntryNumber
-  next()
-}
-
-/**
- *
- * Middleware. Updates `req` with `entryData`
- *
- * Requires `pageNumber`, `dataset` and
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- *
- */
-async function fetchEntry (req, res, next) {
-  const { dataset: datasetId, pageNumber } = req.params
-  const { issuesByEntryNumber } = req
-  const pageNum = pageNumber ? parseInt(pageNumber) : 1
-  req.pageNumber = pageNum
-
-  // look at issue Entries and get the index of that entry - 1
-
-  const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
-
-  req.entryData = await performanceDbApi.getEntry(
-    req.resource.resource,
-    entityNum,
-    datasetId
-  )
-  req.entryNumber = entityNum
-  next()
-}
-
-/**
- *
- * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
- *
- * Requires `req.resource.resource`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  console.assert(resourceId, 'missng resource id')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
-  req.issueEntitiesCount = parseInt(issueEntitiesCount)
-  next()
-}
-
-/**
- *
  * @param {string} errorMessage
  * @param {{value: string}?} issue
  * @returns {string}
  */
-const issueErrorMessageHtml = (errorMessage, issue) =>
+export const issueErrorMessageHtml = (errorMessage, issue) =>
     `<p class="govuk-error-message">${errorMessage}</p>${
       issue ? issue.value ?? '' : ''
     }`
@@ -134,7 +55,7 @@ const issueErrorMessageHtml = (errorMessage, issue) =>
  * @param {*} classes
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
-const getIssueField = (text, html, classes) => {
+export const getIssueField = (text, html, classes = '') => {
   return {
     key: {
       text
@@ -146,129 +67,76 @@ const getIssueField = (text, html, classes) => {
   }
 }
 
-/**
- *
- * @param {*} issueType
- * @param {*} issuesByEntryNumber
- * @param {*} row
- * @returns {{key: {text: string}, value: { html: string}, classes: string}}
- */
-const processEntryRow = (issueType, issuesByEntryNumber, row) => {
-  const { entry_number: entryNumber } = row
-  console.assert(entryNumber, 'precessEntryRow(): entry_number not in row')
-  let hasError = false
-  let issueIndex
-  if (issuesByEntryNumber[entryNumber]) {
-    issueIndex = issuesByEntryNumber[entryNumber].findIndex(
-      (issue) => issue.field === row.field
-    )
-    hasError = issueIndex >= 0
-  }
+export const setPagePaginationOptions = (req, res, next) => {
+  const { entities } = req
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
 
-  let valueHtml = ''
-  let classes = ''
-  if (hasError) {
-    const message =
-        issuesByEntryNumber[entryNumber][issueIndex].message || issueType
-    valueHtml += issueErrorMessageHtml(message, null)
-    classes += 'dl-summary-card-list__row--error'
-  }
-  valueHtml += row.value
+  req.resultsCount = entities.length
+  req.urlSubPath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
+  req.paginationPageLength = 1
 
-  return getIssueField(row.field, valueHtml, classes)
+  next()
 }
 
-/***
- * Middleware. Updates req with `templateParams`
+/**
+ * Middleware. Prepares template parameters for the issue details page.
+ *
+ * @param {object} req - The request object
+ * @param {object} res - The response object (not used)
+ * @param {function} next - The next middleware function
+ *
+ * @summary Extracts relevant data from the request and organizes it into a template parameters object.
+ * @description This middleware function prepares the template parameters for the issue details page.
+ * It extracts the entry data, issue entities count, issues by entry number, error summary, and other relevant data
+ * from the request, and organizes it into a template parameters object that can be used to render the page.
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount: entityCountRow } = req
-  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
+  const { entities, errorSummary, specification, pagination } = req
+  const { issue_type: issueType, issue_field: issueField, pageNumber } = req.params
 
-  let errorHeading
-  let issueItems
-
-  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
-
-  if (Object.keys(issuesByEntryNumber).length < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-    issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
-      const pageNum = i + 1
-      return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
-        href: `${BaseSubpath}${pageNum}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-    }]
+  if (pageNumber > entities.length) {
+    const error = new Error('pageNumber out of bounds')
+    error.status = 400
+    next(error)
+    return
   }
 
-  const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
-  const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
-  for (const issue of entityIssues) {
-    if (!fields.find((field) => field.key.text === issue.field)) {
-      const errorMessage = issue.message || issueType
-      // TODO: pull the html out of here and into the template
-      const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
-      const classes = 'dl-summary-card-list__row--error'
+  const entity = entities[pageNumber - 1]
 
-      fields.push(getIssueField(issue.field, valueHtml, classes))
-    }
-  }
+  const datasetFields = [...new Set(specification.fields.map(({ datasetField }) => datasetField))]
 
-  const geometries = entryData
-    .filter((row) => row.field === 'geometry')
-    .map((row) => row.value)
-  const entry = {
-    title: `entry: ${entryNumber}`,
-    fields,
-    geometries
-  }
-
-  const paginationObj = {}
-  if (pageNumber > 1) {
-    paginationObj.previous = {
-      href: `${BaseSubpath}${pageNumber - 1}`
-    }
-  }
-
-  if (pageNumber < issueEntitiesCount) {
-    paginationObj.next = {
-      href: `${BaseSubpath}${pageNumber + 1}`
-    }
-  }
-
-  paginationObj.items = pagination(issueEntitiesCount, pageNumber).map(item => {
-    if (item === '...') {
-      return {
-        type: 'ellipsis',
-        ellipsis: true,
-        href: '#'
-      }
-    } else {
-      return {
-        type: 'number',
-        number: item,
-        href: `${BaseSubpath}${item}`,
-        current: pageNumber === parseInt(item)
+  const fields = datasetFields.map(datasetField => {
+    let valueHtml = ''
+    let classes = ''
+    if (!entity[datasetField]) {
+      entity[datasetField] = {
+        value: ''
       }
     }
+    if (entity[datasetField].issue) {
+      valueHtml += issueErrorMessageHtml(entity[datasetField].issue.message, null)
+      classes += 'dl-summary-card-list__row--error'
+    }
+    valueHtml += entity[datasetField].value || ''
+    return getIssueField(datasetField, valueHtml, classes)
   })
+
+  const entry = {
+    title: `entry: ${entity.reference.value}`,
+    fields,
+    geometries: entity.geometry.value
+  }
 
   // schema: OrgIssueDetails
   req.templateParams = {
     organisation: req.orgInfo,
     dataset: req.dataset,
-    errorHeading,
-    issueItems,
+    errorSummary,
     entry,
     issueType,
-    pagination: paginationObj,
-    issueEntitiesCount,
-    pageNumber
+    issueField,
+    pagination,
+    issueEntitiesCount: entities.length
   }
 
   next()
@@ -288,12 +156,23 @@ export default [
   validateIssueDetailsQueryParams,
   fetchOrgInfo,
   fetchDatasetInfo,
-  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
-  fetchIssues,
-  reformatIssuesToBeByEntryNumber,
-  fetchEntry,
+  fetchSpecification,
+  pullOutDatasetSpecification,
+  fetchFieldMappings,
+  addDatabaseFieldToSpecification,
+  fetchActiveResourcesForOrganisationAndDataset,
+  fetchIssuesWithReferencesFromResourcesDatasetIssuetypefield,
+  fetchEntitiesFromIssuesWithReferences,
+  fetchIssuesWithoutReferences,
+  addDatasetFieldsToIssues,
+  fetchIf(hasEntities, extractJsonFieldFromEntities),
+  fetchIf(hasEntities, replaceUnderscoreWithHyphenForEntities),
+  fetchIf(hasEntities, nestEntityFields),
+  fetchIf(hasEntities, addIssuesToEntities),
   fetchEntityCount,
-  fetchIssueEntitiesCount,
+  formatErrorSummaryParams,
+  setPagePaginationOptions,
+  createPaginationTemplateParams,
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError

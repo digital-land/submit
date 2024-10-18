@@ -2,7 +2,7 @@
 
 import { describe } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from './sharedTests/generic-page.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 

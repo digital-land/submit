@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from './sharedTests/generic-page.js'
 import config from '../../config/index.js'
 import { OrgIssueDetails } from '../../src/routes/schemas.js'
 import mocker from '../utils/mocker.js'
@@ -37,13 +37,16 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
 
   describe('error summary', () => {
     it('should render the correct heading', () => {
-      expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(params.errorHeading || 'There is a problem')
+      expect(document.querySelector('.govuk-error-summary__title').textContent).toContain(params.errorSummary.heading || 'There is a problem')
     })
 
     it('should render the correct heading if none is supplied', () => {
       const noErrorHeadingPageHtml = nunjucks.render('organisations/issueDetails.html', {
         ...params,
-        errorHeading: undefined
+        errorSummary: {
+          heading: undefined,
+          items: params.errorSummary.items
+        }
       })
 
       const domNoErrorHeading = new JSDOM(noErrorHeadingPageHtml)
@@ -55,10 +58,10 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
     it('should render the issue items', () => {
       const issueList = document.querySelector('.govuk-error-summary__list')
       const issueItemElements = [...issueList.children]
-      expect(issueItemElements.length).toBe(params.issueItems.length)
+      expect(issueItemElements.length).toBe(params.errorSummary.items.length)
 
       issueItemElements.forEach((element, index) => {
-        expect(element.textContent).toContain(params.issueItems[index].html)
+        expect(element.textContent).toContain(params.errorSummary.items[index].html)
       })
     })
   })
@@ -177,13 +180,13 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
       const paramWithGeometry = {
         organisation: params.organisation,
         dataset: params.dataset,
-        errorHeading: params.errorHeading,
-        issueItems: params.issueItems,
+        errorSummary: params.errorSummary,
         entry: {
           ...params.entry,
-          geometries: ['POINT(0 0)']
+          geometries: 'POINT(0 0)'
         },
-        issueType: params.issueType
+        issueType: params.issueType,
+        issueField: params.issueField
       }
 
       const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)
@@ -200,13 +203,13 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
       const paramWithGeometry = {
         organisation: params.organisation,
         dataset: params.dataset,
-        errorHeading: params.errorHeading,
-        issueItems: params.issueItems,
+        errorSummary: params.errorSummary,
         entry: {
           ...params.entry,
-          geometries: []
+          geometries: ''
         },
-        issueType: params.issueType
+        issueType: params.issueType,
+        issueField: params.issueField
       }
 
       const mapHtml = nunjucks.render('organisations/issueDetails.html', paramWithGeometry)
