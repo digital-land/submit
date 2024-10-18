@@ -1,6 +1,6 @@
-import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, logPageError, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions } from './middleware.builders.js'
-import { fetchResourceStatus } from './datasetTaskList.middleware.js'
+import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getDatasetTaskListError, isResourceAccessible, isResourceIdInParams, isResourceNotAccessible, logPageError, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } from './middleware.builders.js'
+import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 
 const fetchColumnSummary = fetchMany({
@@ -177,6 +177,8 @@ export default [
   fetchResourceStatus,
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+  onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
+  onlyIf(isResourceNotAccessible, getDatasetTaskListError),
   fetchSpecification,
   pullOutDatasetSpecification,
   fetchSources,
