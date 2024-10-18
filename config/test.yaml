@@ -9,3 +9,6 @@ aws: {
     endpoint: 'http://localhost:4566',
     s3ForcePathStyle: true,
 }
+googleAnalytics: {
+  measurementId: 'G-TEST-CODE'
+}

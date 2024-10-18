@@ -49,7 +49,18 @@ export const ConfigSchema = v.object({
       AcknowledgementTemplateId: v.uuid()
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
-  })
+  }),
+  smartlook: v.optional(
+    v.object({
+      key: v.string(),
+      region: v.string()
+    })
+  ),
+  googleAnalytics: v.optional(
+    v.object({
+      measurementId: v.string()
+    })
+  )
 })
 
 const readConfig = (config) => {
