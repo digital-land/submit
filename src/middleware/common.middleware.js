@@ -261,11 +261,12 @@ export const replaceUnderscoreWithHyphenForEntities = (req, res, next) => {
   const { entities } = req
 
   entities.forEach(entity => {
-    Object.keys(entity).forEach(key => {
+    const keys = Object.keys(entity)
+    keys.forEach(key => {
       if (key.includes('_')) {
         const newKey = key.replace(/_/g, '-')
         entity[newKey] = entity[key]
-        entity[key] = undefined
+        delete entity[key]
       }
     })
   })
