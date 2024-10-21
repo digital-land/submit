@@ -95,7 +95,8 @@ describe('issueTable.middleware.js', () => {
           { number: 1, href: '/pagenation-link-1' },
           { number: 2, href: '/pagenation-link-2' }
         ]
-      }
+      },
+      geometries: ['geometry1']
     }
     const res = {}
     const next = vi.fn()
@@ -117,7 +118,7 @@ describe('issueTable.middleware.js', () => {
             columns: {
               reference: {
                 error: undefined,
-                html: `<a href="/organisations/${req.params.lpa}/${req.params.dataset}/${req.params.issue_type}/${req.params.issue_field}/entry/${1}">${req.entities[0].reference.value}</a>`
+                html: `<a href="/organisations/${encodeURI(req.params.lpa)}/${encodeURI(req.params.dataset)}/${encodeURI(req.params.issue_type)}/${encodeURI(req.params.issue_field)}/entry/${encodeURI(1)}">${req.entities[0].reference.value}</a>`
               },
               'start-date': {
                 error: {
@@ -137,7 +138,8 @@ describe('issueTable.middleware.js', () => {
         errorSummary: req.errorSummary,
         issueType: req.params.issue_type,
         tableParams,
-        pagination: req.pagination
+        pagination: req.pagination,
+        geometries: req.geometries
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)

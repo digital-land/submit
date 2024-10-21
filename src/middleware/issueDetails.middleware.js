@@ -113,7 +113,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
       valueHtml += issueErrorMessageHtml(entity[datasetField].issue.message, null)
       classes += 'dl-summary-card-list__row--error'
     }
-    valueHtml += entity[datasetField].value || ''
+    valueHtml += entity[datasetField]?.value || ''
     return getIssueField(datasetField, valueHtml, classes)
   })
 
