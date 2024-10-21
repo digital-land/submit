@@ -196,7 +196,8 @@ export const OrgIssueTable = v.strictObject({
   errorSummary: errorSummaryField,
   issueType: NonEmptyString,
   tableParams,
-  pagination: paginationParams
+  pagination: paginationParams,
+  geometries: v.array(v.string())
 })
 
 export const CheckAnswers = v.strictObject({

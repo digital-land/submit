@@ -1,5 +1,5 @@
 import { describe, it, vi, expect } from 'vitest'
-import { prepareIssueTableTemplateParams, IssueTableQueryParams, setPagePageOptions, addEntityPageNumberToEntity } from '../../../src/middleware/issueTable.middleware.js'
+import { prepareIssueTableTemplateParams, IssueTableQueryParams, setPagePageOptions, addEntityPageNumberToEntity, getGeometriesFromEntities } from '../../../src/middleware/issueTable.middleware.js'
 // import { pagination } from '../../../src/utils/pagination.js'
 
 import mocker from '../../utils/mocker.js'
@@ -141,6 +141,44 @@ describe('issueTable.middleware.js', () => {
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
+    })
+  })
+
+  describe('getGeometriesFromEntities', () => {
+    it('should extract geometries from entities', () => {
+      const entities = [
+        {
+          geometry: { value: 'POINT(1 2)' }
+        },
+        {
+          point: { value: 'POINT(3 4)' }
+        },
+        {
+          noGeometry: true
+        }
+      ]
+
+      const req = { entities }
+      const res = {}
+      const next = vi.fn()
+
+      getGeometriesFromEntities(req, res, next)
+
+      expect(req.geometries).toEqual(['POINT(1 2)', 'POINT(3 4)'])
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle empty entities array', () => {
+      const entities = []
+
+      const req = { entities }
+      const res = {}
+      const next = vi.fn()
+
+      getGeometriesFromEntities(req, res, next)
+
+      expect(req.geometries).toEqual([])
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 })

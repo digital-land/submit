@@ -59,7 +59,7 @@
       errorList: errorSummary.items
     }) }}
 
-    {% if entry.geometries and entry.geometries.length %}
+    {% if geometries and geometries.length %}
       <div
         id="map"
         class="app-map"
@@ -107,12 +107,12 @@
 
 {% block scripts %}
   {{ super() }}
-  {% if entry.geometries and entry.geometries.length %}
+  {% if geometries and geometries.length %}
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
         containerId: 'map',
-        geometries: {{ entry.geometries | dump | safe }},
+        geometries: {{ geometries | dump | safe }},
         mapType: "static"
       }
     </script>

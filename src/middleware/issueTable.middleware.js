@@ -70,6 +70,23 @@ export const setPagePageOptions = (pageLength) => (req, res, next) => {
   next()
 }
 
+export const getGeometriesFromEntities = (req, res, next) => {
+  const { entities } = req
+
+  const geometries = entities.map(entity => {
+    if (entity && entity.geometry && entity.geometry.value) {
+      return entity.geometry.value
+    } else if (entity && entity.point && entity.point.value) {
+      return entity.point.value
+    } else {
+      return null
+    }
+  }).filter(geometry => geometry !== null)
+
+  req.geometries = geometries
+  next()
+}
+
 /**
  * Middleware function to prepare issue table template params
  *
@@ -79,7 +96,7 @@ export const setPagePageOptions = (pageLength) => (req, res, next) => {
  */
 export const prepareIssueTableTemplateParams = (req, res, next) => {
   const { issue_type: issueType, issue_field: issueField, lpa, dataset: datasetId } = req.params
-  const { entities, specification, pagination, errorSummary } = req
+  const { entities, specification, pagination, errorSummary, geometries } = req
 
   const columnHeaders = [...new Set(specification.fields.map(field => field.datasetField || field.field))]
 
@@ -111,7 +128,8 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
     errorSummary,
     issueType,
     tableParams,
-    pagination
+    pagination,
+    geometries
   }
   next()
 }
@@ -148,6 +166,7 @@ export default [
   fetchIf(hasEntities, addIssuesToEntities),
   setPagePageOptions(paginationPageLength),
   createPaginationTemplateParams,
+  getGeometriesFromEntities,
   prepareIssueTableTemplateParams,
   getIssueTable,
   logPageError
