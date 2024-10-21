@@ -58,6 +58,72 @@ describe('issueDetails.middleware.js', () => {
         classes: ''
       })
     })
+
+    it('should return an object with default values if text is null', () => {
+      const html = '<p>Mock html</p>'
+      const classes = 'mock-classes'
+      const result = getIssueField(null, html, classes)
+      expect(result).toEqual({
+        key: { text: '' },
+        value: { html },
+        classes
+      })
+    })
+
+    it('should return an object with default values if text is undefined', () => {
+      const html = '<p>Mock html</p>'
+      const classes = 'mock-classes'
+      const result = getIssueField(undefined, html, classes)
+      expect(result).toEqual({
+        key: { text: '' },
+        value: { html },
+        classes
+      })
+    })
+
+    it('should return an object with default values if html is null', () => {
+      const text = 'Mock text'
+      const classes = 'mock-classes'
+      const result = getIssueField(text, null, classes)
+      expect(result).toEqual({
+        key: { text },
+        value: { html: '' },
+        classes
+      })
+    })
+
+    it('should return an object with default values if html is undefined', () => {
+      const text = 'Mock text'
+      const classes = 'mock-classes'
+      const result = getIssueField(text, undefined, classes)
+      expect(result).toEqual({
+        key: { text },
+        value: { html: '' },
+        classes
+      })
+    })
+
+    it('should return an object with default values if classes is null', () => {
+      const text = 'Mock text'
+      const html = '<p>Mock html</p>'
+      const result = getIssueField(text, html, null)
+      expect(result).toEqual({
+        key: { text },
+        value: { html },
+        classes: ''
+      })
+    })
+
+    it('should return an object with default values if classes is undefined', () => {
+      const text = 'Mock text'
+      const html = '<p>Mock html</p>'
+      const result = getIssueField(text, html, undefined)
+      expect(result).toEqual({
+        key: { text },
+        value: { html },
+        classes: ''
+      })
+    })
   })
 
   describe('prepareIssueDetailsTemplateParams', () => {

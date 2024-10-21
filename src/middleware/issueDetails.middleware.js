@@ -59,15 +59,15 @@ export const issueErrorMessageHtml = (errorMessage, issue) => {
  * @param {*} classes
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
-export const getIssueField = (text, html, classes = '') => {
+export const getIssueField = (text = '', html = '', classes = '') => {
   return {
     key: {
-      text
+      text: text ?? ''
     },
     value: {
-      html
+      html: html ?? ''
     },
-    classes
+    classes: classes ?? ''
   }
 }
 
