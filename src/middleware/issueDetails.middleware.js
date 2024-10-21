@@ -23,6 +23,7 @@ import {
 } from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
+import escape from 'escape-html'
 
 export const IssueDetailsQueryParams = v.strictObject({
   lpa: v.string(),
@@ -45,7 +46,7 @@ const validateIssueDetailsQueryParams = validateQueryParams({
  */
 export const issueErrorMessageHtml = (errorMessage, issue) =>
     `<p class="govuk-error-message">${errorMessage}</p>${
-      issue ? issue.value ?? '' : ''
+      escape(issue ? issue.value ?? '' : '')
     }`
 
 /**
@@ -113,7 +114,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
       valueHtml += issueErrorMessageHtml(entity[datasetField].issue.message, null)
       classes += 'dl-summary-card-list__row--error'
     }
-    valueHtml += entity[datasetField]?.value || ''
+    valueHtml += escape(entity[datasetField]?.value || '')
     return getIssueField(datasetField, valueHtml, classes)
   })
 
