@@ -154,6 +154,32 @@ describe('pagination', () => {
       getPaginationOptionsMiddleware(req, res, next)
       expect(next).toHaveBeenCalledTimes(1)
     })
+
+    it('handles negative page numbers gracefully', () => {
+      const resultsCount = 10
+      const getPaginationOptionsMiddleware = getPaginationOptions(resultsCount)
+      const req = { params: { pageNumber: -1 } }
+      const res = {}
+      const next = vi.fn()
+
+      getPaginationOptionsMiddleware(req, res, next)
+      expect(req.pagination.offset).toBe(0)
+      expect(req.pagination.limit).toBe(10)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles non-integer page numbers gracefully', () => {
+      const resultsCount = 10
+      const getPaginationOptionsMiddleware = getPaginationOptions(resultsCount)
+      const req = { params: { pageNumber: 'abc' } }
+      const res = {}
+      const next = vi.fn()
+
+      getPaginationOptionsMiddleware(req, res, next)
+      expect(req.pagination.offset).toBe(0)
+      expect(req.pagination.limit).toBe(10)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('paginateEntitiesAndPullOutCount', () => {
