@@ -100,21 +100,18 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
 
   if (!entities) {
     const error = new Error('entities is not defined')
-    next(error)
-    return
+    return next(error)
   }
 
   if (!specification) {
     const error = new Error('specification is not defined')
-    next(error)
-    return
+    return next(error)
   }
 
   if (pageNumber > entities.length || entities.length === 0) {
     const error = new Error('pageNumber out of bounds')
     error.status = 400
-    next(error)
-    return
+    return next(error)
   }
 
   const entity = entities[pageNumber - 1]

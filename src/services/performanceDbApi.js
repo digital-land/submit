@@ -345,7 +345,7 @@ export default {
      * Retrieves the count of entities with issues of a specific type and field.
      *
      * @param {Object} params - Parameters for the query
-     * @param {string} params.resource - Resource to filter by
+     * @param {string[]} params.resources - Resource to filter by
      * @param {string} params.issueType - Issue type to filter by
      * @param {string} params.issueField - Field to filter by
      * @param {string} [database="digital-land"] - Database to query (optional)
