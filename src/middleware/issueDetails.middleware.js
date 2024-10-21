@@ -108,12 +108,8 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   const fields = datasetFields.map(datasetField => {
     let valueHtml = ''
     let classes = ''
-    if (!entity[datasetField]) {
-      entity[datasetField] = {
-        value: ''
-      }
-    }
-    if (entity[datasetField].issue) {
+    const fieldValue = entity[datasetField] || { value: '' }
+    if (fieldValue.issue) {
       valueHtml += issueErrorMessageHtml(entity[datasetField].issue.message, null)
       classes += 'dl-summary-card-list__row--error'
     }
