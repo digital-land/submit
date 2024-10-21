@@ -63,14 +63,6 @@ export const resetRandomNumberGenerator = () => {
   xorShiftSeed = undefined
 }
 
-const enhanceMockedData = (data, schema) => {
-  if ('tableParams' in data) {
-    data.tableParams = mockTableParams(data.tableParams, schema.properties.tableParams)
-  }
-
-  return data
-}
-
 const mockTableParams = (tableParams, schema) => {
   const columnSchema = schema.properties.columns
   columnSchema.minItems = 2
@@ -107,6 +99,14 @@ const mockTableParams = (tableParams, schema) => {
   tableParams = { columns, fields, rows }
 
   return tableParams
+}
+
+const enhanceMockedData = (data, schema) => {
+  if ('tableParams' in data) {
+    data.tableParams = mockTableParams(data.tableParams, schema.properties.tableParams)
+  }
+
+  return data
 }
 
 export const getSeed = () => {
