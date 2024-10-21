@@ -312,7 +312,9 @@ export const addDatasetFieldsToIssues = (req, res, next) => {
 export const addIssuesToEntities = (req, res, next) => {
   const { entities, issuesWithReferences } = req
 
-  req.entitiesWithIssues = entities.map(entity => {
+  req.entitiesWithIssues = entities.map(origionalEntity => {
+    const entity = JSON.parse(JSON.stringify(origionalEntity))
+
     const entityIssues = issuesWithReferences.filter(issue => issue.entryNumber === entity.entryNumber)
 
     entityIssues.forEach(issue => {
