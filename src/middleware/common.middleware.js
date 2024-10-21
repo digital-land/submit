@@ -272,6 +272,11 @@ export const replaceUnderscoreWithHyphenForEntities = (req, res, next) => {
 export const nestEntityFields = (req, res, next) => {
   const { entities, specification } = req
 
+  if (!specification) {
+    const error = new Error('Specification is not defined')
+    return next(error)
+  }
+
   req.entities = entities.map(entity => {
     const columnHeaders = [...new Set(specification.fields.map(field => field.datasetField || field.field))]
     columnHeaders.forEach(field => {

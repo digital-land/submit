@@ -438,6 +438,21 @@ describe('nestEntityFields', () => {
     expect(req.entities).toHaveLength(1)
     expect(req.entities[0]).toEqual({ id: 1, name: 'John' })
   })
+
+  it('handles entities with undefined specification', () => {
+    const req = {
+      entities: [
+        { id: 1, name: 'John' }
+      ],
+      specification: null
+    }
+    const res = {}
+    const next = vi.fn()
+
+    nestEntityFields(req, res, next)
+
+    expect(next).toHaveBeenCalledWith(new Error('Specification is not defined'))
+  })
 })
 
 describe('addDatasetFieldsToIssues', () => {
