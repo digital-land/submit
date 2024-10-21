@@ -48,7 +48,8 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
   const { lpa, dataset: datasetId } = params
   console.assert(typeof entityCount === 'number', 'entityCount should be a number')
 
-  const taskList = issuesWithCounts.map((issue) => {
+  const issuesWithCountsOrDefault = issuesWithCounts || []
+  const taskList = issuesWithCountsOrDefault.map((issue) => {
     return {
       title: {
         text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
