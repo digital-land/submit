@@ -4,11 +4,11 @@ import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from './sharedTests/generic-page.js'
 import config from '../../config/index.js'
 import { OrgIssueDetails } from '../../src/routes/schemas.js'
-import mocker from '../utils/mocker.js'
+import mocker, { getSeed } from '../utils/mocker.js'
 
 const nunjucks = setupNunjucks({})
 
-const seed = new Date().getTime()
+const seed = getSeed()
 
 describe(`issueDetails.html(seed: ${seed})`, () => {
   const params = mocker(OrgIssueDetails, seed)

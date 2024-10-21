@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './sharedTests/generic-page.js'
 import jsdom from 'jsdom'
-import mocker from '../utils/mocker.js'
+import mocker, { getSeed } from '../utils/mocker.js'
 import { OrgDatasetTaskList } from '../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({})
 
-const seed = new Date().getTime()
+const seed = getSeed()
 
 describe(`Dataset Task List Page (seed: ${seed})`, () => {
   const params = mocker(OrgDatasetTaskList, seed)

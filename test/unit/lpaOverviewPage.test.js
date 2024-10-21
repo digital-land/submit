@@ -3,13 +3,13 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from './sharedTests/generic-page.js'
 import jsdom from 'jsdom'
 import { makeDatasetSlugToReadableNameFilter } from '../../src/filters/makeDatasetSlugToReadableNameFilter.js'
-import mocker from '../utils/mocker.js'
+import mocker, { getSeed } from '../utils/mocker.js'
 import { datasetStatusEnum, OrgOverviewPage } from '../../src/routes/schemas.js'
 
 const datasetNameMapping = new Map()
 const nunjucks = setupNunjucks({ datasetNameMapping })
 
-const seed = new Date().getTime()
+const seed = getSeed()
 
 describe(`LPA Overview Page (seed: ${seed})`, () => {
   const params = mocker(OrgOverviewPage, seed)

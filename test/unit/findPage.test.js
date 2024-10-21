@@ -3,12 +3,12 @@ import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
 import { runGenericPageTests } from './sharedTests/generic-page.js'
 import config from '../../config/index.js'
-import mock from '../utils/mocker.js'
+import mock, { getSeed } from '../utils/mocker.js'
 import { OrgFindPage } from '../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({})
 
-const seed = new Date().getTime()
+const seed = getSeed()
 
 describe(`Organisations Find Page (seed: ${seed})`, () => {
   const params = mock(OrgFindPage, seed)

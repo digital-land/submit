@@ -2,14 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from './sharedTests/generic-page.js'
-import mock from '../utils/mocker.js'
+import mock, { getSeed } from '../utils/mocker.js'
 import { OrgEndpointError } from '../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 const dateRegex = /\d{1,2} \w{3,9} \d{4} at \d{1,2}(?::\d{2})?(?:am|pm)/g
 
-const seed = new Date().getTime()
+const seed = getSeed()
 
 describe(`http-error.html(seed: ${seed})`, () => {
   const params = mock(OrgEndpointError, seed)

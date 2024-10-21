@@ -3,7 +3,7 @@ import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 import { JSDOM } from 'jsdom'
 import { runGenericPageTests } from '../../sharedTests/generic-page.js'
 import config from '../../../../config/index.js'
-import mocker from '../../../utils/mocker.js'
+import mocker, { getSeed } from '../../../utils/mocker.js'
 import { OrgIssueTable } from '../../../../src/routes/schemas.js'
 import { runTableTests } from '../../sharedTests/tableTests.js'
 
@@ -75,5 +75,5 @@ const runTestsWithSeed = (seed) => {
   })
 }
 
-const seed = new Date().getTime()
+const seed = getSeed()
 runTestsWithSeed(seed)

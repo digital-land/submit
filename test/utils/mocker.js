@@ -108,3 +108,7 @@ const mockTableParams = (tableParams, schema) => {
 
   return tableParams
 }
+
+export const getSeed = () => {
+  return process.env.TEST_SEED || new Date().getTime()
+}
