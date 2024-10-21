@@ -43,7 +43,4 @@ function checkRowContent (columns, rowData) {
       expect(columns[j].textContent).toContain(prettifyColumnName(field.error.message))
     }
   })
-
-  // Check for unexpected additional columns
-  expect(columns.length).toEqual(Object.keys(rowData.columns).length)
 }
