@@ -23,20 +23,27 @@ export const runTableTests = (tableParams, document) => {
     it('Renders the correct row content', () => {
       tableParams.rows.forEach((rowData, i) => {
         const columns = rows[i].children
-        expect(columns.length).toEqual(Object.keys(rowData.columns).length)
-
-        Object.values(rowData.columns).forEach((field, j) => {
-          if (field.value) {
-            expect(columns[j].textContent).toContain(field.value)
-          } else if (field.html) {
-            expect(columns[j].innerHTML).toContain(field.html)
-          }
-
-          if (field.error) {
-            expect(columns[j].textContent).toContain(prettifyColumnName(field.error.message))
-          }
-        })
+        checkRowContent(columns, rowData)
       })
     })
   })
+}
+
+function checkRowContent (columns, rowData) {
+  expect(columns.length).toEqual(Object.keys(rowData.columns).length)
+
+  Object.values(rowData.columns).forEach((field, j) => {
+    if (field.value) {
+      expect(columns[j].textContent).toContain(field.value)
+    } else if (field.html) {
+      expect(columns[j].innerHTML).toContain(field.html)
+    }
+
+    if (field.error) {
+      expect(columns[j].textContent).toContain(prettifyColumnName(field.error.message))
+    }
+  })
+
+  // Check for unexpected additional columns
+  expect(columns.length).toEqual(Object.keys(rowData.columns).length)
 }
