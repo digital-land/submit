@@ -27,6 +27,12 @@ describe('issueDetails.middleware.js', () => {
       const result = issueErrorMessageHtml(errorMessage, issue)
       expect(result).toBe(`<p class="govuk-error-message">${errorMessage}</p>`)
     })
+
+    it('should return an empty string if errorMessage is null', () => {
+      const issue = { value: '02-02-2022' }
+      const result = issueErrorMessageHtml(null, issue)
+      expect(result).toBe('')
+    })
   })
 
   describe('getIssueField', () => {

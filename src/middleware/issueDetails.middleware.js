@@ -24,6 +24,7 @@ import {
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import escape from 'escape-html'
+import logger from '../utils/logger.js'
 
 export const IssueDetailsQueryParams = v.strictObject({
   lpa: v.string(),
@@ -44,10 +45,12 @@ const validateIssueDetailsQueryParams = validateQueryParams({
  * @param {{value: string}?} issue
  * @returns {string}
  */
-export const issueErrorMessageHtml = (errorMessage, issue) =>
-    `<p class="govuk-error-message">${errorMessage}</p>${
-      escape(issue ? issue.value ?? '' : '')
-    }`
+export const issueErrorMessageHtml = (errorMessage, issue) => {
+  if (!errorMessage) return ''
+  return `<p class="govuk-error-message">${errorMessage}</p>${
+    escape(issue ? issue.value ?? '' : '')
+  }`
+}
 
 /**
  *
@@ -111,7 +114,10 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     let classes = ''
     const fieldValue = entity[datasetField] || { value: '' }
     if (fieldValue.issue) {
-      valueHtml += issueErrorMessageHtml(entity[datasetField].issue.message, null)
+      if (!fieldValue.issue.message) {
+        logger.warn('no issue message found for issue in entity', { entity })
+      }
+      valueHtml += issueErrorMessageHtml(fieldValue.issue.message, null)
       classes += 'dl-summary-card-list__row--error'
     }
     valueHtml += escape(entity[datasetField]?.value || '')
