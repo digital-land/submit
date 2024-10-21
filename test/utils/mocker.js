@@ -6,23 +6,23 @@ import { JSONSchemaFaker } from 'json-schema-faker'
 import { date, number, string } from 'valibot'
 
 const mockTableParams = (tableParams, schema) => {
-  const columnSchema = { ...schema.properties.columns }
+  const columnSchema = JSON.parse(JSON.stringify(schema.properties.columns))
   columnSchema.minItems = 2
   columnSchema.maxItems = 10
 
   const columns = JSONSchemaFaker.generate(columnSchema)
 
-  const fieldSchema = { ...schema.properties.fields }
+  const fieldSchema = JSON.parse(JSON.stringify(schema.properties.fields))
   fieldSchema.minItems = columns.length
   fieldSchema.maxItems = columns.length
   fieldSchema.uniqueItems = true
 
   const fields = JSONSchemaFaker.generate(fieldSchema)
 
-  const rowsSchema = { ...schema.properties.rows }
+  const rowsSchema = JSON.parse(JSON.stringify(schema.properties.rows))
   rowsSchema.items.properties.columns.required = []
 
-  const rowSchema = { ...schema.properties.rows.items.properties.columns.additionalProperties }
+  const rowSchema = JSON.parse(JSON.stringify(schema.properties.rows.items.properties.columns.additionalProperties))
   rowSchema.oneOf = [
     { required: ['html'] },
     { required: ['value'] }
