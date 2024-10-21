@@ -6,8 +6,7 @@ vi.mock('../../../src/utils/logger')
 
 describe('logPageError', () => {
   it('logs an error with handlerName', () => {
-    const loggerMock = vi.fn()
-    logger.warn = loggerMock
+    const loggerMock = vi.spyOn(logger, 'warn')
 
     const err = new Error('Test error')
     const req = { handlerName: 'testHandler', originalUrl: '/test' }
