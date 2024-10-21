@@ -241,8 +241,12 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
       return entity
     }
     entity.json = undefined
-    const parsedJson = JSON.parse(jsonField)
-    entity = { ...entity, ...parsedJson }
+    try {
+      const parsedJson = JSON.parse(jsonField)
+      entity = { ...entity, ...parsedJson }
+    } catch (err) {
+      logger.warn(`common.middleware/extractJsonField: Error parsing JSON for entity ${entity.toString()}: ${err.message}`)
+    }
     return entity
   })
 

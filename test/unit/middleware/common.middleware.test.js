@@ -301,6 +301,21 @@ describe('extractJsonFieldFromEntities', () => {
     expect(req.entities).toHaveLength(1)
     expect(req.entities[0]).toEqual({ id: 1 })
   })
+
+  it('handles entities with invalid json field', () => {
+    const req = {
+      entities: [
+        { id: 1, json: '{ invalid json }' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    extractJsonFieldFromEntities(req, res, next)
+
+    expect(req.entities).toHaveLength(1)
+    expect(req.entities[0]).toEqual({ id: 1 })
+  })
 })
 
 describe('replaceUnderscoreWithHyphenForEntities', () => {
