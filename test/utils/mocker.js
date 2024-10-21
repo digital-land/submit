@@ -5,6 +5,52 @@ import { toJSONSchema } from '@gcornut/valibot-json-schema'
 import { JSONSchemaFaker } from 'json-schema-faker'
 import { date, number, string } from 'valibot'
 
+const mockTableParams = (tableParams, schema) => {
+  const columnSchema = JSON.parse(JSON.stringify(schema.properties.columns))
+  columnSchema.minItems = 2
+  columnSchema.maxItems = 10
+
+  const columns = JSONSchemaFaker.generate(columnSchema)
+
+  const fieldSchema = JSON.parse(JSON.stringify(schema.properties.fields))
+  fieldSchema.minItems = columns.length
+  fieldSchema.maxItems = columns.length
+  fieldSchema.uniqueItems = true
+
+  const fields = JSONSchemaFaker.generate(fieldSchema)
+
+  const rowsSchema = JSON.parse(JSON.stringify(schema.properties.rows))
+  rowsSchema.items.properties.columns.required = []
+
+  const rowSchema = JSON.parse(JSON.stringify(schema.properties.rows.items.properties.columns.additionalProperties))
+  rowSchema.oneOf = [
+    { required: ['html'] },
+    { required: ['value'] }
+  ]
+  rowSchema.additionalProperties = false
+
+  fields.forEach(field => {
+    rowsSchema.items.properties.columns.properties[field] = rowSchema
+    rowsSchema.items.properties.columns.required.push(field)
+  })
+
+  rowsSchema.items.properties.columns.additionalProperties = false
+
+  const rows = JSONSchemaFaker.generate(rowsSchema)
+
+  tableParams = { columns, fields, rows }
+
+  return tableParams
+}
+
+const enhanceMockedData = (data, schema) => {
+  if ('tableParams' in data) {
+    data.tableParams = mockTableParams(data.tableParams, schema.properties.tableParams)
+  }
+
+  return data
+}
+
 export default (schema, seed) => {
   const jsonSchema = toJSONSchema({
     schema,
@@ -29,7 +75,9 @@ export default (schema, seed) => {
 
   const data = JSONSchemaFaker.generate(jsonSchema)
 
-  return data
+  const enhancedData = enhanceMockedData(data, jsonSchema)
+
+  return enhancedData
 }
 
 let xorShiftSeed
@@ -59,4 +107,8 @@ export const generateNextRandomNumber = (seed) => {
 
 export const resetRandomNumberGenerator = () => {
   xorShiftSeed = undefined
+}
+
+export const getSeed = () => {
+  return process.env.TEST_SEED || new Date().getTime()
 }

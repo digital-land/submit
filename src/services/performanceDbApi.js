@@ -45,7 +45,7 @@ function getAllRowsMessages () {
 
 // ===========================================
 
-const datasetIssuesQuery = (resource, datasetId) => {
+const datasetIssuesQuery = (resources, datasetId) => {
   return /* sql */ `
     SELECT
     i.field,
@@ -69,7 +69,7 @@ const datasetIssuesQuery = (resource, datasetId) => {
   LEFT JOIN
     issue_type it ON i.issue_type = it.issue_type
   WHERE
-      i.resource = '${resource}'
+      i.resource in ('${resources.join("', '")}')
       AND i.dataset = '${datasetId}'
       AND (it.severity == 'error')
   GROUP BY i.issue_type, i.field
@@ -263,6 +263,21 @@ export default {
     AND rle.pipeline = '${dataset}'`
   },
 
+  activeResourcesForOrganisationAndDatasetQuery: (lpa, dataset) => {
+    return /* sql */`
+      select
+        rhe.endpoint, rhe.endpoint_url, rhe.resource, rhe.status
+      from
+        reporting_historic_endpoints rhe
+      LEFT JOIN resource_organisation ro ON rhe.resource = ro.resource
+      LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
+      WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
+      AND pipeline = '${dataset}'
+      AND (rhe.endpoint_end_date == '' OR rhe.endpoint_end_date is NULL)
+      AND (rhe.resource_end_date == '' OR rhe.resource_end_date is NULL)
+    `
+  },
+
   /**
      * Retrieves the latest resource information for a given LPA and dataset.
      *
@@ -330,21 +345,21 @@ export default {
      * Retrieves the count of entities with issues of a specific type and field.
      *
      * @param {Object} params - Parameters for the query
-     * @param {string} params.resource - Resource to filter by
+     * @param {string[]} params.resources - Resource to filter by
      * @param {string} params.issueType - Issue type to filter by
      * @param {string} params.issueField - Field to filter by
      * @param {string} [database="digital-land"] - Database to query (optional)
      * @returns {Promise<number>} Count of entities with issues
      */
   async getEntitiesWithIssuesCount ({
-    resource,
+    resources,
     issueType,
     issueField
   }, database = 'digital-land') {
     const sql = `
     SELECT count(DISTINCT entry_number) as count
     FROM issue
-    WHERE resource = '${resource}'
+    WHERE resource in ('${resources.join("',' ")}')
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
   `
@@ -354,32 +369,75 @@ export default {
     return result.formattedData[0].count
   },
 
-  /**
-     * Retrieves issues from the performance database.
-     *
-     * @param {Object} params - Object with parameters for the query
-     * @param {string} params.resource - Resource to filter issues by
-     * @param {string} params.issueType - Issue type to filter by
-     * @param {string} params.issueField - Field to filter by
-     * @param {string} [database="digital-land"] - Database to query (defaults to "digital-land")
-     * @returns {Promise<Object>} - Promise resolving to an object with formatted data
-     */
-  async getIssues ({
-    resource,
-    issueType,
-    issueField
-  }, database = 'digital-land') {
-    const sql = `
-    SELECT i.field, i.line_number, entry_number, message, issue_type, value
-    FROM issue i
-    WHERE resource = '${resource}'
-    AND issue_type = '${issueType}'
-    AND field = '${issueField}'
-  `
+  issuesQuery ({ resources, dataset, issueType, issueField }) {
+    let query = `
+      SELECT DISTINCT message, value, field, issue_type, entry_number, resource
+      FROM issue
+      WHERE resource  in ('${resources.join("', '")}')
+    `
+    if (dataset) query += ` AND dataset  = '${dataset}'`
+    if (issueType) query += ` AND issue_type  = '${issueType}'`
+    if (issueField) query += ` AND field  = '${issueField}'`
 
-    const result = await datasette.runQuery(sql, database)
+    return query
+  },
 
-    return result.formattedData
+  issuesWithCountsQuery  ({ resources, dataset, issueType, issueField, statusList }) {
+    let query = `
+      SELECT 
+        field, 
+        i.issue_type, 
+        CASE
+        WHEN COUNT(
+          CASE
+            WHEN it.severity == 'error' THEN 1
+            ELSE null
+          END
+        ) > 0 THEN 'Needs fixing'
+        ELSE 'Live'
+        END AS status, 
+        count(line_number) as num_issues
+      FROM issue i
+      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+      WHERE resource  in ('${resources.join("', '")}')
+    `
+    if (dataset) query += ` AND dataset  = '${dataset}'`
+    if (issueType) query += ` AND i.issue_type  = '${issueType}'`
+    if (issueField) query += ` AND i.field  = '${issueField}'`
+
+    query += ' GROUP BY i.field, i.issue_type'
+
+    if (statusList) query += ` HAVING status in ('${statusList.join("', '")}')`
+
+    return query
+  },
+
+  issuesWithReferenceFromResourcesDatasetIssueTypeFieldQuery ({ resources, dataset, issueType, issueField }) {
+    return /* sql */ `
+      SELECT DISTINCT i.message, i.value, i.field, i.issue_type, i.entry_number, i.resource, f.value as reference
+      FROM issue i
+      LEFT JOIN fact_resource fr ON i.entry_number = fr.entry_number AND i.resource = fr.resource
+      LEFT JOIN fact f ON fr.fact = f.fact
+      WHERE i.resource  in ('${resources.join("', '")}')
+      AND dataset  = '${dataset}'
+      AND issue_type  = '${issueType}'
+      AND i.field  = '${issueField}'
+      AND f.field = 'reference'
+    `
+  },
+
+  fetchIssuesWithoutReferences ({ resources, dataset, issueType, issueField }) {
+    return /* sql */ `
+      SELECT DISTINCT i.message, i.value, i.field, i.issue_type, i.entry_number, i.resource, f.value as reference
+      FROM issue i
+      LEFT JOIN fact_resource fr ON i.entry_number = fr.entry_number AND i.resource = fr.resource
+      LEFT JOIN fact f ON fr.fact = f.fact
+      WHERE i.resource  in ('${resources.join("', '")}')
+      AND dataset  = '${dataset}'
+      AND issue_type  = '${issueType}'
+      AND i.field  = '${issueField}'
+      AND f.field is NULL
+    `
   },
 
   /**
@@ -438,5 +496,37 @@ export default {
     const query = this.entityCountQuery(orgEntity)
     const result = await datasette.runQuery(query, dataset)
     return result.formattedData[0].entity_count
+  },
+
+  fetchEntitiesFromEntryNumbers ({ entryNumbers, organisationEntity, pagination }) {
+    return /* sql */ `
+      select DISTINCT f.entity, fr.entry_number, fr.resource, e.* from fact f
+      LEFT JOIN fact_resource fr ON f.fact = fr.fact
+      LEFT JOIN entity e ON f.entity = e.entity
+      WHERE e.organisation_entity = ${organisationEntity}
+      AND entry_number in (${entryNumbers.join(', ')})
+    `
+    // Can't have pagination here as we need to know the count of all the entities with issues anyway, something for the performance db?
+    //   LIMIT ${pagination.limit}
+    //   OFFSET ${pagination.offset}
+    // `
+  },
+
+  fetchEntityFromEntryNumber ({ entryNumber, organisationEntity }) {
+    return /* sql */ `
+      select DISTINCT f.entity, fr.entry_number, fr.resource, e.* from fact f
+      LEFT JOIN fact_resource fr ON f.fact = fr.fact
+      LEFT JOIN entity e ON f.entity = e.entity
+      AND e.organisation_entity = ${organisationEntity}
+      AND entry_number = ${entryNumber}
+    `
+  },
+
+  fetchEntitiesFromReferencesAndOrganisationEntity ({ references, organisationEntity }) {
+    return /* sql */ `
+      select * from entity 
+      WHERE reference in ('${references.join("', '")}')
+      AND organisation_entity = ${organisationEntity}
+    `
   }
 }

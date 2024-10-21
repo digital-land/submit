@@ -2,13 +2,13 @@
 
 import { describe, expect, it } from 'vitest'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from './sharedTests/generic-page.js'
 import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 import { testValidationErrorMessage } from './validation-tests.js'
 import { render } from '../../src/utils/custom-renderer.js'
 import * as v from 'valibot'
 
-import mock from '../utils/mocker.js'
+import mock, { getSeed } from '../utils/mocker.js'
 import { DatasetDetails } from '../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
@@ -40,7 +40,7 @@ function errorTestFn ({
   }
 }
 
-const seed = new Date().getTime()
+const seed = getSeed()
 
 describe(`dataset details View (seed: ${seed})`, () => {
   const params = mock(DatasetDetails, seed)

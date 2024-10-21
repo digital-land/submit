@@ -1,15 +1,15 @@
 // getStartedPage.test.js
 
 import { describe, it, expect } from 'vitest'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from './sharedTests/generic-page.js'
 import jsdom from 'jsdom'
-import mocker from '../utils/mocker.js'
+import mocker, { getSeed } from '../utils/mocker.js'
 import { OrgGetStarted } from '../../src/routes/schemas.js'
 import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
 
 const nunjucks = setupNunjucks({})
 
-const seed = new Date().getTime()
+const seed = getSeed()
 
 describe(`Get Started Page (seed: ${seed})`, () => {
   const params = mocker(OrgGetStarted, seed)
