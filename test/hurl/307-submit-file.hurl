@@ -1,3 +1,5 @@
+# SCENARIO: Successfully submit a dataset by uploading a file via check tool deep link .
+
 GET {{ app_host }}/check/link
 [QueryStringParams]
 dataset: conservation-area

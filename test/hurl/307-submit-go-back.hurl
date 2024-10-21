@@ -1,3 +1,6 @@
+# SCENARIO: Enter the check tool via deep link, go forward and then back go
+# back to the dataset selection page using the navigation links.
+
 GET {{ app_host }}/check/link
 [QueryStringParams]
 dataset: conservation-area

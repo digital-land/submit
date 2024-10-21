@@ -1,3 +1,6 @@
+# SCENARIO: Successfully submit a 'tree' dataset URL via check tool deep link. This should trigger the
+# geometry type selection page.
+
 GET {{ app_host }}/check/link
 [QueryStringParams]
 dataset: tree

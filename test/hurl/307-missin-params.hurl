@@ -1,4 +1,6 @@
-# accessing the route without required params should return an error
+# SCENARIO: Enter the check tool via deep link, but without required params. This should
+# redirect us to the check tool start page.
+
 GET {{ app_host }}/check/link
 HTTP 302
 [Asserts]
