@@ -102,7 +102,13 @@ export const fetchSpecification = fetchOne({
 
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
-  const collectionSpecifications = JSON.parse(specification.json)
+  let collectionSpecifications
+  try {
+    collectionSpecifications = JSON.parse(specification.json)
+  } catch (error) {
+    logger.error('Invalid JSON in specification.json', { error })
+    return next(new Error('Invalid specification format'))
+  }
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   req.specification = datasetSpecification
   next()
