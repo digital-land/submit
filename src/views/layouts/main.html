@@ -99,13 +99,18 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% block bodyEnd %}
     {{ super()}}
   {%block scripts %}
-    <body>
-      <script type="module" src="/assets/all.js"></script>
-      <script type="module">
-        window.GOVUKPrototypeComponents.initAll()
-      </script>
-    </body>
+    <script type="module" src="/assets/all.js"></script>
+    <script type="module">
+      window.GOVUKPrototypeComponents.initAll()
+    </script>
     {{ super() }}
     <script src="/public/js/application.bundle.js"></script>
+
+    {% if googleAnalyticsMeasurementId %}
+      <script async src="https://www.googletagmanager.com/gtag/js?id={{ googleAnalyticsMeasurementId }}"></script>
+      <script type='text/javascript'>
+        {% include "common/google-analytics.js" %}
+      </script>
+    {% endif %}
   {% endblock %}
 {% endblock %}

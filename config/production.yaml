@@ -15,3 +15,6 @@ smartlook: {
   key: '6383ab27d6f6a02f043a518bea629cd232dc0131',
   region: 'eu'
 }
+googleAnalytics: {
+  measurementId: 'G-F2H5SW06PZ'
+}
