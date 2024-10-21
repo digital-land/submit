@@ -98,6 +98,18 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   const { entities, errorSummary, specification, pagination } = req
   const { issue_type: issueType, issue_field: issueField, pageNumber } = req.params
 
+  if (!entities) {
+    const error = new Error('entities is not defined')
+    next(error)
+    return
+  }
+
+  if (!specification) {
+    const error = new Error('specification is not defined')
+    next(error)
+    return
+  }
+
   if (pageNumber > entities.length || entities.length === 0) {
     const error = new Error('pageNumber out of bounds')
     error.status = 400

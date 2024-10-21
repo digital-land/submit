@@ -207,6 +207,75 @@ describe('issueDetails.middleware.js', () => {
       prepareIssueDetailsTemplateParams(req, res, nextSpy)
       expect(nextSpy).toHaveBeenCalledTimes(1)
     })
+
+    it('should call next with an error if req.entities is missing', () => {
+      const req = {
+      // no entities property
+        params: {
+          lpa: 'lpa-1',
+          dataset: 'dataset-1',
+          issue_type: 'issue-type-1',
+          issue_field: 'issue-field-1',
+          pageNumber: '1'
+        },
+        orgInfo: { name: 'Org Name' },
+        dataset: { name: 'Dataset Name' },
+        pagination: 'paginationObject'
+      }
+      const res = {}
+      const next = vi.fn()
+
+      prepareIssueDetailsTemplateParams(req, res, next)
+
+      expect(next).toHaveBeenCalledWith(new Error('entities is not defined'))
+    })
+
+    it('should throw an error if req.entities is null', () => {
+      const req = {
+        entities: null,
+        params: {
+          lpa: 'lpa-1',
+          dataset: 'dataset-1',
+          issue_type: 'issue-type-1',
+          issue_field: 'issue-field-1',
+          pageNumber: '1'
+        },
+        orgInfo: { name: 'Org Name' },
+        dataset: { name: 'Dataset Name' },
+        pagination: 'paginationObject'
+      }
+      const res = {}
+      const next = vi.fn()
+
+      prepareIssueDetailsTemplateParams(req, res, next)
+
+      expect(next).toHaveBeenCalledWith(new Error('entities is not defined'))
+    })
+
+    it('should throw an error if req.specification is missing', () => {
+      const req = {
+        entities: [
+          { reference: { value: 'entry-1' }, geometry: { value: 'geom-1' }, field1: { value: 'val-1', issue: { message: 'error' } } }
+        ],
+        params: {
+          lpa: 'lpa-1',
+          dataset: 'dataset-1',
+          issue_type: 'issue-type-1',
+          issue_field: 'issue-field-1',
+          pageNumber: '1'
+        },
+        orgInfo: { name: 'Org Name' },
+        dataset: { name: 'Dataset Name' },
+        pagination: 'paginationObject'
+      // no specification property
+      }
+      const res = {}
+      const next = vi.fn()
+
+      prepareIssueDetailsTemplateParams(req, res, next)
+
+      expect(next).toHaveBeenCalledWith(new Error('specification is not defined'))
+    })
   })
 
   describe('getIssueDetails', () => {
