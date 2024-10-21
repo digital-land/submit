@@ -124,8 +124,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
     }
     params.issueEntitiesCount = 10
     const multiPageHtml = nunjucks.render('organisations/issueDetails.html', params)
-    // const multiPageDom = new JSDOM(multiPageHtml)
-    // const multiPageDocument = multiPageDom.window.document
+
     const paginationTitleSection = params.issueEntitiesCount > 1 ? `(Page ${params.pageNumber} of ${params.issueEntitiesCount}) ` : ''
     runGenericPageTests(multiPageHtml, {
       pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues ${paginationTitleSection}- ${config.serviceNames.submit}`,
