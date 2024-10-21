@@ -57,6 +57,19 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      - uses: ./.github/actions/hurl-setup
+      - uses: ./.github/actions/hurl-test
+        with:
+          app_host: http://localhost:8085
+          report_dir: 'hurl-test-report'
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hurl-test-report
+          path: hurl-test-report/
+          retention-days: 30
+
       - uses: ./.github/actions/playwright-setup
       - name: Run integration tests
         run: npm run test:integration      

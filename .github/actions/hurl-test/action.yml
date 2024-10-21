@@ -1,0 +1,23 @@
+name: "Hurl Test"
+description: "Runs hurl tests (hurl.dev)"
+inputs:
+  app_host:
+    description: "The host of the app to test (including the port)"
+    required: false
+    default: 'http://localhost:8085'
+  report_dir:
+    description: "The directory to store test report in. If not set, hurl will not generate a report."
+    required: false
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - id: run-hurl
+      shell: bash
+      env:
+        HURL_app_host: ${{ inputs.app_host }}
+        HURL_report_dir: ${{ inputs.report_dir }}
+      run: |
+        mkdir -p test/hurl/common
+        curl --location -o test/hurl/common/geox-geoy-example.csv https://gist.githubusercontent.com/rosado/3994e2420857d5c6b0e3bd8dc1488aa1/raw/bf1b52316f66a480a6d116c993ffd57d119094f9/geox-geoy-example.csv
+        test/hurl/runner.sh

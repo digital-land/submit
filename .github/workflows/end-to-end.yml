@@ -1,0 +1,22 @@
+name: Run end-to-end tests
+run-name: Run end to end tests on '${{ inputs.host }}' by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      host:
+        required: true
+        type: string
+        description: Host to test against (e.g. https://example.com:8080)
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/hurl-setup
+      - uses: ./.github/actions/hurl-test
+        with:
+          app_host: ${{ inputs.host }}
+          report_dir: 'hurl-test-report-${{ github.run_number }}'
