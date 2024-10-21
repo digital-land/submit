@@ -109,7 +109,7 @@ export const prepareIssueTableTemplateParams = (req, res, next) => {
         if (field === 'reference') {
           const entityLink = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/${entity.entityPageNumber}`
           columns[field] = { html: `<a href="${entityLink}">${entity[field].value}</a>`, error: entity[field].issue }
-        } else if (entity[field]) {
+        } else if (field in entity) {
           columns[field] = { value: entity[field].value, error: entity[field].issue }
         } else {
           columns[field] = { value: '' }
