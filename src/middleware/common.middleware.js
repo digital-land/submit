@@ -234,7 +234,7 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
       logger.info(`common.middleware/extractJsonField: No json field for entity ${entity.toString()}`)
       return entity
     }
-    delete entity.json
+    entity.json = undefined
     const parsedJson = JSON.parse(jsonField)
     entity = { ...entity, ...parsedJson }
     return entity
@@ -251,7 +251,7 @@ export const replaceUnderscoreWithHyphenForEntities = (req, res, next) => {
       if (key.includes('_')) {
         const newKey = key.replace(/_/g, '-')
         entity[newKey] = entity[key]
-        delete entity[key]
+        entity[key] = undefined
       }
     })
   })
