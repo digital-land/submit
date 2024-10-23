@@ -33,8 +33,11 @@ class DeepLinkController extends PageController {
     req.sessionModel.set('dataset', dataset)
     const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false }
     req.sessionModel.set('data-subject', datasetInfo.dataSubject)
-    req.sessionModel.set(this.checkToolDeepLinkSessionKey,
-      { 'data-subject': datasetInfo.dataSubject, orgName, dataset, datasetName: datasetInfo.text })
+    const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, dataset, datasetName: datasetInfo.text }
+    if (req.headers.referer) {
+      sessionData.referer = req.headers.referer
+    }
+    req.sessionModel.set(this.checkToolDeepLinkSessionKey, sessionData)
 
     this.#addHistoryStep(req, '/check/dataset')
 
