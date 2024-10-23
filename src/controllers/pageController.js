@@ -33,7 +33,7 @@ class PageController extends Controller {
 
   locals (req, res, next) {
     let backLink
-    const deepLinkInfo = req.sessionModel.get(this.checkToolDeepLinkSessionKey)
+    const deepLinkInfo = req?.sessionModel?.get(this.checkToolDeepLinkSessionKey)
     if (deepLinkInfo) {
       req.form.options.deepLink = deepLinkInfo
       backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
