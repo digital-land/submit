@@ -48,7 +48,7 @@ async function fetchIssues (req, res, next) {
 
 /**
  *
- * Middleware. Updates `req` with `issues`.
+ * Middleware. Updates `req` with `issuesByEntryNumber`.
  *
  * Requires `issues` in request.
  *
@@ -69,11 +69,11 @@ async function reformatIssuesToBeByEntryNumber (req, res, next) {
 
 /**
  *
- * Middleware. Updates `req` with `entryData`
+ * Middleware. Updates `req` with `entryData`, `entryNumber` and `pageNumber`
  *
  * Requires `pageNumber`, `dataset` and
  *
- * @param {*} req
+ * @param {{ issuesByEntryNumber: Object, resource: { resource: string },  params: { dataset: string, pageNumber: string }}} req
  * @param {*} res
  * @param {*} next
  *
@@ -85,15 +85,24 @@ async function fetchEntry (req, res, next) {
   req.pageNumber = pageNum
 
   // look at issue Entries and get the index of that entry - 1
+  let entryData
+  let entryNum
+  const issuesByEntry = Object.values(issuesByEntryNumber)
+  if ((pageNum - 1) < issuesByEntry.length) {
+    const issues = issuesByEntry[pageNum - 1]
+    entryNum = issues.length > 0 ? issues[0].entry_number : undefined
+    entryData = await performanceDbApi.getEntry(
+      req.resource.resource,
+      entryNum,
+      datasetId
+    )
+  } else {
+    entryNum = undefined
+    entryData = []
+  }
 
-  const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
-
-  req.entryData = await performanceDbApi.getEntry(
-    req.resource.resource,
-    entityNum,
-    datasetId
-  )
-  req.entryNumber = entityNum
+  req.entryData = entryData
+  req.entryNumber = entryNum
   next()
 }
 
