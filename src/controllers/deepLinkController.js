@@ -12,6 +12,28 @@ const QueryParams = v.object({
 })
 
 /**
+ * Potentially updates sessionData with 'referrer'
+ *
+ * @param req
+ * @param sessionData
+ */
+function maybeSetReferrer (req, sessionData) {
+  if (req.headers.referer) {
+    try {
+      /* eslint-disable-next-line no-new */
+      new URL(req.headers.referer)
+      sessionData.referrer = req.headers.referer
+    } catch (err) {
+      logger.info('DeepLinkController.get(): invalid referrer URL, skipping', {
+        type: types.App,
+        referrer: req.headers.referer,
+        errorMessage: err.message
+      })
+    }
+  }
+}
+
+/**
  * Handles deep links in the Check Tool.
  *
  * It is meant to extract required params from query params
@@ -33,8 +55,9 @@ class DeepLinkController extends PageController {
     req.sessionModel.set('dataset', dataset)
     const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false }
     req.sessionModel.set('data-subject', datasetInfo.dataSubject)
-    req.sessionModel.set(this.checkToolDeepLinkSessionKey,
-      { 'data-subject': datasetInfo.dataSubject, orgName, dataset, datasetName: datasetInfo.text })
+    const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, dataset, datasetName: datasetInfo.text }
+    maybeSetReferrer(req, sessionData)
+    req.sessionModel.set(this.checkToolDeepLinkSessionKey, sessionData)
 
     this.#addHistoryStep(req, '/check/dataset')
 
