@@ -41,13 +41,13 @@ describe('PageController', () => {
 })
 
 describe('Correctly detects the wizard back link', () => {
-  const referer = '/this-is-where-we-came-from'
+  const referrer = '/this-is-where-we-came-from'
   const makeReq = () => {
     return ({
       originalUrl: '/check/upload-method',
       sessionID: '123',
       sessionModel: {
-        get: vi.fn().mockReturnValue({ referer })
+        get: vi.fn().mockReturnValue({ referrer })
       },
       form: {
         options: {}
@@ -59,7 +59,7 @@ describe('Correctly detects the wizard back link', () => {
     const pageController = new PageController({ route: '/upload-method' })
     const req = makeReq()
     pageController.locals(req, {}, vi.fn())
-    expect(req.form.options.lastPage).toEqual(referer)
+    expect(req.form.options.lastPage).toEqual(referrer)
   })
 
   it('arriving at some other step', () => {

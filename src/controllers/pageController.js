@@ -6,17 +6,17 @@ const { Controller } = hmpoFormWizard
  * If we arrived at the page via deep from another page, we'll use that page as the back link.
  *
  * @param {string} url current page URL
- * @param {{ referer?: string, dataset: string }} deepLinkInfo deep link info from the session
+ * @param {{ referrer?: string, dataset: string }} deepLinkInfo deep link info from the session
  * @returns {string|undefined} back link URL
  */
 function wizardBackLink (currentUrl, deepLinkInfo) {
-  if (deepLinkInfo && 'referer' in deepLinkInfo) {
-    const { referer, dataset } = deepLinkInfo
+  if (deepLinkInfo && 'referrer' in deepLinkInfo) {
+    const { referrer, dataset } = deepLinkInfo
     if (dataset === 'tree' && currentUrl === '/check/geometry-type') {
-      return referer
+      return referrer
     }
     if (dataset !== 'tree' && currentUrl === '/check/upload-method') {
-      return referer
+      return referrer
     }
   }
 
