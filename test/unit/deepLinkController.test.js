@@ -4,7 +4,7 @@ import DeepLinkController from '../../src/controllers/deepLinkController.js'
 function mockRequestObject () {
   const sessionModel = new Map()
   const journeyModel = new Map()
-  return { sessionModel, journeyModel, query: {} }
+  return { sessionModel, journeyModel, query: {}, headers: {} }
 }
 
 function mockMiddlewareArgs (reqOpts) {
