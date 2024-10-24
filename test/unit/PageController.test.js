@@ -41,7 +41,7 @@ describe('PageController', () => {
 })
 
 describe('Correctly detects the wizard back link', () => {
-  const referrer = '/this-is-where-we-came-from'
+  const referrer = 'https://example.com/this-is-where-we-came-from'
   const makeReq = () => {
     return ({
       originalUrl: '/check/upload-method',
