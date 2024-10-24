@@ -1,5 +1,6 @@
 import hmpoFormWizard from 'hmpo-form-wizard'
-import { logPageView } from '../utils/logging.js'
+import { logPageView, types } from '../utils/logging.js'
+import logger from '../utils/logger.js'
 const { Controller } = hmpoFormWizard
 
 /**
@@ -32,17 +33,25 @@ class PageController extends Controller {
   }
 
   locals (req, res, next) {
-    let backLink
-    const deepLinkInfo = req?.sessionModel?.get(this.checkToolDeepLinkSessionKey)
-    if (deepLinkInfo) {
-      req.form.options.deepLink = deepLinkInfo
-      backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
+    try {
+      let backLink
+      const deepLinkInfo = req?.sessionModel?.get(this.checkToolDeepLinkSessionKey)
+      if (deepLinkInfo) {
+        req.form.options.deepLink = deepLinkInfo
+        backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
+      }
+
+      backLink = backLink ?? this.options.backLink
+      if (backLink) {
+        req.form.options.lastPage = backLink
+      }
+    } catch (e) {
+      logger.warn('PageController.locals(): error setting back link', {
+        type: types.App,
+        errorMessage: e.message
+      })
     }
 
-    backLink = backLink ?? this.options.backLink
-    if (backLink) {
-      req.form.options.lastPage = backLink
-    }
     super.locals(req, res, next)
   }
 }
