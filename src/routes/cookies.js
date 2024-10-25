@@ -12,8 +12,14 @@ router.get('/', (req, res) => {
 })
 
 router.post('/update-preference', (req, res) => {
-  res.cookie('cookies_preferences_set', req.body.accept_cookies, { maxAge: 1000 * 60 * 60 * 24 * 365 })
+  const defaultCookieExpiry = 1000 * 60 * 60 * 24 * 365 // 1 year
+
+  res.cookie('cookies_preferences_set', req.body.accept_cookies, { maxAge: defaultCookieExpiry })
   res.cookie('cookies_preferences_set_updated', true, { maxAge: 1000 })
+  res.cookie('cookies_policy', JSON.stringify({ essential: true, settings: true, usage: true, campaigns: true }), {
+    maxAge: req.body.accept_cookies === 'true' ? defaultCookieExpiry : 0
+  })
+
   res.redirect('/cookies')
 })
 
