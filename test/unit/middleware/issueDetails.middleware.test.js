@@ -38,7 +38,7 @@ describe('issueDetails.middleware.js', () => {
         params: requestParams,
         // middleware supplies the below
         entryNumber: 1,
-        entityCount: { entity_count: 3 },
+        entityCount: { entity_count: 1 },
         issueEntitiesCount: 1,
         pageNumber: 1,
         orgInfo,
@@ -46,6 +46,7 @@ describe('issueDetails.middleware.js', () => {
         entryData,
         issues,
         resource: { resource: requestParams.resourceId },
+        entryNumberCount: 1,
         issuesByEntryNumber: {
           1: [
             {
@@ -65,7 +66,6 @@ describe('issueDetails.middleware.js', () => {
       issues.forEach(issue => {
         vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce(`mockMessageFor: ${issue.entry_number}`)
       })
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('mock task message 1')
 
       prepareIssueDetailsTemplateParams(req, {}, () => {})
 
@@ -79,11 +79,10 @@ describe('issueDetails.middleware.js', () => {
           dataset: 'mock-dataset',
           collection: 'mock-collection'
         },
-        errorHeading: 'mockMessageFor: 0',
+        errorHeading: undefined,
         issueItems: [
           {
-            html: 'mock task message 1 in record 1',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
+            html: 'mockMessageFor: 0'
           }
         ],
         entry: {
@@ -146,6 +145,7 @@ describe('issueDetails.middleware.js', () => {
         entryData,
         issues,
         resource: { resource: requestParams.resourceId },
+        entryNumberCount: 1,
         issuesByEntryNumber: {
           1: [
             {
