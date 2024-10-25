@@ -41,6 +41,7 @@ export const fetchDatasetInfo = fetchOne({
 export const isResourceAccessible = (req) => req.resourceStatus.status === '200'
 export const isResourceNotAccessible = (req) => !isResourceAccessible(req)
 export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
+export const isResourceDataPresent = (req) => 'resource' in req
 
 /**
  * Middleware. Updates req with `resource`.
