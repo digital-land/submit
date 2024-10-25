@@ -124,7 +124,7 @@ const validateParams = validateQueryParams({
 })
 
 /* eslint-disable-next-line no-return-assign */
-const zeroEntityCount = (req) => req.entityCount = 0
+const zeroEntityCount = (req) => req.entityCount = { entity_count: 0 }
 
 export default [
   validateParams,

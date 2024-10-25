@@ -320,7 +320,7 @@ export const getIssueDetails = renderTemplate({
 })
 
 /* eslint-disable no-return-assign */
-const zeroEntityCount = (req) => req.entityCount = 0
+const zeroEntityCount = (req) => req.entityCount = { entity_count: 0 }
 const zeroIssueEntitiesCount = (req) => req.issueEntitiesCount = 0
 const emptyIssuesCollection = (req) => req.issues = []
 
