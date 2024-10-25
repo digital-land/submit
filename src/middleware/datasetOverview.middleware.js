@@ -36,11 +36,18 @@ const fetchSpecification = fetchOne({
   result: 'specification'
 })
 
+/**
+ * Middleware. Updates req with `datasetSpecification`
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
   const collectionSpecifications = JSON.parse(specification.json)
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
-  req.specification = datasetSpecification
+  req.datasetSpecification = datasetSpecification
   next()
 }
 
@@ -105,21 +112,21 @@ const fetchEntityCount = fetchOne({
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, specification, columnSummary, entityCount, sources, dataset, issues } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
   const allFields = [...mappingFields, ...nonMappingFields]
 
-  const numberOfFieldsSupplied = specification.fields.map(field => field.field).reduce((acc, current) => {
+  const specFields = datasetSpecification ? datasetSpecification.fields : []
+  const numberOfFieldsSupplied = specFields.map(field => field.field).reduce((acc, current) => {
     return allFields.includes(current) ? acc + 1 : acc
   }, 0)
-
-  const numberOfFieldsMatched = specification.fields.map(field => field.field).reduce((acc, current) => {
+  const numberOfFieldsMatched = specFields.map(field => field.field).reduce((acc, current) => {
     return mappingFields.includes(current) ? acc + 1 : acc
   }, 0)
 
-  const numberOfExpectedFields = specification.fields.length
+  const numberOfExpectedFields = specFields.length
 
   // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
   const endpoints = sources.sort((a, b) => {
