@@ -1,4 +1,15 @@
-import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues, validateQueryParams, getDatasetTaskListError } from './common.middleware.js'
+import {
+  fetchDatasetInfo,
+  isResourceAccessible,
+  isResourceNotAccessible,
+  fetchLatestResource,
+  fetchEntityCount,
+  logPageError,
+  fetchLpaDatasetIssues,
+  validateQueryParams,
+  getDatasetTaskListError,
+  isResourceIdValid, and
+} from './common.middleware.js'
 import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
@@ -46,7 +57,6 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
   const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
   const { lpa, dataset: datasetId } = params
-  console.assert(req.resourceStatus.resource === req.resource.resource, 'mismatch between resourceStatus and resource data')
   console.assert(typeof entityCount === 'number', 'entityCount should be a number')
 
   const taskList = issues.map((issue) => {
@@ -113,6 +123,9 @@ const validateParams = validateQueryParams({
   })
 })
 
+/* eslint-disable-next-line no-return-assign */
+const zeroEntityCount = (req) => req.entityCount = 0
+
 export default [
   validateParams,
   fetchResourceStatus,
@@ -120,7 +133,7 @@ export default [
   fetchDatasetInfo,
   fetchIf(isResourceAccessible, fetchLatestResource),
   fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-  fetchIf(isResourceAccessible, fetchEntityCount),
+  fetchIf(and(isResourceAccessible, isResourceIdValid), fetchEntityCount, zeroEntityCount),
   onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
   onlyIf(isResourceAccessible, getDatasetTaskList),
   onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
