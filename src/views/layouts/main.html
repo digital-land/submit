@@ -99,7 +99,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 
 {% block bodyEnd %}
     {{ super()}}
-  {%block scripts %}
+  {% block scripts %}
     <body>
       <script type="module" src="/assets/all.js"></script>
       <script type="module">
@@ -108,5 +108,6 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
     </body>
     {{ super() }}
     <script src="/public/js/application.bundle.js"></script>
+    <script src="/public/js/cookie-banner.bundle.js"></script>
   {% endblock %}
 {% endblock %}

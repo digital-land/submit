@@ -1,30 +1,62 @@
 {% from "govuk/components/cookie-banner/macro.njk" import govukCookieBanner %}
 
+{% set serviceName = serviceType | getFullServiceName  %}
+{% set cookiePagePath = '/cookies' %}
+{% set cookieHeader = "Cookies on " + serviceName %}
+
 {% set html %}
   <p class="govuk-body">We use some essential cookies to make this service work.</p>
   <p class="govuk-body">We’d also like to use analytics cookies so we can understand how you use the service and make improvements.</p>
 {% endset %}
 
-{{ govukCookieBanner({
-  ariaLabel: "Cookies on " + getFullServiceName,
-  messages: [
-    {
-      headingText: "Cookies on " + getFullServiceName,
-      html: html,
-      actions: [
+{% set acceptHtml %}
+  <p class="govuk-body">You’ve accepted additional cookies. You can <a class="govuk-link" href="{{ cookiePagePath }}">change your cookie settings</a> at any time.</p>
+{% endset %}
+
+<div class="js-app-c-cookie-banner">
+  <div class="js-app-c-cookie-banner__form">
+    {{ govukCookieBanner({
+      ariaLabel: cookieHeader,
+      messages: [
         {
-          text: "Accept analytics cookies",
-          type: "button"
-        },
-        {
-          text: "Reject analytics cookies",
-          type: "button"
-        },
-        {
-          text: "View cookies",
-          href: "/cookies"
+          headingText: cookieHeader,
+          html: html,
+          actions: [
+            {
+              text: "Accept analytics cookies",
+              type: "button",
+              classes: "js-app-c-cookie-banner__accept"
+            },
+            {
+              text: "Reject analytics cookies",
+              type: "button",
+              classes: "js-app-c-cookie-banner__reject"
+            },
+            {
+              text: "View cookies",
+              href: cookiePagePath
+            }
+          ]
         }
       ]
-    }
-  ]
-}) }}
+    }) }}
+  </div>
+
+  <div class="js-app-c-cookie-banner__confirmation app-c-cookie-banner__confirmation--hidden" aria-hidden="true">
+    {{ govukCookieBanner({
+      ariaLabel: cookieHeader,
+      messages: [
+        {
+          html: acceptHtml,
+          actions: [
+            {
+              text: "Hide cookie message",
+              type: "button",
+              classes: "js-app-c-cookie-banner__hide"
+            }
+          ]
+        }
+      ]
+    }) }}
+  </div>
+</div>
