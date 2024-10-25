@@ -1,6 +1,8 @@
 {% from "govuk/components/cookie-banner/macro.njk" import govukCookieBanner %}
 
-{% set serviceName = serviceType | getFullServiceName  %}
+{% if serviceType %}
+  {% set serviceName = serviceType | getFullServiceName  %}
+{% endif %}
 {% set cookiePagePath = '/cookies' %}
 {% set cookieHeader = "Cookies on " + serviceName %}
 
@@ -10,7 +12,7 @@
 {% endset %}
 
 {% set acceptHtml %}
-  <p class="govuk-body">You’ve accepted additional cookies. You can <a class="govuk-link" href="{{ cookiePagePath }}">change your cookie settings</a> at any time.</p>
+  <p class="govuk-body">You’ve <span class="js-app-c-cookie-banner__confirmation-decision">accepted</span> additional cookies. You can <a class="govuk-link" href="{{ cookiePagePath }}">change your cookie settings</a> at any time.</p>
 {% endset %}
 
 <div class="js-app-c-cookie-banner">

@@ -13,6 +13,7 @@ class CookieBanner {
     this.banner = document.querySelector('.js-app-c-cookie-banner')
     this.form = this.banner.querySelector('.js-app-c-cookie-banner__form')
     this.confirmationMessage = this.banner.querySelector('.js-app-c-cookie-banner__confirmation')
+    this.confirmationDecision = this.banner.querySelector('.js-app-c-cookie-banner__confirmation-decision')
     this.acceptButton = this.banner.querySelector('.js-app-c-cookie-banner__accept')
     this.rejectButton = this.banner.querySelector('.js-app-c-cookie-banner__reject')
     this.hideButton = this.banner.querySelector('.js-app-c-cookie-banner__hide')
@@ -23,6 +24,10 @@ class CookieBanner {
   init () {
     if (!this.banner) {
       return
+    }
+
+    if (this.getCookie(cookieDefaults.cookieNames.preferenceCookie) !== null) {
+      this.hideCookieBanner()
     }
 
     this.acceptButton.addEventListener('click', this.accept.bind(this))
@@ -50,7 +55,7 @@ class CookieBanner {
       userAcceptedCookiePolicy ? cookieDefaults.cookieExpiryDays : 0
     )
 
-    this.showConfirmationMessage()
+    this.showConfirmationMessage(userAcceptedCookiePolicy)
   }
 
   setCookie (name, value, days) {
@@ -59,12 +64,21 @@ class CookieBanner {
     document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=${cookieDefaults.cookiePath}`
   }
 
-  showConfirmationMessage () {
+  getCookie (name) {
+    const cookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith(name))
+
+    return cookie ? JSON.parse(cookie.split('=')[1]) : null
+  }
+
+  showConfirmationMessage (userAcceptedCookiePolicy = true) {
     this.form.classList.add('app-c-cookie-banner__form--hidden')
     this.form.ariaHidden = true
     this.acceptButton.removeEventListener('click', this.accept.bind(this))
     this.rejectButton.removeEventListener('click', this.reject.bind(this))
 
+    if (!userAcceptedCookiePolicy) this.confirmationDecision.textContent = 'rejected'
     this.confirmationMessage.classList.remove('app-c-cookie-banner__confirmation--hidden')
     this.confirmationMessage.ariaHidden = false
   }
