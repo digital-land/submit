@@ -160,7 +160,6 @@ LEFT OUTER JOIN
   entity_counts ec ON ec.resource = rle.resource AND ec.dataset = rle.pipeline
 WHERE
   REPLACE(rle.organisation, '-eng', '') = '${lpa}'
-  AND (i.severity is NULL OR i.severity not in ('info'))
   ${datasetClause}
 ORDER BY
   rle.organisation,
