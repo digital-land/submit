@@ -1,7 +1,7 @@
 // poll the server for the status of the job
 
 import { finishedProcessingStatuses } from '../../utils/utils.js'
-import { buttonTexts, headingTexts, messageTexts } from '../../content/statusPage.js'
+import { buttonTexts, buttonAriaLabels, headingTexts, messageTexts } from '../../content/statusPage.js'
 
 export default class StatusPage {
   constructor (pollingInterval, maxPollAttempts) {
@@ -55,6 +55,7 @@ export default class StatusPage {
     this.heading.textContent = headingTexts.checked
     this.processingMessage.style.display = 'none'
     this.continueButton.textContent = buttonTexts.checked
+    this.continueButton.ariaLabel = buttonAriaLabels.checked
     this.continueButton.style.display = 'block'
   }
 
@@ -63,6 +64,7 @@ export default class StatusPage {
     this.heading.textContent = this.headingTexts.checking
     this.processingMessage.style.display = 'none'
     this.continueButton.textContent = this.buttonTexts.checking
+    this.continueButton.ariaLabel = buttonAriaLabels.checking
     this.continueButton.style.display = 'block'
   }
 }

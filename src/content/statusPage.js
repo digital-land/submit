@@ -12,3 +12,8 @@ export const buttonTexts = {
   checking: 'Retrieve Latest Status',
   checked: 'Continue'
 }
+
+export const buttonAriaLabels = {
+  checking: 'Retrieve Latest Status of data check',
+  checked: 'Continue to next step'
+}
