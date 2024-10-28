@@ -36,6 +36,7 @@ describe('issueDetails.middleware.js', () => {
       }
       const req = {
         params: requestParams,
+        parsedParams: { pageNumber: 1 },
         // middleware supplies the below
         entryNumber: 1,
         entityCount: { entity_count: 1 },
@@ -135,6 +136,7 @@ describe('issueDetails.middleware.js', () => {
       }
       const req = {
         params: requestParams,
+        parsedParams: { pageNumber: 1 },
         // middleware supplies the below
         entryNumber: 1,
         entityCount: { entity_count: 3 },

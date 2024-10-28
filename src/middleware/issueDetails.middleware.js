@@ -12,19 +12,23 @@ import {
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
   dataset: v.string(),
   issue_type: v.string(),
   issue_field: v.string(),
-  pageNumber: v.optional(v.string()),
+  pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1'),
   resourceId: v.optional(v.string())
 })
 
 const validateIssueDetailsQueryParams = validateQueryParams({
   schema: IssueDetailsQueryParams
 })
+
+const issuesQueryLimit = 1000
 
 /**
  *
@@ -38,9 +42,12 @@ const validateIssueDetailsQueryParams = validateQueryParams({
  */
 async function fetchIssues (req, res, next) {
   const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { pageNumber } = req.parsedParams
   const resourceId = req.resource.resource
+  const offset = Math.floor((pageNumber - 1) / issuesQueryLimit) * issuesQueryLimit
+  logger.debug('fetchIssues()', { type: types.App, resourceId, issueType, issueField, offset })
   try {
-    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField }, datasetId)
+    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField, offset }, datasetId)
     req.issues = issues
     next()
   } catch (error) {
@@ -74,37 +81,35 @@ async function reformatIssuesToBeByEntryNumber (req, res, next) {
 
 /**
  *
- * Middleware. Updates `req` with `entryData`, `entryNumber`
+ * Middleware. Updates `req` with `entryData`
  *
  * Requires `pageNumber`, `dataset`, `issuesByEntryNumber`, `resource`
  *
- * @param {{ issuesByEntryNumber: Object, resource: { resource: string },  params: { dataset: string }}} req
+ * @param {{ issuesByEntryNumber: Object, resource: { resource: string },  params: { dataset: string }, parsedParams: { pageNumber: number }}} req
  * @param {*} res
  * @param {*} next
  *
  */
 async function fetchEntry (req, res, next) {
   const { dataset: datasetId } = req.params
-  const { issuesByEntryNumber, pageNumber: pageNum } = req
+  const { issues, issueEntitiesCount, issuesByEntryNumber } = req
+  const { pageNumber } = req.parsedParams
 
   let entryData
-  let entryNum
   const issuesByEntry = Object.values(issuesByEntryNumber)
-  if ((pageNum - 1) < issuesByEntry.length) {
-    const issues = issuesByEntry[pageNum - 1]
-    entryNum = issues.length > 0 ? issues[0].entry_number : undefined
-    entryData = await performanceDbApi.getEntry(
-      req.resource.resource,
-      entryNum,
-      datasetId
-    )
-  } else {
-    entryNum = undefined
-    entryData = []
+  if (issues.length > 0) {
+    if (pageNumber <= issueEntitiesCount) {
+      const entryIssues = issuesByEntry[(pageNumber - 1) % issuesQueryLimit]
+      const entryNum = entryIssues.length > 0 ? entryIssues[0].entry_number : undefined
+      entryData = entryNum ?  await performanceDbApi.getEntry(
+        req.resource.resource,
+        entryNum,
+        datasetId
+      ): []
+    }
   }
 
-  req.entryData = entryData
-  req.entryNumber = entryNum
+  req.entryData = entryData ?? []
   next()
 }
 
@@ -122,7 +127,7 @@ async function fetchIssueEntitiesCount (req, res, next) {
   const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
   const { resource: resourceId } = req.resource
   const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
-  req.issueEntitiesCount = parseInt(issueEntitiesCount)
+  req.issueEntitiesCount = issueEntitiesCount
   next()
 }
 
@@ -192,8 +197,9 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumberCount, entryNumber, entityCount: entityCountRow } = req
+  const { entryData, issueEntitiesCount, issuesByEntryNumber, entryNumberCount, entityCount: entityCountRow } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { pageNumber } = req.parsedParams
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   let errorHeading
@@ -216,10 +222,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     }]
   }
 
-  // for whatever reason `issuesByEntryNumber` is only 1k long max, so wa can't have more pages
-  // than that, even if there are more entities with issues
-  const maxPageNumber = Math.min(issueEntitiesCount, entryNumberCount)
-
+  const maxPageNumber = issueEntitiesCount
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
   for (const issue of entityIssues) {
@@ -237,7 +240,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     .filter((row) => row.field === 'geometry')
     .map((row) => row.value)
   const entry = {
-    title: `entry: ${entryNumber}`,
+    title: `entry: ${entryData.length > 0 ? entryData[0].entry_number : ''}`,
     fields,
     geometries
   }
@@ -297,12 +300,10 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
  * @param next
  */
 const isPageNumberInRange = (req, res, next) => {
-  const { pageNumber } = req.params
-  const { entryNumberCount } = req
-  const pageNum = pageNumber ? parseInt(pageNumber) : 1
-  req.pageNumber = pageNum
+  const { issueEntitiesCount } = req
+  const { pageNumber } = req.parsedParams
 
-  if (pageNumber < 0 || entryNumberCount < pageNumber) {
+  if (pageNumber < 0 || issueEntitiesCount < pageNumber) {
     res.status(404).render('errorPages/404', {})
     return
   }
@@ -331,10 +332,10 @@ export default [
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIf(isResourceDataPresent, fetchIssues, emptyIssuesCollection),
   reformatIssuesToBeByEntryNumber,
+  fetchIf(isResourceDataPresent, fetchIssueEntitiesCount, zeroIssueEntitiesCount),
   isPageNumberInRange,
   fetchEntry,
   fetchIf(isResourceDataPresent, fetchEntityCount, zeroEntityCount),
-  fetchIf(isResourceDataPresent, fetchIssueEntitiesCount, zeroIssueEntitiesCount),
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError

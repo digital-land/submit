@@ -208,11 +208,9 @@ export default {
   /**
      * Returns a task message based on the provided issue type, issue count, and entity count.
      *
-     * @param {Object} options - Options object
-     * @param {string} options.issueType - The type of issue
-     * @param {number} options.num_issues - The number of issues
-     * @param {number} options.entityCount - The number of entities
-     * @param {boolean} [entityLevel=false] - Whether to use entity-level or dataset level messaging
+     * - entityLevel - Whether to use entity-level or dataset level messaging
+     *
+     * @param {{issue_type: string, num_issues: number, entityCount: number, field: string, entityLevel: boolean = false }} options
      *
      * @returns {string} The task message with the issue count inserted
      *
@@ -367,7 +365,8 @@ export default {
   async getIssues ({
     resource,
     issueType,
-    issueField
+    issueField,
+    offset = 0
   }, database = 'digital-land') {
     const sql = `
     SELECT i.field, i.line_number, entry_number, message, issue_type, value
@@ -375,6 +374,8 @@ export default {
     WHERE resource = '${resource}'
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
+    ORDER BY entry_number ASC
+    LIMIT 1000 ${offset ? `OFFSET ${offset}` : ''}
   `
 
     const result = await datasette.runQuery(sql, database)
@@ -390,8 +391,9 @@ export default {
      * @returns {Promise<{field: string, value: string, entry_number: number}[]>}
      */
   async getEntry (resourceId, entryNumber, dataset) {
+    logger.debug({ message: 'getEntry()', resourceId, entryNumber, dataset, type: types.App })
     // TODO: why do we order by rowid?
-    const sql = `
+    const sql = /* sql */ `
       select
         fr.rowid,
         fr.end_date,
