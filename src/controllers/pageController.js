@@ -1,6 +1,7 @@
 import hmpoFormWizard from 'hmpo-form-wizard'
 import { logPageView, types } from '../utils/logging.js'
 import logger from '../utils/logger.js'
+import datasetSlugToReadableName from '../utils/datasetSlugToReadableName.js'
 const { Controller } = hmpoFormWizard
 
 /**
@@ -38,6 +39,7 @@ class PageController extends Controller {
       const deepLinkInfo = req?.sessionModel?.get(this.checkToolDeepLinkSessionKey)
       if (deepLinkInfo) {
         req.form.options.deepLink = deepLinkInfo
+        req.form.options.datasetName = deepLinkInfo.datasetName
         backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
       }
 
@@ -51,6 +53,18 @@ class PageController extends Controller {
       }
     } catch (e) {
       logger.warn('PageController.locals(): error setting back link', {
+        type: types.App,
+        errorMessage: e.message
+      })
+    }
+
+    try {
+      const dataset = req?.sessionModel?.get('dataset')
+      if (dataset) {
+        req.form.options.datasetName = datasetSlugToReadableName(dataset)
+      }
+    } catch (e) {
+      logger.warn('PageController.locals(): error setting dataset name', {
         type: types.App,
         errorMessage: e.message
       })

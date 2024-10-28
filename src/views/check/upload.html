@@ -47,8 +47,8 @@
       {% endif %}
       <form novalidate method="post" enctype="multipart/form-data">
 
-        {% if options.deepLink %}
-          {{ datasetBanner(options.deepLink) }}
+        {% if options.datasetName %}
+          {{ datasetBanner(options.datasetName) }}
         {% endif %}
 
         {{ govukFileUpload({
