@@ -41,6 +41,10 @@ class PageController extends Controller {
         backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
       }
 
+      if (backLink) {
+        req.form.options.backLinkText = `Back to ${deepLinkInfo.datasetName} overview`
+      }
+
       backLink = backLink ?? this.options.backLink
       if (backLink) {
         req.form.options.lastPage = backLink
