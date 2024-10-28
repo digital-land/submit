@@ -1,6 +1,7 @@
 // poll the server for the status of the job
 
 import { finishedProcessingStatuses } from '../../utils/utils.js'
+import { buttonTexts, headingTexts, messageTexts } from '../../content/statusPage.js'
 
 export default class StatusPage {
   constructor (pollingInterval, maxPollAttempts) {
@@ -13,20 +14,6 @@ export default class StatusPage {
     this.heading = document.querySelector('#js-async-processing-heading')
     this.processingMessage = document.querySelector('#js-async-processing-message')
     this.continueButton = document.querySelector('#js-async-continue-button')
-  }
-
-  headingTexts = {
-    checkingFile: 'Checking File',
-    fileChecked: 'File Checked'
-  }
-
-  messageTexts = {
-    pleaseWait: 'Please wait'
-  }
-
-  buttonTexts = {
-    continue: 'Continue',
-    retrieveLatestStatus: 'Retrieve Latest Status'
   }
 
   beginPolling (statusEndpoint) {
@@ -58,24 +45,24 @@ export default class StatusPage {
 
   updatePageToChecking () {
     // update the page
-    this.heading.textContent = this.headingTexts.checkingFile
-    this.processingMessage.textContent = this.messageTexts.pleaseWait
+    this.heading.textContent = headingTexts.checking
+    this.processingMessage.textContent = messageTexts.checking
     this.continueButton.style.display = 'none'
   }
 
   updatePageToComplete () {
     // update the page
-    this.heading.textContent = this.headingTexts.fileChecked
+    this.heading.textContent = headingTexts.checked
     this.processingMessage.style.display = 'none'
-    this.continueButton.textContent = this.buttonTexts.continue
+    this.continueButton.textContent = buttonTexts.checked
     this.continueButton.style.display = 'block'
   }
 
   updatePageForPollingTimeout () {
     // update the page
-    this.heading.textContent = this.headingTexts.checkingFile
+    this.heading.textContent = this.headingTexts.checking
     this.processingMessage.style.display = 'none'
-    this.continueButton.textContent = this.buttonTexts.retrieveLatestStatus
+    this.continueButton.textContent = this.buttonTexts.checking
     this.continueButton.style.display = 'block'
   }
 }

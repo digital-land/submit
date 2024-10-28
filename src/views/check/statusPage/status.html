@@ -1,6 +1,5 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "./checkingFileMacro.html" import checkingFileContent %}
-{% from "./fileCheckedMacro.html" import fileCheckedContent %}
+{% from "./statusContentMacro.html" import statusContent %}
 {% from '../../components/dataset-banner.html' import datasetBanner %}
 
 {% extends "layouts/main.html" %}
@@ -9,11 +8,11 @@
 {% set pageName = 'Status' %}
 
 {% if options.processingComplete %}
-  {% set pageContent = fileCheckedContent() %}
+  {% set pageContent = statusContent(options.headingTexts.checked, options.messageTexts.checked) %}
   {% set buttonText = "Continue" %}
   {% set buttonClasses = "" %}
   {% else %}
-  {% set pageContent = checkingFileContent() %}
+  {% set pageContent = statusContent(options.headingTexts.checking, options.messageTexts.checking) %}
   {% set buttonText = "Retrieve Latest Status" %}
   {% set buttonClasses = "js-hidden" %}
 {% endif %}
