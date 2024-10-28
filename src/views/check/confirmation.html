@@ -5,54 +5,41 @@
 {% extends "layouts/main.html" %}
 
 {% set serviceType = 'Check' %}
-{% set pageName = "Send us your data" %}
-
-{% block content %}
-
-{% set example %}
-
-  ## About the data
-
-  This dataset shows the locations of conservation areas. Conservation areas are designated to safeguard areas of special architectural and historic interest, the character and appearance of which it is desirable to preserve or enhance. Within these areas special planning controls operate which need to be considered when undertaking development.
-
-  ## Data
-
-  [Conservations areas (CSV, 18KB)](/public/downloadable/conservationArea.csv)
-
-  ## Licensing
-
-  The data is provided under the [Open Government Licence](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
-
-{% endset %}
+{% set pageName = "You can now publish your data" %}
 
 {% set content %}
 
-  ## What you need to do next
+  # What to do next
 
-  You need to send an email to [digitalland@communities.gov.uk](mailto:digitalland@communities.gov.uk).
+  ## 1: Publish your data to your website
 
-  The email must include:
+  The page on your website must include:
+  - a link to the data
+  - a summary of what the data is about
+  - a statement that the data is provided under the Open Government Licence
+
+  ## 2: Send an email
+
+  Send an email to [digitalland@communities.gov.uk](mailto:digitalland@communities.gov.uk).
+
+  You must include:
 
   - your full name
   - the name of your local planning authority (LPA)
   - a link to a webpage containing the data on your LPA website
 
-  The webpage must include:
+  Details about what to do next are also available [in the guidance](/guidance)
 
-  - a link to the data
-  - a summary of what the data is about
-  - a statement that the data is provided under the Open Government Licence
-
-  {{ govukDetails({
-    summaryText: "Example webpage",
-    text: example | govukMarkdown(headingsStartWith="m") | safe
-  }) }}
+  {% if options.deepLink %}
+    <p><a href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset }} overview</a></p>
+  {% endif %}
 
   ## Give feedback
 
   [Give feedback about this service]({{feedbackLink}}) (takes 30 seconds).
-
 {% endset %}
+
+{% block content %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
