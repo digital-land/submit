@@ -41,7 +41,7 @@
       <form novalidate method="post">
 
         {% if options.deepLink %}
-          {{ datasetBanner(options.deepLink) }}
+          {{ datasetBanner(options.datasetName) }}
         {% endif %}
 
         {{ govukRadios({
