@@ -81,7 +81,7 @@ export const fetchOrgInfo = fetchOne({
 
 /**
  * Middleware. Validates query params according to schema.
- * Short circuits with 400 error if validation fails
+ * Short circuits with 400 error if validation fails. Potentially updates req with `parsedParams`
  *
  * `this` needs: `{ schema }`
  *
@@ -91,7 +91,7 @@ export const fetchOrgInfo = fetchOne({
  */
 export function validateQueryParamsFn (req, res, next) {
   try {
-    v.parse(this.schema || v.any(), req.params)
+    req.parsedParams = v.parse(this.schema || v.any(), req.params)
     next()
   } catch (error) {
     res.status(400).render('errorPages/400', {})
