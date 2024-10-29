@@ -305,7 +305,7 @@ const isPageNumberInRange = (req, res, next) => {
   const { issueEntitiesCount } = req
   const { pageNumber } = req.parsedParams
 
-  if (pageNumber < 0 || issueEntitiesCount < pageNumber) {
+  if (pageNumber < 1 || issueEntitiesCount < pageNumber) {
     res.status(404).render('errorPages/404', {})
     return
   }
