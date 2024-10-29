@@ -108,7 +108,11 @@ describe('PageController', () => {
       }
 
       datasetSlugToReadableName = await import('../../src/utils/datasetSlugToReadableName.js')
-      datasetSlugToReadableName.datasetSlugToReadableName.mockReturnValue('readable name')
+      datasetSlugToReadableName.datasetSlugToReadableName.mockImplementation(
+        vi.fn().mockImplementation(slug => ({
+          dataset: 'readable name'
+        }[slug]))
+      )
 
       pageController = new PageController({ route: '/upload-method' })
     })
@@ -121,6 +125,20 @@ describe('PageController', () => {
     it('sets the return value of datasetSlugToReadableName on the form options', () => {
       pageController.locals(req, {}, vi.fn())
       expect(req.form.options.datasetName).toEqual('readable name')
+    })
+
+    it('handles missing dataset gracefully', () => {
+      req.sessionModel.get.mockReturnValue({})
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.datasetName).toBeUndefined()
+    })
+
+    it('handles datasetSlugToReadableName errors gracefully', () => {
+      datasetSlugToReadableName.datasetSlugToReadableName.mockImplementation(() => {
+        throw new Error('Database connection failed')
+      })
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.datasetName).toBeUndefined()
     })
   })
 })

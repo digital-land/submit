@@ -59,7 +59,11 @@ class PageController extends Controller {
     }
 
     const dataset = req?.sessionModel?.get('dataset')
-    req.form.options.datasetName = datasetSlugToReadableName(dataset)
+    try {
+      req.form.options.datasetName = datasetSlugToReadableName(dataset)
+    } catch (e) {
+      logger.warn(`Failed to get readable dataset name from slug: ${dataset}`)
+    }
 
     super.locals(req, res, next)
   }
