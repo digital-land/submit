@@ -1,6 +1,6 @@
 import PageController from '../../src/controllers/pageController.js'
 
-import { describe, it, vi, expect } from 'vitest'
+import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 import logger from '../../src/utils/logger.js'
 import { types } from '../../src/utils/logging.js'
@@ -90,29 +90,36 @@ describe('PageController', () => {
     })
   })
 
-  describe('Correctly assigns the datasetName', async () => {
-    const req = {
-      sessionModel: {
-        get: vi.fn().mockImplementation(key => ({
-          dataset: 'dataset'
-        }[key]))
-      },
-      form: {
-        options: {}
+  describe('Correctly assigns the datasetName', () => {
+    let req
+    let datasetSlugToReadableName
+    let pageController
+
+    beforeEach(async () => {
+      req = {
+        sessionModel: {
+          get: vi.fn().mockImplementation(key => ({
+            dataset: 'dataset'
+          }[key]))
+        },
+        form: {
+          options: {}
+        }
       }
-    }
 
-    const datasetSlugToReadableName = await import('../../src/utils/datasetSlugToReadableName.js')
-    datasetSlugToReadableName.datasetSlugToReadableName.mockReturnValue('readable name')
+      datasetSlugToReadableName = await import('../../src/utils/datasetSlugToReadableName.js')
+      datasetSlugToReadableName.datasetSlugToReadableName.mockReturnValue('readable name')
 
-    const pageController = new PageController({ route: '/upload-method' })
-    pageController.locals(req, {}, vi.fn())
+      pageController = new PageController({ route: '/upload-method' })
+    })
 
     it('calls datasetSlugToReadableName with the dataset in the session', () => {
+      pageController.locals(req, {}, vi.fn())
       expect(datasetSlugToReadableName.datasetSlugToReadableName).toHaveBeenCalledWith('dataset')
     })
 
     it('sets the return value of datasetSlugToReadableName on the form options', () => {
+      pageController.locals(req, {}, vi.fn())
       expect(req.form.options.datasetName).toEqual('readable name')
     })
   })
