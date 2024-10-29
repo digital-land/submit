@@ -129,7 +129,7 @@ describe('ResultsController', () => {
             values: ['mock value']
           }]
         },
-        datasetName: 'Dataset',
+        datasetName: req.sessionModel.get('dataset'),
 
         errorSummary: ['error summary'],
         mappings: { fields: 'geometries' },
