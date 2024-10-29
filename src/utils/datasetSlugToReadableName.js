@@ -10,4 +10,6 @@ try {
   datasetSlugToReadableName = (slug) => slug // Fallback to using the slug as-is
 }
 
-export default datasetSlugToReadableName
+export {
+  datasetSlugToReadableName
+}

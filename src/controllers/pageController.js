@@ -1,7 +1,7 @@
 import hmpoFormWizard from 'hmpo-form-wizard'
 import { logPageView, types } from '../utils/logging.js'
 import logger from '../utils/logger.js'
-import datasetSlugToReadableName from '../utils/datasetSlugToReadableName.js'
+import { datasetSlugToReadableName } from '../utils/datasetSlugToReadableName.js'
 const { Controller } = hmpoFormWizard
 
 /**
@@ -58,17 +58,8 @@ class PageController extends Controller {
       })
     }
 
-    try {
-      const dataset = req?.sessionModel?.get('dataset')
-      if (dataset) {
-        req.form.options.datasetName = datasetSlugToReadableName(dataset)
-      }
-    } catch (e) {
-      logger.warn('PageController.locals(): error setting dataset name', {
-        type: types.App,
-        errorMessage: e.message
-      })
-    }
+    const dataset = req?.sessionModel?.get('dataset')
+    req.form.options.datasetName = datasetSlugToReadableName(dataset)
 
     super.locals(req, res, next)
   }

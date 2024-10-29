@@ -10,7 +10,12 @@ describe('ResultsController', () => {
   const req = {
     params: { id: 'testId' },
     form: { options: {} },
-    session: { template: 'template' }
+    session: { template: 'template' },
+    sessionModel: {
+      get: key => ({
+        dataset: 'dataset'
+      }[key])
+    }
   }
 
   beforeEach(async () => {
@@ -121,6 +126,8 @@ describe('ResultsController', () => {
             values: ['mock value']
           }]
         },
+        datasetName: 'Dataset',
+
         errorSummary: ['error summary'],
         mappings: { fields: 'geometries' },
         geometries: ['geometries'],
