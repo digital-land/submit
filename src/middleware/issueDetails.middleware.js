@@ -99,7 +99,7 @@ async function fetchEntry (req, res, next) {
   const issuesByEntry = Object.values(issuesByEntryNumber)
   if (issues.length > 0) {
     if (pageNumber <= issueEntitiesCount) {
-      const entryIssues = issuesByEntry[(pageNumber - 1) % issuesQueryLimit]
+      const entryIssues = issuesByEntry[(pageNumber - 1) % issuesQueryLimit] ?? []
       const entryNum = entryIssues.length > 0 ? entryIssues[0].entry_number : undefined
       entryData = entryNum
         ? await performanceDbApi.getEntry(
