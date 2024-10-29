@@ -3,11 +3,11 @@ import GeometryTypePage from './geometryTypePage'
 import UploadMethodPage from './uploadMethodPage'
 
 export const datasets = {
-  Article_4_direction_area_dataset: 'Article 4 direction area dataset',
-  Conservation_area_dataset: 'Conservation area dataset',
-  Tree_Preservation_zone: 'Tree preservation zone dataset',
-  Listed_building_outline: 'Listed building outline dataset',
-  Tree: 'Tree dataset'
+  Article_4_direction_area_dataset: 'Article 4 direction area',
+  Conservation_area_dataset: 'Conservation area',
+  Tree_Preservation_zone: 'Tree preservation zone',
+  Listed_building_outline: 'Listed building outline',
+  Tree: 'Tree'
 }
 
 export default class DatasetPage extends BasePage {
@@ -17,7 +17,7 @@ export default class DatasetPage extends BasePage {
 
   async selectDataset (dataset) {
     this.currentDataset = dataset
-    return await this.page.getByLabel(dataset).check()
+    return await this.page.getByLabel(dataset, { exact: true }).check()
   }
 
   async clickContinue (skipVerification) {
