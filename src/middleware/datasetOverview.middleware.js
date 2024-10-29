@@ -2,6 +2,8 @@ import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgI
 import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } from './middleware.builders.js'
 import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -45,9 +47,15 @@ const fetchSpecification = fetchOne({
  */
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
-  const collectionSpecifications = JSON.parse(specification.json)
-  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
-  req.datasetSpecification = datasetSpecification
+  let collectionSpecifications
+  try {
+    collectionSpecifications = JSON.parse(specification.json)
+  } catch (e) {
+    // we can proceed but we probably should notify the user the displayed data may not be complete
+    logger.info('failed to parse specification JSON', { type: types.DataValidation, collection: req.dataset.collection })
+    collectionSpecifications = []
+  }
+  req.datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   next()
 }
 
