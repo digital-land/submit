@@ -3,6 +3,7 @@
 
 import PageController from '../../src/controllers/pageController.js'
 import { vi, it, describe, expect, beforeEach, afterEach } from 'vitest'
+import { initDatasetSlugToReadableNameFilter } from '../../src/utils/datasetSlugToReadableName.js'
 
 vi.mock('../../src/utils/datasetteQueries/fetchLocalAuthorities.js')
 
@@ -16,6 +17,7 @@ describe('lpaDetailsController', async () => {
     controller = new LpaDetailsController.default({
       route: '/lpa-details'
     })
+    await initDatasetSlugToReadableNameFilter()
   })
 
   afterEach(() => {

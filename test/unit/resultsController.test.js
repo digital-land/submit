@@ -1,5 +1,6 @@
 import ResultsController from '../../src/controllers/resultsController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
+import { initDatasetSlugToReadableNameFilter } from '../../src/utils/datasetSlugToReadableName.js'
 
 describe('ResultsController', () => {
   vi.mock('@/services/asyncRequestApi.js')
@@ -24,6 +25,8 @@ describe('ResultsController', () => {
     resultsController = new ResultsController({
       route: '/results'
     })
+
+    await initDatasetSlugToReadableNameFilter()
   })
 
   describe('locals', () => {
