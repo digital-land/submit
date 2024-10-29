@@ -11,6 +11,11 @@ const cookieDefaults = {
 class CookieBanner {
   constructor () {
     this.banner = document.querySelector('.js-app-c-cookie-banner')
+    if (!this.banner) {
+      console.warn('Cookie banner element not found')
+      return
+    }
+
     this.form = this.banner.querySelector('.js-app-c-cookie-banner__form')
     this.confirmationMessage = this.banner.querySelector('.js-app-c-cookie-banner__confirmation')
     this.confirmationDecision = this.banner.querySelector('.js-app-c-cookie-banner__confirmation-decision')
@@ -22,10 +27,6 @@ class CookieBanner {
   }
 
   init () {
-    if (!this.banner) {
-      return
-    }
-
     if (this.getCookie(cookieDefaults.cookieNames.preferenceCookie) !== null) {
       this.hideCookieBanner()
     }
@@ -74,19 +75,20 @@ class CookieBanner {
 
   showConfirmationMessage (userAcceptedCookiePolicy = true) {
     this.form.classList.add('app-c-cookie-banner__form--hidden')
-    this.form.ariaHidden = true
+    this.form.setAttribute('aria-hidden', 'true')
     this.acceptButton.removeEventListener('click', this.accept.bind(this))
     this.rejectButton.removeEventListener('click', this.reject.bind(this))
 
     if (!userAcceptedCookiePolicy) this.confirmationDecision.textContent = 'rejected'
     this.confirmationMessage.classList.remove('app-c-cookie-banner__confirmation--hidden')
-    this.confirmationMessage.ariaHidden = false
+    this.confirmationMessage.setAttribute('aria-hidden', 'false')
+    this.confirmationMessage.setAttribute('role', 'status') // Announce status to screen readers
   }
 
   hideCookieBanner () {
     if (this.banner) {
       this.banner.style.display = 'none'
-      this.banner.ariaHidden = true
+      this.banner.setAttribute('aria-hidden', 'true')
     }
   }
 }
