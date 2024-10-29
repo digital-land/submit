@@ -119,11 +119,11 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const allFields = [...mappingFields, ...nonMappingFields]
 
   const specFields = datasetSpecification ? datasetSpecification.fields : []
-  const numberOfFieldsSupplied = specFields.map(field => field.field).reduce((acc, current) => {
-    return allFields.includes(current) ? acc + 1 : acc
+  const numberOfFieldsSupplied = specFields.reduce((acc, field) => {
+    return allFields.includes(field.field) ? acc + 1 : acc
   }, 0)
-  const numberOfFieldsMatched = specFields.map(field => field.field).reduce((acc, current) => {
-    return mappingFields.includes(current) ? acc + 1 : acc
+  const numberOfFieldsMatched = specFields.reduce((acc, field) => {
+    return mappingFields.includes(field.field) ? acc + 1 : acc
   }, 0)
 
   const numberOfExpectedFields = specFields.length
