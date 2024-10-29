@@ -20,7 +20,7 @@ export const IssueDetailsQueryParams = v.object({
   dataset: v.string(),
   issue_type: v.string(),
   issue_field: v.string(),
-  pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1'),
+  pageNumber: v.optional(v.pipe(v.string(), v.transform(s => parseInt(s, 10)), v.minValue(1)), '1'),
   resourceId: v.optional(v.string())
 })
 
