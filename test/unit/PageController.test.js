@@ -9,9 +9,6 @@ import hash from '../../src/utils/hasher.js'
 
 vi.mock('../../src/utils/datasetSlugToReadableName.js', () => {
   return {
-    default: {
-      datasetSlugToReadableName: vi.fn()
-    },
     datasetSlugToReadableName: vi.fn()
   }
 })
