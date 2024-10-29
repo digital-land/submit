@@ -8,9 +8,10 @@ const cookieDefaults = {
   defaultPolicyValue: { essential: true, settings: true, usage: true, campaigns: true }
 }
 
-class CookieBanner {
-  constructor () {
-    this.banner = document.querySelector('.js-app-c-cookie-banner')
+export default class CookieBanner {
+  constructor (document) {
+    this.document = document
+    this.banner = this.document.querySelector('.js-app-c-cookie-banner')
     if (!this.banner) {
       console.warn('Cookie banner element not found')
       return
@@ -62,11 +63,11 @@ class CookieBanner {
   setCookie (name, value, days) {
     const expires = new Date()
     expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000))
-    document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=${cookieDefaults.cookiePath}`
+    this.document.cookie = `${name}=${JSON.stringify(value)};expires=${expires.toUTCString()};path=${cookieDefaults.cookiePath}`
   }
 
   getCookie (name) {
-    const cookie = document.cookie
+    const cookie = this.document.cookie
       .split('; ')
       .find(row => row.startsWith(name))
 
@@ -92,7 +93,3 @@ class CookieBanner {
     }
   }
 }
-
-const cookieBanner = new CookieBanner()
-
-export default cookieBanner
