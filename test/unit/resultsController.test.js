@@ -13,9 +13,14 @@ describe('ResultsController', () => {
     form: { options: {} },
     session: { template: 'template' },
     sessionModel: {
-      get: key => ({
-        dataset: 'dataset'
-      }[key])
+      get: vi.fn().mockImplementation(key => {
+        const mockData = {
+          dataset: 'Dataset',
+          formFields: {}
+          // Add other potential keys
+        }
+        return mockData[key]
+      })
     }
   }
 
