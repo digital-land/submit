@@ -1,6 +1,28 @@
 import hmpoFormWizard from 'hmpo-form-wizard'
-import { logPageView } from '../utils/logging.js'
+import { logPageView, types } from '../utils/logging.js'
+import logger from '../utils/logger.js'
 const { Controller } = hmpoFormWizard
+
+/**
+ * If we arrived at the page via deep from another page, we'll use that page as the back link.
+ *
+ * @param {string} url current page URL
+ * @param {{ referrer?: string, dataset: string }} deepLinkInfo deep link info from the session
+ * @returns {string|undefined} back link URL
+ */
+function wizardBackLink (currentUrl, deepLinkInfo) {
+  if (deepLinkInfo && 'referrer' in deepLinkInfo) {
+    const { referrer, dataset } = deepLinkInfo
+    if (dataset === 'tree' && currentUrl === '/check/geometry-type') {
+      return referrer
+    }
+    if (dataset !== 'tree' && currentUrl === '/check/upload-method') {
+      return referrer
+    }
+  }
+
+  return undefined
+}
 
 class PageController extends Controller {
   checkToolDeepLinkSessionKey = 'check-tool-deep-link'
@@ -11,12 +33,25 @@ class PageController extends Controller {
   }
 
   locals (req, res, next) {
-    if (this.options.backLink) {
-      req.form.options.lastPage = this.options.backLink
+    try {
+      let backLink
+      const deepLinkInfo = req?.sessionModel?.get(this.checkToolDeepLinkSessionKey)
+      if (deepLinkInfo) {
+        req.form.options.deepLink = deepLinkInfo
+        backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
+      }
+
+      backLink = backLink ?? this.options.backLink
+      if (backLink) {
+        req.form.options.lastPage = backLink
+      }
+    } catch (e) {
+      logger.warn('PageController.locals(): error setting back link', {
+        type: types.App,
+        errorMessage: e.message
+      })
     }
-    if (req.sessionModel) {
-      req.form.options.deepLink = req.sessionModel.get(this.checkToolDeepLinkSessionKey)
-    }
+
     super.locals(req, res, next)
   }
 }
