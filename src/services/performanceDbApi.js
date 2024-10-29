@@ -208,9 +208,8 @@ export default {
   /**
      * Returns a task message based on the provided issue type, issue count, and entity count.
      *
-     * - entityLevel - Whether to use entity-level or dataset level messaging
-     *
-     * @param {{issue_type: string, num_issues: number, entityCount: number, field: string, entityLevel: boolean = false }} options
+     * @param {{issue_type: string, num_issues: number, entityCount: number, field: string }} options
+     * @param {boolean?} entityLevel Whether to use entity-level or dataset level messaging
      *
      * @returns {string} The task message with the issue count inserted
      *
