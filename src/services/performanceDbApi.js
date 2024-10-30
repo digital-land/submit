@@ -294,11 +294,21 @@ export default {
     return /* sql */ `
     select
       rle.pipeline as dataset,
-      rle.resource as resource
+      endpoint,
+      endpoint_url,
+      rle.resource as resource,
+      status,
+      exception,
+      latest_log_entry_date,
+      endpoint_entry_date,
+      resource_start_date
     from reporting_latest_endpoints rle
     where
       REPLACE(organisation, '-eng', '') = '${lpa}'
-      ${datasetClause}`
+      ${datasetClause}
+    AND (endpoint_end_date is null OR endpoint_end_date == '' OR DATE(endpoint_end_date) > DATE('now'))
+    AND (resource_end_date is null OR resource_end_date == '' OR DATE(resource_end_date) > DATE('now'))
+    AND (resource_start_date is not null AND resource_start_date != '' AND DATE(resource_start_date) < DATE('now'))`
   },
 
   /**
