@@ -43,7 +43,7 @@ function getStatusTag (status) {
  * @returns { { templateParams: object }}
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { entityCount: entityCountRow, params, dataset, orgInfo: organisation, tasks } = req
+  const { entityCount: entityCountRow, params, dataset, orgInfo: organisation, tasks, resources } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
   const { lpa, dataset: datasetId } = params
 
@@ -51,15 +51,17 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
 
   const taskList = tasks.reduce((acc, task) => {
     const { resource } = task
+    const resourceObj = resources.find(r => r.resource === resource)
+    const fileSubstring = decodeURIComponent(resourceObj.endpoint_url).split('/').slice(-2).join('/').split('?')[0]
     const taskItem = {
       title: {
-        text: performanceDbApi.getTaskMessage({ ...task, entityCount, field: task.field, resource: task.resource })
+        text: performanceDbApi.getTaskMessage({ ...task, entityCount, field: task.field })
       },
       href: `/organisations/${lpa}/${datasetId}/${task.resource}/${task.issue_type}/${task.field}`,
       status: getStatusTag(task.status)
     }
-    if (!acc[resource]) acc[resource] = []
-    acc[resource].push(taskItem)
+    if (!acc[fileSubstring]) acc[fileSubstring] = []
+    acc[fileSubstring].push(taskItem)
     return acc
   }, {})
 

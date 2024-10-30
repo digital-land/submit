@@ -251,8 +251,7 @@ export default {
         ? messageInfo.singular
         : messageInfo.plural
     }
-    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field) +
-      (resource ? ` in resource ${resource.slice(0, 4)}${resource.length > 4 ? '...' : ''}` : '')
+    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field)
   },
 
   latestResourceQuery: (lpa, dataset) => {
