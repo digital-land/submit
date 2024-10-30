@@ -128,7 +128,7 @@ class Map {
       }
     })
 
-    this.bbox = this.calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
+    this.bbox = calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
   }
 
   addGeoJsonUrlsToMap (geoJsonUrls) {
