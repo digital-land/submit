@@ -178,29 +178,19 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount: entityCountRow } = req
+  const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber } = req
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
-
-  let errorHeading
-  let issueItems
 
   const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
 
-  if (Object.keys(issuesByEntryNumber).length < entityCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-    issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
-      const pageNum = i + 1
-      return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${issues[0].entry_number}`,
-        href: `${BaseSubpath}${pageNum}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
-    }]
-  }
+  const errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, field: issueField }, true)
+  const issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
+    const pageNum = i + 1
+    return {
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${issues[0].entry_number}`,
+      href: `${BaseSubpath}${pageNum}`
+    }
+  })
 
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []

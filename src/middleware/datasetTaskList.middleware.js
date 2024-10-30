@@ -52,7 +52,7 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
   const taskList = tasks.map((task) => {
     return {
       title: {
-        text: performanceDbApi.getTaskMessage({ ...task, entityCount, field: task.field }) // using the entity count here doesn't make sense, should be using the entry count for each resource
+        text: performanceDbApi.getTaskMessage({ ...task, field: task.field }) // using the entity count here doesn't make sense, should be using the entry count for each resource
       },
       href: `/organisations/${lpa}/${datasetId}/${task.issue_type}/${task.field}`,
       status: getStatusTag(task.status)

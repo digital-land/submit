@@ -352,7 +352,7 @@ export default {
     issueField
   }, database = 'digital-land') {
     const sql = `
-    SELECT count(DISTINCT entry_number) as count
+    SELECT count(entry_number) as count
     FROM issue
     WHERE resource in ('${resources.join("', '")}')
     AND issue_type = '${issueType}'
