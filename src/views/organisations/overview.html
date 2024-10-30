@@ -82,6 +82,7 @@
               {% endif %}
             </h2>
             <div class="govuk-task-list__hint">
+                <p>{{dataset.active_endpoint_count}} endpoints active</p>
               {% if dataset.status == 'Not submitted' %}
                 <p>Data URL not submitted</p>
               {% elif dataset.status == 'Error' %}

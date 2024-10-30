@@ -65,11 +65,14 @@
 
     {% else %}
 
+      {% for subTaskList in taskList %}
+        <h3>{{subTaskList.resource}}</h3>
+        {{ govukTaskList({
+          idPrefix: "dataset-tasklist",
+          items: subTaskList.tasks
+        }) }}
+      {% endfor %}
 
-    {{ govukTaskList({
-      idPrefix: "dataset-tasklist",
-      items: taskList
-    }) }}
 
     <h3 class="govuk-heading-m">
       How to improve {{ organisation.name }}’s data

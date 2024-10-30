@@ -222,7 +222,8 @@ export default {
     issue_type: issueType,
     num_issues: numIssues,
     entityCount,
-    field
+    field,
+    resource
   }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
@@ -250,7 +251,8 @@ export default {
         ? messageInfo.singular
         : messageInfo.plural
     }
-    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field)
+    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field) +
+      (resource ? ` in resource ${resource.slice(0, 4)}${resource.length > 4 ? '...' : ''}` : '')
   },
 
   latestResourceQuery: (lpa, dataset) => {
@@ -347,14 +349,14 @@ export default {
      * @returns {Promise<number>} Count of entities with issues
      */
   async getEntitiesWithIssuesCount ({
-    resource,
+    resources,
     issueType,
     issueField
   }, database = 'digital-land') {
     const sql = `
     SELECT count(DISTINCT entry_number) as count
     FROM issue
-    WHERE resource = '${resource}'
+    WHERE resource in ('${resources.join("', '")}')
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
   `
@@ -375,14 +377,14 @@ export default {
      * @returns {Promise<Object>} - Promise resolving to an object with formatted data
      */
   async getIssues ({
-    resource,
+    resources,
     issueType,
     issueField
   }, database = 'digital-land') {
     const sql = `
     SELECT i.field, i.line_number, entry_number, message, issue_type, value
     FROM issue i
-    WHERE resource = '${resource}'
+    WHERE resource in ('${resources.join("', '")}')
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
   `

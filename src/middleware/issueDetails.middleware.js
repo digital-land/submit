@@ -1,8 +1,6 @@
 import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
-import { fetchIf, renderTemplate } from './middleware.builders.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchOrgInfo, logPageError, validateQueryParams } from './common.middleware.js'
+import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 
@@ -30,15 +28,9 @@ const validateIssueDetailsQueryParams = validateQueryParams({
  * @param {*} next
  */
 async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  if (!resourceId) {
-    logger.debug('fetchIssues(): missing resourceId', { type: types.App, params: req.params, resource: req.resource })
-    throw Error('fetchIssues: missing resourceId')
-  }
-
+  const { dataset: datasetId, issue_type: issueType, issue_field: issueField, resource } = req.params
   try {
-    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField }, datasetId)
+    const issues = await performanceDbApi.getIssues({ resources: [resource], issueType, issueField }, datasetId)
     req.issues = issues
     next()
   } catch (error) {
@@ -79,7 +71,7 @@ async function reformatIssuesToBeByEntryNumber (req, res, next) {
  *
  */
 async function fetchEntry (req, res, next) {
-  const { dataset: datasetId, pageNumber } = req.params
+  const { dataset: datasetId, pageNumber, resource } = req.params
   const { issuesByEntryNumber } = req
   const pageNum = pageNumber ? parseInt(pageNumber) : 1
   req.pageNumber = pageNum
@@ -89,7 +81,7 @@ async function fetchEntry (req, res, next) {
   const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
 
   req.entryData = await performanceDbApi.getEntry(
-    req.resource.resource,
+    resource,
     entityNum,
     datasetId
   )
@@ -108,10 +100,8 @@ async function fetchEntry (req, res, next) {
  * @param {*} next
  */
 async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  console.assert(resourceId, 'missng resource id')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
+  const { dataset: datasetId, issue_type: issueType, issue_field: issueField, resource } = req.params
+  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resources: [resource], issueType, issueField }, datasetId)
   req.issueEntitiesCount = parseInt(issueEntitiesCount)
   next()
 }
@@ -288,7 +278,6 @@ export default [
   validateIssueDetailsQueryParams,
   fetchOrgInfo,
   fetchDatasetInfo,
-  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIssues,
   reformatIssuesToBeByEntryNumber,
   fetchEntry,

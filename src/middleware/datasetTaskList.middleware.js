@@ -49,18 +49,24 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
 
   console.assert(typeof entityCount === 'number', 'entityCount should be a number')
 
-  const taskList = tasks.map((task) => {
-    return {
+  const taskList = tasks.reduce((acc, task) => {
+    const { resource } = task
+    const taskItem = {
       title: {
-        text: performanceDbApi.getTaskMessage({ ...task, entityCount, field: task.field }) // using the entity count here doesn't make sense, should be using the entry count for each resource
+        text: performanceDbApi.getTaskMessage({ ...task, entityCount, field: task.field, resource: task.resource })
       },
-      href: `/organisations/${lpa}/${datasetId}/${task.issue_type}/${task.field}`,
+      href: `/organisations/${lpa}/${datasetId}/${task.resource}/${task.issue_type}/${task.field}`,
       status: getStatusTag(task.status)
     }
-  })
+    if (!acc[resource]) acc[resource] = []
+    acc[resource].push(taskItem)
+    return acc
+  }, {})
+
+  const taskList2D = Object.entries(taskList).map(([resource, tasks]) => ({ resource, tasks }))
 
   req.templateParams = {
-    taskList,
+    taskList: taskList2D,
     organisation,
     dataset
   }
@@ -121,6 +127,7 @@ export const fetchLpaDatasetTasks = fetchMany({
       i.line_number,
       i.value,
       i.message,
+      i.resource,
       CASE
         WHEN COUNT(
           CASE
@@ -139,7 +146,7 @@ export const fetchLpaDatasetTasks = fetchMany({
         i.resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
         AND i.dataset = '${params.dataset}'
         AND (it.severity == 'error')
-    GROUP BY i.issue_type, i.field
+    GROUP BY i.issue_type, i.field, i.resource
     ORDER BY it.severity`,
   result: 'tasks'
 })

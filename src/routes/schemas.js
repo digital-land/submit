@@ -94,14 +94,17 @@ export const OrgDatasetOverview = v.strictObject({
 
 export const OrgDatasetTaskList = v.strictObject({
   taskList: v.array(v.strictObject({
-    title: v.strictObject({ text: NonEmptyString }),
-    href: v.url(),
-    status: v.strictObject({
-      tag: v.strictObject({
-        classes: NonEmptyString,
-        text: NonEmptyString
+    resource: v.string(),
+    tasks: v.array(v.strictObject({
+      title: v.strictObject({ text: NonEmptyString }),
+      href: v.url(),
+      status: v.strictObject({
+        tag: v.strictObject({
+          classes: NonEmptyString,
+          text: NonEmptyString
+        })
       })
-    })
+    }))
   })),
   organisation: OrgField,
   dataset: v.strictObject({
