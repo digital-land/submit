@@ -1,8 +1,6 @@
 import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
-import { fetchDatasetInfo, fetchEntityCount, fetchLatestResource, fetchOrgInfo, isResourceIdInParams, logPageError, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
-import { fetchIf, renderTemplate } from './middleware.builders.js'
+import { fetchDatasetInfo, fetchEntityCount, fetchOrgInfo, fetchResources, logPageError, validateQueryParams } from './common.middleware.js'
+import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 
@@ -31,14 +29,10 @@ const validateIssueDetailsQueryParams = validateQueryParams({
  */
 async function fetchIssues (req, res, next) {
   const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  if (!resourceId) {
-    logger.debug('fetchIssues(): missing resourceId', { type: types.App, params: req.params, resource: req.resource })
-    throw Error('fetchIssues: missing resourceId')
-  }
+  const { resources } = req
 
   try {
-    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField }, datasetId)
+    const issues = await performanceDbApi.getIssues({ resources: resources.map(resource => resource.resource), issueType, issueField }, datasetId)
     req.issues = issues
     next()
   } catch (error) {
@@ -56,11 +50,11 @@ async function fetchIssues (req, res, next) {
  * @param {*} res
  * @param {*} next
  */
-async function reformatIssuesToBeByEntryNumber (req, res, next) {
+async function reformatIssuesToBeByResourceEntryNumber (req, res, next) {
   const { issues } = req
   const issuesByEntryNumber = issues.reduce((acc, current) => {
-    acc[current.entry_number] = acc[current.entry_number] || []
-    acc[current.entry_number].push(current)
+    acc[current.resource + current.entry_number] = acc[current.resource + current.entry_number] || []
+    acc[current.resource + current.entry_number].push(current)
     return acc
   }, {})
   req.issuesByEntryNumber = issuesByEntryNumber
@@ -86,10 +80,13 @@ async function fetchEntry (req, res, next) {
 
   // look at issue Entries and get the index of that entry - 1
 
-  const entityNum = Object.values(issuesByEntryNumber)[pageNum - 1][0].entry_number
+  const issue = Object.values(issuesByEntryNumber)[pageNum - 1][0]
+
+  const entityNum = issue.entry_number
+  const resource = issue.resource
 
   req.entryData = await performanceDbApi.getEntry(
-    req.resource.resource,
+    resource,
     entityNum,
     datasetId
   )
@@ -109,9 +106,8 @@ async function fetchEntry (req, res, next) {
  */
 async function fetchIssueEntitiesCount (req, res, next) {
   const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  console.assert(resourceId, 'missng resource id')
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
+  const { resources } = req
+  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resources: resources.map(resource => resource.resource), issueType, issueField }, datasetId)
   req.issueEntitiesCount = parseInt(issueEntitiesCount)
   next()
 }
@@ -196,7 +192,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     issueItems = Object.entries(issuesByEntryNumber).map(([entryNumber, issues], i) => {
       const pageNum = i + 1
       return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
+        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${issues[0].entry_number}`,
         href: `${BaseSubpath}${pageNum}`
       }
     })
@@ -288,9 +284,9 @@ export default [
   validateIssueDetailsQueryParams,
   fetchOrgInfo,
   fetchDatasetInfo,
-  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
+  fetchResources,
   fetchIssues,
-  reformatIssuesToBeByEntryNumber,
+  reformatIssuesToBeByResourceEntryNumber,
   fetchEntry,
   fetchEntityCount,
   fetchIssueEntitiesCount,

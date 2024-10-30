@@ -347,14 +347,14 @@ export default {
      * @returns {Promise<number>} Count of entities with issues
      */
   async getEntitiesWithIssuesCount ({
-    resource,
+    resources,
     issueType,
     issueField
   }, database = 'digital-land') {
     const sql = `
     SELECT count(DISTINCT entry_number) as count
     FROM issue
-    WHERE resource = '${resource}'
+    WHERE resource in ('${resources.join("', '")}')
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
   `
@@ -375,14 +375,14 @@ export default {
      * @returns {Promise<Object>} - Promise resolving to an object with formatted data
      */
   async getIssues ({
-    resource,
+    resources,
     issueType,
     issueField
   }, database = 'digital-land') {
     const sql = `
-    SELECT i.field, i.line_number, entry_number, message, issue_type, value
+    SELECT i.field, i.line_number, entry_number, message, issue_type, value, resource
     FROM issue i
-    WHERE resource = '${resource}'
+    WHERE resource in ('${resources.join("', '")}')
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
   `
