@@ -87,10 +87,7 @@ export const OrgDatasetOverview = v.strictObject({
       endpoint: v.string(),
       lastAccessed: v.string(),
       lastUpdated: v.string(),
-      error: v.optional(v.strictObject({
-        code: v.integer(),
-        exception: v.string()
-      }))
+      error: v.optional(v.string())
     }))
   })
 })

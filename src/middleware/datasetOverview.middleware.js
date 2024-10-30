@@ -129,11 +129,8 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   }).map((source, index) => {
     let error
 
-    if (parseInt(source.status) < 200 || parseInt(source.status) >= 300) {
-      error = {
-        code: parseInt(source.status),
-        exception: source.exception
-      }
+    if (parseInt(source.status) < 200 || parseInt(source.status) >= 300 || source.status === '' || source.exception) {
+      error = 'There was a ' + (source.exception || source.status) + ' error accessing the endpoint'
     }
 
     return {
