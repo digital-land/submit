@@ -415,7 +415,17 @@ export default {
         ft.field,
         ft.entry_date,
         ft.start_date,
-        ft.value
+        ft.value,
+        EXISTS (
+          SELECT
+            1
+          FROM
+            fact ft2
+          WHERE
+            ft2.entity = ft.entity
+            AND ft2.field = ft.field
+            AND ft2.entry_date > ft.entry_date
+        ) AS has_later_fact
       from
         fact_resource fr
         left join fact ft on fr.fact = ft.fact

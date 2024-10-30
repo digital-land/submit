@@ -164,6 +164,9 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
     classes += 'dl-summary-card-list__row--error'
   }
   valueHtml += row.value
+  if (row.has_later_fact) {
+    valueHtml += '<br><span style="color: grey">(overwritten by more recent resource)</span>'
+  }
 
   return getIssueField(row.field, valueHtml, classes)
 }
@@ -173,13 +176,13 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
   const { entryData, pageNumber, issueEntitiesCount, issuesByEntryNumber, entryNumber, entityCount: entityCountRow } = req
-  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField, resource } = req.params
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   let errorHeading
   let issueItems
 
-  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
+  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${resource}/${issueType}/${issueField}/`
 
   if (Object.keys(issuesByEntryNumber).length < entityCount) {
     errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
