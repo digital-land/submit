@@ -1,5 +1,5 @@
-import { fetchDatasetInfo, isResourceAccessible, isResourceNotAccessible, fetchLatestResource, fetchEntityCount, logPageError, fetchLpaDatasetIssues, validateQueryParams, getDatasetTaskListError } from './common.middleware.js'
-import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
+import { fetchDatasetInfo, fetchEntityCount, logPageError, validateQueryParams, fetchResources } from './common.middleware.js'
+import { fetchOne, renderTemplate, fetchMany } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 import * as v from 'valibot'
@@ -14,7 +14,7 @@ export const fetchResourceStatus = fetchOne({
 
 const fetchOrgInfoWithStatGeo = fetchOne({
   query: ({ params }) => {
-    return /* sql */ `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
+    return /* sql */ `SELECT name, organisation, statistical_geography, entity FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
@@ -43,19 +43,19 @@ function getStatusTag (status) {
  * @returns { { templateParams: object }}
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
+  const { entityCount: entityCountRow, params, dataset, orgInfo: organisation, tasks } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
   const { lpa, dataset: datasetId } = params
-  console.assert(req.resourceStatus.resource === req.resource.resource, 'mismatch between resourceStatus and resource data')
+
   console.assert(typeof entityCount === 'number', 'entityCount should be a number')
 
-  const taskList = issues.map((issue) => {
+  const taskList = tasks.map((task) => {
     return {
       title: {
-        text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
+        text: performanceDbApi.getTaskMessage({ ...task, entityCount, field: task.field }) // using the entity count here doesn't make sense, should be using the entry count for each resource
       },
-      href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}/${issue.field}`,
-      status: getStatusTag(issue.status)
+      href: `/organisations/${lpa}/${datasetId}/${task.issue_type}/${task.field}`,
+      status: getStatusTag(task.status)
     }
   })
 
@@ -113,17 +113,46 @@ const validateParams = validateQueryParams({
   })
 })
 
+export const fetchLpaDatasetTasks = fetchMany({
+  query: ({ req, params }) => `
+    SELECT
+      i.field,
+      i.issue_type,
+      i.line_number,
+      i.value,
+      i.message,
+      CASE
+        WHEN COUNT(
+          CASE
+            WHEN it.severity == 'error' THEN 1
+            ELSE null
+          END
+        ) > 0 THEN 'Needs fixing'
+        ELSE 'Live'
+      END AS status,
+      COUNT(i.issue_type) as num_issues
+    FROM
+        issue i
+    LEFT JOIN
+      issue_type it ON i.issue_type = it.issue_type
+    WHERE
+        i.resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
+        AND i.dataset = '${params.dataset}'
+        AND (it.severity == 'error')
+    GROUP BY i.issue_type, i.field
+    ORDER BY it.severity`,
+  result: 'tasks'
+})
+
 export default [
   validateParams,
   fetchResourceStatus,
   fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,
-  fetchIf(isResourceAccessible, fetchLatestResource),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-  fetchIf(isResourceAccessible, fetchEntityCount),
-  onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
-  onlyIf(isResourceAccessible, getDatasetTaskList),
-  onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
-  onlyIf(isResourceNotAccessible, getDatasetTaskListError),
+  fetchResources,
+  fetchLpaDatasetTasks,
+  fetchEntityCount,
+  prepareDatasetTaskListTemplateParams,
+  getDatasetTaskList,
   logPageError
 ]

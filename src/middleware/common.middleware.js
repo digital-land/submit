@@ -51,13 +51,19 @@ export const fetchLatestResource = fetchOne({
   fallbackPolicy: FetchOneFallbackPolicy.continue
 })
 
+export const fetchResources = fetchMany({
+  query: ({ params }) => `select * from endpoint_dataset_resource_summary where REPLACE(organisation, '-eng', '') = "${params.lpa}" AND dataset = "${params.dataset}"`,
+  dataset: FetchOptions.performanceDb,
+  result: 'resources'
+})
+
 export const takeResourceIdFromParams = (req) => {
   logger.debug('skipping resource fetch', { type: types.App, params: req.params })
   req.resource = { resource: req.params.resourceId }
 }
 
 export const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.resource.resource),
+  query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
   result: 'entityCount',
   dataset: FetchOptions.fromParams,
   fallbackPolicy: FetchOneFallbackPolicy.continue
