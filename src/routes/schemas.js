@@ -44,16 +44,18 @@ const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmpt
 export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
   datasets: v.array(v.strictObject({
-    endpoint: v.optional(v.url()),
-    status: v.enum(datasetStatusEnum),
-    slug: NonEmptyString,
-    issue_count: v.optional(v.number()),
-    error: v.optional(v.nullable(NonEmptyString)),
-    http_error: v.optional(NonEmptyString),
-    issue: v.optional(NonEmptyString),
-    entity_count: v.optional(v.number()),
-    // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
-    numIssues: v.optional(v.number())
+    organisation: v.optional(v.string()),
+    organisation_name: v.optional(v.string()),
+    dataset: v.string(),
+    status: v.string(),
+    active_endpoint_count: v.number(),
+    error_endpoint_count: v.number(),
+    count_issue_error_internal: v.number(),
+    count_issue_error_external: v.number(),
+    count_issue_warning_internal: v.number(),
+    count_issue_warning_external: v.number(),
+    count_issue_notice_internal: v.number(),
+    count_issue_notice_external: v.number()
   })),
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),

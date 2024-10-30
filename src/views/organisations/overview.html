@@ -72,12 +72,12 @@
               {% if dataset.status == 'Not submitted' %}
                 <a class="govuk-link govuk-task-list__link"
                   href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/get-started">
-                  {{dataset.slug | datasetSlugToReadableName}}
+                  {{dataset.dataset | datasetSlugToReadableName}}
                 </a>
               {% else %}
                 <a class="govuk-link govuk-task-list__link"
                   href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
-                  {{dataset.slug | datasetSlugToReadableName}}
+                  {{dataset.dataset | datasetSlugToReadableName}}
                 </a>
               {% endif %}
             </h2>
@@ -85,9 +85,9 @@
               {% if dataset.status == 'Not submitted' %}
                 <p>Data URL not submitted</p>
               {% elif dataset.status == 'Error' %}
-                <p>{{dataset.error}}</p>
+                <p>{{dataset.error_endpoint_count}} out of a supplied {{dataset.active_endpoint_count + dataset.error_endpoint_count}} endpoints could not be indexed</p>
               {% elif dataset.status == 'Needs fixing' %}
-                <p>There {{ "is" | pluralise(dataset.issue_count) }} {{ dataset.issue_count }} {{ "issue" | pluralise(dataset.issue_count) }} in this dataset</p>
+                <p>There {{ "is" | pluralise(dataset.count_issue_error_external) }} {{ dataset.count_issue_error_external }} {{ "issue" | pluralise(dataset.count_issue_error_external) }} in this dataset</p>
               {% else %}
                 <p>Data URL submitted</p>
               {% endif %}

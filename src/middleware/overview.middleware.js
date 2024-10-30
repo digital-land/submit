@@ -1,8 +1,6 @@
-import performanceDbApi, { lpaOverviewQuery } from '../services/performanceDbApi.js'
 import { fetchOrgInfo, logPageError } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { dataSubjects } from '../utils/utils.js'
-import config from '../../config/index.js'
 import _ from 'lodash'
 
 // get a list of available datasets
@@ -11,43 +9,6 @@ const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
     .filter((dataset) => dataset.available)
     .map((dataset) => dataset.value)
 )
-
-/**
- * Middleware. Updates req with 'lpaOverview'
- *
- * Relies on {@link config}.
- *
- * @param {{ params: { lpa: string }, entityCounts: { dataset: string, resource: string, entityCount?: number }[]}} req
- */
-const fetchLpaOverview = fetchMany({
-  query: ({ req, params }) => {
-    return lpaOverviewQuery(params.lpa, { datasetsFilter: config.datasetsFilter, entityCounts: req.entityCounts })
-  },
-  dataset: FetchOptions.performanceDb,
-  result: 'lpaOverview'
-})
-
-const fetchLatestResources = fetchMany({
-  query: ({ params }) => {
-    return performanceDbApi.latestResourcesQuery(params.lpa, { datasetsFilter: config.datasetsFilter })
-  },
-  result: 'resourceLookup',
-  dataset: FetchOptions.performanceDb
-})
-
-/**
- * Updates req with `entityCounts` (of shape `{ resource, dataset}|{ resource, dataset, entityCount }`)
- *
- * @param {{ resourceLookup: {resource: string, dataset: string}[] }} req
- * @param {*} res
- * @param {*} next
- */
-const fetchEntityCounts = async (req, res, next) => {
-  const { resourceLookup } = req
-
-  req.entityCounts = await performanceDbApi.getEntityCounts(resourceLookup)
-  next()
-}
 
 /**
  * For the purpose of displaying single status label on (possibly) many issues,
@@ -101,40 +62,61 @@ export function aggregateOverviewData (lpaOverview) {
  * @returns
  */
 const orgStatsReducer = (accumulator, dataset) => {
-  if (dataset.endpoint) accumulator[0]++
-  if (dataset.status === 'Needs fixing') accumulator[1]++
+  if (dataset.active_endpoint_count > 0) accumulator[0]++
   if (dataset.status === 'Error') accumulator[2]++
+  if (dataset.error_endpoint_count > 0) accumulator[2]++
   return accumulator
 }
 
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { lpaOverview, orgInfo: organisation } = req
-  const datasets = aggregateOverviewData(lpaOverview)
-  // add in any of the missing key 8 datasets
-  const keys = new Set(datasets.map(d => d.slug))
+  const { provisionSummary, orgInfo: organisation } = req
+
+  // filter down to only the ones we want
+  const datasets = provisionSummary.filter(dataset => availableDatasets.includes(dataset.dataset))
+
+  // add in any datasets that they the performance db doesn't have
+  const keys = new Set(datasets.map(d => d.dataset))
   availableDatasets.forEach((dataset) => {
     if (!keys.has(dataset)) {
-      const row = {
-        slug: dataset,
-        endpoint: null,
-        status: 'Not submitted',
-        issue_count: 0,
-        entity_count: undefined
-      }
-      datasets.push(row)
+      datasets.push({
+        dataset,
+        active_endpoint_count: 0,
+        error_endpoint_count: 0,
+        count_issue_error_internal: 0,
+        count_issue_error_external: 0,
+        count_issue_warning_internal: 0,
+        count_issue_warning_external: 0,
+        count_issue_notice_internal: 0,
+        count_issue_notice_external: 0
+      })
     }
   })
 
   // re-sort the datasets to be in alphabetical order
-  datasets.sort((a, b) => a.slug.localeCompare(b.slug))
+  datasets.sort((a, b) => a.dataset.localeCompare(b.dataset))
+
+  // add status's to the dataset
+  const datasetsWithStatus = datasets.map(dataset => {
+    const datasetWithStatus = { ...dataset }
+
+    if (dataset.error_endpoint_count > 0) {
+      datasetWithStatus.status = 'Error'
+    } else if (dataset.count_issue_error_external > 0) {
+      datasetWithStatus.status = 'Needs fixing'
+    } else if (dataset.active_endpoint_count > 0) {
+      datasetWithStatus.status = 'Live'
+    } else {
+      datasetWithStatus.status = 'Not submitted'
+    }
+    return datasetWithStatus
+  })
 
   const totalDatasets = datasets.length
-  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
-      datasets.reduce(orgStatsReducer, [0, 0, 0])
+  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
 
   req.templateParams = {
     organisation,
-    datasets,
+    datasets: datasetsWithStatus,
     totalDatasets,
     datasetsWithEndpoints,
     datasetsWithIssues,
@@ -153,11 +135,20 @@ export const getOverview = renderTemplate({
   handlerName: 'getOverview'
 })
 
+export const fetchProvisionSummary = fetchMany({
+  query: ({ req, params }) => `select * from provision_summary where REPLACE(organisation, '-eng', '') = "${params.lpa}"`,
+  dataset: FetchOptions.performanceDb,
+  result: 'provisionSummary'
+})
+
+/*
+  Notes on how this middleware needs to change:
+
+*/
+
 export default [
   fetchOrgInfo,
-  fetchLatestResources,
-  fetchEntityCounts,
-  fetchLpaOverview,
+  fetchProvisionSummary,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError
