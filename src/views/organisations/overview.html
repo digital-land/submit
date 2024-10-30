@@ -71,12 +71,12 @@
             <h2 class="govuk-heading-m">
               {% if dataset.status == 'Not submitted' %}
                 <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/get-started">
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/get-started">
                   {{dataset.dataset | datasetSlugToReadableName}}
                 </a>
               {% else %}
                 <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/overview">
                   {{dataset.dataset | datasetSlugToReadableName}}
                 </a>
               {% endif %}
