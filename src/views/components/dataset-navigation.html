@@ -28,6 +28,11 @@
       {
         html: taskLink,
         active: params.active === "task-list"
+      },
+      {
+        href: "/organisations/" + organisation.organisation + "/" + dataset.dataset + "/data",
+        html: "Data",
+        active: params.active === "data"
       }
     ]
   }) }}

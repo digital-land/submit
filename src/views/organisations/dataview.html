@@ -1,6 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% from "../components/table.html" import table %}
+{% from "../components/dataset-navigation.html" import datasetNavigation %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
@@ -38,6 +39,17 @@
 
 <div class="govuk-grid-row">
   {% include "includes/_dataset-page-header.html" %}
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    {{ datasetNavigation({
+      active: "data",
+      dataset: dataset,
+      organisation: organisation,
+      issue_count: taskList.length
+    }) }}
+  </div>
 </div>
 
 <div class="govuk-grid-row">
