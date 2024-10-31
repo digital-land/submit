@@ -170,3 +170,46 @@ code * {
 .padding-top {
   padding-top: 40px;
 }
+
+.dl-scrollable {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0px;
+}
+
+
+.dl-table {
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 80vh;
+  width: 100%;
+  margin-bottom: 0px;
+  border-collapse: separate;
+
+  th, td {
+    padding: govuk-spacing(1) govuk-spacing(2);
+  }
+}
+
+
+.dl-table__head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+  tr {
+    background-color: govuk-colour("light-grey");
+  }
+}
+
+
+.dl-table__header {
+  border: 1px solid $govuk-border-colour;
+  text-wrap: nowrap;
+  background-color: govuk-colour("light-grey");
+}
+
+.dl-table__cell--error {
+  border-left: govuk-spacing(1) solid $govuk-error-colour;
+}
