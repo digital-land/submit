@@ -16,7 +16,7 @@ export default class ResultsPage extends BasePage {
   }
 
   async expectPageIsNoErrorsPage () {
-    expect(await this.page.locator('h1').innerText()).toEqual('Check your data before you continue')
+    expect(await this.page.locator('h1').innerText()).toMatch(/You have \d+ row? ready to publish/)
   }
 
   async expectIsFailedPage () {
