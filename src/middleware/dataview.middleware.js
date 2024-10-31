@@ -1,5 +1,6 @@
-import { fetchDatasetInfo, fetchOrgInfo } from './common.middleware.js'
-import { renderTemplate } from './middleware.builders.js'
+import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchResourceStatus } from './datasetTaskList.middleware.js'
+import { fetchIf, renderTemplate } from './middleware.builders.js'
 
 export const constructTableParams = (req, res, next) => {
   req.tableParams = {
@@ -37,11 +38,12 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplatePramas = (req, res, next) => {
-  const { orgInfo, dataset, tableParams } = req
+  const { orgInfo, dataset, tableParams, issues } = req
 
   req.templateParams = {
     organisation: orgInfo,
     dataset,
+    taskCount: issues.length ?? 0,
     tableParams
   }
   next()
@@ -56,6 +58,10 @@ export const getGetDataview = renderTemplate({
 export default [
   fetchOrgInfo,
   fetchDatasetInfo,
+  fetchResourceStatus,
+  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
+  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+
   constructTableParams,
   prepareTemplatePramas,
   getGetDataview

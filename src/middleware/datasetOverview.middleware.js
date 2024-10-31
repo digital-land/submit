@@ -164,7 +164,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   req.templateParams = {
     organisation: orgInfo,
     dataset,
-    issueCount: issues.length ?? 0,
+    taskCount: issues.length ?? 0,
     stats: {
       numberOfFieldsSupplied: numberOfFieldsSupplied ?? 0,
       numberOfFieldsMatched: numberOfFieldsMatched ?? 0,
