@@ -1,3 +1,37 @@
+{#
+    This component expects the following param structure
+    params = {
+        columns: [
+        'column 1',
+        'column 2',
+        'column 3'
+        ],
+        fields: [
+        'column 1',
+        'column 2',
+        'column 3'
+        ],
+        rows: [
+        {
+            columns: {
+            'column 1': {
+                value: 'value 1'
+            },
+            'column 2': {
+                html: '<b>html 1</b>'
+            },
+            'column 3': {
+                value: 'value 2',
+                error: {
+                    message: 'error 1'
+                }
+            }
+            }
+        }
+        ]
+    }
+#}
+
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 
 {% macro table(params) %}
