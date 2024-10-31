@@ -4,9 +4,9 @@ import validationMessageLookup from './validationMessageLookup.js'
 import toErrorList from './toErrorList.js'
 import prettifyColumnName from './prettifyColumnName.js'
 import getFullServiceName from './getFullServiceName.js'
-import { makeDatasetSlugToReadableNameFilter } from './makeDatasetSlugToReadableNameFilter.js'
 import { checkToolDeepLink } from './checkToolDeepLink.js'
 import pluralize from 'pluralize'
+import { datasetSlugToReadableName } from '../utils/datasetSlugToReadableName.js'
 
 /** maps dataset status (as returned by `fetchLpaOverview` middleware to a
  * CSS class used by the govuk-tag component
@@ -27,8 +27,7 @@ export function statusToTagClass (status) {
 
 const { govukMarkdown, govukDateTime } = xGovFilters
 
-const addFilters = (nunjucksEnv, { datasetNameMapping }) => {
-  const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
+const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('datasetSlugToReadableName', datasetSlugToReadableName)
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)

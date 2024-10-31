@@ -2,6 +2,8 @@ import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgI
 import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } from './middleware.builders.js'
 import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -36,11 +38,24 @@ const fetchSpecification = fetchOne({
   result: 'specification'
 })
 
+/**
+ * Middleware. Updates req with `datasetSpecification`
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
-  const collectionSpecifications = JSON.parse(specification.json)
-  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
-  req.specification = datasetSpecification
+  let collectionSpecifications
+  try {
+    collectionSpecifications = JSON.parse(specification.json)
+  } catch (e) {
+    // we can proceed but we probably should notify the user the displayed data may not be complete
+    logger.info('failed to parse specification JSON', { type: types.DataValidation, collection: req.dataset.collection })
+    collectionSpecifications = []
+  }
+  req.datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   next()
 }
 
@@ -105,21 +120,21 @@ const fetchEntityCount = fetchOne({
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, specification, columnSummary, entityCount, sources, dataset, issues } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
   const allFields = [...mappingFields, ...nonMappingFields]
 
-  const numberOfFieldsSupplied = specification.fields.map(field => field.field).reduce((acc, current) => {
-    return allFields.includes(current) ? acc + 1 : acc
+  const specFields = datasetSpecification ? datasetSpecification.fields : []
+  const numberOfFieldsSupplied = specFields.reduce((acc, field) => {
+    return allFields.includes(field.field) ? acc + 1 : acc
+  }, 0)
+  const numberOfFieldsMatched = specFields.reduce((acc, field) => {
+    return mappingFields.includes(field.field) ? acc + 1 : acc
   }, 0)
 
-  const numberOfFieldsMatched = specification.fields.map(field => field.field).reduce((acc, current) => {
-    return mappingFields.includes(current) ? acc + 1 : acc
-  }, 0)
-
-  const numberOfExpectedFields = specification.fields.length
+  const numberOfExpectedFields = specFields.length
 
   // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
   const endpoints = sources.sort((a, b) => {

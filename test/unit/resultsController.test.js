@@ -1,5 +1,6 @@
 import ResultsController from '../../src/controllers/resultsController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
+import { initDatasetSlugToReadableNameFilter } from '../../src/utils/datasetSlugToReadableName.js'
 
 describe('ResultsController', () => {
   vi.mock('@/services/asyncRequestApi.js')
@@ -10,7 +11,17 @@ describe('ResultsController', () => {
   const req = {
     params: { id: 'testId' },
     form: { options: {} },
-    session: { template: 'template' }
+    session: { template: 'template' },
+    sessionModel: {
+      get: vi.fn().mockImplementation(key => {
+        const mockData = {
+          dataset: 'Dataset',
+          formFields: {}
+          // Add other potential keys
+        }
+        return mockData[key]
+      })
+    }
   }
 
   beforeEach(async () => {
@@ -19,6 +30,8 @@ describe('ResultsController', () => {
     resultsController = new ResultsController({
       route: '/results'
     })
+
+    await initDatasetSlugToReadableNameFilter()
   })
 
   describe('locals', () => {
@@ -121,6 +134,8 @@ describe('ResultsController', () => {
             values: ['mock value']
           }]
         },
+        datasetName: req.sessionModel.get('dataset'),
+
         errorSummary: ['error summary'],
         mappings: { fields: 'geometries' },
         geometries: ['geometries'],

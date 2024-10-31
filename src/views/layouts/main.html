@@ -56,7 +56,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% block beforeContent %}
   {% if options.lastPage %}
     {{ govukBackLink({
-      text: "Back",
+      text: options.backLinkText | default("Back"),
       href: options.lastPage
     }) }}
   {% endif %}
