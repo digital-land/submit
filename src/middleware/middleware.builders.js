@@ -150,7 +150,7 @@ async function fetchIfFn (req, res, next) {
  * @param {(req) => void} elseFn
  * @returns
  */
-export const fetchIf = (condition, fetchFn, elseFn) => {
+export const fetchIf = (condition, fetchFn, elseFn = undefined) => {
   return fetchIfFn.bind({
     condition, fetchFn, else: elseFn
   })
