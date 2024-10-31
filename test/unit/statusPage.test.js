@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { headingTexts, messageTexts } from '../../src/content/statusPage'
 
 describe('StatusPage', () => {
   let StatusPage
@@ -39,8 +40,8 @@ describe('StatusPage', () => {
     expect(statusPage.heading).toBe(mockHeading)
     expect(statusPage.continueButton).toBe(mockButton)
     expect(statusPage.processingMessage).toBe(mockMessage)
-    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.checkingFile)
-    expect(statusPage.processingMessage.textContent).toBe(statusPage.messageTexts.pleaseWait)
+    expect(statusPage.heading.textContent).toBe(headingTexts.checking)
+    expect(statusPage.processingMessage.textContent).toBe(messageTexts.checking)
     expect(statusPage.continueButton.style.display).toBe('none')
   })
 
@@ -53,7 +54,7 @@ describe('StatusPage', () => {
     await vi.advanceTimersByTimeAsync(1000)
     await Promise.resolve() // wait for promises to resolve
 
-    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
+    expect(statusPage.heading.textContent).toBe(headingTexts.checked)
     expect(statusPage.continueButton.style.display).toBe('block')
     expect(statusPage.processingMessage.style.display).toBe('none')
   })
@@ -66,7 +67,7 @@ describe('StatusPage', () => {
     statusPage.beginPolling('http://test.com', '123')
     await vi.advanceTimersByTimeAsync(1000)
     await Promise.resolve() // wait for promises to resolve
-    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
+    expect(statusPage.heading.textContent).toBe(headingTexts.checked)
     expect(statusPage.continueButton.style.display).toBe('block')
   })
 
@@ -78,11 +79,11 @@ describe('StatusPage', () => {
     statusPage.beginPolling('http://test.com', '123')
     await vi.advanceTimersByTimeAsync(1000)
     await Promise.resolve() // wait for promises to resolve
-    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.checkingFile)
+    expect(statusPage.heading.textContent).toBe(headingTexts.checking)
     expect(statusPage.continueButton.style.display).toBe('none')
     await vi.advanceTimersByTimeAsync(1000)
     await Promise.resolve()
-    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.checkingFile)
+    expect(statusPage.heading.textContent).toBe(headingTexts.checking)
     expect(statusPage.continueButton.style.display).toBe('none')
     global.fetch.mockResolvedValueOnce({
       json: () => Promise.resolve({ status: 'COMPLETE' })
@@ -90,7 +91,7 @@ describe('StatusPage', () => {
     await vi.advanceTimersByTimeAsync(1000)
     await Promise.resolve()
 
-    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.fileChecked)
+    expect(statusPage.heading.textContent).toBe(headingTexts.checked)
     expect(statusPage.continueButton.style.display).toBe('block')
   })
 
@@ -108,7 +109,7 @@ describe('StatusPage', () => {
       await Promise.resolve()
     }
 
-    expect(statusPage.heading.textContent).toBe(statusPage.headingTexts.checkingFile)
+    expect(statusPage.heading.textContent).toBe(headingTexts.checking)
     expect(statusPage.continueButton.style.display).toBe('block')
     expect(statusPage.continueButton.textContent).toBe('Retrieve Latest Status')
   })

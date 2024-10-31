@@ -44,7 +44,7 @@ describe('DeepLinkController', () => {
         'data-subject': 'conservation-area',
         orgName: 'Some Org',
         dataset: 'conservation-area',
-        datasetName: 'Conservation area dataset'
+        datasetName: 'Conservation area'
       })
       expect(req.journeyModel.get('history').length).toBe(1)
       expect(next).toBeCalledTimes(1)

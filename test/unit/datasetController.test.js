@@ -3,11 +3,12 @@ import DatasetController, {
   requiresGeometryTypeToBeSelectedViaDeepLink
 } from '../../src/controllers/datasetController.js'
 import { describe, it, vi, expect, beforeEach } from 'vitest'
+import { initDatasetSlugToReadableNameFilter } from '../../src/utils/datasetSlugToReadableName.js'
 
 describe('DatasetController', () => {
   let datasetController
 
-  beforeEach(() => {
+  beforeEach(async () => {
     datasetController = new DatasetController({
       route: '/dataset'
     })
@@ -30,6 +31,8 @@ describe('DatasetController', () => {
         datasets: makeDatasetsLookup(dataSubjects)
       }
     })
+
+    await initDatasetSlugToReadableNameFilter()
   })
 
   it('locals correctly filters and sorts available datasets and assigns them to req.form.options.datasetItems', async () => {
