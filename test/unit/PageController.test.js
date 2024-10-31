@@ -1,11 +1,17 @@
 import PageController from '../../src/controllers/pageController.js'
 
-import { describe, it, vi, expect } from 'vitest'
+import { describe, it, vi, expect, beforeEach } from 'vitest'
 
 import logger from '../../src/utils/logger.js'
 import { types } from '../../src/utils/logging.js'
 
 import hash from '../../src/utils/hasher.js'
+
+vi.mock('../../src/utils/datasetSlugToReadableName.js', () => {
+  return {
+    datasetSlugToReadableName: vi.fn()
+  }
+})
 
 describe('PageController', () => {
   vi.mock('../utils/logger.js', () => {
@@ -38,49 +44,101 @@ describe('PageController', () => {
     expect(callArgs.level).toEqual('info')
     expect(callArgs.service).toEqual('lpa-data-validation-frontend')
   })
-})
 
-describe('Correctly detects the wizard back link', () => {
-  const referrer = 'https://example.com/this-is-where-we-came-from'
-  const makeReq = () => {
-    return ({
-      originalUrl: '/check/upload-method',
-      sessionID: '123',
-      sessionModel: {
-        get: vi.fn().mockReturnValue({ referrer })
-      },
-      form: {
-        options: {}
-      }
+  describe('Correctly detects the wizard back link', () => {
+    const referrer = 'https://example.com/this-is-where-we-came-from'
+    const makeReq = () => {
+      return ({
+        originalUrl: '/check/upload-method',
+        sessionID: '123',
+        sessionModel: {
+          get: vi.fn().mockReturnValue({ referrer })
+        },
+        form: {
+          options: {}
+        }
+      })
+    }
+
+    it('arriving at the deep link entry point', () => {
+      const pageController = new PageController({ route: '/upload-method' })
+      const req = makeReq()
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.lastPage).toEqual(referrer)
     })
-  }
 
-  it('arriving at the deep link entry point', () => {
-    const pageController = new PageController({ route: '/upload-method' })
-    const req = makeReq()
-    pageController.locals(req, {}, vi.fn())
-    expect(req.form.options.lastPage).toEqual(referrer)
+    it('arriving at some other step', () => {
+      const pageController = new PageController({ route: '/upload-method' })
+      const req = { ...makeReq(), originalUrl: '/check/another-step' }
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.lastPage).toBe(undefined)
+    })
+
+    it('don\'t touch the back link if there\'s no deep link session info (lastPage not set)', () => {
+      const pageController = new PageController({ route: '/upload-method' })
+      const req = { ...makeReq(), sessionModel: new Map() }
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.lastPage).toEqual(undefined)
+    })
+
+    it('don\'t touch the back link if there\'s no deep link session info (lastPage set)', () => {
+      const pageController = new PageController({ route: '/upload-method' })
+      pageController.options.backLink = '/go-back'
+      const req = { ...makeReq(), sessionModel: new Map() }
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.lastPage).toEqual('/go-back')
+    })
   })
 
-  it('arriving at some other step', () => {
-    const pageController = new PageController({ route: '/upload-method' })
-    const req = { ...makeReq(), originalUrl: '/check/another-step' }
-    pageController.locals(req, {}, vi.fn())
-    expect(req.form.options.lastPage).toBe(undefined)
-  })
+  describe('Correctly assigns the datasetName', () => {
+    let req
+    let datasetSlugToReadableName
+    let pageController
 
-  it('don\'t touch the back link if there\'s no deep link session info (lastPage not set)', () => {
-    const pageController = new PageController({ route: '/upload-method' })
-    const req = { ...makeReq(), sessionModel: new Map() }
-    pageController.locals(req, {}, vi.fn())
-    expect(req.form.options.lastPage).toEqual(undefined)
-  })
+    beforeEach(async () => {
+      req = {
+        sessionModel: {
+          get: vi.fn().mockImplementation(key => ({
+            dataset: 'dataset'
+          }[key]))
+        },
+        form: {
+          options: {}
+        }
+      }
 
-  it('don\'t touch the back link if there\'s no deep link session info (lastPage set)', () => {
-    const pageController = new PageController({ route: '/upload-method' })
-    pageController.options.backLink = '/go-back'
-    const req = { ...makeReq(), sessionModel: new Map() }
-    pageController.locals(req, {}, vi.fn())
-    expect(req.form.options.lastPage).toEqual('/go-back')
+      datasetSlugToReadableName = await import('../../src/utils/datasetSlugToReadableName.js')
+      datasetSlugToReadableName.datasetSlugToReadableName.mockImplementation(
+        vi.fn().mockImplementation(slug => ({
+          dataset: 'readable name'
+        }[slug]))
+      )
+
+      pageController = new PageController({ route: '/upload-method' })
+    })
+
+    it('calls datasetSlugToReadableName with the dataset in the session', () => {
+      pageController.locals(req, {}, vi.fn())
+      expect(datasetSlugToReadableName.datasetSlugToReadableName).toHaveBeenCalledWith('dataset')
+    })
+
+    it('sets the return value of datasetSlugToReadableName on the form options', () => {
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.datasetName).toEqual('readable name')
+    })
+
+    it('handles missing dataset gracefully', () => {
+      req.sessionModel.get.mockReturnValue({})
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.datasetName).toBeUndefined()
+    })
+
+    it('handles datasetSlugToReadableName errors gracefully', () => {
+      datasetSlugToReadableName.datasetSlugToReadableName.mockImplementation(() => {
+        throw new Error('Database connection failed')
+      })
+      pageController.locals(req, {}, vi.fn())
+      expect(req.form.options.datasetName).toBeUndefined()
+    })
   })
 })

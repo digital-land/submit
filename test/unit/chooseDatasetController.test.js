@@ -1,14 +1,17 @@
 import ChooseDatasetController from '../../src/controllers/chooseDatasetController.js'
 
 import { describe, it, vi, expect, beforeEach } from 'vitest'
+import { initDatasetSlugToReadableNameFilter } from '../../src/utils/datasetSlugToReadableName.js'
 
 describe('ChooseDatasetController', () => {
   let chooseDatasetController
 
-  beforeEach(() => {
+  beforeEach(async () => {
     chooseDatasetController = new ChooseDatasetController({
       route: '/dataset'
     })
+
+    await initDatasetSlugToReadableNameFilter()
 
     vi.mock(import('../../src/utils/utils.js'), async (importOriginal) => {
       const { availableDatasets } = await importOriginal()

@@ -11,12 +11,12 @@ export const dataSubjects = {
     dataSets: [
       {
         value: 'article-4-direction',
-        text: 'Article 4 direction dataset',
+        text: 'Article 4 direction',
         available: true
       },
       {
         value: 'article-4-direction-area',
-        text: 'Article 4 direction area dataset',
+        text: 'Article 4 direction area',
         available: true
       }
     ]
@@ -41,12 +41,12 @@ export const dataSubjects = {
     dataSets: [
       {
         value: 'conservation-area',
-        text: 'Conservation area dataset',
+        text: 'Conservation area',
         available: true
       },
       {
         value: 'conservation-area-document',
-        text: 'Conservation area document dataset',
+        text: 'Conservation area document',
         available: true
       }
     ]
@@ -76,18 +76,18 @@ export const dataSubjects = {
     dataSets: [
       {
         value: 'tree',
-        text: 'Tree dataset',
+        text: 'Tree',
         available: true,
         requiresGeometryTypeSelection: true
       },
       {
         value: 'tree-preservation-order',
-        text: 'Tree preservation order dataset',
+        text: 'Tree preservation order',
         available: true
       },
       {
         value: 'tree-preservation-zone',
-        text: 'Tree preservation zone dataset',
+        text: 'Tree preservation zone',
         available: true
       }
     ]

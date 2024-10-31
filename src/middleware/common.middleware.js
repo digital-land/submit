@@ -39,8 +39,17 @@ export const fetchDatasetInfo = fetchOne({
  * @returns {boolean}
  */
 export const isResourceAccessible = (req) => req.resourceStatus.status === '200'
+export const isResourceIdValid = (req) => req.resourceStatus.resource.trim() !== ''
 export const isResourceNotAccessible = (req) => !isResourceAccessible(req)
 export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
+export const isResourceDataPresent = (req) => 'resource' in req
+
+export const and = (...args) => {
+  return (req) => args.every(arg => arg(req))
+}
+export const or = (...args) => {
+  return (req) => args.some(arg => arg(req))
+}
 
 /**
  * Middleware. Updates req with `resource`.
@@ -72,7 +81,7 @@ export const fetchOrgInfo = fetchOne({
 
 /**
  * Middleware. Validates query params according to schema.
- * Short circuits with 400 error if validation fails
+ * Short circuits with 400 error if validation fails. Potentially updates req with `parsedParams`
  *
  * `this` needs: `{ schema }`
  *
@@ -82,7 +91,7 @@ export const fetchOrgInfo = fetchOne({
  */
 export function validateQueryParamsFn (req, res, next) {
   try {
-    v.parse(this.schema || v.any(), req.params)
+    req.parsedParams = v.parse(this.schema || v.any(), req.params)
     next()
   } catch (error) {
     res.status(400).render('errorPages/400', {})

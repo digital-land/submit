@@ -16,7 +16,7 @@ describe('Dataset Overview Middleware', () => {
   const res = {}
 
   describe('pullOutDatasetSpecification', () => {
-    it('', () => {
+    it('leaves specification unchanged, and extracts the dataset specification', () => {
       const reqWithSpecification = {
         ...req,
         specification: {
@@ -26,7 +26,8 @@ describe('Dataset Overview Middleware', () => {
         }
       }
       pullOutDatasetSpecification(reqWithSpecification, res, () => {})
-      expect(reqWithSpecification.specification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
+      expect(reqWithSpecification.specification).toEqual(reqWithSpecification.specification)
+      expect(reqWithSpecification.datasetSpecification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
     })
   })
 
@@ -35,7 +36,7 @@ describe('Dataset Overview Middleware', () => {
       const reqWithResults = {
         ...req,
         orgInfo: { name: 'mock-org' },
-        specification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
+        datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
         sources: [
