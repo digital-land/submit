@@ -1,6 +1,12 @@
 import express from 'express'
 import nunjucks from 'nunjucks'
+import config from '../../config/index.js'
+
 const router = express.Router()
+
+function getNavigationStructure () {
+  return config.guidanceNavigation
+}
 
 router.get('/*', (req, res) => {
   try {
@@ -20,7 +26,11 @@ router.get('/*', (req, res) => {
         templatePath = `guidance/${path}`
     }
 
-    const guidancePage = nunjucks.render(`${templatePath}.md`, {})
+    const guidancePage = nunjucks.render(`${templatePath}.md`, {
+      permalink: `/guidance${req.path}`,
+      navigation: getNavigationStructure()
+    })
+
     res.send(guidancePage)
   } catch (error) {
     console.info('Guidance page not found', { type: 'App', path: req.path })

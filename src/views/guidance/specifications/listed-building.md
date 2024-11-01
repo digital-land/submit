@@ -1,5 +1,5 @@
 {% extends "layouts/guidance.html" %}
-{% set pageName = 'Prepare data to the specifications' %}
+{% set pageName = 'Listed building data' %}
 {% set markdownContent %}
 
 # {{ pageName }}

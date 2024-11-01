@@ -1,13 +1,13 @@
 {% extends "layouts/guidance.html" %}
-{% set pageName = 'Prepare data to the specifications' %}
+{% set pageName = 'Conservation area data' %}
 {% set markdownContent %}
 
 # {{ pageName }}
 
 There are 2 datasets you must provide for conservation area data:
 
-* [conservation area dataset](https://www.planning.data.gov.uk/guidance/specifications/conservation-area#conservation-area-dataset)
-* [conservation area document dataset](https://www.planning.data.gov.uk/guidance/specifications/conservation-area#conservation-area-documents-dataset)
+* [conservation area dataset](/guidance/specifications/conservation-area#conservation-area-dataset)
+* [conservation area document dataset](/guidance/specifications/conservation-area#conservation-area-documents-dataset)
 
 ## Format
 
