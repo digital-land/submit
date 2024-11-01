@@ -40,11 +40,11 @@ export default class StatusPage extends BasePage {
   }
 
   async expectCheckStatusButtonToBeVisible () {
-    await this.page.waitForSelector('button', { text: 'Retrieve Latest Status' })
+    await this.page.waitForSelector('#js-async-continue-button')
   }
 
   async clickCheckStatusButton () {
-    await this.page.click('button', { text: 'Retrieve Latest Status' })
+    await this.page.click('#js-async-continue-button')
     return await super.verifyAndReturnPage(ResultsPage)
   }
 }
