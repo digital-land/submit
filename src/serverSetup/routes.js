@@ -7,12 +7,14 @@ import organisations from '../routes/organisations.js'
 import manage from '../routes/manage.js'
 import privacy from '../routes/privacy.js'
 import cookies from '../routes/cookies.js'
+import guidance from '../routes/guidance.js'
 
 export function setupRoutes (app) {
   app.use('/', manage)
   app.use('/check', checkFormWizard)
   app.use('/submit', endpointSubmissionFormFormWisard)
   app.use('/organisations', organisations)
+  app.use('/guidance', guidance)
 
   app.use('/api', polling)
 
