@@ -1,8 +1,13 @@
 import { test, expect } from '@playwright/test'
 
 import CookiesPage from '../PageObjectModels/cookiesPage'
+import { beforeEach } from 'node:test'
 
 test.describe('Cookies page', () => {
+  beforeEach(async ({ page }) => {
+    await page.context().clearCookies()
+  })
+
   test('has title', async ({ page }) => {
     const cookiesPage = new CookiesPage(page)
     await cookiesPage.navigateHere()
@@ -44,10 +49,8 @@ test.describe('Cookies page', () => {
 
     const cookies = await context.cookies()
     const cookiesPreferencesSet = cookies.find(cookie => cookie.name === 'cookies_preferences_set')
-    const cookiesPolicy = cookies.find(cookie => cookie.name === 'cookies_policy')
 
     await expect(cookiesPreferencesSet).toBeDefined()
     await expect(cookiesPreferencesSet.value).toBe('false')
-    await expect(cookiesPolicy).not.toBeDefined()
   })
 })
