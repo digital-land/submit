@@ -150,6 +150,10 @@ export const getIsPageNumberInRange = (maxPagesKey) => {
  */
 export const createPaginationTemplateParams = (req, res, next) => {
   const { resultsCount, urlSubPath, paginationPageLength } = req
+  if (typeof resultsCount !== 'number' || typeof paginationPageLength !== 'number' || !urlSubPath) {
+    logger.error('Missing or invalid pagination parameters', { resultsCount, urlSubPath, paginationPageLength })
+    return next(new Error('Invalid pagination parameters'))
+  }
   let { pageNumber } = req.params
   pageNumber = parseInt(pageNumber)
 
