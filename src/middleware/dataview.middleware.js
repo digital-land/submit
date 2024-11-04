@@ -20,8 +20,8 @@ export const fetchSpecification = fetchOne({
   query: ({ req }) => {
     return {
       text: 'SELECT * FROM specification WHERE specification = $1',
-      values: [req.dataset.collection],
-    };
+      values: [req.dataset.collection]
+    }
   },
   result: 'specification'
 })
@@ -30,8 +30,8 @@ export const fetchEntitiesCount = fetchOne({
   query: ({ req }) => {
     return {
       text: 'SELECT count(*) as count FROM entity WHERE organisation_entity = $1',
-      values: [req.orgInfo.entity],
-    };
+      values: [req.orgInfo.entity]
+    }
   },
   dataset: FetchOptions.fromParams,
   result: 'entityCount'
