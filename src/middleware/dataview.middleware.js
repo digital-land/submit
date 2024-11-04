@@ -1,4 +1,4 @@
-import { addDatabaseFieldToSpecification, createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getIsPageNumberInRange, isResourceAccessible, isResourceIdInParams, pullOutDatasetSpecification, replaceUnderscoreInEntities, replaceUnderscoreInSpecification, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import { addDatabaseFieldToSpecification, createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getIsPageNumberInRange, isResourceAccessible, isResourceIdInParams, pullOutDatasetSpecification, replaceUnderscoreInEntities, replaceUnderscoreInSpecification, setDefaultParams, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -15,14 +15,6 @@ export const dataviewQueryParams = v.object({
 const validatedataviewQueryParams = validateQueryParams({
   schema: dataviewQueryParams
 })
-
-export const setDefaultParams = (req, res, next) => {
-  const { pageNumber } = req.parsedParams
-
-  req.params.pageNumber ??= pageNumber
-
-  next()
-}
 
 export const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
@@ -53,10 +45,10 @@ export const fetchFieldMappings = fetchMany({
 
 export const setPaginationOptions = (pageLength) => (req, res, next) => {
   const { entityCount } = req
-  const { lpa, dataset: datasetId } = req.params
+  const { lpa, dataset } = req.params
 
   req.resultsCount = entityCount.count
-  req.urlSubPath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(datasetId)}/data/`
+  req.urlSubPath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/data/`
   req.paginationPageLength = pageLength
 
   next()
@@ -85,7 +77,7 @@ export const constructTableParams = (req, res, next) => {
   next()
 }
 
-export const prepareTemplatePramas = (req, res, next) => {
+export const prepareTemplateParams = (req, res, next) => {
   const { orgInfo, dataset, tableParams, issues, pagination } = req
 
   req.templateParams = {
@@ -134,6 +126,6 @@ export default [
   setPaginationOptions(pageLength),
   createPaginationTemplateParams,
 
-  prepareTemplatePramas,
+  prepareTemplateParams,
   getGetDataview
 ]

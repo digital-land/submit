@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 
 describe('common.middleware.test.js', () => {
@@ -413,6 +413,64 @@ describe('replaceUnderscoreInEntities', () => {
     replaceUnderscoreInEntities(req, res, next)
 
     expect(req.entities).toHaveLength(0)
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('setDefaultParams', () => {
+  it('overrides req.params with values from req.parsedParams', () => {
+    const req = {
+      params: { pageNumber: 1, pageSize: 10 },
+      parsedParams: { pageNumber: 2, sortOrder: 'asc' }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    setDefaultParams(req, res, next)
+
+    expect(req.params).toEqual({ pageNumber: 2, pageSize: 10 })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not modify req.params if req.parsedParams is empty', () => {
+    const req = {
+      params: { pageNumber: 1, pageSize: 10 },
+      parsedParams: {}
+    }
+    const res = {}
+    const next = vi.fn()
+
+    setDefaultParams(req, res, next)
+
+    expect(req.params).toEqual({ pageNumber: 1, pageSize: 10 })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores keys that are not present in req.params', () => {
+    const req = {
+      params: { pageNumber: 1 },
+      parsedParams: { pageSize: 20, sortOrder: 'asc' }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    setDefaultParams(req, res, next)
+
+    expect(req.params).toEqual({ pageNumber: 1 })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles null or undefined req.parsedParams', () => {
+    const req = {
+      params: { pageNumber: 1 },
+      parsedParams: null
+    }
+    const res = {}
+    const next = vi.fn()
+
+    setDefaultParams(req, res, next)
+
+    expect(req.params).toEqual({ pageNumber: 1 })
     expect(next).toHaveBeenCalledTimes(1)
   })
 })

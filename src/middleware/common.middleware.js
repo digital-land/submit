@@ -278,3 +278,16 @@ export const replaceUnderscoreInEntities = (req, res, next) => {
 
   next()
 }
+
+export const setDefaultParams = (req, res, next) => {
+  if (!req.parsedParams) {
+    return next()
+  }
+  Object.keys(req.params).forEach((key) => {
+    if (key in req.parsedParams) {
+      req.params[key] = req.parsedParams[key]
+    }
+  })
+
+  next()
+}
