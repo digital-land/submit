@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities } from '../../../src/middleware/common.middleware'
+import logger from '../../../src/utils/logger'
 
 describe('common.middleware.test.js', () => {
   describe('createPaginationTemplateParams', () => {
@@ -213,7 +214,7 @@ describe('pullOutDatasetSpecification', () => {
   }
   const res = {}
 
-  it('leaves specification unchanged, and extracts the dataset specification', () => {
+  it('extracts the dataset specification and updates the req object', () => {
     const reqWithSpecification = {
       ...req,
       specification: {
@@ -223,8 +224,81 @@ describe('pullOutDatasetSpecification', () => {
       }
     }
     pullOutDatasetSpecification(reqWithSpecification, res, () => {})
-    expect(reqWithSpecification.specification).toEqual(reqWithSpecification.specification)
-    expect(reqWithSpecification.datasetSpecification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
+    expect(reqWithSpecification.specification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
+  })
+})
+
+describe('extractJsonFieldFromEntities', () => {
+  it('removes json field from entities and adds its contents to the entity', () => {
+    const req = {
+      entities: [
+        { id: 1, json: '{"foo": "bar"}' },
+        { id: 2, json: '{"baz": "qux"}' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    extractJsonFieldFromEntities(req, res, next)
+
+    expect(req.entities).toHaveLength(2)
+    expect(req.entities[0]).toEqual({ id: 1, foo: 'bar' })
+    expect(req.entities[1]).toEqual({ id: 2, baz: 'qux' })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles entities with no json field', () => {
+    const req = {
+      entities: [
+        { id: 1, foo: 'bar' },
+        { id: 2, baz: 'qux' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    extractJsonFieldFromEntities(req, res, next)
+
+    expect(req.entities).toHaveLength(2)
+    expect(req.entities[0]).toEqual({ id: 1, foo: 'bar' })
+    expect(req.entities[1]).toEqual({ id: 2, baz: 'qux' })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles entities with empty json field', () => {
+    const req = {
+      entities: [
+        { id: 1, json: '' },
+        { id: 2, json: '{}' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    extractJsonFieldFromEntities(req, res, next)
+
+    expect(req.entities).toHaveLength(2)
+    expect(req.entities[0]).toEqual({ id: 1, json: '' })
+    expect(req.entities[1]).toEqual({ id: 2 })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles JSON parsing errors by setting the json field to undefined', () => {
+    const req = {
+      entities: [
+        { id: 1, json: '{"foo": "bar"' } // invalid JSON
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+    const loggerWarnSpy = vi.spyOn(logger, 'warn')
+
+    extractJsonFieldFromEntities(req, res, next)
+
+    expect(loggerWarnSpy).toHaveBeenCalledTimes(1)
+    expect(req.entities).toHaveLength(1)
+    expect(req.entities[0]).toEqual({ id: 1, json: undefined })
+    expect(next).toHaveBeenCalledTimes(1)
   })
 })
 
