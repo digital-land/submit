@@ -261,6 +261,10 @@ export const pullOutDatasetSpecification = (req, res, next) => {
 
 export const extractJsonFieldFromEntities = (req, res, next) => {
   const { entities } = req
+  if (!Array.isArray(entities)) {
+    logger.error('Invalid entities array', { entities })
+    return next(new Error('Invalid entities format'))
+  }
 
   req.entities = entities.map(entity => {
     const jsonField = entity.json
