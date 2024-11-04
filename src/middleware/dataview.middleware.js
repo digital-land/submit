@@ -1,7 +1,29 @@
 import logger from '../utils/logger.js'
-import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, takeResourceIdFromParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getIsPageNumberInRange, isResourceAccessible, isResourceIdInParams, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
+import * as v from 'valibot'
+
+const pageLength = 50
+
+export const dataviewQueryParams = v.object({
+  lpa: v.string(),
+  dataset: v.string(),
+  pageNumber: v.optional(v.pipe(v.string(), v.transform(s => parseInt(s, 10)), v.minValue(1)), '1'),
+  resourceId: v.optional(v.string())
+})
+
+const validatedataviewQueryParams = validateQueryParams({
+  schema: dataviewQueryParams
+})
+
+export const setDefaultParams = (req, res, next) => {
+  const { pageNumber } = req.parsedParams
+
+  req.params.pageNumber ??= pageNumber
+
+  next()
+}
 
 export const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
@@ -22,8 +44,19 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   next()
 }
 
+export const fetchEntitiesCount = fetchOne({
+  query: ({ req }) => `SELECT count(*) as count FROM entity WHERE organisation_entity = ${req.orgInfo.entity}`,
+  dataset: FetchOptions.fromParams,
+  result: 'entityCount'
+})
+
+export const setTotalPages = (req, res, next) => {
+  req.totalPages = req.entityCount.count / pageLength
+  next()
+}
+
 export const fetchEntities = fetchMany({
-  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity}`,
+  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${pageLength * params.pageNumber}`,
   dataset: FetchOptions.fromParams,
   result: 'entities'
 })
@@ -103,6 +136,17 @@ export const replaceUnderscoreInSpecification = (req, res, next) => {
   next()
 }
 
+export const setPaginationOptions = (pageLength) => (req, res, next) => {
+  const { entityCount } = req
+  const { lpa, dataset: datasetId } = req.params
+
+  req.resultsCount = entityCount.count
+  req.urlSubPath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(datasetId)}/data/`
+  req.paginationPageLength = pageLength
+
+  next()
+}
+
 export const constructTableParams = (req, res, next) => {
   const { entities, specification } = req
 
@@ -127,13 +171,14 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplatePramas = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, issues } = req
+  const { orgInfo, dataset, tableParams, issues, pagination } = req
 
   req.templateParams = {
     organisation: orgInfo,
     dataset,
     taskCount: issues.length ?? 0,
-    tableParams
+    tableParams,
+    pagination
   }
   next()
 }
@@ -145,11 +190,18 @@ export const getGetDataview = renderTemplate({
 })
 
 export default [
+  validatedataviewQueryParams,
+  setDefaultParams,
+
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchResourceStatus,
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+
+  fetchEntitiesCount,
+  setTotalPages,
+  getIsPageNumberInRange('totalPages'),
 
   fetchEntities,
   extractJsonFieldFromEntities,
@@ -163,6 +215,10 @@ export default [
   addDatabaseFieldToSpecification,
 
   constructTableParams,
+
+  setPaginationOptions(pageLength),
+  createPaginationTemplateParams,
+
   prepareTemplatePramas,
   getGetDataview
 ]
