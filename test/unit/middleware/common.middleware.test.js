@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification } from '../../../src/middleware/common.middleware'
 
 describe('common.middleware.test.js', () => {
   describe('createPaginationTemplateParams', () => {
@@ -196,6 +196,35 @@ describe('common.middleware.test.js', () => {
       addDatabaseFieldToSpecification(req, res, next)
       expect(next).toHaveBeenCalledTimes(1)
     })
+  })
+})
+
+describe('pullOutDatasetSpecification', () => {
+  const req = {
+    params: {
+      lpa: 'mock-lpa',
+      dataset: 'mock-dataset'
+    },
+    dataset: {
+      name: 'mock dataset',
+      dataset: 'mock-dataset',
+      collection: 'mock-collection'
+    }
+  }
+  const res = {}
+
+  it('leaves specification unchanged, and extracts the dataset specification', () => {
+    const reqWithSpecification = {
+      ...req,
+      specification: {
+        json: JSON.stringify([
+          { dataset: 'mock-dataset', foo: 'bar' }
+        ])
+      }
+    }
+    pullOutDatasetSpecification(reqWithSpecification, res, () => {})
+    expect(reqWithSpecification.specification).toEqual(reqWithSpecification.specification)
+    expect(reqWithSpecification.datasetSpecification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
   })
 })
 

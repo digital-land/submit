@@ -1,9 +1,7 @@
-import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getDatasetTaskListError, isResourceAccessible, isResourceIdInParams, isResourceNotAccessible, logPageError, takeResourceIdFromParams } from './common.middleware.js'
+import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getDatasetTaskListError, isResourceAccessible, isResourceIdInParams, isResourceNotAccessible, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
 import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } from './middleware.builders.js'
 import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -37,27 +35,6 @@ const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
   result: 'specification'
 })
-
-/**
- * Middleware. Updates req with `datasetSpecification`
- *
- * @param req
- * @param res
- * @param next
- */
-export const pullOutDatasetSpecification = (req, res, next) => {
-  const { specification } = req
-  let collectionSpecifications
-  try {
-    collectionSpecifications = JSON.parse(specification.json)
-  } catch (e) {
-    // we can proceed but we probably should notify the user the displayed data may not be complete
-    logger.info('failed to parse specification JSON', { type: types.DataValidation, collection: req.dataset.collection })
-    collectionSpecifications = []
-  }
-  req.datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
-  next()
-}
 
 const fetchSources = fetchMany({
   query: ({ params }) => `
@@ -120,13 +97,13 @@ const fetchEntityCount = fetchOne({
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues } = req
+  const { orgInfo, specification, columnSummary, entityCount, sources, dataset, issues } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
   const allFields = [...mappingFields, ...nonMappingFields]
 
-  const specFields = datasetSpecification ? datasetSpecification.fields : []
+  const specFields = specification ? specification.fields : []
   const numberOfFieldsSupplied = specFields.reduce((acc, field) => {
     return allFields.includes(field.field) ? acc + 1 : acc
   }, 0)
