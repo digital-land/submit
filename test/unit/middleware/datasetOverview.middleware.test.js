@@ -57,7 +57,7 @@ describe('Dataset Overview Middleware', () => {
       expect(reqWithResults.templateParams).toEqual({
         organisation: { name: 'mock-org' },
         dataset: reqWithResults.dataset,
-        issueCount: 1,
+        taskCount: 1,
         stats: {
           numberOfFieldsSupplied: 1,
           numberOfFieldsMatched: 1,

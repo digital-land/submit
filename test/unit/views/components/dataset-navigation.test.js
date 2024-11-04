@@ -37,7 +37,7 @@ describe('Dataset Navigation component', () => {
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Dataset overview')
-    expect(links.length).toEqual(2)
+    expect(links.length).toEqual(3)
     expect(taskCount).toBeNull()
   })
 
@@ -60,7 +60,7 @@ describe('Dataset Navigation component', () => {
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Task list')
-    expect(links.length).toEqual(2)
+    expect(links.length).toEqual(3)
   })
 
   it('Renders the issue count correctly', () => {
@@ -88,6 +88,6 @@ describe('Dataset Navigation component', () => {
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Task list')
     expect(issueCount.textContent).toContain('3 issues')
-    expect(links.length).toEqual(2)
+    expect(links.length).toEqual(3)
   })
 })
