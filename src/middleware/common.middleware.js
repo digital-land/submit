@@ -225,3 +225,51 @@ export const replaceUnderscoreInSpecification = (req, res, next) => {
 
   next()
 }
+
+export const pullOutDatasetSpecification = (req, res, next) => {
+  const { specification } = req
+  let collectionSpecifications
+  try {
+    collectionSpecifications = JSON.parse(specification.json)
+  } catch (error) {
+    logger.error('Invalid JSON in specification.json', { error })
+    return next(new Error('Invalid specification format'))
+  }
+  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
+  req.specification = datasetSpecification
+  next()
+}
+
+export const extractJsonFieldFromEntities = (req, res, next) => {
+  const { entities } = req
+
+  req.entities = entities.map(entity => {
+    const jsonField = entity.json
+    if (!jsonField || jsonField === '') {
+      logger.info(`common.middleware/extractJsonField: No json field for entity ${entity.toString()}`)
+      return entity
+    }
+    entity.json = undefined
+    try {
+      const parsedJson = JSON.parse(jsonField)
+      entity = { ...entity, ...parsedJson }
+    } catch (err) {
+      logger.warn(`common.middleware/extractJsonField: Error parsing JSON for entity ${entity.toString()}: ${err.message}`)
+    }
+    return entity
+  })
+
+  next()
+}
+
+export const replaceUnderscoreInEntities = (req, res, next) => {
+  req.entities = req.entities.map((entity) => {
+    return Object.keys(entity).reduce((acc, key) => {
+      const newKey = key.replace(/_/g, '-')
+      acc[newKey] = entity[key]
+      return acc
+    }, {})
+  })
+
+  next()
+}
