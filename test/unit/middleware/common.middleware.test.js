@@ -428,7 +428,7 @@ describe('setDefaultParams', () => {
 
     setDefaultParams(req, res, next)
 
-    expect(req.params).toEqual({ pageNumber: 2, pageSize: 10 })
+    expect(req.params).toEqual({ pageNumber: 2, pageSize: 10, sortOrder: 'asc' })
     expect(next).toHaveBeenCalledTimes(1)
   })
 
