@@ -17,12 +17,22 @@ const validatedataviewQueryParams = validateQueryParams({
 })
 
 export const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
+  query: ({ req }) => {
+    return {
+      text: 'SELECT * FROM specification WHERE specification = $1',
+      values: [req.dataset.collection],
+    };
+  },
   result: 'specification'
 })
 
 export const fetchEntitiesCount = fetchOne({
-  query: ({ req }) => `SELECT count(*) as count FROM entity WHERE organisation_entity = ${req.orgInfo.entity}`,
+  query: ({ req }) => {
+    return {
+      text: 'SELECT count(*) as count FROM entity WHERE organisation_entity = $1',
+      values: [req.orgInfo.entity],
+    };
+  },
   dataset: FetchOptions.fromParams,
   result: 'entityCount'
 })
