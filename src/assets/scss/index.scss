@@ -5,7 +5,7 @@ $govuk-global-styles: true;
 @import "src/assets/scss/_scrollable-container.scss";
 @import "./step-by-step-nav.scss";
 @import "./components/dataset-navigation";
-
+@import "./components/cookie-banner";
 
 .app-inset-text---error {
   border-left: 5px solid govuk-colour('red');
