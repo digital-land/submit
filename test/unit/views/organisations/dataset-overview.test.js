@@ -70,7 +70,7 @@ describe('Dataset Overview Page', () => {
   })
 
   it('Renders dataset details correctly', () => {
-    expect(document.querySelector('h2.govuk-heading-m').textContent).toContain('Dataset details')
+    expect(document.querySelector('#main-content h2.govuk-heading-m').textContent).toContain('Dataset details')
     const summaryListValues = document.querySelectorAll('dd.govuk-summary-list__value')
     expect(summaryListValues[0].textContent.trim()).toEqual(params.stats.numberOfRecords.toString())
     expect(summaryListValues[1].textContent.trim()).toEqual(`${params.stats.numberOfFieldsSupplied}/${params.stats.numberOfExpectedFields}`)

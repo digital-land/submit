@@ -38,6 +38,8 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% endblock %}
 
 {% block header %}
+  {% include "components/cookie-banner.html" %}
+
   {{ govukHeader({
     homepageUrl: homepageUrl,
     serviceName: serviceName,
@@ -98,7 +100,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 
 {% block bodyEnd %}
     {{ super()}}
-  {%block scripts %}
+  {% block scripts %}
     <body>
       <script type="module" src="/assets/all.js"></script>
       <script type="module">

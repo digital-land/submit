@@ -25,7 +25,8 @@ export default {
     application: '/src/assets/js/application.js',
     statusPage: '/src/assets/js/statusPage.js',
     'step-by-step-nav': '/src/assets/js/step-by-step-nav.js',
-    'list-filter': '/src/assets/js/list-filter.js'
+    'list-filter': '/src/assets/js/list-filter.js',
+    'cookie-banner': '/src/assets/js/components/cookie-banner.js'
   },
   output: {
     filename: '[name].bundle.js',
