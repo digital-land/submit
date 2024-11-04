@@ -17,7 +17,12 @@ const validatedataviewQueryParams = validateQueryParams({
 })
 
 export const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
+  query: ({ req }) => {
+    return {
+      text: 'SELECT * FROM specification WHERE specification = $1',
+      values: [req.dataset.collection],
+    };
+  },
   result: 'specification'
 })
 
