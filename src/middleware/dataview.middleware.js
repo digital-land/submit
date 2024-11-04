@@ -44,11 +44,11 @@ export const setTotalPages = (req, res, next) => {
 
 export const fetchEntities = fetchMany({
   query: ({ req, params }) => {
-    const offset = pageLength * (params.pageNumber - 1);
+    const offset = pageLength * (params.pageNumber - 1)
     return {
       text: 'SELECT * FROM entity WHERE organisation_entity = $1 LIMIT $2 OFFSET $3',
-      values: [req.orgInfo.entity, pageLength, offset],
-    };
+      values: [req.orgInfo.entity, pageLength, offset]
+    }
   },
   dataset: FetchOptions.fromParams,
   result: 'entities'

@@ -364,6 +364,42 @@ describe('pullOutDatasetSpecification', () => {
     pullOutDatasetSpecification(reqWithSpecification, res, () => {})
     expect(reqWithSpecification.specification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
   })
+
+  it('calls next with an error if JSON in specification is invalid', () => {
+    const reqWithInvalidSpecification = {
+      ...req,
+      specification: {
+        json: 'Invalid JSON'
+      }
+    }
+    const next = vi.fn()
+    pullOutDatasetSpecification(reqWithInvalidSpecification, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next).toHaveBeenCalledWith(expect.any(Error))
+  })
+
+  it('calls next with an error if dataset specification is missing', () => {
+    const reqWithoutSpecification = {
+      ...req
+    }
+    const next = vi.fn()
+    pullOutDatasetSpecification(reqWithoutSpecification, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next).toHaveBeenCalledWith(expect.any(Error))
+  })
+
+  it('calls next with an error if dataset specification is an empty array', () => {
+    const reqWithEmptySpecification = {
+      ...req,
+      specification: {
+        json: JSON.stringify([])
+      }
+    }
+    const next = vi.fn()
+    pullOutDatasetSpecification(reqWithEmptySpecification, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next).toHaveBeenCalledWith(expect.any(Error))
+  })
 })
 
 describe('extractJsonFieldFromEntities', () => {
