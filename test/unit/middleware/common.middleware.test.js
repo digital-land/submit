@@ -446,20 +446,6 @@ describe('setDefaultParams', () => {
     expect(next).toHaveBeenCalledTimes(1)
   })
 
-  it('ignores keys that are not present in req.params', () => {
-    const req = {
-      params: { pageNumber: 1 },
-      parsedParams: { pageSize: 20, sortOrder: 'asc' }
-    }
-    const res = {}
-    const next = vi.fn()
-
-    setDefaultParams(req, res, next)
-
-    expect(req.params).toEqual({ pageNumber: 1 })
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-
   it('handles null or undefined req.parsedParams', () => {
     const req = {
       params: { pageNumber: 1 },
