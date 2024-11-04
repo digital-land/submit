@@ -263,6 +263,11 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
 }
 
 export const replaceUnderscoreInEntities = (req, res, next) => {
+  if (!req.entities) {
+    next()
+    return
+  }
+
   req.entities = req.entities.map((entity) => {
     return Object.keys(entity).reduce((acc, key) => {
       const newKey = key.replace(/_/g, '-')
