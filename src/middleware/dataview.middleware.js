@@ -83,7 +83,7 @@ export const prepareTemplateParams = (req, res, next) => {
   req.templateParams = {
     organisation: orgInfo,
     dataset,
-    taskCount: issues.length ?? 0,
+    taskCount: (issues?.length) ?? 0,
     tableParams,
     pagination
   }
