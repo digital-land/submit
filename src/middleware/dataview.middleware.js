@@ -27,7 +27,12 @@ export const fetchSpecification = fetchOne({
 })
 
 export const fetchEntitiesCount = fetchOne({
-  query: ({ req }) => `SELECT count(*) as count FROM entity WHERE organisation_entity = ${req.orgInfo.entity}`,
+  query: ({ req }) => {
+    return {
+      text: 'SELECT count(*) as count FROM entity WHERE organisation_entity = $1',
+      values: [req.orgInfo.entity],
+    };
+  },
   dataset: FetchOptions.fromParams,
   result: 'entityCount'
 })
