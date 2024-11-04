@@ -79,18 +79,3 @@
   </div>
 </div>
 {% endblock %}
-
-{% block scripts %}
-  {{ super() }}
-  {% if entry.geometries and entry.geometries.length %}
-    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
-    <script>
-      window.serverContext = {
-        containerId: 'map',
-        geometries: {{ entry.geometries | dump | safe }},
-        mapType: "static"
-      }
-    </script>
-    <script src="/public/js/map.bundle.js"></script>
-  {% endif %}
-{% endblock %}
