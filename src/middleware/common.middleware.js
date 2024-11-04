@@ -153,6 +153,14 @@ export const createPaginationTemplateParams = (req, res, next) => {
   let { pageNumber } = req.params
   pageNumber = parseInt(pageNumber)
 
+  if (isNaN(pageNumber) || pageNumber <= 0) {
+    throw new Error('Invalid page number')
+  }
+
+  if (resultsCount <= 0) {
+    return next()
+  }
+
   const totalPages = Math.floor(resultsCount / paginationPageLength)
 
   const paginationObj = {}

@@ -49,6 +49,77 @@ describe('common.middleware.test.js', () => {
       })
       expect(next).toHaveBeenCalledTimes(1)
     })
+
+    it('handles invalid page numbers (negative)', () => {
+      const req = {
+        resultsCount: 100,
+        urlSubPath: '/api/results/',
+        paginationPageLength: 10,
+        params: { pageNumber: -1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      expect(() => createPaginationTemplateParams(req, res, next)).toThrowError('Invalid page number')
+
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('handles invalid page numbers (non-numeric)', () => {
+      const req = {
+        resultsCount: 100,
+        urlSubPath: '/api/results/',
+        paginationPageLength: 10,
+        params: { pageNumber: 'abc' }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      expect(() => createPaginationTemplateParams(req, res, next)).toThrowError('Invalid page number')
+
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('handles zero total results', () => {
+      const req = {
+        resultsCount: 0,
+        urlSubPath: '/api/results/',
+        paginationPageLength: 10,
+        params: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      createPaginationTemplateParams(req, res, next)
+
+      expect(req.pagination).toBeUndefined()
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles page number beyond available pages', () => {
+      const req = {
+        resultsCount: 50,
+        urlSubPath: '/api/results/',
+        paginationPageLength: 10,
+        params: { pageNumber: 6 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      createPaginationTemplateParams(req, res, next)
+
+      expect(req.pagination).toEqual({
+        previous: { href: '/api/results/5' },
+        items: [
+          { type: 'number', number: 1, href: '/api/results/1', current: false },
+          { type: 'number', number: 2, href: '/api/results/2', current: false },
+          { type: 'number', number: 3, href: '/api/results/3', current: false },
+          { type: 'number', number: 4, href: '/api/results/4', current: false },
+          { type: 'number', number: 5, href: '/api/results/5', current: false }
+        ]
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('replaceUnderscoreInSpecification', () => {
@@ -159,6 +230,74 @@ describe('common.middleware.test.js', () => {
         datasetField: 'point'
       })
     })
+
+    it('handles single GeoX field without GeoY', () => {
+      const req = {
+        specification: {
+          fields: [
+            { field: 'GeoX' }
+          ]
+        },
+        fieldMappings: []
+      }
+      const res = {}
+      const next = vi.fn()
+
+      addDatabaseFieldToSpecification(req, res, next)
+      expect(req.specification.fields).toHaveLength(1)
+      expect(req.specification.fields[0]).toEqual({
+        field: 'GeoX',
+        datasetField: 'point'
+      })
+    })
+
+    it('handles single GeoY field without GeoX', () => {
+      const req = {
+        specification: {
+          fields: [
+            { field: 'GeoY' }
+          ]
+        },
+        fieldMappings: []
+      }
+      const res = {}
+      const next = vi.fn()
+
+      addDatabaseFieldToSpecification(req, res, next)
+      expect(req.specification.fields).toHaveLength(1)
+      expect(req.specification.fields[0]).toEqual({
+        field: 'GeoY',
+        datasetField: 'point'
+      })
+    })
+
+    it('handles invalid coordinate values', () => {
+      const req = {
+        specification: {
+          fields: [
+            { field: 'GeoX', invalid: true },
+            { field: 'GeoY', invalid: true }
+          ]
+        },
+        fieldMappings: []
+      }
+      const res = {}
+      const next = vi.fn()
+
+      addDatabaseFieldToSpecification(req, res, next)
+      expect(req.specification.fields).toHaveLength(2)
+      expect(req.specification.fields[0]).toEqual({
+        field: 'GeoX',
+        datasetField: 'point',
+        invalid: true
+      })
+      expect(req.specification.fields[1]).toEqual({
+        field: 'GeoY',
+        datasetField: 'point',
+        invalid: true
+      })
+    })
+
 
     it('handles fields with no matching field mapping', () => {
       const req = {
