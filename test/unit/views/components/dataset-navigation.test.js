@@ -63,7 +63,7 @@ describe('Dataset Navigation component', () => {
     expect(links.length).toEqual(3)
   })
 
-  it('Renders the issue count correctly', () => {
+  it('Renders the task count correctly', () => {
     const paramsWithIssues = {
       ...params,
       taskCount: 3
