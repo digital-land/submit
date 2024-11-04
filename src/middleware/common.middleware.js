@@ -236,6 +236,10 @@ export const pullOutDatasetSpecification = (req, res, next) => {
     return next(new Error('Invalid specification format'))
   }
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
+  if (!datasetSpecification) {
+    logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
+    return next(new Error('Dataset specification not found'))
+  }
   req.specification = datasetSpecification
   next()
 }
