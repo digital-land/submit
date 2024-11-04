@@ -298,7 +298,6 @@ describe('common.middleware.test.js', () => {
       })
     })
 
-
     it('handles fields with no matching field mapping', () => {
       const req = {
         specification: {
@@ -475,70 +474,6 @@ describe('replaceUnderscoreInEntities', () => {
     expect(req.entities).toHaveLength(2)
     expect(req.entities[0]).toEqual({ foo: 'bar', baz: 'qux' })
     expect(req.entities[1]).toEqual({ xyz: 'abc', def: 'ghi' })
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-
-  it('handles empty entities array', () => {
-    const req = {
-      entities: []
-    }
-    const res = {}
-    const next = vi.fn()
-
-    replaceUnderscoreInEntities(req, res, next)
-
-    expect(req.entities).toHaveLength(0)
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe('replaceUnderscoreInEntities', () => {
-  it('replaces underscores with hyphens in entity keys', () => {
-    const req = {
-      entities: [
-        { foo_bar: 'baz', hello_world: 'qux' },
-        { foo_baz: 'qux', hello_universe: 'xyz' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    replaceUnderscoreInEntities(req, res, next)
-
-    expect(req.entities).toHaveLength(2)
-    expect(req.entities[0]).toEqual({ 'foo-bar': 'baz', 'hello-world': 'qux' })
-    expect(req.entities[1]).toEqual({ 'foo-baz': 'qux', 'hello-universe': 'xyz' })
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-
-  it('handles entities with no underscore-containing keys', () => {
-    const req = {
-      entities: [
-        { foo: 'bar', baz: 'qux' },
-        { xyz: 'abc', def: 'ghi' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    replaceUnderscoreInEntities(req, res, next)
-
-    expect(req.entities).toHaveLength(2)
-    expect(req.entities[0]).toEqual({ foo: 'bar', baz: 'qux' })
-    expect(req.entities[1]).toEqual({ xyz: 'abc', def: 'ghi' })
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-
-  it('handles null or undefined entities', () => {
-    const req = {
-      entities: null
-    }
-    const res = {}
-    const next = vi.fn()
-
-    replaceUnderscoreInEntities(req, res, next)
-
-    expect(req.entities).toBeNull()
     expect(next).toHaveBeenCalledTimes(1)
   })
 
