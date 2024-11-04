@@ -125,7 +125,10 @@ export const getIsPageNumberInRange = (maxPagesKey) => {
    */
   return (req, res, next) => {
     const { pageNumber } = req.parsedParams
-
+    if (!Number.isInteger(pageNumber)) {
+      res.status(400).render('errorPages/400', {})
+      return
+    }
     if (pageNumber < 1 || req[maxPagesKey] < pageNumber) {
       res.status(404).render('errorPages/404', {})
       return
