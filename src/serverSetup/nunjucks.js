@@ -65,6 +65,13 @@ export function setupNunjucks ({ app, datasetNameMapping }) {
 
   if ('googleAnalytics' in config) {
     globalValues.googleAnalyticsMeasurementId = config.googleAnalytics.measurementId
+
+    if (app) {
+      app.use((req, res, next) => {
+        nunjucksEnv.addGlobal('cookiesAccepted', req.cookies.cookies_preferences_set === 'true')
+        next()
+      })
+    }
   }
 
   Object.keys(globalValues).forEach((key) => {

@@ -62,7 +62,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
     {{ super() }}
     <script src="/public/js/application.bundle.js"></script>
 
-    {% if googleAnalyticsMeasurementId %}
+    {% if googleAnalyticsMeasurementId and (cookiesAccepted == true or cookiesAccepted == 'true') %}
       <script async src="https://www.googletagmanager.com/gtag/js?id={{ googleAnalyticsMeasurementId }}"></script>
       <script type='text/javascript'>
         {% include "common/google-analytics.js" %}
