@@ -26,13 +26,13 @@
         active: params.active === "dataset-overview"
       },
       {
+        html: taskLink,
+        active: params.active === "task-list"
+      },
+      {
         href: "/organisations/" + organisation.organisation + "/" + dataset.dataset + "/data",
         html: "View data",
         active: params.active === "data"
-      },
-      {
-        html: taskLink,
-        active: params.active === "task-list"
       }
     ]
   }) }}
