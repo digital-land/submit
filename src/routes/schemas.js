@@ -53,12 +53,13 @@ export const tableParams = v.strictObject({
   rows: v.array(v.strictObject({
     columns: v.objectWithRest(
       {},
-      v.object({
+      v.strictObject({
         error: v.optional(v.object({
           message: v.string()
         })),
         value: v.optional(v.string()),
-        html: v.optional(v.string())
+        html: v.optional(v.string()),
+        classes: v.optional(v.string())
       })
     )
   })),
