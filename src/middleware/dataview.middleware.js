@@ -28,12 +28,12 @@ export const fetchEntitiesCount = fetchOne({
 })
 
 export const setTotalPages = (req, res, next) => {
-  req.totalPages = req.entityCount.count / pageLength
+  req.totalPages = Math.ceil(req.entityCount.count / pageLength)
   next()
 }
 
 export const fetchEntities = fetchMany({
-  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${pageLength * params.pageNumber}`,
+  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${pageLength * (params.pageNumber - 1)}`,
   dataset: FetchOptions.fromParams,
   result: 'entities'
 })
