@@ -57,14 +57,97 @@ describe('dataview.middleware.test.js', () => {
         rows: [
           {
             columns: {
-              foo_field: { value: 'bar' },
-              baz_field: { value: 'qux' }
+              foo_field: { value: 'bar', classes: '', html: undefined },
+              baz_field: { value: 'qux', classes: '', html: undefined }
             }
           },
           {
             columns: {
-              foo_field: { value: 'baz' },
-              baz_field: { value: 'quux' }
+              foo_field: { value: 'baz', classes: '', html: undefined },
+              baz_field: { value: 'quux', classes: '', html: undefined }
+            }
+          }
+        ]
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('constructs table parameters with correct classes for numeric and date values', () => {
+      const req = {
+        entities: [
+          { id: 1, num_field: 0.06, date_field: '2022-01-01' },
+          { id: 2, num_field: '10', date_field: '2022-01-02' }
+        ],
+        specification: {
+          fields: [
+            { field: 'num', datasetField: 'num_field', numeric: true },
+            { field: 'date', datasetField: 'date_field', date: true }
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      constructTableParams(req, res, next)
+
+      expect(req.tableParams).toEqual({
+        columns: ['num', 'date'],
+        fields: ['num_field', 'date_field'],
+        rows: [
+          {
+            columns: {
+              num_field: { value: 0.06, classes: 'govuk-table__cell--numeric', html: undefined },
+              date_field: { value: '2022-01-01', classes: 'govuk-table__cell--numeric', html: undefined }
+            }
+          },
+          {
+            columns: {
+              num_field: { value: '10', classes: 'govuk-table__cell--numeric', html: undefined },
+              date_field: { value: '2022-01-02', classes: 'govuk-table__cell--numeric', html: undefined }
+            }
+          }
+        ]
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('constructs table parameters with correct html field as a link for url values', () => {
+      const req = {
+        entities: [
+          { id: 1, url_field: 'https://example.com' },
+          { id: 2, url_field: 'https://example.org' }
+        ],
+        specification: {
+          fields: [
+            { field: 'url', datasetField: 'url_field', url: true }
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      constructTableParams(req, res, next)
+
+      expect(req.tableParams).toEqual({
+        columns: ['url'],
+        fields: ['url_field'],
+        rows: [
+          {
+            columns: {
+              url_field: {
+                html: "<a href='https://example.com' target='_blank' rel='noopener noreferrer'>https://example.com</a>",
+                classes: '',
+                value: undefined
+              }
+            }
+          },
+          {
+            columns: {
+              url_field: {
+                html: "<a href='https://example.org' target='_blank' rel='noopener noreferrer'>https://example.org</a>",
+                classes: '',
+                value: undefined
+              }
             }
           }
         ]

@@ -49,7 +49,7 @@
                     <tr class="govuk-table__row">
                         {% for field in params.fields %}
                             {% set columnData = row.columns[field] %}
-                            <td class="govuk-table__cell app-wrap">
+                            <td class="govuk-table__cell app-wrap {{columnData.classes}}">
                                 {% set cellText = columnData.html | safe if columnData.html else columnData.value%}
                                 {% if columnData.error %}
                                     {{ govukInsetText({

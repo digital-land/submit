@@ -61,10 +61,27 @@ export const constructTableParams = (req, res, next) => {
   const fields = specification.fields.map(field => field.datasetField)
   const rows = entities.map(entity => ({
     columns: Object.fromEntries(fields.map(field => {
-      const value = {
-        value: entity[field]
+      let value
+      let classes = ''
+      let html
+
+      // if the value is a number or a date string
+      if (/^\d{4}-\d{2}-\d{2}$/.test(entity[field]) || /^\d+(\.\d+)?$/.test(entity[field])) {
+        classes = 'govuk-table__cell--numeric'
       }
-      return [field, value]
+
+      if (typeof entity[field] === 'string' && /(https?:\/\/[^\s]+)/.test(entity[field])) {
+        html = `<a href='${entity[field]}' target='_blank' rel='noopener noreferrer'>${entity[field]}</a>`
+      } else {
+        value = entity[field]
+      }
+
+      const valueObj = {
+        value,
+        classes,
+        html
+      }
+      return [field, valueObj]
     }))
   }))
 
