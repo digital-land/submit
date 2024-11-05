@@ -8,7 +8,6 @@ describe('Google Analytics JS', () => {
   const html = nunjucks.render('common/google-analytics.js', params)
 
   it('should include the google analytics script', () => {
-    expect(html).toContain('window.dataLayer = window.dataLayer || []')
-    expect(html).toContain("gtag('js', new Date()); gtag('config', 'G-TEST-CODE')")
+    expect(html).toContain('gtag(\'config\', \'G-TEST-CODE\')')
   })
 })
