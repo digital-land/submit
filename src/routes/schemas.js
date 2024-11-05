@@ -138,7 +138,12 @@ export const OrgDataView = v.strictObject({
   dataset: DatasetNameField,
   taskCount: v.integer(),
   tableParams,
-  pagination: PaginationParams
+  pagination: PaginationParams,
+  dataRange: v.strictObject({
+    minRow: v.integer(),
+    maxRow: v.integer(),
+    totalRows: v.integer()
+  })
 })
 
 export const OrgDatasetTaskList = v.strictObject({

@@ -32,8 +32,15 @@ export const setTotalPages = (req, res, next) => {
   next()
 }
 
+export const setOffset = (req, res, next) => {
+  const { pageNumber } = req.params
+
+  req.offset = (pageNumber - 1) * pageLength
+  next()
+}
+
 export const fetchEntities = fetchMany({
-  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${pageLength * (params.pageNumber - 1)}`,
+  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${req.offset}`,
   dataset: FetchOptions.fromParams,
   result: 'entities'
 })
@@ -95,14 +102,19 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, issues, pagination } = req
+  const { orgInfo, dataset, tableParams, issues, pagination, entityCount, offset } = req
 
   req.templateParams = {
     organisation: orgInfo,
     dataset,
     taskCount: (issues?.length) ?? 0,
     tableParams,
-    pagination
+    pagination,
+    dataRange: {
+      minRow: offset + 1,
+      maxRow: Math.min(offset + pageLength, entityCount.count),
+      totalRows: entityCount.count
+    }
   }
   next()
 }
@@ -126,6 +138,8 @@ export default [
   fetchEntitiesCount,
   setTotalPages,
   getIsPageNumberInRange('totalPages'),
+
+  setOffset,
 
   fetchEntities,
   extractJsonFieldFromEntities,
