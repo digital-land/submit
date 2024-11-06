@@ -3,7 +3,8 @@ import {
   setTotalPages,
   setPaginationOptions,
   constructTableParams,
-  prepareTemplateParams
+  prepareTemplateParams,
+  setOffset
 } from '../../../src/middleware/dataview.middleware'
 
 describe('dataview.middleware.test.js', () => {
@@ -17,6 +18,32 @@ describe('dataview.middleware.test.js', () => {
 
       setTotalPages(req, res, next)
       expect(req.totalPages).toBe(2)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('setOffset', () => {
+    it('sets offset correctly', () => {
+      const req = {
+        params: { pageNumber: 2 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setOffset(req, res, next)
+      expect(req.offset).toBe(50) // assuming pageLength is 50
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets offset to 0 when pageNumber is 1', () => {
+      const req = {
+        params: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setOffset(req, res, next)
+      expect(req.offset).toBe(0)
       expect(next).toHaveBeenCalledTimes(1)
     })
   })
