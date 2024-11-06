@@ -46,6 +46,10 @@ export function setupNunjucks ({ app, datasetNameMapping }) {
 
   if (app) {
     app.set('view engine', 'html')
+    app.use((req, res, next) => {
+      nunjucksEnv.addGlobal('currentPath', req.path)
+      next()
+    })
   }
 
   const globalValues = {

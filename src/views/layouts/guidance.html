@@ -4,9 +4,6 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 #}
 
 {% extends "govuk/template.njk" %}
-{% from 'govuk/components/header/macro.njk' import govukHeader%}
-{% from 'govuk/components/footer/macro.njk' import govukFooter%}
-{% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner%}
 {% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 
 {% if serviceType %}
@@ -38,18 +35,8 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% endblock %}
 
 {% block header %}
-  {{ govukHeader({
-    homepageUrl: homepageUrl,
-    serviceName: serviceName,
-    serviceUrl: startPageUrl or homepageUrl
-  }) }}
-  {{ govukPhaseBanner({
-    tag: {
-      text: "Beta"
-    },
-    html: 'This is a new service – your <a class="govuk-link" href="' + feedbackLink + '">feedback</a> will help us to improve it.',
-    classes: 'govuk-width-container'
-  }) }}
+  {% include "components/cookie-banner.html" %}
+  {% include 'components/app-header.html' %}
   <link rel="stylesheet" href="/public/stylesheets/index.css">
 {% endblock %}
 
@@ -74,48 +61,16 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% endblock %}
 
 {% block footer %}
-{% set footerHtml %}
-  <h2 class="govuk-heading-m">Get help</h2>
-
-  <p class="govuk-!-font-size-16">Email: <a href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a></br>
-  You’ll get a response within 5 working days.</p>
-
-  <hr class="govuk-section-break govuk-section-break--l">
-  <ul class="govuk-footer__inline-list">
-    <li class="govuk-footer__inline-list-item">
-      <a class="govuk-footer__link" href="/accessibility">
-        Accessibility
-      </a>
-    </li>
-    <li class="govuk-footer__inline-list-item">
-      <a class="govuk-footer__link" href="/privacy-notice">
-        Privacy
-      </a>
-    </li>
-    <li class="govuk-footer__inline-list-item">
-      <a class="govuk-footer__link" href="/cookies">
-        Cookies
-      </a>
-    </li>
-  </ul>
-  {% endset %}
-
-  {{ govukFooter({
-  meta: {
-    html: footerHtml
-  }
-  }) }}
+  {% include "components/app-footer.html" %}
 {% endblock %}
 
 {% block bodyEnd %}
     {{ super()}}
-  {%block scripts %}
-    <body>
-      <script type="module" src="/assets/all.js"></script>
-      <script type="module">
-        window.GOVUKPrototypeComponents.initAll()
-      </script>
-    </body>
+  {% block scripts %}
+    <script type="module" src="/assets/all.js"></script>
+    <script type="module">
+      window.GOVUKPrototypeComponents.initAll()
+    </script>
     {{ super() }}
     <script src="/public/js/application.bundle.js"></script>
   {% endblock %}

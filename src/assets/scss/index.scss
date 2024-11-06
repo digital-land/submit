@@ -4,6 +4,7 @@ $govuk-global-styles: true;
 @import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
 @import "src/assets/scss/_scrollable-container.scss";
 @import "./step-by-step-nav.scss";
+@import "./overrides";
 @import "./components/dataset-navigation";
 @import "./components/cookie-banner";
 @import "./components/sub-navigation";
