@@ -87,12 +87,18 @@ export const constructTableParams = (req, res, next) => {
       // if the value is a number or a date string
       if (/^\d{4}-\d{2}-\d{2}$/.test(entity[field]) || /^\d+(\.\d+)?$/.test(entity[field])) {
         classes = 'govuk-table__cell--numeric'
+        value = entity[field]
       }
 
-      if (typeof entity[field] === 'string' && /(https?:\/\/[^\s]+)/.test(entity[field])) {
-        html = `<a href='${entity[field]}' target='_blank' rel='noopener noreferrer'>${entity[field]}</a>`
-      } else {
-        value = entity[field]
+      const urlRegex = /^https?:\/\/[^\s]+$/
+
+      if (typeof entity[field] === 'string') {
+        const text = entity[field]
+        if (urlRegex.test(text)) {
+          html = `<a href='${text}' target='_blank' rel='noopener noreferrer'>${text}</a>`
+        } else {
+          value = text
+        }
       }
 
       const valueObj = {
