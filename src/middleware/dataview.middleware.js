@@ -61,11 +61,23 @@ export const setPaginationOptions = (pageLength) => (req, res, next) => {
   next()
 }
 
-export const constructTableParams = (req, res, next) => {
-  const { entities, specification } = req
+export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
+  const { specification } = req
 
-  const columns = specification.fields.map(field => field.field)
-  const fields = specification.fields.map(field => field.datasetField)
+  if (!specification) {
+    throw new Error('specification is required')
+  }
+
+  req.uniqueDatasetFields = [...new Set(specification.fields.map(field => field.datasetField))]
+
+  next()
+}
+
+export const constructTableParams = (req, res, next) => {
+  const { entities, uniqueDatasetFields } = req
+
+  const columns = uniqueDatasetFields
+  const fields = uniqueDatasetFields
   const rows = entities.map(entity => ({
     columns: Object.fromEntries(fields.map(field => {
       let value
@@ -151,6 +163,7 @@ export default [
 
   fetchFieldMappings,
   addDatabaseFieldToSpecification,
+  getUniqueDatasetFieldsFromSpecification,
 
   constructTableParams,
 

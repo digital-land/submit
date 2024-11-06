@@ -4,7 +4,8 @@ import {
   setPaginationOptions,
   constructTableParams,
   prepareTemplateParams,
-  setOffset
+  setOffset,
+  getUniqueDatasetFieldsFromSpecification
 } from '../../../src/middleware/dataview.middleware'
 
 describe('dataview.middleware.test.js', () => {
@@ -67,11 +68,55 @@ describe('dataview.middleware.test.js', () => {
     })
   })
 
+  describe('getUniqueDatasetFieldsFromSpecification', () => {
+    it('gets unique dataset fields from specification', () => {
+      const req = {
+        specification: {
+          fields: [
+            { field: 'foo', datasetField: 'foo_field' },
+            { field: 'bar', datasetField: 'bar_field' },
+            { field: 'baz', datasetField: 'foo_field' } // duplicate
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getUniqueDatasetFieldsFromSpecification(req, res, next)
+
+      expect(req.uniqueDatasetFields).toEqual(['foo_field', 'bar_field'])
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('returns an empty array when specification.fields is empty', () => {
+      const req = {
+        specification: {
+          fields: []
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getUniqueDatasetFieldsFromSpecification(req, res, next)
+
+      expect(req.uniqueDatasetFields).toEqual([])
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('throws an error when specification is not provided', () => {
+      const req = {}
+      const res = {}
+      const next = vi.fn()
+
+      expect(() => getUniqueDatasetFieldsFromSpecification(req, res, next)).toThrowError('specification is required')
+    })
+  })
+
   describe('constructTableParams', () => {
     it('constructs table parameters with correct columns, fields, and rows', () => {
       const req = {
         entities: [{ id: 1, foo_field: 'bar', baz_field: 'qux' }, { id: 2, foo_field: 'baz', baz_field: 'quux' }],
-        specification: { fields: [{ field: 'foo', datasetField: 'foo_field' }, { field: 'baz', datasetField: 'baz_field' }] }
+        uniqueDatasetFields: ['foo_field', 'baz_field']
       }
       const res = {}
       const next = vi.fn()
@@ -79,7 +124,7 @@ describe('dataview.middleware.test.js', () => {
       constructTableParams(req, res, next)
 
       expect(req.tableParams).toEqual({
-        columns: ['foo', 'baz'],
+        columns: ['foo_field', 'baz_field'],
         fields: ['foo_field', 'baz_field'],
         rows: [
           {
@@ -105,12 +150,7 @@ describe('dataview.middleware.test.js', () => {
           { id: 1, num_field: 0.06, date_field: '2022-01-01' },
           { id: 2, num_field: '10', date_field: '2022-01-02' }
         ],
-        specification: {
-          fields: [
-            { field: 'num', datasetField: 'num_field', numeric: true },
-            { field: 'date', datasetField: 'date_field', date: true }
-          ]
-        }
+        uniqueDatasetFields: ['num_field', 'date_field']
       }
       const res = {}
       const next = vi.fn()
@@ -118,7 +158,7 @@ describe('dataview.middleware.test.js', () => {
       constructTableParams(req, res, next)
 
       expect(req.tableParams).toEqual({
-        columns: ['num', 'date'],
+        columns: ['num_field', 'date_field'],
         fields: ['num_field', 'date_field'],
         rows: [
           {
@@ -144,11 +184,7 @@ describe('dataview.middleware.test.js', () => {
           { id: 1, url_field: 'https://example.com' },
           { id: 2, url_field: 'https://example.org' }
         ],
-        specification: {
-          fields: [
-            { field: 'url', datasetField: 'url_field', url: true }
-          ]
-        }
+        uniqueDatasetFields: ['url_field']
       }
       const res = {}
       const next = vi.fn()
@@ -156,7 +192,7 @@ describe('dataview.middleware.test.js', () => {
       constructTableParams(req, res, next)
 
       expect(req.tableParams).toEqual({
-        columns: ['url'],
+        columns: ['url_field'],
         fields: ['url_field'],
         rows: [
           {
