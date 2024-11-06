@@ -36,7 +36,7 @@ describe('Dataset Navigation component', () => {
     const taskCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
-    expect(activeLink.textContent).toContain('Dataset overview')
+    expect(activeLink.textContent).toContain('Dataset details')
     expect(links.length).toEqual(3)
     expect(taskCount).toBeNull()
   })

@@ -66,7 +66,7 @@ describe('Dataset Overview Page', () => {
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(links.length).toEqual(3)
-    expect(activeLink.textContent).toContain('Dataset overview')
+    expect(activeLink.textContent).toContain('Dataset details')
   })
 
   it('Renders dataset details correctly', () => {

@@ -163,7 +163,9 @@ describe('dataview.middleware.test.js', () => {
         dataset: { name: 'Mock Dataset' },
         tableParams: { columns: ['foo'], fields: ['foo'] },
         issues: [],
-        pagination: {}
+        pagination: {},
+        entityCount: { count: 1 },
+        offset: 0
       }
       const res = {}
       const next = vi.fn()
@@ -175,7 +177,12 @@ describe('dataview.middleware.test.js', () => {
         dataset: { name: 'Mock Dataset' },
         taskCount: 0,
         tableParams: { columns: ['foo'], fields: ['foo'] },
-        pagination: {}
+        pagination: {},
+        dataRange: {
+          minRow: 1,
+          maxRow: 1,
+          totalRows: 1
+        }
       })
       expect(next).toHaveBeenCalledTimes(1)
     })
