@@ -95,7 +95,7 @@ export const constructTableParams = (req, res, next) => {
       if (typeof entity[field] === 'string') {
         const text = entity[field]
         if (urlRegex.test(text)) {
-          html = `<a href='${text}' target='_blank' rel='noopener noreferrer'>${text}</a>`
+          html = `<a href='${text}' target='_blank' rel='noopener noreferrer' aria-label='${text} (opens in new tab)'>${text}</a>`
         } else {
           value = text
         }
