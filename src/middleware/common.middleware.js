@@ -160,7 +160,7 @@ export const createPaginationTemplateParams = (req, res, next) => {
   let { pageNumber } = req.params
   pageNumber = parseInt(pageNumber)
 
-  if (isNaN(pageNumber) || pageNumber <= 0) {
+  if (Number.isNaN(pageNumber) || pageNumber <= 0) {
     throw new Error('Invalid page number')
   }
 
