@@ -48,11 +48,15 @@ describe('performanceDbApi', () => {
     it('uses params in the query', () => {
       const query = lpaOverviewQuery('local-authority:FOO', {
         datasetsFilter: ['dataset-one', 'dataset-two'],
-        entityCounts: [{ dataset: 'dataset-three', resource: 'r1', entityCount: 10 }]
+        entityCounts: [
+          { dataset: 'dataset-three', resource: 'r1', entityCount: 10 },
+          { dataset: 'dataset-four', resource: 'r2', entityCount: 0 }]
       })
       expect(query).toContain('local-authority:FOO')
       expect(query).toContain('dataset-one')
       expect(query).toContain('dataset-two')
+      expect(query).toContain('dataset-three')
+      expect(query).toContain('dataset-four')
     })
   })
 
