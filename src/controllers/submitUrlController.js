@@ -63,18 +63,16 @@ class SubmitUrlController extends UploadController {
       { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
       { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
     ])
-    let headResponse
-    try {
-      headResponse = await SubmitUrlController.headRequest(url)
-    } catch (error) {
-      logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head. skipping post validators', {
-        type: types.DataFetch,
-        errorMessage: error.message
+    const headResponse = await SubmitUrlController.headRequest(url)
+
+    if (!headResponse) {
+      logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head, skipping post validators', {
+        type: types.DataFetch
       })
       return null
     }
 
-    if (headResponse.status === HTTP_STATUS_METHOD_NOT_ALLOWED) {
+    if (headResponse?.status === HTTP_STATUS_METHOD_NOT_ALLOWED) {
       // HEAD request not allowed, return null or a specific error message
       logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head as it was not allowed (405) skipping post validators', {
         type: types.DataFetch

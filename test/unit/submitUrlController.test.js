@@ -130,6 +130,18 @@ describe('SubmitUrlController', async () => {
         url += 'a'.repeat(2048)
         expect(await SubmitUrlController.localUrlValidation(url)).toBe('length')
       })
+
+      it('should return null if the head request fails', async () => {
+        mocks.headMock.mockImplementation(() => { throw new Error('Head request failed') })
+        const url = 'http://example.com'
+        expect(await SubmitUrlController.localUrlValidation(url)).toBeNull()
+      })
+
+      it('should return null if the head request method is not allowed', async () => {
+        mocks.headMock.mockImplementation(() => ({ status: 405 }))
+        const url = 'http://example.com'
+        expect(await SubmitUrlController.localUrlValidation(url)).toBeNull()
+      })
     })
 
     describe('urlIsValid', () => {
