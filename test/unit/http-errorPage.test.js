@@ -23,7 +23,7 @@ describe(`http-error.html(seed: ${seed})`, () => {
   })
 
   it('Renders the correct heading', () => {
-    expect(document.querySelector('h2').textContent).toContain('Error accessing data URL')
+    expect(document.querySelector('#main-content h2').textContent).toContain('Error accessing data URL')
   })
 
   it('Renders the error details summary list', () => {
