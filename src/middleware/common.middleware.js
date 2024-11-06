@@ -168,7 +168,7 @@ export const createPaginationTemplateParams = (req, res, next) => {
     return next()
   }
 
-  const totalPages = Math.floor(resultsCount / paginationPageLength)
+  const totalPages = Math.ceil(resultsCount / paginationPageLength)
 
   const paginationObj = {}
   if (pageNumber > 1) {
