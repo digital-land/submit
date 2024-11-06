@@ -34,7 +34,7 @@ export const setTotalPages = (req, res, next) => {
 
 export const setOffset = (req, res, next) => {
   const pageNumber = Number(req.params.pageNumber)
-  
+
   if (isNaN(pageNumber)) {
     return next(new Error('Invalid page number'))
   }
