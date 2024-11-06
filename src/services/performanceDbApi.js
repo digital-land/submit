@@ -106,7 +106,7 @@ export function lpaOverviewQuery (lpa, params) {
 
   const entityCountsSelects = []
   for (const { resource, dataset, entityCount } of params.entityCounts) {
-    if (entityCount && entityCount >= 0) {
+    if (Number.isInteger(entityCount) && entityCount >= 0) {
       entityCountsSelects.push(entityCountSelectFragment(dataset, resource, entityCount))
     }
   }
