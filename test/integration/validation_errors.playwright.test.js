@@ -1,7 +1,5 @@
 import { test } from '@playwright/test'
 import StartPage from '../PageObjectModels/startPage'
-import NoErrorsPage from '../PageObjectModels/noErrorsPage'
-
 import { datasets } from '../PageObjectModels/datasetPage'
 import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
