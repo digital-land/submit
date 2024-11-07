@@ -136,7 +136,7 @@ describe('ResultsController', () => {
         },
         datasetName: req.sessionModel.get('dataset'),
 
-        errorSummary: ['error summary'],
+        errorSummary: [{ text: 'error summary', href: '' }],
         mappings: { fields: 'geometries' },
         geometries: ['geometries'],
         pagination: 'pagination',

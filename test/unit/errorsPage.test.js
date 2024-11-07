@@ -37,6 +37,13 @@ describe('errors page', () => {
       limit: 50
     }
 
+    const summaryItem = (errorMessage) => {
+      return {
+        text: errorMessage,
+        href: ''
+      }
+    }
+
     const params = {
       options: {
         tableParams: {
@@ -45,7 +52,7 @@ describe('errors page', () => {
           fields: responseDetails.getFields()
         },
         requestParams: requestData.getParams(),
-        errorSummary: requestData.getErrorSummary(),
+        errorSummary: requestData.getErrorSummary().map(summaryItem),
         mappings: responseDetails.getFieldMappings(),
         verboseRows: responseDetails.getRowsWithVerboseColumns(),
         pagination: responseDetails.getPagination(0)
@@ -64,7 +71,7 @@ describe('errors page', () => {
     expect(errorItems.length).toEqual(6)
 
     params.options.errorSummary.forEach((message, i) => {
-      expect(errorItems[i].textContent).toContain(message)
+      expect(errorItems[i].textContent).toContain(message.text)
     })
 
     // table
