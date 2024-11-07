@@ -1,7 +1,5 @@
 import { test } from '@playwright/test'
 import StartPage from '../PageObjectModels/startPage'
-import NoErrorsPage from '../PageObjectModels/noErrorsPage'
-
 import { datasets } from '../PageObjectModels/datasetPage'
 import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
@@ -103,20 +101,4 @@ test('when the user clicks continue on the url page without entering a url, the 
   ]
 
   await uploadURLPage.expectErrorMessages(expectedErrors)
-})
-
-// ToDo: rewrite this for the new async flow
-test('when the user clicks continue on the no errors page, without saying their data looks ok, the page correctly indicates there\'s an error', async ({ page }) => {
-  const noErrorsPage = new NoErrorsPage(page)
-
-  await noErrorsPage.navigateToRequest('complete')
-  await noErrorsPage.clickContinue(true)
-
-  const expectedErrors = [
-    {
-      fieldName: 'input#dataLooksCorrect.govuk-radios__input',
-      expectedErrorMessage: 'Select if your data looks ok'
-    }
-  ]
-  await noErrorsPage.expectErrorMessages(expectedErrors)
 })

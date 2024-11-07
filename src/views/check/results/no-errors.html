@@ -17,6 +17,11 @@
   {% set dataLooksCorrectError = true %}
 {% endif %}
 
+{% if options.data.params.dataset %}
+  {% set checkToolLink = { name: (options.deepLink.orgName or '') } | checkToolDeepLink(options.data.params) %}
+{% else %}
+  {% set checkToolLink = "/check" %}
+{% endif %}
 
 {% block pageTitle %}
   {% set pageTitle = super() %}
@@ -40,7 +45,7 @@
         {{ datasetBanner(options.datasetName) }}
       {% endif %}
       <h1 class="govuk-heading-l">
-        {{pageName}}
+        You have {{options.pagination.totalResults}} {{ "row" | pluralise(options.pagination.totalResults) }} ready to publish
       </h1>
       <p>{{options.buttonText}}</p>
     </div>
@@ -48,10 +53,7 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <p>{{options.pagination.totalResults}} rows can be published.</p>
 
-
-        
       {{ table(options.tableParams) }}
 
       {% if options.pagination.items | length > 1 %}
@@ -79,46 +81,21 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      {% if dataLooksCorrectError %}
-        {{ govukErrorSummary({
-          titleText: "There’s a problem",
-          errorList: [
-            {
-              text: errorMessage,
-              href: "#dataLooksCorrect"
-            }
-          ]
-        }) }}
-      {% endif %}
-      <form method="post">
-        {{ govukRadios({
-            idPrefix: "dataLooksCorrect",
-            name: "dataLooksCorrect",
-            fieldset: {
-              legend: {
-                text: "Is your data correct?",
-                isPageHeading: false,
-                classes: "govuk-fieldset__legend--m"
-              }
-            },
-            items: [
-              {
-                value: "yes",
-                text: "Yes"
-              },
-              {
-                value: "no",
-                text: "No, I need to fix it"
-              }
-            ],
-            errorMessage: {
-              text: errorMessage 
-            } if dataLooksCorrectError else undefined
-          }) 
-        }}
+
+      <form novalidate method="post">
+        <h3 class="govuk-heading-m">Before you continue</h3>
+
+        <p>Make sure your data is correct.</p>
+
+        <p>If you see anything wrong with your data, you can check it again.</p>
+
         {{ govukButton({
           text: "Continue"
         }) }}
+
+        <input type="hidden" name="dataLooksCorrect" value="yes">
+        <p><a href="{{ checkToolLink  }}">Check your updated data</a></p>
+
       </form>
     </div>
   </div>
