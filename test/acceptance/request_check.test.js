@@ -44,7 +44,6 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
 
-      await resultsPage.selectLabel('Yes')
       const confirmationPage = await resultsPage.clickContinue()
       await confirmationPage.waitForPage()
     })
@@ -170,7 +169,6 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
 
-      await resultsPage.selectLabel('Yes')
       const confirmationPage = await resultsPage.clickContinue()
       await confirmationPage.waitForPage()
     })
