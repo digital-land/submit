@@ -198,7 +198,7 @@ describe('dataview.middleware.test.js', () => {
           {
             columns: {
               url_field: {
-                html: "<a href='https://example.com' target='_blank' rel='noopener noreferrer'>https://example.com</a>",
+                html: "<a href='https://example.com' target='_blank' rel='noopener noreferrer' aria-label='https://example.com (opens in new tab)'>https://example.com</a>",
                 classes: '',
                 value: undefined
               }
@@ -207,7 +207,7 @@ describe('dataview.middleware.test.js', () => {
           {
             columns: {
               url_field: {
-                html: "<a href='https://example.org' target='_blank' rel='noopener noreferrer'>https://example.org</a>",
+                html: "<a href='https://example.org' target='_blank' rel='noopener noreferrer' aria-label='https://example.org (opens in new tab)'>https://example.org</a>",
                 classes: '',
                 value: undefined
               }
