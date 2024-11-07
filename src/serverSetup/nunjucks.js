@@ -47,7 +47,8 @@ export function setupNunjucks ({ app, datasetNameMapping }) {
   if (app) {
     app.set('view engine', 'html')
     app.use((req, res, next) => {
-      nunjucksEnv.addGlobal('currentPath', req.path)
+      const sanitizedPath = req.path.replace(/[<>'"]/g, '')
+      nunjucksEnv.addGlobal('currentPath', sanitizedPath)
       next()
     })
   }

@@ -27,7 +27,6 @@ router.get('/*', (req, res) => {
     }
 
     const guidancePage = nunjucks.render(`${templatePath}.md`, {
-      permalink: `/guidance${req.path}`,
       navigation: getNavigationStructure()
     })
 
