@@ -4,6 +4,7 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 {% from "../../components/table.html" import table %}
 {% from '../../components/dataset-banner.html' import datasetBanner %}
 
@@ -35,23 +36,17 @@
         {{pageName}}
       </h1>
 
-      <ul class="govuk-list govuk-list--bullet">
-        {% for summaryMessage in options.errorSummary %}
-          <li>
-            {{summaryMessage}}
-          </li>
-        {% endfor %}
-      </ul>
+      {{ govukErrorSummary({
+        titleText: "There’s a problem",
+        errorList: options.errorSummary
+      }) }}
+
   </div>
 </div>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     {% if options.tableParams.rows|length > 0 %}
-      <h2 class="govuk-heading-m">
-        Check your errors
-      </h2>
-
       {{ table(options.tableParams) }}
     {% endif %}
 
@@ -71,8 +66,20 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
+    {% if options.deepLink.orgName %}
+      <h3 class="govuk-heading-m">How to improve {{ options.deepLink.orgName }}'s data</h3>
+    {% else %}
+      <h3 class="govuk-heading-m">How to improve the data</h3>
+    {% endif %}
+
+    <ol class="govuk-list govuk-list--number">
+      <li>Fix the errors indicated. You should use the <a href="/guidance/specifications/">data specifications</a> to help you do this.</li>
+      <li>Check your updated data to make sure it meets the specifications.</li>
+    </ol>
+
     {{ govukButton({
-      text: "Upload a new version",
+      text: "Check your data",
       href: "/check/upload-method"
     }) }}
 
