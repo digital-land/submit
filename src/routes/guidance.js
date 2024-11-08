@@ -1,10 +1,16 @@
 import express from 'express'
 import nunjucks from 'nunjucks'
 import config from '../../config/index.js'
+import logger from '../utils/logger.js'
 
 const router = express.Router()
 
 function getNavigationStructure () {
+  if (!config.guidanceNavigation) {
+    logger.error('Guidance navigation configuration is missing')
+    return { title: 'Guidance', items: [] }
+  }
+
   return config.guidanceNavigation
 }
 
@@ -59,14 +65,16 @@ router.get('/*', (req, res) => {
     res.send(guidancePage)
   } catch (error) {
     if (error?.message === 'template not found' || error?.message === 'Invalid path') {
-      console.info('Guidance page not found', { type: 'App', path: req.path })
+      logger.info('Guidance page not found', { type: 'App', path: req.path })
+
       res.status(404).render('errorPages/404', {})
     } else {
-      console.error('Error rendering guidance page', {
+      logger.error('Error rendering guidance page', {
         type: 'App',
         path: req.path,
         error: error.message
       })
+
       res.status(500).render('errorPages/500', {})
     }
   }
