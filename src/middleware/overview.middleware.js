@@ -1,7 +1,7 @@
 import performanceDbApi, { lpaOverviewQuery } from '../services/performanceDbApi.js'
 import { fetchOrgInfo, logPageError } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
-import { dataSubjects } from '../utils/utils.js'
+import { dataSubjects, getDeadlineHistory } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
 
@@ -107,6 +107,17 @@ const orgStatsReducer = (accumulator, dataset) => {
   return accumulator
 }
 
+/**
+ * Dataset submission deadline check middleware.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ *
+ * @description
+ * This middleware function checks if a dataset has been submitted within a certain timeframe
+ * and sets flags for due and overdue notices accordingly.
+ */
 export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   const noticePeriod = 4 // 4 months
   const requiredDatasets = [
@@ -117,43 +128,31 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   ]
   const { resourceLookup } = req
   const currentDate = new Date()
-  const currentYear = currentDate.getFullYear()
 
-  requiredDatasets.forEach(dataset => {
-    const resource = resourceLookup.find(resource => resource.dataset === dataset.dataset)
+  req.noticeFlags = requiredDatasets.map(dataset => {
+    let resource = resourceLookup.find(resource => resource.dataset === dataset.dataset)
+
     let datasetSuppliedForCurrentYear = false
     let datasetSuppliedForLastYear = false
 
+    const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(dataset.deadline)
+
     if (resource) {
       const startDate = new Date(resource.startDate)
-      const startYear = startDate.getFullYear()
 
-      if (startYear === currentYear) {
-        datasetSuppliedForCurrentYear = true
-      }
-
-      if (startYear === currentYear - 1) {
-        datasetSuppliedForLastYear = true
-      }
+      datasetSuppliedForCurrentYear = startDate >= lastYearDeadline && startDate < deadlineDate
+      datasetSuppliedForLastYear = startDate >= twoYearsAgoDeadline && startDate < lastYearDeadline
+    } else {
+      resource = { dataset: dataset.dataset }
     }
 
-    const deadlineParts = dataset.deadline.split(/[-T:.Z]/)
-    const warningDate = new Date(
-      currentYear, // year
-      parseInt(deadlineParts[1], 10) - noticePeriod, // month (0-based)
-      parseInt(deadlineParts[2], 10), // day
-      parseInt(deadlineParts[3], 10), // hour
-      parseInt(deadlineParts[4], 10), // minute
-      parseInt(deadlineParts[5], 10) // second
-    )
+    const warningDate = new Date(deadlineDate.getTime())
+    warningDate.setMonth(warningDate.getMonth() - noticePeriod)
 
-    if (!datasetSuppliedForCurrentYear && currentDate > warningDate) {
-      resource.dueNotice = true
-    } else if (!datasetSuppliedForLastYear) {
-      resource.overdueNotice = true
-    }
+    const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
+    const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear
 
-    req.resourceLookup = { ...req.resourceLookup, [dataset.dataset]: resource }
+    return { dataset, dueNotice, overdueNotice }
   })
 
   next()

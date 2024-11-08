@@ -141,3 +141,62 @@ export const allowedFileTypes = {
   zip: ['application/zip', 'application/octet-stream', 'binary/octet-stream']
 
 }
+
+/**
+ * Calculates the deadline date and its historical dates (last year's deadline, two years ago's deadline)
+ * based on the provided deadline string.
+ *
+ * @param {string} deadline - The deadline date string in the format 'YYYY-MM-DDTHH:MM:SSZ'
+ * @returns {object} An object containing the calculated deadline dates:
+ *   - deadlineDate: The calculated deadline date
+ *   - lastYearDeadline: The deadline date one year ago from the calculated deadline date
+ *   - twoYearsAgoDeadline: The deadline date two years ago from the calculated deadline date
+ *
+ * @example
+ * const deadline = 'XXXX-03-15T14:30:00Z';
+ * const deadlines = getDeadlineHistory(deadline);
+ * console.log(deadlines);
+ * // Output:
+ * // {
+ * //   deadlineDate: <Date>,
+ * //   lastYearDeadline: <Date>,
+ * //   twoYearsAgoDeadline: <Date>
+ * // }
+ */
+export const getDeadlineHistory = (deadline) => {
+  const deadlineRegex = /^.{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/
+
+  if (!deadlineRegex.test(deadline)) {
+    throw new Error(`Invalid deadline format. Expected 'YYYY-MM-DDTHH:MM:SSSZ', got '${deadline}'`)
+  }
+
+  const deadlineParts = deadline.split(/[-T:.Z]/)
+  const currentDate = new Date()
+
+  const deadlineDate = new Date(
+    currentDate.getFullYear(), // year
+    parseInt(deadlineParts[1], 10) - 1, // month (0-based)
+    deadlineParts[2], // day
+    deadlineParts[3], // hour
+    deadlineParts[4], // minute
+    deadlineParts[5] // second
+  )
+
+  const isDeadlineThisYear = deadlineDate <= currentDate
+
+  if (isDeadlineThisYear) {
+    deadlineDate.setFullYear(currentDate.getFullYear() + 1)
+  }
+
+  const lastYearDeadline = new Date(deadlineDate.getTime())
+  lastYearDeadline.setFullYear(deadlineDate.getFullYear() - 1)
+
+  const twoYearsAgoDeadline = new Date(lastYearDeadline.getTime())
+  twoYearsAgoDeadline.setFullYear(lastYearDeadline.getFullYear() - 1)
+
+  return {
+    deadlineDate,
+    lastYearDeadline,
+    twoYearsAgoDeadline
+  }
+}
