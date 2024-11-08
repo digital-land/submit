@@ -15,6 +15,6 @@ For now the service supports:
 - [listed building outline dataset](/guidance/specifications/listed-building#listed-buildings-outline-dataset)
 - [tree preservation zone dataset](/guidance/specifications/tree-preservation-order#tree-preservation-zone-dataset)
 
-[Try the Check planning and housing data service](/).
+[Try the Check planning and housing data service](/check).
 
 {% endset %}
