@@ -8,10 +8,32 @@ function getNavigationStructure () {
   return config.guidanceNavigation
 }
 
+function extractUrlsFromItems (items) {
+  let urls = []
+  items.forEach(item => {
+    if (item.url) {
+      urls.push(item.url)
+    }
+    if (item.items) {
+      urls = urls.concat(extractUrlsFromItems(item.items))
+    }
+  })
+  return urls
+}
+
+function checkPathExists (items, path) {
+  const fullPath = `/guidance${path}`.replace(/\/$/, '')
+  const urls = extractUrlsFromItems(items)
+
+  return urls.includes(fullPath)
+}
+
 router.get('/*', (req, res) => {
   try {
+    const navigationStructure = getNavigationStructure()
     const path = req.params[0].replace(/[^a-zA-Z0-9/-]/g, '')
-    if (path.includes('..')) {
+
+    if (path.includes('..') || !checkPathExists(navigationStructure.items, req.path)) {
       throw new Error('Invalid path')
     }
 
@@ -31,12 +53,12 @@ router.get('/*', (req, res) => {
     }
 
     const guidancePage = nunjucks.render(`${templatePath}.md`, {
-      navigation: getNavigationStructure()
+      navigation: navigationStructure
     })
 
     res.send(guidancePage)
   } catch (error) {
-    if (error?.message === 'template not found') {
+    if (error?.message === 'template not found' || error?.message === 'Invalid path') {
       console.info('Guidance page not found', { type: 'App', path: req.path })
       res.status(404).render('errorPages/404', {})
     } else {
