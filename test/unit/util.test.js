@@ -1,5 +1,5 @@
 import * as util from '../../src/utils/utils.js'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll, vi, afterAll } from 'vitest'
 
 const dataSubjects = {
   subject1: {
@@ -29,5 +29,110 @@ describe('utils/utils', () => {
   it('availableDatasets()', () => {
     const datasets = util.availableDatasets(dataSubjects)
     expect(new Set(datasets.map(ds => ds.value))).toEqual(new Set(['A', 'B']))
+  })
+})
+
+describe('getDeadlineHistory', () => {
+  beforeAll(() => {
+    // tell vitest we use mocked time
+    vi.useFakeTimers()
+
+    // set hour within business hours
+    const date = new Date('2025-04-03T00:00:00.000Z')
+    vi.setSystemTime(date)
+  })
+
+  afterAll(() => {
+    // restoring date after each test run
+    vi.useRealTimers()
+  })
+
+  it('returns an object with deadline dates', () => {
+    const deadline = 'XXXX-03-15T14:30:00Z'
+    const result = util.getDeadlineHistory(deadline)
+    expect(result).toHaveProperty('deadlineDate')
+    expect(result).toHaveProperty('lastYearDeadline')
+    expect(result).toHaveProperty('twoYearsAgoDeadline')
+  })
+
+  describe('when the deadline has past', () => {
+    it('calculates deadline date correctly', () => {
+      const deadline = 'XXXX-03-15T14:30:00Z'
+      const result = util.getDeadlineHistory(deadline)
+      expect(result.lastYearDeadline instanceof Date).toBe(true)
+      expect(result.deadlineDate.getFullYear()).toBe(2026)
+      expect(result.deadlineDate.getMonth()).toBe(2) // March
+      expect(result.deadlineDate.getDate()).toBe(15)
+      expect(result.deadlineDate.getHours()).toBe(14)
+      expect(result.deadlineDate.getMinutes()).toBe(30)
+      expect(result.deadlineDate.getSeconds()).toBe(0)
+    })
+
+    it('calculates last year deadline correctly', () => {
+      const deadline = 'XXXX-03-15T14:30:00Z'
+      const result = util.getDeadlineHistory(deadline)
+      expect(result.lastYearDeadline instanceof Date).toBe(true)
+      expect(result.lastYearDeadline.getFullYear()).toBe(2025)
+      expect(result.lastYearDeadline.getMonth()).toBe(2) // March
+      expect(result.lastYearDeadline.getDate()).toBe(15)
+      expect(result.lastYearDeadline.getHours()).toBe(14)
+      expect(result.lastYearDeadline.getMinutes()).toBe(30)
+      expect(result.lastYearDeadline.getSeconds()).toBe(0)
+    })
+
+    it('calculates two years ago deadline correctly', () => {
+      const deadline = 'XXXX-03-15T14:30:00Z'
+      const result = util.getDeadlineHistory(deadline)
+      expect(result.twoYearsAgoDeadline instanceof Date).toBe(true)
+      expect(result.twoYearsAgoDeadline.getFullYear()).toBe(2024)
+      expect(result.twoYearsAgoDeadline.getMonth()).toBe(2) // March
+      expect(result.twoYearsAgoDeadline.getDate()).toBe(15)
+      expect(result.twoYearsAgoDeadline.getHours()).toBe(14)
+      expect(result.twoYearsAgoDeadline.getMinutes()).toBe(30)
+      expect(result.twoYearsAgoDeadline.getSeconds()).toBe(0)
+    })
+  })
+
+  describe("when the deadline hasn't past", () => {
+    it('calculates deadline date correctly', () => {
+      const deadline = 'XXXX-05-15T14:30:00Z'
+      const result = util.getDeadlineHistory(deadline)
+      expect(result.lastYearDeadline instanceof Date).toBe(true)
+      expect(result.deadlineDate.getFullYear()).toBe(2025)
+      expect(result.deadlineDate.getMonth()).toBe(4) // March
+      expect(result.deadlineDate.getDate()).toBe(15)
+      expect(result.deadlineDate.getHours()).toBe(14)
+      expect(result.deadlineDate.getMinutes()).toBe(30)
+      expect(result.deadlineDate.getSeconds()).toBe(0)
+    })
+
+    it('calculates last year deadline correctly', () => {
+      const deadline = 'XXXX-05-15T14:30:00Z'
+      const result = util.getDeadlineHistory(deadline)
+      expect(result.lastYearDeadline instanceof Date).toBe(true)
+      expect(result.lastYearDeadline.getFullYear()).toBe(2024)
+      expect(result.lastYearDeadline.getMonth()).toBe(4) // March
+      expect(result.lastYearDeadline.getDate()).toBe(15)
+      expect(result.lastYearDeadline.getHours()).toBe(14)
+      expect(result.lastYearDeadline.getMinutes()).toBe(30)
+      expect(result.lastYearDeadline.getSeconds()).toBe(0)
+    })
+
+    it('calculates two years ago deadline correctly', () => {
+      const deadline = 'XXXX-05-15T14:30:00Z'
+      const result = util.getDeadlineHistory(deadline)
+      expect(result.twoYearsAgoDeadline instanceof Date).toBe(true)
+      expect(result.twoYearsAgoDeadline.getFullYear()).toBe(2023)
+      expect(result.twoYearsAgoDeadline.getMonth()).toBe(4) // March
+      expect(result.twoYearsAgoDeadline.getDate()).toBe(15)
+      expect(result.twoYearsAgoDeadline.getHours()).toBe(14)
+      expect(result.twoYearsAgoDeadline.getMinutes()).toBe(30)
+      expect(result.twoYearsAgoDeadline.getSeconds()).toBe(0)
+    })
+  })
+
+  it('throws an error if invalid deadline format', () => {
+    const deadline = ' invalid deadline format '
+    expect(() => util.getDeadlineHistory(deadline)).toThrowError()
   })
 })
