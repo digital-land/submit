@@ -15,7 +15,7 @@
   <p class="govuk-body">You’ve <span class="js-app-c-cookie-banner__confirmation-decision">accepted</span> additional cookies. You can <a class="govuk-link" href="{{ cookiePagePath }}">change your cookie settings</a> at any time.</p>
 {% endset %}
 
-<div class="js-app-c-cookie-banner">
+<div class="js-app-c-cookie-banner js-app-c-cookie-banner--hidden" aria-hidden="true">
   <div class="js-app-c-cookie-banner__form">
     {{ govukCookieBanner({
       ariaLabel: cookieHeader,
