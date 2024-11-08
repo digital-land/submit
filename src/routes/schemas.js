@@ -202,7 +202,7 @@ export const DatasetDetails = v.strictObject({
 export const GuidanceNavigationItem = v.strictObject({
   label: NonEmptyString,
   url: v.string(),
-  items: v.optional(v.array(this))
+  items: v.optional(v.lazy(() => v.array(GuidanceNavigationItem)))
 })
 
 export const GuidanceNavigation = v.strictObject({
