@@ -107,6 +107,58 @@ const orgStatsReducer = (accumulator, dataset) => {
   return accumulator
 }
 
+export const datasetSubmissionDeadlineCheck = (req, res, next) => {
+  const noticePeriod = 4 // 4 months
+  const requiredDatasets = [
+    {
+      dataset: 'brownfield-land',
+      deadline: 'XXXX-12-31T23:59:59.000Z'
+    }
+  ]
+  const { resourceLookup } = req
+  const currentDate = new Date()
+  const currentYear = currentDate.getFullYear()
+
+  requiredDatasets.forEach(dataset => {
+    const resource = resourceLookup.find(resource => resource.dataset === dataset.dataset)
+    let datasetSuppliedForCurrentYear = false
+    let datasetSuppliedForLastYear = false
+
+    if (resource) {
+      const startDate = new Date(resource.startDate)
+      const startYear = startDate.getFullYear()
+
+      if (startYear === currentYear) {
+        datasetSuppliedForCurrentYear = true
+      }
+
+      if (startYear === currentYear - 1) {
+        datasetSuppliedForLastYear = true
+      }
+    }
+
+    const deadlineParts = dataset.deadline.split(/[-T:.Z]/)
+    const warningDate = new Date(
+      currentYear, // year
+      parseInt(deadlineParts[1], 10) - noticePeriod, // month (0-based)
+      parseInt(deadlineParts[2], 10), // day
+      parseInt(deadlineParts[3], 10), // hour
+      parseInt(deadlineParts[4], 10), // minute
+      parseInt(deadlineParts[5], 10) // second
+    )
+
+    if (!datasetSuppliedForCurrentYear && currentDate > warningDate) {
+      resource.dueNotice = true
+    } else if (!datasetSuppliedForLastYear) {
+      resource.overdueNotice = true
+    }
+
+    req.resourceLookup = { ...req.resourceLookup, [dataset.dataset]: resource }
+  })
+
+  next()
+}
+
 export function prepareOverviewTemplateParams (req, res, next) {
   const { lpaOverview, orgInfo: organisation } = req
   const datasets = aggregateOverviewData(lpaOverview)
@@ -158,6 +210,7 @@ export default [
   fetchLatestResources,
   fetchEntityCounts,
   fetchLpaOverview,
+  datasetSubmissionDeadlineCheck,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError

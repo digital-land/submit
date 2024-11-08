@@ -290,7 +290,8 @@ export default {
     return /* sql */ `
     select
       rle.pipeline as dataset,
-      rle.resource as resource
+      rle.resource as resource,
+      rle.resource_start_date as resource_start_date
     from reporting_latest_endpoints rle
     where
       REPLACE(organisation, '-eng', '') = '${lpa}'
