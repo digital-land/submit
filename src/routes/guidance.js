@@ -10,7 +10,11 @@ function getNavigationStructure () {
 
 router.get('/*', (req, res) => {
   try {
-    const path = req.params[0]
+    const path = req.params[0].replace(/[^a-zA-Z0-9/-]/g, '')
+    if (path.includes('..')) {
+      throw new Error('Invalid path')
+    }
+
     let templatePath = ''
 
     switch (path) {
@@ -32,8 +36,17 @@ router.get('/*', (req, res) => {
 
     res.send(guidancePage)
   } catch (error) {
-    console.info('Guidance page not found', { type: 'App', path: req.path })
-    res.status(404).render('errorPages/404', {})
+    if (error?.message === 'template not found') {
+      console.info('Guidance page not found', { type: 'App', path: req.path })
+      res.status(404).render('errorPages/404', {})
+    } else {
+      console.error('Error rendering guidance page', {
+        type: 'App',
+        path: req.path,
+        error: error.message
+      })
+      res.status(500).render('errorPages/500', {})
+    }
   }
 })
 

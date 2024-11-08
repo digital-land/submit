@@ -57,7 +57,7 @@ guidanceNavigation:
   title: Provide planning and housing data for England
   items:
     - label: Guidance for data providers
-      url: /guidance/
+      url: /guidance
     - label: Prepare data to the specifications
       url: /guidance/specifications
       items:
