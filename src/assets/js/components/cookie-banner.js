@@ -28,8 +28,8 @@ export default class CookieBanner {
   }
 
   init () {
-    if (this.getCookie(cookieDefaults.cookieNames.preferenceCookie) !== null) {
-      this.hideCookieBanner()
+    if (this.getCookie(cookieDefaults.cookieNames.preferenceCookie) === null) {
+      this.showCookieBanner()
     }
 
     this.acceptButton.addEventListener('click', this.accept.bind(this))
@@ -86,9 +86,16 @@ export default class CookieBanner {
     this.confirmationMessage.setAttribute('role', 'status') // Announce status to screen readers
   }
 
+  showCookieBanner () {
+    if (this.banner) {
+      this.banner.classList.remove('js-app-c-cookie-banner--hidden')
+      this.banner.removeAttribute('aria-hidden')
+    }
+  }
+
   hideCookieBanner () {
     if (this.banner) {
-      this.banner.style.display = 'none'
+      this.banner.classList.add('js-app-c-cookie-banner--hidden')
       this.banner.setAttribute('aria-hidden', 'true')
     }
   }
