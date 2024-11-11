@@ -75,7 +75,7 @@ describe('errors page', () => {
     const columnHeaders = tHead.querySelectorAll('.govuk-table__header')
 
     params.options.tableParams.columns.forEach((header, i) => {
-      expect(columnHeaders[i].textContent).toContain(prettifyColumnName(header))
+      expect(columnHeaders[i].textContent).toContain(header)
     })
 
     const tBody = table.querySelector('.govuk-table__body')
