@@ -1,7 +1,5 @@
-.app-c-cookie-banner__form--hidden {
-  display: none;
-}
-
-.app-c-cookie-banner__confirmation--hidden {
+.app-c-cookie-banner__form--hidden,
+.app-c-cookie-banner__confirmation--hidden,
+.js-app-c-cookie-banner--hidden {
   display: none;
 }

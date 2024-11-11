@@ -71,7 +71,7 @@ describe('Cookie banner component', () => {
   it('Hide button hides the cookie banner', () => {
     const cookieBanner = new CookieBanner(document)
     cookieBanner.hideButton.click()
-    expect(cookieBanner.banner.style.display).toBe('none')
+    expect(cookieBanner.banner.classList.contains('js-app-c-cookie-banner--hidden')).toBe(true)
     expect(cookieBanner.banner.getAttribute('aria-hidden')).toBe('true')
   })
 })
