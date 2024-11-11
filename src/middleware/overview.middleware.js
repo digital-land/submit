@@ -152,14 +152,47 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
     const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
     const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear
 
-    return { dataset: dataset.dataset, dueNotice, overdueNotice }
+    return { dataset: dataset.dataset, dueNotice, overdueNotice, deadline: deadlineDate }
   })
 
   next()
 }
 
+export const getNoticesFromDeadlineCheck = (req, res, next) => {
+  const { noticeFlags } = req
+  const { lpa } = req.params
+
+  req.notices = noticeFlags.filter(notice => notice.dueNotice || notice.overdueNotice).map((notice) => {
+    let message = ''
+    let noticeType = ''
+    const deadline = notice.deadline.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+    if (notice.dueNotice) {
+      message = `You must update your ${notice.dataset} dataset by the ${deadline}`
+      noticeType = 'due'
+    } else if (notice.overdueNotice) {
+      message = `Your overdue on your ${notice.dataset} dataset, which should have been submitted on the ${deadline}`
+      noticeType = 'reminder'
+    }
+
+    return {
+      dataset: notice.dataset,
+      message,
+      noticeType,
+      link: {
+        href: `organisations/${lpa}/${notice.dataSet}/get-started`,
+        text: 'Follow the steps and check your data meets the specifications before you publish and submit it'
+      }
+    }
+  })
+  next()
+}
+
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { lpaOverview, orgInfo: organisation, noticeFlags } = req
+  const { lpaOverview, orgInfo: organisation, notices } = req
   const datasets = aggregateOverviewData(lpaOverview)
   // add in any of the missing key 8 datasets
   const keys = new Set(datasets.map(d => d.slug))
@@ -190,7 +223,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
     datasetsWithEndpoints,
     datasetsWithIssues,
     datasetsWithErrors,
-    notices: noticeFlags
+    notices
   }
 
   next()
@@ -211,6 +244,7 @@ export default [
   fetchEntityCounts,
   fetchLpaOverview,
   datasetSubmissionDeadlineCheck,
+  getNoticesFromDeadlineCheck,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError

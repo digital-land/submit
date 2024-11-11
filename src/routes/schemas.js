@@ -61,8 +61,12 @@ export const OrgOverviewPage = v.strictObject({
   datasetsWithErrors: v.integer(),
   notices: v.array(v.strictObject({
     dataset: v.string(),
-    dueNotice: v.optional(v.boolean()),
-    overdueNotice: v.optional(v.boolean())
+    message: v.string(),
+    noticeType: v.string(),
+    link: v.strictObject({
+      href: v.string(),
+      text: v.string()
+    })
   }))
 })
 
