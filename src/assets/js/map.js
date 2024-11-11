@@ -25,7 +25,7 @@ const pointColor = '#008'
  * @property {boolean} [wktFormat] - Optional - Indicates whether the data is in WKT format. Default is false.
  * @property {number[]} [boundingBox] - Optional - The bounding box coordinates [minX, minY, maxX, maxY] to set the initial view of the map.
  */
-class Map {
+export class Map {
   constructor (opts) {
     this.bbox = opts.boundingBox ?? null
     this.map = new maplibregl.Map({
@@ -206,7 +206,7 @@ class Map {
   }
 }
 
-const calculateBoundingBoxFromGeometries = (geometries) => {
+export const calculateBoundingBoxFromGeometries = (geometries) => {
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
@@ -237,7 +237,7 @@ const calculateBoundingBoxFromGeometries = (geometries) => {
   return [[minX, minY], [maxX, maxY]]
 }
 
-const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
+export const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   const geoJsonLinks = [geoJsonUrl]
   const initialResponse = await fetch(geoJsonUrl)
   const initialData = await initialResponse.json()
@@ -267,14 +267,14 @@ const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   return geoJsonLinks
 }
 
-const generateBoundingBox = async (boundaryGeoJsonUrl) => {
+export const generateBoundingBox = async (boundaryGeoJsonUrl) => {
   const res = await fetch(boundaryGeoJsonUrl)
   const boundaryGeoJson = await res.json()
 
-  return calculateBoundingBoxFromGeometries(boundaryGeoJson.features[0].geometry.coordinates)
+  return calculateBoundingBoxFromGeometries(boundaryGeoJson?.features?.[0]?.geometry?.coordinates)
 }
 
-const createMapFromServerContext = async () => {
+export const createMapFromServerContext = async () => {
   const { containerId, geometries, mapType, geoJsonUrl, boundaryGeoJsonUrl } = window.serverContext
   const options = {
     containerId,
