@@ -31,11 +31,13 @@ describe('overview.middleware', () => {
 
       const expectedTemplateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
-        datasets: expect.arrayContaining([
-          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
-          { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 },
-          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0 }
-        ]),
+        datasets: {
+          other: expect.arrayContaining([
+            { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
+            { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 },
+            { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0 }
+          ])
+        },
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
@@ -110,11 +112,13 @@ describe('overview.middleware', () => {
 
       req.templateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
-        datasets: [
-          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
-          { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
-          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3' }
-        ],
+        datasets: {
+          other: [
+            { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
+            { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
+            { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3' }
+          ]
+        },
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,

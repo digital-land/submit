@@ -35,6 +35,15 @@ const fetchLatestResources = fetchMany({
   dataset: FetchOptions.performanceDb
 })
 
+const fetchProvisions = fetchMany({
+  query: ({ params }) => {
+    const excludeDatasets = config.datasetsFilter.map(dataset => `'${dataset}'`).join(',')
+    return /* sql */ `select dataset, project, provision_reason 
+       from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
+  },
+  result: 'provisions'
+})
+
 /**
  * Updates req with `entityCounts` (of shape `{ resource, dataset}|{ resource, dataset, entityCount }`)
  *
@@ -57,7 +66,7 @@ const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'
 
 /**
  * The overview data can contain multiple rows per dataset,
- * and we want a collection of with one item per dataset,
+ * and we want a collection of one item per dataset,
  * because that's how we display it on the page.
  *
  * @param {object[]} lpaOverview
@@ -107,8 +116,14 @@ const orgStatsReducer = (accumulator, dataset) => {
   return accumulator
 }
 
+/**
+ *
+ * @param {{ provisions: { dataset: string, provision_reason: string}[], lpaOverview: Object, orgInfo: Object }} req
+ * @param res
+ * @param next
+ */
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { lpaOverview, orgInfo: organisation } = req
+  const { lpaOverview, orgInfo: organisation, provisions } = req
   const datasets = aggregateOverviewData(lpaOverview)
   // add in any of the missing key 8 datasets
   const keys = new Set(datasets.map(d => d.slug))
@@ -132,9 +147,28 @@ export function prepareOverviewTemplateParams (req, res, next) {
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
       datasets.reduce(orgStatsReducer, [0, 0, 0])
 
+  const provisionData = new Map()
+  for (const provision of provisions ?? []) {
+    provisionData.set(provision.dataset, provision.provision_reason)
+  }
+
+  const datasetsByReason = _.groupBy(datasets, (ds) => {
+    const reason = provisionData.get(ds.slug)
+    switch (reason) {
+      case 'statutory':
+        return 'statutory'
+      default:
+        return 'other'
+    }
+  })
+
+  for (const coll of Object.values(datasetsByReason)) {
+    coll.sort((a, b) => a.slug.localeCompare(b.slug))
+  }
+
   req.templateParams = {
     organisation,
-    datasets,
+    datasets: datasetsByReason,
     totalDatasets,
     datasetsWithEndpoints,
     datasetsWithIssues,
@@ -158,6 +192,7 @@ export default [
   fetchLatestResources,
   fetchEntityCounts,
   fetchLpaOverview,
+  fetchProvisions,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError
