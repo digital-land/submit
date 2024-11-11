@@ -38,21 +38,32 @@
       {{ pageName }}
     </h1>
 
-    {% if notices %}
-      {% for notice in notices %}
-        {% set html %}
-          <p class="govuk-notification-banner__heading">
-            {{ notice.message }}
-          </p>
-          {% if notice.link %}
-            <a class="govuk-notification-banner__link" href="{{ notice.link.href }}">{{notice.link.text}}</a>.
-          {% endif %}
-        {% endset %}
+    {% set noticeLink %}
+      <a class="govuk-notification-banner__link" href="organisations/{{organisation.organisation}}/{{dataset.slug}}/get-started">Follow the steps and check your data meets the specifications before you publish and submit it</a>.
+    {% endset %}
+
+    {% for dataset in datasets %}
+      {% if dataset.notice %}
+        {% if dataset.notice.type == 'due' %}
+          {% set html %}
+            <p class="govuk-notification-banner__heading">
+              You must update your {{dataset.slug | datasetSlugToReadableName}} dataset by the {{dataset.notice.deadline}}
+            </p>
+            {{ noticeLink | safe }}
+          {% endset %}
+        {% elseif dataset.notice.type == 'overdue' %}
+          {% set html %}
+            <p class="govuk-notification-banner__heading">
+              Your {{dataset.slug | datasetSlugToReadableName}} dataset is overdue. The submission deadline was {{dataset.notice.deadline}}. Please upload your dataset as soon as possible.
+            </p>
+            {{ noticeLink | safe }}
+          {% endset %}
+        {% endif %}
         {{ govukNotificationBanner({
           html: html
         }) }}
-      {% endfor %}
-    {% endif %}
+      {% endif %}
+    {% endfor %}
 
   </div>
 </div>

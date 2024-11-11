@@ -53,21 +53,16 @@ export const OrgOverviewPage = v.strictObject({
     issue: v.optional(NonEmptyString),
     entity_count: v.optional(v.number()),
     // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
-    numIssues: v.optional(v.number())
+    numIssues: v.optional(v.number()),
+    notice: v.optional(v.strictObject({
+      type: v.string(),
+      deadline: v.string()
+    }))
   })),
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),
   datasetsWithIssues: v.integer(),
-  datasetsWithErrors: v.integer(),
-  notices: v.array(v.strictObject({
-    dataset: v.string(),
-    message: v.string(),
-    noticeType: v.string(),
-    link: v.strictObject({
-      href: v.string(),
-      text: v.string()
-    })
-  }))
+  datasetsWithErrors: v.integer()
 })
 
 export const OrgFindPage = v.strictObject({

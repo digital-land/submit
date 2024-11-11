@@ -56,44 +56,6 @@ const fetchEntityCounts = async (req, res, next) => {
 const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'].map((status, i) => [status, i]))
 
 /**
- * The overview data can contain multiple rows per dataset,
- * and we want a collection of with one item per dataset,
- * because that's how we display it on the page.
- *
- * @param {object[]} lpaOverview
- * @returns {object[]}
- */
-export function aggregateOverviewData (lpaOverview) {
-  if (!Array.isArray(lpaOverview)) {
-    throw new Error('lpaOverview should be an array')
-  }
-  const grouped = _.groupBy(lpaOverview, 'dataset')
-  const datasets = []
-  for (const [dataset, rows] of Object.entries(grouped)) {
-    let numIssues = 0
-    for (const row of rows) {
-      if (row.status !== 'Needs fixing') {
-        continue
-      }
-      if (row.issue_count) {
-        const numFields = (row.fields ?? '').split(',').length
-        if (row.issue_count >= row.entity_count) numIssues += numFields
-        else numIssues += row.issue_count
-      }
-    }
-    const info = {
-      slug: dataset,
-      issue_count: numIssues,
-      endpoint: rows[0].endpoint,
-      error: rows[0].error,
-      status: _.maxBy(rows, row => statusOrdering.get(row.status)).status
-    }
-    datasets.push(info)
-  }
-  return datasets
-}
-
-/**
  * Calculates overall "health" of the datasets (not)provided by an organisation.
  *
  * @param {[number, number, number]} accumulator
@@ -158,9 +120,38 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   next()
 }
 
-export const getNoticesFromDeadlineCheck = (req, res, next) => {
-  const { noticeFlags } = req
+export const addNoticesToDatasets = (req, res, next) => {
+  const { noticeFlags, datasets } = req
   const { lpa } = req.params
+
+  req.datasets = datasets.map(dataset => {
+    const notice = noticeFlags.find(notice => notice.dataset === dataset.slug)
+
+    if (!notice) {
+      return dataset
+    }
+
+    const deadline = notice.deadline.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+
+    let type
+    if (notice.dueNotice) {
+      type = 'due'
+    } else if (notice.overdueNotice) {
+      type = 'overdue'
+    }
+
+    return {
+      ...dataset,
+      notice: {
+        deadline,
+        type
+      }
+    }
+  })
 
   req.notices = noticeFlags.filter(notice => notice.dueNotice || notice.overdueNotice).map((notice) => {
     let message = ''
@@ -185,15 +176,55 @@ export const getNoticesFromDeadlineCheck = (req, res, next) => {
       link: {
         href: `organisations/${lpa}/${notice.dataSet}/get-started`,
         text: 'Follow the steps and check your data meets the specifications before you publish and submit it'
+
       }
     }
   })
   next()
 }
 
+/**
+ * The overview data can contain multiple rows per dataset,
+ * and we want a collection of with one item per dataset,
+ * because that's how we display it on the page.
+ *
+ * @param {object[]} lpaOverview
+ * @returns {object[]}
+ */
+export function aggregateOverviewData (req, res, next) {
+  const { lpaOverview } = req
+  if (!Array.isArray(lpaOverview)) {
+    throw new Error('lpaOverview should be an array')
+  }
+  const grouped = _.groupBy(lpaOverview, 'dataset')
+  const datasets = []
+  for (const [dataset, rows] of Object.entries(grouped)) {
+    let numIssues = 0
+    for (const row of rows) {
+      if (row.status !== 'Needs fixing') {
+        continue
+      }
+      if (row.issue_count) {
+        const numFields = (row.fields ?? '').split(',').length
+        if (row.issue_count >= row.entity_count) numIssues += numFields
+        else numIssues += row.issue_count
+      }
+    }
+    const info = {
+      slug: dataset,
+      issue_count: numIssues,
+      endpoint: rows[0].endpoint,
+      error: rows[0].error,
+      status: _.maxBy(rows, row => statusOrdering.get(row.status)).status
+    }
+    datasets.push(info)
+  }
+  req.datasets = datasets
+  next()
+}
+
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { lpaOverview, orgInfo: organisation, notices } = req
-  const datasets = aggregateOverviewData(lpaOverview)
+  const { datasets, orgInfo: organisation } = req
   // add in any of the missing key 8 datasets
   const keys = new Set(datasets.map(d => d.slug))
   availableDatasets.forEach((dataset) => {
@@ -222,8 +253,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
     totalDatasets,
     datasetsWithEndpoints,
     datasetsWithIssues,
-    datasetsWithErrors,
-    notices
+    datasetsWithErrors
   }
 
   next()
@@ -243,8 +273,9 @@ export default [
   fetchLatestResources,
   fetchEntityCounts,
   fetchLpaOverview,
+  aggregateOverviewData,
   datasetSubmissionDeadlineCheck,
-  getNoticesFromDeadlineCheck,
+  addNoticesToDatasets,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError
