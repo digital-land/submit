@@ -152,14 +152,14 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
     const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
     const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear
 
-    return { dataset, dueNotice, overdueNotice }
+    return { dataset: dataset.dataset, dueNotice, overdueNotice }
   })
 
   next()
 }
 
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { lpaOverview, orgInfo: organisation } = req
+  const { lpaOverview, orgInfo: organisation, noticeFlags } = req
   const datasets = aggregateOverviewData(lpaOverview)
   // add in any of the missing key 8 datasets
   const keys = new Set(datasets.map(d => d.slug))
@@ -189,7 +189,8 @@ export function prepareOverviewTemplateParams (req, res, next) {
     totalDatasets,
     datasetsWithEndpoints,
     datasetsWithIssues,
-    datasetsWithErrors
+    datasetsWithErrors,
+    notices: noticeFlags
   }
 
   next()

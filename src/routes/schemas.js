@@ -58,7 +58,12 @@ export const OrgOverviewPage = v.strictObject({
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),
   datasetsWithIssues: v.integer(),
-  datasetsWithErrors: v.integer()
+  datasetsWithErrors: v.integer(),
+  notices: v.array(v.strictObject({
+    dataset: v.string(),
+    dueNotice: v.optional(v.boolean()),
+    overdueNotice: v.optional(v.boolean())
+  }))
 })
 
 export const OrgFindPage = v.strictObject({
