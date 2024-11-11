@@ -2,6 +2,8 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
 
 {% set pageName = organisation.name + " overview" %}
 {% set serviceType = 'Manage' %}
@@ -35,8 +37,27 @@
     <h1 class="govuk-heading-xl">
       {{ pageName }}
     </h1>
+
+    {% if notices %}
+      {% for notice in notices %}
+        {% set html %}
+          <p class="govuk-notification-banner__heading">
+            {{ notice.message }}
+          </p>
+          {% if notice.link %}
+            <a class="govuk-notification-banner__link" href="{{ notice.link.href }}">{{notice.link.text}}</a>.
+          {% endif %}
+        {% endset %}
+        {{ govukNotificationBanner({
+          html: html
+        }) }}
+      {% endfor %}
+    {% endif %}
+
   </div>
 </div>
+
+
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
