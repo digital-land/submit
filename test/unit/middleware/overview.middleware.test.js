@@ -24,9 +24,9 @@ describe('overview.middleware', () => {
         params: { lpa: 'LPA' },
         orgInfo: exampleLpa,
         provisions: [
-          { dataset: 'dataset1', provision_reason: 'statutory' },
-          { dataset: 'dataset2', provision_reason: 'expected' },
-          { dataset: 'dataset3', provision_reason: 'statutory' }
+          { dataset: 'dataset1', provision_reason: 'statutory', project: 'open-digital-planning' },
+          { dataset: 'dataset2', provision_reason: 'expected', project: 'open-digital-planning' },
+          { dataset: 'dataset3', provision_reason: 'statutory', project: 'open-digital-planning' }
         ],
         lpaOverview: perfDbApiResponse
       }

@@ -69,6 +69,9 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   it('The correct number of dataset cards are rendered with the correct titles in group "other"', () => {
     if (params.datasets.other) {
       datasetGroup({ expect }, 'other', params.datasets.other, document)
+
+      const infoText = document.querySelector('.org-membership-info').textContent
+      expect(infoText).match(/.* is (a|not a) member of .*/)
     }
   })
 

@@ -118,7 +118,7 @@ const orgStatsReducer = (accumulator, dataset) => {
 
 /**
  *
- * @param {{ provisions: { dataset: string, provision_reason: string}[], lpaOverview: Object, orgInfo: Object }} req
+ * @param {{ provisions: { dataset: string, provision_reason: string, project: string }[], lpaOverview: Object, orgInfo: Object }} req
  * @param res
  * @param next
  */
@@ -140,20 +140,21 @@ export function prepareOverviewTemplateParams (req, res, next) {
     }
   })
 
-  // re-sort the datasets to be in alphabetical order
-  datasets.sort((a, b) => a.slug.localeCompare(b.slug))
-
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
       datasets.reduce(orgStatsReducer, [0, 0, 0])
 
   const provisionData = new Map()
   for (const provision of provisions ?? []) {
-    provisionData.set(provision.dataset, provision.provision_reason)
+    provisionData.set(provision.dataset, provision)
+  }
+
+  for (const dataset of datasets) {
+    dataset.project = provisionData.get(dataset.slug)?.project
   }
 
   const datasetsByReason = _.groupBy(datasets, (ds) => {
-    const reason = provisionData.get(ds.slug)
+    const reason = provisionData.get(ds.slug)?.provision_reason
     switch (reason) {
       case 'statutory':
         return 'statutory'
