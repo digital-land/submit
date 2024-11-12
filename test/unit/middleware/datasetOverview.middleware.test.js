@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { prepareDatasetOverviewTemplateParams } from '../../../src/middleware/datasetOverview.middleware.js'
+import { describe, it, expect, vi } from 'vitest'
+import { prepareDatasetOverviewTemplateParams, setNoticesFromSourceKey } from '../../../src/middleware/datasetOverview.middleware.js'
 
 describe('Dataset Overview Middleware', () => {
   const req = {
@@ -55,6 +55,81 @@ describe('Dataset Overview Middleware', () => {
         },
         notice: undefined
       })
+    })
+  })
+
+  describe('setNoticesFromSourceKey', () => {
+    vi.mock('../../../src/utils/utils.js', async (importOrigional) => {
+      const actual = await importOrigional()
+
+      return {
+        ...actual,
+        requiredDatasets: [
+          {
+            dataset: 'mock-dataset',
+            deadline: '2022-03-31T14:30:00Z',
+            noticePeriod: 2
+          }
+        ],
+        getDeadlineHistory: vi.fn(() => ({
+          deadlineDate: new Date('2022-03-31T14:30:00Z'),
+          lastYearDeadline: new Date('2021-03-31T14:30:00Z'),
+          twoYearsAgoDeadline: new Date('2020-03-31T14:30:00Z')
+        }))
+      }
+    })
+
+    it('should set notice for due dataset', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset',
+          startDate: '2020-11-01'
+        }
+      }
+
+      vi.setSystemTime(new Date('2022-02-01'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'due'
+      })
+    })
+
+    it('should set notice for overdue dataset', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset',
+          startDate: '2020-01-01'
+        }
+      }
+
+      vi.setSystemTime(new Date('2021-011-01'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'overdue'
+      })
+    })
+
+    it('should not set notice if deadline is not found', () => {
+      const reqWithDataset = {
+        params: {
+          lpa: 'mock-lpa',
+          dataset: 'unknown-dataset'
+        },
+        dataset: {
+          dataset: 'unknown-dataset',
+          startDate: '2022-01-01'
+        }
+      }
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+      expect(reqWithDataset.notice).toBeUndefined()
     })
   })
 })
