@@ -20,7 +20,7 @@ describe('Dataset Overview Middleware', () => {
       const reqWithResults = {
         ...req,
         orgInfo: { name: 'mock-org' },
-        specification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
+        datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
         sources: [
@@ -35,7 +35,8 @@ describe('Dataset Overview Middleware', () => {
             num_issues: 1,
             status: 'Error'
           }
-        ]
+        ],
+        notice: undefined
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
       expect(reqWithResults.templateParams).toEqual({
@@ -51,7 +52,8 @@ describe('Dataset Overview Middleware', () => {
             { name: 'Data Url 0', endpoint: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: 'LU1' },
             { name: 'Data Url 1', endpoint: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: 'LU2' }
           ]
-        }
+        },
+        notice: undefined
       })
     })
   })

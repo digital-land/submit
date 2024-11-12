@@ -1,6 +1,6 @@
 import { describe, it, vi, expect } from 'vitest'
 import { aggregateOverviewData, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
-import { afterEach } from 'node:test'
+import { afterEach, beforeEach } from 'node:test'
 
 vi.mock(import('../../../src/utils/utils.js'), async (importOriginal) => {
   const origional = await importOriginal()
@@ -18,18 +18,34 @@ vi.mock(import('../../../src/utils/utils.js'), async (importOriginal) => {
 describe('overview.middleware', () => {
   const exampleLpa = { name: 'Example LPA', organisation: 'LPA' }
 
-  const perfDbApiResponse = [
-    { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1' },
-    { endpoint: null, status: 'Needs fixing', dataset: 'dataset2' },
-    { endpoint: 'https://example.com', status: 'Error', dataset: 'dataset3' }
-  ]
-
   describe('prepareOverviewTemplateParams', () => {
     it('should render the overview page', async () => {
       const req = {
         params: { lpa: 'LPA' },
         orgInfo: exampleLpa,
-        lpaOverview: perfDbApiResponse
+        datasets: [
+          {
+            slug: 'dataset1',
+            issue_count: 0,
+            endpoint: 'https://example.com',
+            error: undefined,
+            status: 'Live'
+          },
+          {
+            slug: 'dataset2',
+            issue_count: 0,
+            endpoint: null,
+            error: undefined,
+            status: 'Needs fixing'
+          },
+          {
+            slug: 'dataset3',
+            issue_count: 0,
+            endpoint: 'https://example.com',
+            error: undefined,
+            status: 'Error'
+          }
+        ]
       }
       const res = { render: vi.fn() }
 
@@ -52,13 +68,21 @@ describe('overview.middleware', () => {
     })
   })
 
-  describe('aggregateOverviewData()', () => {
-    it('presents correct number of issues for empty input', () => {
-      const aggregatedEmpty = aggregateOverviewData([])
-      expect(aggregatedEmpty.length).toBe(0)
+  describe('aggregateOverviewData middleware', () => {
+    const req = { lpaOverview: [] }
+    const res = {}
+    const next = vi.fn()
+
+    beforeEach(() => {
+      vi.resetAllMocks()
     })
 
-    it('counts the issues corretly', () => {
+    it('should set req.datasets to an empty array when input is empty', async () => {
+      await aggregateOverviewData(req, res, next)
+      expect(req.datasets).toEqual([])
+    })
+
+    it('should count issues correctly', async () => {
       const exampleData = [
         { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1', entity_count: 11 },
         { endpoint: null, status: 'Error', dataset: 'dataset2', entity_count: 12, issue_count: 12 },
@@ -66,18 +90,18 @@ describe('overview.middleware', () => {
         { endpoint: 'https://example.com/3', status: 'Needs fixing', dataset: 'dataset3', entity_count: 5, issue_count: 2, fields: 'bar' }
       ]
 
-      const aggregated = aggregateOverviewData(exampleData)
-      aggregated.sort((a, b) => a.slug.localeCompare(b.slug))
+      req.lpaOverview = exampleData
 
-      expect(aggregated).toStrictEqual([
+      await aggregateOverviewData(req, res, next)
+
+      expect(req.datasets).toEqual([
         { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
         { endpoint: null, status: 'Error', slug: 'dataset2', error: undefined, issue_count: 0 },
-        // we want [1 column 'foo' issue] + [2 field 'bar' issue] = 3
         { endpoint: 'https://example.com/3', status: 'Needs fixing', slug: 'dataset3', error: undefined, issue_count: 3 }
       ])
     })
 
-    it('ensures dataset issues get to the surface', () => {
+    it('should ensure dataset issues get to the surface', async () => {
       const exampleData = [
         { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1', entity_count: 11 },
         { endpoint: null, status: 'Error', dataset: 'dataset1', entity_count: 12, issue_count: 12 },
@@ -85,26 +109,28 @@ describe('overview.middleware', () => {
         { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'dataset2', entity_count: 5, issue_count: 2, fields: 'bar' }
       ]
 
-      const aggregated = aggregateOverviewData(exampleData)
-      aggregated.sort((a, b) => a.slug.localeCompare(b.slug))
+      req.lpaOverview = exampleData
 
-      expect(aggregated[0].status).toBe('Error')
-      expect(aggregated[1].status).toBe('Needs fixing')
+      await aggregateOverviewData(req, res, next)
+
+      expect(req.datasets[0].status).toBe('Error')
+      expect(req.datasets[1].status).toBe('Needs fixing')
     })
 
-    it('handles multiple fields', () => {
+    it('should handle multiple fields', async () => {
       const exampleData = [
         { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'dataset1', entity_count: 5, issue_count: 5, fields: 'foo,bar' },
         { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'dataset2', entity_count: 5, issue_count: 2, fields: 'baz,qux' }
       ]
 
-      const aggregated = aggregateOverviewData(exampleData)
-      aggregated.sort((a, b) => a.slug.localeCompare(b.slug))
+      req.lpaOverview = exampleData
 
-      expect(aggregated[0].status).toBe('Needs fixing')
-      expect(aggregated[0].issue_count).toBe(2) // 2 columns affected
-      expect(aggregated[1].status).toBe('Needs fixing')
-      expect(aggregated[0].issue_count).toBe(2) // 2 rows affected (in the same two fields)
+      await aggregateOverviewData(req, res, next)
+
+      expect(req.datasets[0].status).toBe('Needs fixing')
+      expect(req.datasets[0].issue_count).toBe(2) // 2 columns affected
+      expect(req.datasets[1].status).toBe('Needs fixing')
+      expect(req.datasets[1].issue_count).toBe(2) // 2 rows affected (in the same two fields)
     })
   })
 
@@ -258,5 +284,9 @@ describe('overview.middleware', () => {
       expect(req.noticeFlags[0].dueNotice).toBe(false)
       expect(req.noticeFlags[0].overdueNotice).toBe(true)
     })
+  })
+
+  describe('addNoticesToDatasets', () => {
+
   })
 })
