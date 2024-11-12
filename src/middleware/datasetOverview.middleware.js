@@ -91,7 +91,13 @@ const fetchSources = fetchMany({
   result: 'sources'
 })
 
-const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
+/**
+ * Sets notices from a source key in the request object.
+ *
+ * @param {string} sourceKey The key in the request object that contains the source data.
+ * @returns {function} A middleware function that sets notices based on the source data.
+ */
+export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   const { dataset } = req.params
   const source = req[sourceKey]
 
