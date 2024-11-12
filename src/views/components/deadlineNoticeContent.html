@@ -1,0 +1,17 @@
+{% macro noticeHeading(dataset, notice) %}
+  {% if notice.type == 'due' %}
+    You must update your {{dataset.slug | datasetSlugToReadableName}} dataset by the {{notice.deadline}}
+  {% elseif notice.type == 'overdue' %}
+    Your {{dataset.slug | datasetSlugToReadableName}} dataset is overdue
+  {% endif %}
+{% endmacro %}
+
+{% macro noticeHint(dataset) %}
+  {% if dataset.notice.type == 'overdue' %}
+    It was due on {{dataset.notice.deadline}}
+  {% endif %}
+{% endmacro %}
+
+{% macro noticeLink(organisation, slug) %}
+  <a class="govuk-notification-banner__link" href="organisations/{{organisation}}/{{slug}}/get-started">Follow the steps and check your data meets the specifications before you publish and submit it</a>.
+{% endmacro %}

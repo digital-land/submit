@@ -1,0 +1,14 @@
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+{% from "components/deadlineNoticeContent.html" import noticeHeading, noticeHint, noticeLink %}
+
+{% macro deadlineNotice(dataset, notice, organisation) %}
+  {% set html %}
+    <p class="govuk-notification-banner__heading">{{ noticeHeading(dataset, notice) }}</p> 
+    <p>{{ noticeHint(dataset) }}</p>
+    {{ noticeLink(organisation.organisation, dataset.slug) }}
+  {% endset %}
+
+  {{ govukNotificationBanner({
+    html: html
+  }) }}
+{% endmacro %}
