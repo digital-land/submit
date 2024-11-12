@@ -71,7 +71,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       datasetGroup({ expect }, 'other', params.datasets.other, document)
 
       const infoText = document.querySelector('.org-membership-info').textContent
-      expect(infoText).match(/.* is (a|not a) member of .*/)
+      expect(infoText).match(new RegExp(`${params.organisation.name} is (a|not a) member of .*`))
     }
   })
 
