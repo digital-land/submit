@@ -1,6 +1,5 @@
-import { describe, it, vi, expect } from 'vitest'
-import { aggregateOverviewData, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
-import { afterEach, beforeEach } from 'node:test'
+import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
+import { addNoticesToDatasets, aggregateOverviewData, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
 
 vi.mock(import('../../../src/utils/utils.js'), async (importOriginal) => {
   const origional = await importOriginal()
@@ -286,89 +285,126 @@ describe('overview.middleware', () => {
     })
   })
 
+  describe('datasetSubmissionDeadlineCheck', () => {
+    const req = {
+      resourceLookup: []
+    }
+    const res = {}
+    const next = vi.fn()
+
+    beforeEach(() => {
+      vi.resetAllMocks()
+    })
+
+    it('sets dueNotice flag if they are in the notice period and they haven\'t submitted this year', async () => {
+      req.resourceLookup = [
+        {
+          dataset: 'brownfield-land',
+          startDate: '1994-03-17T10:00:00.000z'
+        }
+      ]
+
+      vi.setSystemTime(new Date('1996-03-03T00:00:00.000Z'))
+
+      await datasetSubmissionDeadlineCheck(req, res, next)
+
+      expect(req.noticeFlags[0].dueNotice).toBe(true)
+      expect(req.noticeFlags[0].overdueNotice).toBe(false)
+    })
+
+    it('sets overdueNotice flag if they haven\'t submitted for last year', async () => {
+      req.resourceLookup = [
+        {
+          dataset: 'brownfield-land',
+          startDate: '1993-03-17T10:00:00.000z'
+        }
+      ]
+
+      vi.setSystemTime(new Date('1995-12-03T00:00:00.000Z'))
+
+      await datasetSubmissionDeadlineCheck(req, res, next)
+
+      expect(req.noticeFlags[0].dueNotice).toBe(false)
+      expect(req.noticeFlags[0].overdueNotice).toBe(true)
+    })
+
+    it('doesn\'t set any flag if they have submitted this year and we are in the notice period', async () => {
+      req.resourceLookup = [
+        {
+          dataset: 'brownfield-land',
+          startDate: '1996-03-17T10:00:00.000z'
+        }
+      ]
+
+      vi.setSystemTime(new Date('1996-03-03T00:00:00.000Z'))
+
+      await datasetSubmissionDeadlineCheck(req, res, next)
+
+      expect(req.noticeFlags[0].dueNotice).toBe(false)
+      expect(req.noticeFlags[0].overdueNotice).toBe(false)
+    })
+
+    it('sets dueNotice flag if they haven\'t ever submitted and we are in the notice period', async () => {
+      req.resourceLookup = []
+
+      vi.setSystemTime(new Date('1996-03-03T00:00:00.000Z'))
+
+      await datasetSubmissionDeadlineCheck(req, res, next)
+
+      expect(req.noticeFlags[0].dueNotice).toBe(true)
+      expect(req.noticeFlags[0].overdueNotice).toBe(false)
+    })
+
+    it('sets overdueNotice flag if they haven\'t ever submitted and we are not in the notice period', async () => {
+      req.resourceLookup = []
+
+      vi.setSystemTime(new Date('1995-11-03T00:00:00.000Z'))
+
+      await datasetSubmissionDeadlineCheck(req, res, next)
+
+      expect(req.noticeFlags[0].dueNotice).toBe(false)
+      expect(req.noticeFlags[0].overdueNotice).toBe(true)
+    })
+  })
+
   describe('addNoticesToDatasets', () => {
+    const req = {
+      params: { lpa: 'LPA' },
+      datasets: [
+        { slug: 'dataset1', name: 'Dataset 1' },
+        { slug: 'dataset2', name: 'Dataset 2' },
+        { slug: 'dataset3', name: 'Dataset 3' }
+      ],
+      noticeFlags: [
+        { dataset: 'dataset1', dueNotice: true, deadline: new Date('1996-03-17T10:00:00.000z') },
+        { dataset: 'dataset2', overdueNotice: true, deadline: new Date('1995-03-17T10:00:00.000z') },
+        { dataset: 'dataset3', dueNotice: false, overdueNotice: false }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
 
-  })
-})
+    beforeEach(() => {
+      vi.resetAllMocks()
+    })
 
-describe('datasetSubmissionDeadlineCheck', () => {
-  const req = {
-    resourceLookup: []
-  }
-  const res = {}
-  const next = vi.fn()
+    it('adds notices to datasets correctly', () => {
+      addNoticesToDatasets(req, res, next)
 
-  beforeEach(() => {
-    vi.resetAllMocks()
-  })
+      expect(req.datasets[0].notice).toEqual({
+        deadline: '17 March 1996',
+        type: 'due'
+      })
+      expect(req.datasets[1].notice).toEqual({
+        deadline: '17 March 1995',
+        type: 'overdue'
+      })
+      expect(req.datasets[2].notice).toBeUndefined()
+    })
 
-  it('sets dueNotice flag if they are in the notice period and they haven\'t submitted this year', async () => {
-    req.resourceLookup = [
-      {
-        dataset: 'brownfield-land',
-        startDate: '1994-03-17T10:00:00.000z'
-      }
-    ]
-
-    vi.setSystemTime(new Date('1996-03-03T00:00:00.000Z'))
-
-    await datasetSubmissionDeadlineCheck(req, res, next)
-
-    expect(req.noticeFlags[0].dueNotice).toBe(true)
-    expect(req.noticeFlags[0].overdueNotice).toBe(false)
-  })
-
-  it('sets overdueNotice flag if they haven\'t submitted for last year', async () => {
-    req.resourceLookup = [
-      {
-        dataset: 'brownfield-land',
-        startDate: '1993-03-17T10:00:00.000z'
-      }
-    ]
-
-    vi.setSystemTime(new Date('1995-12-03T00:00:00.000Z'))
-
-    await datasetSubmissionDeadlineCheck(req, res, next)
-
-    expect(req.noticeFlags[0].dueNotice).toBe(false)
-    expect(req.noticeFlags[0].overdueNotice).toBe(true)
-  })
-
-  it('doesn\'t set any flag if they have submitted this year and we are in the notice period', async () => {
-    req.resourceLookup = [
-      {
-        dataset: 'brownfield-land',
-        startDate: '1996-03-17T10:00:00.000z'
-      }
-    ]
-
-    vi.setSystemTime(new Date('1996-03-03T00:00:00.000Z'))
-
-    await datasetSubmissionDeadlineCheck(req, res, next)
-
-    expect(req.noticeFlags[0].dueNotice).toBe(false)
-    expect(req.noticeFlags[0].overdueNotice).toBe(false)
-  })
-
-  it('sets dueNotice flag if they haven\'t ever submitted and we are in the notice period', async () => {
-    req.resourceLookup = []
-
-    vi.setSystemTime(new Date('1996-03-03T00:00:00.000Z'))
-
-    await datasetSubmissionDeadlineCheck(req, res, next)
-
-    expect(req.noticeFlags[0].dueNotice).toBe(true)
-    expect(req.noticeFlags[0].overdueNotice).toBe(false)
-  })
-
-  it('sets overdueNotice flag if they haven\'t ever submitted and we are not in the notice period', async () => {
-    req.resourceLookup = []
-
-    vi.setSystemTime(new Date('1995-11-03T00:00:00.000Z'))
-
-    await datasetSubmissionDeadlineCheck(req, res, next)
-
-    expect(req.noticeFlags[0].dueNotice).toBe(false)
-    expect(req.noticeFlags[0].overdueNotice).toBe(true)
+    it('calls next function', () => {
+      addNoticesToDatasets(req, res, next)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
   })
 })

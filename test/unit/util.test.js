@@ -136,3 +136,29 @@ describe('getDeadlineHistory', () => {
     expect(() => util.getDeadlineHistory(deadline)).toThrowError()
   })
 })
+
+describe('getDeadlineHistory', () => {
+  it('throws an error if invalid deadline format', () => {
+    const deadline = 'invalid deadline format'
+    expect(() => util.getDeadlineHistory(deadline)).toThrowError(
+      `Invalid deadline format. Expected 'YYYY-MM-DDTHH:MM:SSSZ', got '${deadline}'`
+    )
+  })
+
+  it('returns correct deadline history for this year', () => {
+    const deadline = 'XXXX-03-15T14:30:00Z'
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'))
+    const result = util.getDeadlineHistory(deadline)
+    expect(result.deadlineDate.getFullYear()).toBe(2026)
+    expect(result.lastYearDeadline.getFullYear()).toBe(2025)
+    expect(result.twoYearsAgoDeadline.getFullYear()).toBe(2024)
+  })
+
+  it('handles leap year correctly', () => {
+    const deadline = '2024-02-29T14:30:00Z'
+    const result = util.getDeadlineHistory(deadline)
+    expect(result.deadlineDate.getFullYear()).toBe(2026)
+    expect(result.lastYearDeadline.getFullYear()).toBe(2025)
+    expect(result.twoYearsAgoDeadline.getFullYear()).toBe(2024)
+  })
+})

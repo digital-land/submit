@@ -126,12 +126,11 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
  */
 export const addNoticesToDatasets = (req, res, next) => {
   const { noticeFlags, datasets } = req
-  const { lpa } = req.params
 
   req.datasets = datasets.map(dataset => {
     const notice = noticeFlags.find(notice => notice.dataset === dataset.slug)
 
-    if (!notice) {
+    if (!notice || (!notice.dueNotice && !notice.overdueNotice)) {
       return dataset
     }
 
@@ -157,33 +156,6 @@ export const addNoticesToDatasets = (req, res, next) => {
     }
   })
 
-  req.notices = noticeFlags.filter(notice => notice.dueNotice || notice.overdueNotice).map((notice) => {
-    let message = ''
-    let noticeType = ''
-    const deadline = notice.deadline.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-    if (notice.dueNotice) {
-      message = `You must update your ${notice.dataset} dataset by the ${deadline}`
-      noticeType = 'due'
-    } else if (notice.overdueNotice) {
-      message = `Your overdue on your ${notice.dataset} dataset, which should have been submitted on the ${deadline}`
-      noticeType = 'reminder'
-    }
-
-    return {
-      dataset: notice.dataset,
-      message,
-      noticeType,
-      link: {
-        href: `organisations/${lpa}/${notice.dataSet}/get-started`,
-        text: 'Follow the steps and check your data meets the specifications before you publish and submit it'
-
-      }
-    }
-  })
   next()
 }
 
