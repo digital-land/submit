@@ -1,0 +1,24 @@
+{% from 'govuk/components/header/macro.njk' import govukHeader %}
+{% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
+
+{{ govukHeader({
+  homepageUrl: homepageUrl,
+  classes: 'govuk-header--full-width-border'
+}) }}
+
+{{ govukServiceNavigation({
+  serviceName: serviceName,
+  serviceUrl: startPageUrl or homepageUrl,
+  navigation: [
+    {
+      href: "/organisations",
+      text: "Find your organisation",
+      active: currentPath and currentPath.startsWith('/organisations')
+    },
+    {
+      href: "/guidance",
+      text: "Guidance",
+      active: currentPath and currentPath.startsWith('/guidance')
+    }
+  ]
+}) }}

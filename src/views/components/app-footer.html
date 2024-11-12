@@ -1,0 +1,42 @@
+{% from 'govuk/components/footer/macro.njk' import govukFooter %}
+{% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner %}
+
+{% set footerHtml %}
+  <h2 class="govuk-heading-m">Get help</h2>
+
+  <p class="govuk-!-font-size-16">Email: <a href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a></br>
+  You’ll get a response within 5 working days.</p>
+
+  <hr class="govuk-section-break govuk-section-break--l">
+  <ul class="govuk-footer__inline-list">
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/accessibility">
+        Accessibility
+      </a>
+    </li>
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/privacy-notice">
+        Privacy
+      </a>
+    </li>
+    <li class="govuk-footer__inline-list-item">
+      <a class="govuk-footer__link" href="/cookies">
+        Cookies
+      </a>
+    </li>
+  </ul>
+{% endset %}
+
+{{ govukPhaseBanner({
+  tag: {
+    text: "BETA"
+  },
+  html: 'This is a new service – your <a class="govuk-link" href="' + feedbackLink + '">feedback</a> will help us to improve it.',
+  classes: 'govuk-width-container app-phase-banner--footer'
+}) }}
+
+{{ govukFooter({
+  meta: {
+    html: footerHtml
+  }
+}) }}

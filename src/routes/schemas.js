@@ -232,6 +232,19 @@ export const DatasetDetails = v.strictObject({
   }))
 })
 
+export const GuidanceNavigationItem = v.strictObject({
+  label: NonEmptyString,
+  url: v.string(),
+  items: v.optional(v.lazy(() => v.array(GuidanceNavigationItem)))
+})
+
+export const GuidanceNavigation = v.strictObject({
+  navigation: v.array(v.strictObject({
+    title: NonEmptyString,
+    items: v.array(GuidanceNavigationItem)
+  }))
+})
+
 /**
  * This acts as a registry of template -> schema for convenience.
  */
@@ -258,5 +271,14 @@ export const templateSchema = new Map([
   ['privacy-notice.html', EmptyParams],
   ['landing.html', EmptyParams],
   ['cookies.html', EmptyParams],
-  ['accessibility.html', EmptyParams]
+  ['accessibility.html', EmptyParams],
+
+  ['guidance/index.md', GuidanceNavigation],
+  ['guidance/try-check-publish-service', GuidanceNavigation],
+  ['guidance/publish-data-on-your-website', GuidanceNavigation],
+  ['guidance/keep-your-data-up-to-date', GuidanceNavigation],
+  ['guidance/specifications/index.md', GuidanceNavigation],
+  ['guidance/specifications/article-4-direction', GuidanceNavigation],
+  ['guidance/specifications/conservation-area', GuidanceNavigation],
+  ['guidance/specifications/listed-building', GuidanceNavigation]
 ])
