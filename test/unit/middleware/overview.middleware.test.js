@@ -38,11 +38,11 @@ describe('overview.middleware', () => {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
         datasets: {
           statutory: expect.arrayContaining([
-            { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
-            { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0 }
+            { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0, project: 'open-digital-planning' },
+            { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0, project: 'open-digital-planning' }
           ]),
           other: expect.arrayContaining([
-            { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 }
+            { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0, project: 'open-digital-planning' }
           ])
         },
         totalDatasets: 3,
