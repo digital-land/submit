@@ -215,3 +215,7 @@ code * {
 .dl-table__cell--error {
   border-left: govuk-spacing(1) solid $govuk-error-colour;
 }
+
+.app-content__markdown img {
+  max-width: 100%;
+}
