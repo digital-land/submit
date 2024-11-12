@@ -175,6 +175,21 @@
       {{ govukSummaryList({ rows: rows }) }}
     </section>
   </div>
+  <div class="govuk-grid-column-one-third">
+    <section>
+      <h2 class="govuk-heading-m">Dataset actions</h2>
+      <ul class="govuk-list">
+        <li>
+          <a class="govuk-link" href="{{ organisation | checkToolDeepLink(dataset) }}">Check {{ dataset.name }} dataset</a>
+        </li>
+        {% if dataset.dataset | getDatasetGuidanceUrl %}
+        <li>
+          <a class="govuk-link" href="{{ dataset.dataset | getDatasetGuidanceUrl }}">{{ dataset.name }} guidance</a>
+        </li>
+        {% endif %}
+      </ul>
+    </section>
+  </div>
 </div>
 
 {% endblock %}

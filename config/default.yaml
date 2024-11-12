@@ -41,18 +41,27 @@ email: {
 validations: {
     maxFileSize: 100000000
 }
-datasetsFilter: [
-    'article-4-direction',
-    'article-4-direction-area',
-    'brownfield-land',
-    'conservation-area',
-    'conservation-area-document',
-    'tree-preservation-order',
-    'tree-preservation-zone',
-    'tree',
-    'listed-building',
-    'listed-building-outline'
-]
+datasetsConfig:
+    article-4-direction:
+      guidanceUrl: /guidance/specifications/article-4-direction
+    article-4-direction-area:
+      guidanceUrl: /guidance/specifications/article-4-direction
+    brownfield-land:
+      guidanceUrl: https://www.gov.uk/government/publications/brownfield-land-registers-data-standard/publish-your-brownfield-land-data
+    conservation-area:
+      guidanceUrl: /guidance/specifications/conservation-area
+    conservation-area-document:
+      guidanceUrl: /guidance/specifications/conservation-area
+    tree-preservation-order:
+      guidanceUrl: /guidance/specifications/tree-preservation-order
+    tree-preservation-zone:
+      guidanceUrl: /guidance/specifications/tree-preservation-order
+    tree:
+      guidanceUrl: /guidance/specifications/tree-preservation-order
+    listed-building:
+      guidanceUrl: /guidance/specifications/listed-building
+    listed-building-outline:
+      guidanceUrl: /guidance/specifications/listed-building
 guidanceNavigation:
   title: Provide planning and housing data for England
   items:
