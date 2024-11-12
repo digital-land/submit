@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { prepareDatasetOverviewTemplateParams, pullOutDatasetSpecification } from '../../../src/middleware/datasetOverview.middleware.js'
+import { prepareDatasetOverviewTemplateParams } from '../../../src/middleware/datasetOverview.middleware.js'
 
 describe('Dataset Overview Middleware', () => {
   const req = {
@@ -15,28 +15,12 @@ describe('Dataset Overview Middleware', () => {
   }
   const res = {}
 
-  describe('pullOutDatasetSpecification', () => {
-    it('leaves specification unchanged, and extracts the dataset specification', () => {
-      const reqWithSpecification = {
-        ...req,
-        specification: {
-          json: JSON.stringify([
-            { dataset: 'mock-dataset', foo: 'bar' }
-          ])
-        }
-      }
-      pullOutDatasetSpecification(reqWithSpecification, res, () => {})
-      expect(reqWithSpecification.specification).toEqual(reqWithSpecification.specification)
-      expect(reqWithSpecification.datasetSpecification).toEqual({ dataset: 'mock-dataset', foo: 'bar' })
-    })
-  })
-
   describe('prepareDatasetOverviewTemplateParams', () => {
     it('should prepare template params for dataset overview', async () => {
       const reqWithResults = {
         ...req,
         orgInfo: { name: 'mock-org' },
-        datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
+        specification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
         sources: [
@@ -57,7 +41,7 @@ describe('Dataset Overview Middleware', () => {
       expect(reqWithResults.templateParams).toEqual({
         organisation: { name: 'mock-org' },
         dataset: reqWithResults.dataset,
-        issueCount: 1,
+        taskCount: 1,
         stats: {
           numberOfFieldsSupplied: 1,
           numberOfFieldsMatched: 1,

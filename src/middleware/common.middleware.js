@@ -3,6 +3,7 @@ import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
+import { pagination } from '../utils/pagination.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -112,3 +113,203 @@ export const getDatasetTaskListError = renderTemplate({
   template: 'organisations/http-error.html',
   handlerName: 'getDatasetTaskListError'
 })
+
+export const getIsPageNumberInRange = (maxPagesKey) => {
+  /**
+   * Middleware. Short-circuits with 404 error if pageNumber is not in range.
+   * Updates req with `pageNumber`
+   *
+   * @param req
+   * @param res
+   * @param next
+   */
+  return (req, res, next) => {
+    const { pageNumber } = req.parsedParams
+    if (!Number.isInteger(pageNumber)) {
+      return next(new Error('Page number not a number'))
+    }
+    if (pageNumber < 1 || req[maxPagesKey] < pageNumber) {
+      const error = new Error('Page not found')
+      error.status = 404
+      return next(error)
+    }
+    next()
+  }
+}
+
+/**
+ * Creates pagination template parameters for the request.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function in the chain.
+ *
+ * @description
+ * This middleware function extracts pagination-related parameters from the request,
+ * calculates the total number of pages, and creates a pagination object that can be used
+ * to render pagination links in the template.
+ *
+ * @returns {void}
+ */
+export const createPaginationTemplateParams = (req, res, next) => {
+  const { resultsCount, urlSubPath, paginationPageLength } = req
+  if (typeof resultsCount !== 'number' || typeof paginationPageLength !== 'number' || !urlSubPath) {
+    logger.error('Missing or invalid pagination parameters', { resultsCount, urlSubPath, paginationPageLength })
+    return next(new Error('Invalid pagination parameters'))
+  }
+  let { pageNumber } = req.params
+  pageNumber = parseInt(pageNumber)
+
+  if (Number.isNaN(pageNumber) || pageNumber <= 0) {
+    throw new Error('Invalid page number')
+  }
+
+  if (resultsCount <= 0) {
+    return next()
+  }
+
+  const totalPages = Math.ceil(resultsCount / paginationPageLength)
+
+  const paginationObj = {}
+  if (pageNumber > 1) {
+    paginationObj.previous = {
+      href: `${urlSubPath}${pageNumber - 1}`
+    }
+  }
+
+  if (pageNumber < totalPages) {
+    paginationObj.next = {
+      href: `${urlSubPath}${pageNumber + 1}`
+    }
+  }
+
+  paginationObj.items = pagination(totalPages, pageNumber).map(item => {
+    if (item === '...') {
+      return {
+        type: 'ellipsis',
+        ellipsis: true,
+        href: '#'
+      }
+    } else {
+      return {
+        type: 'number',
+        number: item,
+        href: `${urlSubPath}${item}`,
+        current: pageNumber === parseInt(item)
+      }
+    }
+  })
+
+  req.pagination = paginationObj
+
+  next()
+}
+
+export const addDatabaseFieldToSpecification = (req, res, next) => {
+  const { specification, fieldMappings } = req
+
+  req.specification.fields = specification.fields.flatMap(fieldObj => {
+    if (['GeoX', 'GeoY'].includes(fieldObj.field)) { // special case for brownfield land
+      return { datasetField: 'point', ...fieldObj }
+    }
+
+    const fieldMappingsForField = fieldMappings.filter(mapping => mapping.field === fieldObj.field)
+
+    const datasetFields = fieldMappingsForField.map(mapping => mapping.replacement_field).filter(Boolean)
+
+    if (datasetFields.length === 0) {
+      // no dataset fields found, add the field anyway with datasetField set to the same value as fieldObj.field
+      return { datasetField: fieldObj.field, ...fieldObj }
+    }
+
+    // sometimes a field maps to more than one dataset field, so we need to account for that
+    const specificationEntriesWithDatasetFields = datasetFields.map(datasetField => ({ datasetField, ...fieldObj }))
+    return specificationEntriesWithDatasetFields
+  })
+
+  next()
+}
+
+export const replaceUnderscoreInSpecification = (req, res, next) => {
+  req.specification.fields = req.specification.fields.map((spec) => {
+    if (spec.datasetField) {
+      spec.datasetField = spec.datasetField.replace(/_/g, '-')
+    }
+    return spec
+  })
+
+  next()
+}
+
+export const pullOutDatasetSpecification = (req, res, next) => {
+  const { specification } = req
+  let collectionSpecifications
+  try {
+    collectionSpecifications = JSON.parse(specification.json)
+  } catch (error) {
+    logger.error('Invalid JSON in specification.json', { error })
+    return next(new Error('Invalid specification format'))
+  }
+  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
+  if (!datasetSpecification) {
+    logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
+    return next(new Error('Dataset specification not found'))
+  }
+  req.specification = datasetSpecification
+  next()
+}
+
+export const extractJsonFieldFromEntities = (req, res, next) => {
+  const { entities } = req
+  if (!Array.isArray(entities)) {
+    logger.error('Invalid entities array', { entities })
+    return next(new Error('Invalid entities format'))
+  }
+
+  req.entities = entities.map(entity => {
+    const jsonField = entity.json
+    if (!jsonField || jsonField === '') {
+      logger.info(`common.middleware/extractJsonField: No json field for entity ${entity.toString()}`)
+      return entity
+    }
+    entity.json = undefined
+    try {
+      const parsedJson = JSON.parse(jsonField)
+      entity = Object.assign({}, parsedJson, entity)
+    } catch (err) {
+      logger.warn(`common.middleware/extractJsonField: Error parsing JSON for entity ${entity.toString()}: ${err.message}`)
+    }
+    return entity
+  })
+
+  next()
+}
+
+export const replaceUnderscoreInEntities = (req, res, next) => {
+  if (!req.entities) {
+    next()
+    return
+  }
+
+  req.entities = req.entities.map((entity) => {
+    return Object.keys(entity).reduce((acc, key) => {
+      const newKey = key.replace(/_/g, '-')
+      acc[newKey] = entity[key]
+      return acc
+    }, {})
+  })
+
+  next()
+}
+
+export const setDefaultParams = (req, res, next) => {
+  if (!req.parsedParams) {
+    return next()
+  }
+
+  Object.keys(req.parsedParams).forEach((key) => {
+    req.params[key] = req.parsedParams[key]
+  })
+
+  next()
+}

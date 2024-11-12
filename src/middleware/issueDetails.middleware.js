@@ -7,7 +7,8 @@ import {
   isResourceIdInParams, isResourceDataPresent,
   logPageError,
   takeResourceIdFromParams,
-  validateQueryParams
+  validateQueryParams,
+  getIsPageNumberInRange
 } from './common.middleware.js'
 import { fetchIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -294,25 +295,6 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
 }
 
 /**
- * Middleware. Short-circuits with 404 error if pageNumber is not in range.
- * Updates req with `pageNumber`
- *
- * @param req
- * @param res
- * @param next
- */
-const isPageNumberInRange = (req, res, next) => {
-  const { issueEntitiesCount } = req
-  const { pageNumber } = req.parsedParams
-
-  if (pageNumber < 1 || issueEntitiesCount < pageNumber) {
-    res.status(404).render('errorPages/404', {})
-    return
-  }
-  next()
-}
-
-/**
  * Middleware. Renders the issue details page with the list of issues, entry data,
  * and organisation and dataset details.
  */
@@ -335,7 +317,7 @@ export default [
   fetchIf(isResourceDataPresent, fetchIssues, emptyIssuesCollection),
   reformatIssuesToBeByEntryNumber,
   fetchIf(isResourceDataPresent, fetchIssueEntitiesCount, zeroIssueEntitiesCount),
-  isPageNumberInRange,
+  getIsPageNumberInRange('issueEntitiesCount'),
   fetchEntry,
   fetchIf(isResourceDataPresent, fetchEntityCount, zeroEntityCount),
   prepareIssueDetailsTemplateParams,
