@@ -120,6 +120,17 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   next()
 }
 
+/**
+ * Adds notices to datasets based on notice flags
+ *
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next function in the middleware chain
+ *
+ * @description
+ * This middleware function adds notices to datasets based on the notice flags.
+ * It modifies the `req.datasets` and `req.notices` properties.
+ */
 export const addNoticesToDatasets = (req, res, next) => {
   const { noticeFlags, datasets } = req
   const { lpa } = req.params
