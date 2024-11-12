@@ -251,7 +251,7 @@ export default {
 
   latestResourceQuery: (lpa, dataset) => {
     return /* sql */ `
-    SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception
+    SELECT rle.resource, rle.status, rle.endpoint, rle.endpoint_url, rle.status, rle.days_since_200, rle.exception, rle.resource_start_date as startDate
     FROM reporting_latest_endpoints rle
     LEFT JOIN resource_organisation ro ON rle.resource = ro.resource
     LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation

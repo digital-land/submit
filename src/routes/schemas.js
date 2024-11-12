@@ -38,6 +38,11 @@ export const datasetStatusEnum = {
   'Not submitted': 'Not submitted'
 }
 
+export const DeadlineNoticeField = v.strictObject({
+  type: v.string(),
+  deadline: v.string()
+})
+
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 
@@ -54,10 +59,7 @@ export const OrgOverviewPage = v.strictObject({
     entity_count: v.optional(v.number()),
     // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
     numIssues: v.optional(v.number()),
-    notice: v.optional(v.strictObject({
-      type: v.string(),
-      deadline: v.string()
-    }))
+    notice: v.optional(DeadlineNoticeField)
   })),
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),
@@ -94,7 +96,8 @@ export const OrgDatasetOverview = v.strictObject({
         exception: v.string()
       }))
     }))
-  })
+  }),
+  notice: v.optional(DeadlineNoticeField)
 })
 
 export const OrgDatasetTaskList = v.strictObject({

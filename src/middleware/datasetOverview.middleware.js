@@ -4,6 +4,7 @@ import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from '
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -71,7 +72,7 @@ const fetchSources = fetchMany({
         rhe.latest_log_entry_date,
         rhe.endpoint_entry_date,
         rhe.endpoint_end_date,
-        rhe.resource_start_date,
+        rhe.resource_start_date as resource_start_date,
         rhe.resource_end_date,
         s.documentation_url,
         ROW_NUMBER() OVER (
@@ -113,6 +114,52 @@ const fetchSources = fetchMany({
   result: 'sources'
 })
 
+const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
+  const { dataset } = req.params
+  const source = req[sourceKey]
+
+  const deadlineObj = requiredDatasets.find(deadline => deadline.dataset === dataset)
+
+  if (deadlineObj) {
+    const currentDate = new Date()
+    let datasetSuppliedForCurrentYear = false
+    let datasetSuppliedForLastYear = false
+
+    const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
+
+    const startDate = new Date(source.startDate)
+
+    datasetSuppliedForCurrentYear = startDate >= lastYearDeadline && startDate < deadlineDate
+    datasetSuppliedForLastYear = startDate >= twoYearsAgoDeadline && startDate < lastYearDeadline
+
+    const warningDate = new Date(deadlineDate.getTime())
+    warningDate.setMonth(warningDate.getMonth() - deadlineObj.noticePeriod)
+
+    const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
+    const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear
+
+    const deadline = deadlineDate.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+
+    let type
+    if (dueNotice) {
+      type = 'due'
+    } else if (overdueNotice) {
+      type = 'overdue'
+    }
+
+    req.notice = {
+      deadline,
+      type
+    }
+  }
+
+  next()
+}
+
 const fetchEntityCount = fetchOne({
   query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
   result: 'entityCount',
@@ -120,7 +167,7 @@ const fetchEntityCount = fetchOne({
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues, notice } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
@@ -171,7 +218,8 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
       numberOfExpectedFields: numberOfExpectedFields ?? 0,
       numberOfRecords: entityCount.entity_count,
       endpoints
-    }
+    },
+    notice
   }
 
   next()
@@ -197,6 +245,7 @@ export default [
   fetchSpecification,
   pullOutDatasetSpecification,
   fetchSources,
+  setNoticesFromSourceKey('resource'),
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,
