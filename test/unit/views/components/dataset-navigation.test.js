@@ -12,7 +12,7 @@ describe('Dataset Navigation component', () => {
       dataset: 'world-heritage-site-buffer-zone',
       name: 'World heritage site buffer zone'
     },
-    issueCount: 0
+    taskCount: 0
   }
 
   const htmlString = `
@@ -21,7 +21,7 @@ describe('Dataset Navigation component', () => {
       active: "dataset-overview",
       dataset: dataset,
       organisation: organisation,
-      issue_count: issueCount
+      task_count: taskCount
     }) }}
   `
 
@@ -33,12 +33,12 @@ describe('Dataset Navigation component', () => {
   it('Renders the dataset navigation links correctly', () => {
     const links = document.querySelectorAll('.app-c-dataset-navigation .govuk-service-navigation__link')
     const activeLink = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active')
-    const issueCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
+    const taskCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
-    expect(activeLink.textContent).toContain('Dataset overview')
-    expect(links.length).toEqual(2)
-    expect(issueCount).toBeNull()
+    expect(activeLink.textContent).toContain('Dataset details')
+    expect(links.length).toEqual(3)
+    expect(taskCount).toBeNull()
   })
 
   it('Renders the active dataset navigation links correctly', () => {
@@ -48,7 +48,7 @@ describe('Dataset Navigation component', () => {
         active: "task-list",
         dataset: dataset,
         organisation: organisation,
-        issue_count: issueCount
+        task_count: taskCount
       }) }}
     `
 
@@ -60,13 +60,13 @@ describe('Dataset Navigation component', () => {
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Task list')
-    expect(links.length).toEqual(2)
+    expect(links.length).toEqual(3)
   })
 
-  it('Renders the issue count correctly', () => {
+  it('Renders the task count correctly', () => {
     const paramsWithIssues = {
       ...params,
-      issueCount: 3
+      taskCount: 3
     }
     const htmlString = `
       {% from "components/dataset-navigation.html" import datasetNavigation %}
@@ -74,7 +74,7 @@ describe('Dataset Navigation component', () => {
         active: "task-list",
         dataset: dataset,
         organisation: organisation,
-        issue_count: issueCount
+        task_count: taskCount
       }) }}
     `
 
@@ -88,6 +88,6 @@ describe('Dataset Navigation component', () => {
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
     expect(activeLink.textContent).toContain('Task list')
     expect(issueCount.textContent).toContain('3 issues')
-    expect(links.length).toEqual(2)
+    expect(links.length).toEqual(3)
   })
 })

@@ -26,6 +26,46 @@ export const StartPage = v.object({
   ...Base.entries
 })
 
+export const PaginationParams = v.optional(v.strictObject({
+  previous: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  next: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  items: v.array(v.variant('type', [
+    v.strictObject({
+      type: v.literal('number'),
+      number: v.integer(),
+      href: v.string(),
+      current: v.boolean()
+    }),
+    v.strictObject({
+      type: v.literal('ellipsis'),
+      ellipsis: v.literal(true),
+      href: v.string()
+    })
+  ]))
+}))
+
+export const tableParams = v.strictObject({
+  columns: v.array(NonEmptyString),
+  rows: v.array(v.strictObject({
+    columns: v.objectWithRest(
+      {},
+      v.strictObject({
+        error: v.optional(v.object({
+          message: v.string()
+        })),
+        value: v.optional(v.string()),
+        html: v.optional(v.string()),
+        classes: v.optional(v.string())
+      })
+    )
+  })),
+  fields: v.array(NonEmptyString)
+})
+
 /**
  * The values of this enum should match values of the 'status' column
  * in the query in `fetchLpaOverview` middleware
@@ -73,7 +113,7 @@ export const OrgGetStarted = v.strictObject({
 export const OrgDatasetOverview = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  issueCount: v.integer(),
+  taskCount: v.integer(),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
     numberOfFieldsSupplied: v.integer(),
@@ -90,6 +130,19 @@ export const OrgDatasetOverview = v.strictObject({
         exception: v.string()
       }))
     }))
+  })
+})
+
+export const OrgDataView = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  taskCount: v.integer(),
+  tableParams,
+  pagination: PaginationParams,
+  dataRange: v.strictObject({
+    minRow: v.integer(),
+    maxRow: v.integer(),
+    totalRows: v.integer()
   })
 })
 
@@ -141,27 +194,7 @@ export const OrgIssueDetails = v.strictObject({
     })),
     geometries: v.optional(v.array(v.string()))
   }),
-  pagination: v.optional(v.strictObject({
-    previous: v.optional(v.strictObject({
-      href: v.string()
-    })),
-    next: v.optional(v.strictObject({
-      href: v.string()
-    })),
-    items: v.array(v.variant('type', [
-      v.strictObject({
-        type: v.literal('number'),
-        number: v.integer(),
-        href: v.string(),
-        current: v.boolean()
-      }),
-      v.strictObject({
-        type: v.literal('ellipsis'),
-        ellipsis: v.literal(true),
-        href: v.string()
-      })
-    ]))
-  })),
+  pagination: PaginationParams,
   issueEntitiesCount: v.integer(),
   pageNumber: v.integer()
 })
@@ -227,6 +260,7 @@ export const templateSchema = new Map([
   ['organisations/find.html', OrgFindPage],
   ['organisations/get-started.html', OrgGetStarted],
   ['organisations/dataset-overview.html', OrgDatasetOverview],
+  ['organisations/dataview.html', OrgDataView],
   ['organisations/datasetTaskList.html', OrgDatasetTaskList],
   ['organisations/http-error.html', OrgEndpointError],
   ['organisations/issueDetails.html', OrgIssueDetails],
