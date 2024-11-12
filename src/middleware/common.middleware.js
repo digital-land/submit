@@ -255,7 +255,7 @@ export const pullOutDatasetSpecification = (req, res, next) => {
     logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
     return next(new Error('Dataset specification not found'))
   }
-  req.specification = datasetSpecification
+  req.datasetSpecification = datasetSpecification
   next()
 }
 
