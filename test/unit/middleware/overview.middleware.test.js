@@ -23,6 +23,11 @@ describe('overview.middleware', () => {
       const req = {
         params: { lpa: 'LPA' },
         orgInfo: exampleLpa,
+        provisions: [
+          { dataset: 'dataset1', provision_reason: 'statutory' },
+          { dataset: 'dataset2', provision_reason: 'expected' },
+          { dataset: 'dataset3', provision_reason: 'statutory' }
+        ],
         lpaOverview: perfDbApiResponse
       }
       const res = { render: vi.fn() }
@@ -32,10 +37,12 @@ describe('overview.middleware', () => {
       const expectedTemplateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
         datasets: {
-          other: expect.arrayContaining([
+          statutory: expect.arrayContaining([
             { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
-            { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 },
             { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0 }
+          ]),
+          other: expect.arrayContaining([
+            { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 }
           ])
         },
         totalDatasets: 3,
