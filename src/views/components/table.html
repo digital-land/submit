@@ -1,3 +1,37 @@
+{#
+    This component expects the following param structure
+    params = {
+        columns: [
+        'column 1',
+        'column 2',
+        'column 3'
+        ],
+        fields: [
+        'column 1',
+        'column 2',
+        'column 3'
+        ],
+        rows: [
+        {
+            columns: {
+            'column 1': {
+                value: 'value 1'
+            },
+            'column 2': {
+                html: '<b>html 1</b>'
+            },
+            'column 3': {
+                value: 'value 2',
+                error: {
+                    message: 'error 1'
+                }
+            }
+            }
+        }
+        ]
+    }
+#}
+
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 
 {% macro table(params) %}
@@ -6,7 +40,7 @@
             <thead class="govuk-table__head dl-table__head">
                 <tr class="govuk-table__row">
                     {% for column in params.columns %}
-                        <th scope="col" class="govuk-table__header dl-table__header">{{ column | prettifyColumnName}}</th>
+                        <th scope="col" class="govuk-table__header dl-table__header">{{ column }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -15,7 +49,7 @@
                     <tr class="govuk-table__row">
                         {% for field in params.fields %}
                             {% set columnData = row.columns[field] %}
-                            <td class="govuk-table__cell app-wrap">
+                            <td class="govuk-table__cell app-wrap {{columnData.classes}}">
                                 {% set cellText = columnData.html | safe if columnData.html else columnData.value%}
                                 {% if columnData.error %}
                                     {{ govukInsetText({

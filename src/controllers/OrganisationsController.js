@@ -4,6 +4,7 @@ import getIssueDetailsMiddleware from '../middleware/issueDetails.middleware.js'
 import getOrganisationsMiddleware from '../middleware/organisations.middleware.js'
 import getGetStartedMiddleware from '../middleware/getStarted.middleware.js'
 import getOverviewMiddleware from '../middleware/overview.middleware.js'
+import getDatasetDataviewMiddleware from '../middleware/dataview.middleware.js'
 
 const organisationsController = {
   getOrganisationsMiddleware,
@@ -11,7 +12,8 @@ const organisationsController = {
   getDatasetOverviewMiddleware,
   getIssueDetailsMiddleware,
   getGetStartedMiddleware,
-  getOverviewMiddleware
+  getOverviewMiddleware,
+  getDatasetDataviewMiddleware
 }
 
 export default organisationsController
