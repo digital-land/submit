@@ -1,7 +1,7 @@
 import performanceDbApi, { lpaOverviewQuery } from '../services/performanceDbApi.js'
 import { fetchOrgInfo, logPageError } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
-import { dataSubjects, getDeadlineHistory } from '../utils/utils.js'
+import { dataSubjects, getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
 
@@ -81,13 +81,6 @@ const orgStatsReducer = (accumulator, dataset) => {
  * and sets flags for due and overdue notices accordingly.
  */
 export const datasetSubmissionDeadlineCheck = (req, res, next) => {
-  const noticePeriod = 4 // 4 months
-  const requiredDatasets = [
-    {
-      dataset: 'brownfield-land',
-      deadline: 'XXXX-12-31T23:59:59.000Z'
-    }
-  ]
   const { resourceLookup } = req
   const currentDate = new Date()
 
@@ -109,7 +102,7 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
     }
 
     const warningDate = new Date(deadlineDate.getTime())
-    warningDate.setMonth(warningDate.getMonth() - noticePeriod)
+    warningDate.setMonth(warningDate.getMonth() - dataset.noticePeriod)
 
     const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
     const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear

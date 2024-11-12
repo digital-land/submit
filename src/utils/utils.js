@@ -142,6 +142,14 @@ export const allowedFileTypes = {
 
 }
 
+export const requiredDatasets = [
+  {
+    dataset: 'brownfield-land',
+    deadline: 'XXXX-12-31T23:59:59.000Z',
+    noticePeriod: 4 // months
+  }
+]
+
 /**
  * Calculates the deadline date and its historical dates (last year's deadline, two years ago's deadline)
  * based on the provided deadline string.
