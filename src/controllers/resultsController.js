@@ -1,5 +1,6 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
+import prettifyColumnName from '../filters/prettifyColumnName.js'
 
 const failedFileRequestTemplate = 'results/failedFileRequest'
 const failedUrlRequestTemplate = 'results/failedUrlRequest'
@@ -59,7 +60,7 @@ class ResultsController extends PageController {
         })
 
         req.form.options.tableParams = {
-          columns: responseDetails.getColumns(),
+          columns: responseDetails.getColumns().map(column => prettifyColumnName(column)),
           rows,
           fields: responseDetails.getFields()
         }

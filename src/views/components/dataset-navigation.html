@@ -4,9 +4,9 @@
   {% set organisation = params.organisation %}
   {% set dataset = params.dataset %}
   {% set badge %}
-    {% if params.issue_count > 0 %}
+    {% if params.task_count > 0 %}
       <span class="app-c-dataset-navigation__notification-badge">
-        {{ params.issue_count }} <span class="govuk-visually-hidden">{{ "issue" | pluralise(params.issue_count) }}</span>
+        {{ params.task_count }} <span class="govuk-visually-hidden">{{ "issue" | pluralise(params.task_count) }}</span>
       </span>
     {% endif %}
   {% endset %}
@@ -22,8 +22,13 @@
     navigation: [
       {
         href: "/organisations/" + organisation.organisation + "/" + dataset.dataset + "/overview",
-        text: "Dataset overview",
+        text: "Dataset details",
         active: params.active === "dataset-overview"
+      },
+      {
+        href: "/organisations/" + organisation.organisation + "/" + dataset.dataset + "/data",
+        html: "Dataset table",
+        active: params.active === "data"
       },
       {
         html: taskLink,

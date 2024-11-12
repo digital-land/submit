@@ -32,7 +32,7 @@ describe(`Dataset Task List Page (seed: ${seed})`, () => {
     const issueCount = document.querySelector('.app-c-dataset-navigation .govuk-service-navigation__item.govuk-service-navigation__item--active .app-c-dataset-navigation__notification-badge')
 
     expect(document.querySelector('.app-c-dataset-navigation')).not.toBeNull()
-    expect(links.length).toEqual(2)
+    expect(links.length).toEqual(3)
     expect(activeLink.textContent).toContain('Task list')
     expect(issueCount.textContent).toContain(`${params.taskList.length} issue${params.taskList.length > 1 ? 's' : ''}`)
   })

@@ -109,8 +109,8 @@ describe('ResultsController', () => {
               values: ['mock value']
             }
           ],
-          getColumns: () => 'mock Columns',
-          getFields: () => 'mock fields',
+          getColumns: () => ['mock Columns'],
+          getFields: () => ['mock fields'],
           getFieldMappings: () => ({ fields: 'geometries' }),
           getGeometries: () => ['geometries'],
           getPagination: () => 'pagination'
@@ -126,8 +126,8 @@ describe('ResultsController', () => {
       expect(req.form.options).toStrictEqual({
         data: mockResult,
         tableParams: {
-          columns: 'mock Columns',
-          fields: 'mock fields',
+          columns: ['Mock Columns'],
+          fields: ['mock fields'],
           rows: [{
             columns: {},
             fields: ['mock field'],
