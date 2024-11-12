@@ -1,0 +1,24 @@
+<nav class="app-subnav" aria-labelledby="app-subnav-label">
+  <p id="app-subnav-label" class="govuk-visually-hidden">Pages in this section</p>
+  <h2 class="app-subnav__theme">{{ navigation.title | default("Pages in this section") }}</h2>
+  <ul class="app-subnav__section">
+    {% for item in navigation.items %}
+      <li class="app-subnav__section-item">
+        <a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline {% if item.url == currentPath %} app-subnav__link--current{% endif %}" href="{{ item.url }}" {% if item.url == currentPath %} aria-current="page"{% endif %}>
+          {{ item.label }}
+        </a>
+        {% if item.items %}
+          <ul class="app-subnav__section app-subnav__section--nested">
+            {% for subitem in item.items %}
+              <li class="app-subnav__section-item">
+                <a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline {% if subitem.url == currentPath %} app-subnav__link--current{% endif %}" href="{{ subitem.url }}" {% if subitem.url == currentPath %} aria-current="page"{% endif %}>
+                  {{ subitem.label }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</nav>

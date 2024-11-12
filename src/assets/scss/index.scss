@@ -4,8 +4,10 @@ $govuk-global-styles: true;
 @import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
 @import "src/assets/scss/_scrollable-container.scss";
 @import "./step-by-step-nav.scss";
+@import "./overrides";
 @import "./components/dataset-navigation";
 @import "./components/cookie-banner";
+@import "./components/sub-navigation";
 
 .app-inset-text---error {
   border-left: 5px solid govuk-colour('red');
@@ -212,4 +214,8 @@ code * {
 
 .dl-table__cell--error {
   border-left: govuk-spacing(1) solid $govuk-error-colour;
+}
+
+.app-content__markdown img {
+  max-width: 100%;
 }

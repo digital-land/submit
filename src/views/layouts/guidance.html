@@ -48,6 +48,19 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
   {% endif %}
 {% endblock %}
 
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    {% include "components/sub-navigation.html" %}
+  </div>
+  <div class="govuk-grid-column-two-thirds">
+    <div class="app-content__markdown">
+      {{ markdownContent | govukMarkdown("xl") | safe }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
 {% block footer %}
   {% include "components/app-footer.html" %}
 {% endblock %}
@@ -55,12 +68,10 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% block bodyEnd %}
     {{ super()}}
   {% block scripts %}
-    <body>
-      <script type="module" src="/assets/all.js"></script>
-      <script type="module">
-        window.GOVUKPrototypeComponents.initAll()
-      </script>
-    </body>
+    <script type="module" src="/assets/all.js"></script>
+    <script type="module">
+      window.GOVUKPrototypeComponents.initAll()
+    </script>
     {{ super() }}
     <script src="/public/js/application.bundle.js"></script>
   {% endblock %}

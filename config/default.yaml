@@ -53,3 +53,29 @@ datasetsFilter: [
     'listed-building',
     'listed-building-outline'
 ]
+guidanceNavigation:
+  title: Provide planning and housing data for England
+  items:
+    - label: Guidance for data providers
+      url: /guidance
+    - label: Prepare data to the specifications
+      url: /guidance/specifications
+      items:
+        - label: Article 4 direction
+          url: /guidance/specifications/article-4-direction
+        - label: Brownfield land
+          url: https://www.gov.uk/government/publications/brownfield-land-registers-data-standard/publish-your-brownfield-land-data
+        - label: Conservation area
+          url: /guidance/specifications/conservation-area
+        - label: Developer contributions data
+          url: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+        - label: Listed building
+          url: /guidance/specifications/listed-building
+        - label: Tree preservation order
+          url: /guidance/specifications/tree-preservation-order
+    - label: Use our service to check your data
+      url: /guidance/try-check-publish-service
+    - label: Publish data on your website
+      url: /guidance/publish-data-on-your-website
+    - label: Keep your data up to date
+      url: /guidance/keep-your-data-up-to-date
