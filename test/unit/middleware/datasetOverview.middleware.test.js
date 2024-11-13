@@ -1,5 +1,7 @@
+/* eslint no-import-assign: 0 */
 import { describe, it, expect, vi } from 'vitest'
 import { prepareDatasetOverviewTemplateParams, setNoticesFromSourceKey } from '../../../src/middleware/datasetOverview.middleware.js'
+import * as utils from '../../../src/utils/utils.js'
 
 describe('Dataset Overview Middleware', () => {
   const req = {
@@ -129,6 +131,76 @@ describe('Dataset Overview Middleware', () => {
       }
 
       setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+      expect(reqWithDataset.notice).toBeUndefined()
+    })
+
+    it('should set notice for due dataset at notice period boundary', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset',
+          startDate: '2020-11-01'
+        }
+      }
+
+      vi.setSystemTime(new Date('2022-02-01T15:30:00Z'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'due'
+      })
+    })
+
+    it('should set notice for due dataset with notice period 1', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset-2',
+          startDate: '2020-11-01'
+        }
+      }
+
+      utils.requiredDatasets = [
+        {
+          dataset: 'mock-dataset',
+          deadline: '2022-03-27T14:30:00Z',
+          noticePeriod: 1
+        }
+      ]
+
+      vi.setSystemTime(new Date('2022-03-20'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'due'
+      })
+    })
+
+    it('should not set notice for due dataset with notice period 0', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset-3',
+          startDate: '2020-11-01'
+        }
+      }
+
+      utils.requiredDatasets = [
+        {
+          dataset: 'mock-dataset',
+          deadline: '2022-03-31T14:30:00Z',
+          noticePeriod: 0
+        }
+      ]
+
+      vi.setSystemTime(new Date('2022-03-31'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
       expect(reqWithDataset.notice).toBeUndefined()
     })
   })

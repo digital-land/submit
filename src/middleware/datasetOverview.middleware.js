@@ -3,6 +3,8 @@ import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } fr
 import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -104,6 +106,15 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   const deadlineObj = requiredDatasets.find(deadline => deadline.dataset === dataset)
 
   if (deadlineObj) {
+    const noticePeriod = typeof deadlineObj.noticePeriod === 'string' ? parseInt(deadlineObj.noticePeriod, 10) : deadlineObj.noticePeriod
+
+    if (isNaN(noticePeriod) || typeof noticePeriod !== 'number') {
+      logger.warn('Invalid notice period configuration.', {
+        type: types.DataValidation
+      })
+      next()
+    }
+
     const currentDate = new Date()
     let datasetSuppliedForCurrentYear = false
     let datasetSuppliedForLastYear = false
@@ -116,7 +127,7 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
     datasetSuppliedForLastYear = startDate >= twoYearsAgoDeadline && startDate < lastYearDeadline
 
     const warningDate = new Date(deadlineDate.getTime())
-    warningDate.setMonth(warningDate.getMonth() - deadlineObj.noticePeriod)
+    warningDate.setMonth(warningDate.getMonth() - noticePeriod)
 
     const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
     const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear
