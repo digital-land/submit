@@ -5,15 +5,22 @@ import jsdom from 'jsdom'
 import { makeDatasetSlugToReadableNameFilter } from '../../src/filters/makeDatasetSlugToReadableNameFilter.js'
 import mocker from '../utils/mocker.js'
 import { datasetStatusEnum, OrgOverviewPage } from '../../src/routes/schemas.js'
+import { datasetSlugToReadableName } from '../../src/utils/datasetSlugToReadableName.js'
 
 const datasetNameMapping = new Map()
 const nunjucks = setupNunjucks({ datasetNameMapping })
 
-const seed = new Date().getTime()
+const seed = 1731493378197 || new Date().getTime()
 
 describe(`LPA Overview Page (seed: ${seed})`, () => {
   const params = mocker(OrgOverviewPage, seed)
-  const html = nunjucks.render('organisations/overview.html', params)
+  let html
+  try {
+    html = nunjucks.render('organisations/overview.html', params)
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
@@ -53,7 +60,15 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   params.datasets.forEach((dataset, i) => {
     it(`dataset cards are rendered with correct hints for dataset='${dataset.slug}'`, () => {
       let expectedHint = 'Data URL submitted'
-      if (dataset.status === 'Not submitted') {
+      if (dataset.notice) {
+        if (dataset.notice.type === 'due') {
+          expectedHint = `You must update your ${datasetSlugToReadableName(dataset.slug)} dataset by the ${dataset.notice.deadline}`
+        } else if (dataset.notice.type === 'overdue') {
+          expectedHint = `Your ${datasetSlugToReadableName(dataset.slug)} dataset is overdue`
+        } else {
+          throw new Error('Notice type not recognised')
+        }
+      } else if (dataset.status === 'Not submitted') {
         expectedHint = 'Data URL not submitted'
       } else if (dataset.status === 'Needs fixing') {
         expectedHint = 'in this dataset'
@@ -112,5 +127,37 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       const link = datasetCards[i].querySelector('.govuk-link')
       expect(link.href).toContain(expectedLink)
     })
+  })
+
+  let currentNoticeIndex = 0
+  const notificationBanners = document.querySelectorAll('.govuk-notification-banner')
+  params.datasets.forEach((dataset, i) => {
+    if (dataset.notice) {
+      const banner = notificationBanners[currentNoticeIndex]
+      currentNoticeIndex++
+
+      it(`Renders the notice for dataset ${dataset.slug}`, () => {
+        let expectedHeader
+        let expectedHint
+
+        if (dataset.notice.type === 'due') {
+          expectedHeader = `You must update your ${datasetSlugToReadableName(dataset.slug)} dataset by the ${dataset.notice.deadline}`
+        } else if (dataset.notice.type === 'overdue') {
+          expectedHeader = `Your ${datasetSlugToReadableName(dataset.slug)} dataset is overdue`
+          expectedHint = `It was due on ${dataset.notice.deadline}`
+        }
+
+        const expectedLinkHref = `/organisations/${params.organisation.organisation}/${dataset.slug}/get-started`
+
+        expect(banner.textContent).toContain(expectedHeader)
+        if (expectedHint) {
+          expect(banner.textContent).toContain(expectedHint)
+        }
+
+        const link = banner.querySelector('.govuk-notification-banner__link')
+
+        expect(link.getAttribute('href')).toEqual(expectedLinkHref)
+      })
+    }
   })
 })
