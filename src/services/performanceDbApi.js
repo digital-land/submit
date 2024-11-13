@@ -294,7 +294,7 @@ export default {
   },
 
   getEntitiesWithIssuesCountQuery: (req) => {
-    const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+    const { issue_type: issueType, issue_field: issueField } = req.params
     const { resource: resourceId } = req.resource
     return /* sql */ `
     SELECT count(DISTINCT entry_number) as count

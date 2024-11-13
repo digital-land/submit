@@ -13,9 +13,6 @@ import {
 import { fetchIf, fetchMany, fetchOne, FetchOptions, handleRejections, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
-import axios from 'axios'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
