@@ -115,4 +115,24 @@ describe('Dataset Overview Page', () => {
     expect(documentWithGeometries.querySelector('#map')).not.toBeNull()
     expect(documentWithGeometries.querySelector('script[src="/public/js/map.bundle.js"]')).not.toBeNull()
   })
+
+  it('Does not render a notice when none is provided', () => {
+    expect(document.querySelector('.govuk-notification-banner')).toBeNull()
+  })
+
+  it('Renders a notice when one is provided', () => {
+    const paramsWithNotice = {
+      ...params,
+      notice: {
+        type: 'due',
+        deadline: 'deadline'
+      }
+    }
+
+    const htmlWithNotice = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithNotice))
+    const domWithNotice = new jsdom.JSDOM(htmlWithNotice)
+    const documentWithNotice = domWithNotice.window.document
+
+    expect(documentWithNotice.querySelector('.govuk-notification-banner')).not.toBeNull()
+  })
 })
