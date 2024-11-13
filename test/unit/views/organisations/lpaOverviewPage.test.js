@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
-import { runGenericPageTests } from './generic-page.js'
+import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
+import { runGenericPageTests } from '../../generic-page.js'
 import jsdom from 'jsdom'
-import { makeDatasetSlugToReadableNameFilter } from '../../src/filters/makeDatasetSlugToReadableNameFilter.js'
-import mocker from '../utils/mocker.js'
-import { datasetStatusEnum, OrgOverviewPage } from '../../src/routes/schemas.js'
-import { datasetSlugToReadableName } from '../../src/utils/datasetSlugToReadableName.js'
+import { makeDatasetSlugToReadableNameFilter } from '../../../../src/filters/makeDatasetSlugToReadableNameFilter.js'
+import mocker from '../../../utils/mocker.js'
+import { datasetStatusEnum, OrgOverviewPage } from '../../../../src/routes/schemas.js'
+import { datasetSlugToReadableName } from '../../../../src/utils/datasetSlugToReadableName.js'
 
 const datasetNameMapping = new Map()
 const nunjucks = setupNunjucks({ datasetNameMapping })
