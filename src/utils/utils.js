@@ -172,7 +172,7 @@ export const requiredDatasets = [
  * // }
  */
 export const getDeadlineHistory = (deadline) => {
-  const deadlineRegex = /^.{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/
+  const deadlineRegex = /^.{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?Z$/
 
   if (!deadlineRegex.test(deadline)) {
     throw new Error(`Invalid deadline format. Expected 'YYYY-MM-DDTHH:MM:SSSZ', got '${deadline}'`)

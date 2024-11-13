@@ -133,7 +133,12 @@ describe('getDeadlineHistory', () => {
 
   it('throws an error if invalid deadline format', () => {
     const deadline = ' invalid deadline format '
-    expect(() => util.getDeadlineHistory(deadline)).toThrowError()
+    expect(() => util.getDeadlineHistory(deadline)).toThrowError(`Invalid deadline format. Expected 'YYYY-MM-DDTHH:MM:SSSZ', got '${deadline}'`)
+  })
+
+  it('doesn\'t accept months > 12', () => {
+    const deadline = 'XXXX-13-01T14:30:00Z'
+    expect(() => util.getDeadlineHistory(deadline)).toThrowError(`Invalid deadline format. Expected 'YYYY-MM-DDTHH:MM:SSSZ', got '${deadline}'`)
   })
 })
 
