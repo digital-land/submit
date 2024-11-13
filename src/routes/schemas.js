@@ -79,7 +79,10 @@ export const datasetStatusEnum = {
 }
 
 export const DeadlineNoticeField = v.strictObject({
-  type: v.string(),
+  type: v.union([
+    v.literal('due'),
+    v.literal('overdue')
+  ]),
   deadline: v.string()
 })
 
