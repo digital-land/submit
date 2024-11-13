@@ -112,7 +112,7 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
       logger.warn('Invalid notice period configuration.', {
         type: types.DataValidation
       })
-      next()
+      return next()
     }
 
     const currentDate = new Date()
@@ -122,6 +122,14 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
 
     const startDate = new Date(source.startDate)
+
+    if (startDate.toString() === 'Invalid Date') {
+      logger.warn('Invalid start date encountered', {
+        type: types.DataValidation,
+        startDate: source.startDate
+      })
+      return next()
+    }
 
     datasetSuppliedForCurrentYear = startDate >= lastYearDeadline && startDate < deadlineDate
     datasetSuppliedForLastYear = startDate >= twoYearsAgoDeadline && startDate < lastYearDeadline
