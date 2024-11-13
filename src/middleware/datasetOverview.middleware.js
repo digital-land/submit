@@ -108,7 +108,7 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   if (deadlineObj) {
     const noticePeriod = typeof deadlineObj.noticePeriod === 'string' ? parseInt(deadlineObj.noticePeriod, 10) : deadlineObj.noticePeriod
 
-    if (isNaN(noticePeriod) || typeof noticePeriod !== 'number') {
+    if (Number.isNaN(noticePeriod) || typeof noticePeriod !== 'number') {
       logger.warn('Invalid notice period configuration.', {
         type: types.DataValidation
       })
