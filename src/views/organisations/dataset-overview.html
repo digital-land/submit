@@ -151,7 +151,7 @@
         <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
 
         {% if notice %}
-          {{ deadlineNotice(dataset, notice, organisation) }}
+          {{ deadlineNotice(dataset.dataset, notice, organisation) }}
         {% endif %}
     </div>
 </div>

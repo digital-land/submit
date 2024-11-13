@@ -41,7 +41,7 @@
 
     {% for dataset in datasets %}
       {% if dataset.notice %}
-        {{ deadlineNotice(dataset, dataset.notice, organisation) }}
+        {{ deadlineNotice(dataset.slug, dataset.notice, organisation) }}
       {% endif %}
     {% endfor %}
 
@@ -95,7 +95,7 @@
             </h2>
             <div class="govuk-task-list__hint">
               {% if dataset.notice %}
-                {{ noticeHeading(dataset, dataset.notice) }}
+                {{ noticeHeading(dataset.slug, dataset.notice) }}
               {% elif dataset.status == 'Not submitted' %}
                 <p>Data URL not submitted</p>
               {% elif dataset.status == 'Error' %}
