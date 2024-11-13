@@ -121,22 +121,24 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
     const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
     const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear
 
-    const deadline = deadlineDate.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
+    if (dueNotice || overdueNotice) {
+      const deadline = deadlineDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
 
-    let type
-    if (dueNotice) {
-      type = 'due'
-    } else if (overdueNotice) {
-      type = 'overdue'
-    }
+      let type
+      if (dueNotice) {
+        type = 'due'
+      } else if (overdueNotice) {
+        type = 'overdue'
+      }
 
-    req.notice = {
-      deadline,
-      type
+      req.notice = {
+        deadline,
+        type
+      }
     }
   }
 
