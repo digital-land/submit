@@ -166,6 +166,8 @@ ORDER BY
   rle.name;`
 }
 
+export const issuesQueryLimit = 1000
+
 /**
  * Performance DB API service
  * @export
@@ -284,66 +286,44 @@ export default {
           return { resource, dataset }
         })
     })
-    return (await Promise.allSettled(requests)).map(p => p.value)
+
+    const results = await Promise.allSettled(requests)
+    return results
+      .filter(p => p.status === 'fulfilled')
+      .map(p => p.value)
   },
 
-  /**
-     * Retrieves the count of entities with issues of a specific type and field.
-     *
-     * @param {Object} params - Parameters for the query
-     * @param {string} params.resource - Resource to filter by
-     * @param {string} params.issueType - Issue type to filter by
-     * @param {string} params.issueField - Field to filter by
-     * @param {string} [database="digital-land"] - Database to query (optional)
-     * @returns {Promise<number>} Count of entities with issues
-     */
-  async getEntitiesWithIssuesCount ({
-    resource,
-    issueType,
-    issueField
-  }, database = 'digital-land') {
-    const sql = `
+  getEntitiesWithIssuesCountQuery: (req) => {
+    const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+    const { resource: resourceId } = req.resource
+    return /* sql */ `
     SELECT count(DISTINCT entry_number) as count
     FROM issue
-    WHERE resource = '${resource}'
+    WHERE resource = '${resourceId}'
     AND issue_type = '${issueType}'
     AND field = '${issueField}'
   `
-
-    const result = await datasette.runQuery(sql, database)
-
-    return result.formattedData[0].count
   },
 
   /**
-     * Retrieves issues from the performance database.
-     *
-     * @param {Object} params - Object with parameters for the query
-     * @param {string} params.resource - Resource to filter issues by
-     * @param {string} params.issueType - Issue type to filter by
-     * @param {string} params.issueField - Field to filter by
-     * @param {string} [database="digital-land"] - Database to query (defaults to "digital-land")
-     * @returns {Promise<Object>} - Promise resolving to an object with formatted data
-     */
-  async getIssues ({
-    resource,
-    issueType,
-    issueField,
-    offset = 0
-  }, database = 'digital-land') {
-    const sql = `
-    SELECT i.field, i.line_number, entry_number, message, issue_type, value
-    FROM issue i
-    WHERE resource = '${resource}'
-    AND issue_type = '${issueType}'
-    AND field = '${issueField}'
-    ORDER BY entry_number ASC
-    LIMIT 1000 ${offset ? `OFFSET ${offset}` : ''}
-  `
+   *
+   * @param {{ params: { issue_type: string, issue_field: string}, parsedParams: { pageNumber: number}, resource: { resource: string } }} req
+   * @returns {string} sql query
+   */
+  getIssuesQuery: (req) => {
+    const { issue_type: issueType, issue_field: issueField } = req.params
+    const { pageNumber } = req.parsedParams
+    const resourceId = req.resource.resource
+    const offset = Math.floor((pageNumber - 1) / issuesQueryLimit) * issuesQueryLimit
 
-    const result = await datasette.runQuery(sql, database)
-
-    return result.formattedData
+    return /* sql */ `
+      SELECT i.field, i.line_number, entry_number, message, issue_type, value
+      FROM issue i
+      WHERE resource = '${resourceId}'
+      AND issue_type = '${issueType}'
+      AND field = '${issueField}'
+      ORDER BY entry_number ASC
+      LIMIT 1000 ${offset ? `OFFSET ${offset}` : ''}`
   },
 
   /**
@@ -384,24 +364,17 @@ export default {
     return result.formattedData
   },
 
+  /**
+   * Query for the entity count for a given organisation and dataset.
+   *
+   * @param orgEntity
+   * @returns {string}
+   */
   entityCountQuery (orgEntity) {
     return /* sql */ `
       select count(entity) as entity_count
       from entity
       WHERE organisation_entity = '${orgEntity}'
     `
-  },
-
-  /**
-   * Retrieves the entity count for a given organisation and dataset.
-   *
-   * @param {string} orgEntity - The organisation entity to retrieve the entity count for.
-   * @param {string} dataset - The dataset to retrieve the entity count from.
-   * @returns {number} The entity count for the given resource and dataset.
-   */
-  async getEntityCount (orgEntity, dataset) {
-    const query = this.entityCountQuery(orgEntity)
-    const result = await datasette.runQuery(query, dataset)
-    return result.formattedData[0].entity_count
   }
 }
