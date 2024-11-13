@@ -159,132 +159,6 @@ describe('overview.middleware', () => {
     })
   })
 
-  describe('datasetSubmissionDeadlineCheck', async () => {
-    afterEach(() => {
-      vi.useRealTimers()
-    })
-
-    it('sets dueNotice flag if they are in the notice period and they haven\'t submitted this year', async () => {
-      const req = {
-        resourceLookup: [
-          {
-            dataset: 'brownfield-land',
-            startDate: '1995-03-17T10:00:00.000z'
-          }
-        ]
-      }
-
-      const res = {}
-      const next = vi.fn()
-
-      // tell vitest we use mocked time
-      vi.useFakeTimers()
-
-      // set hour within business hours
-      const date = new Date('1996-03-03T00:00:00.000Z')
-      vi.setSystemTime(date)
-
-      datasetSubmissionDeadlineCheck(req, res, next)
-
-      expect(req.noticeFlags[0].dueNotice).toBe(true)
-      expect(req.noticeFlags[0].overdueNotice).toBe(false)
-    })
-
-    it('sets overdue flag if we aren\t yet in the notice period and they haven\'t submitted for last year', async () => {
-      const req = {
-        resourceLookup: [
-          {
-            dataset: 'brownfield-land',
-            startDate: '1994-03-17T10:00:00.000z'
-          }
-        ]
-      }
-
-      const res = {}
-      const next = vi.fn()
-
-      // tell vitest we use mocked time
-      vi.useFakeTimers()
-
-      // set hour within business hours
-      const date = new Date('1995-12-03T00:00:00.000Z')
-      vi.setSystemTime(date)
-
-      datasetSubmissionDeadlineCheck(req, res, next)
-
-      expect(req.noticeFlags[0].dueNotice).toBe(false)
-      expect(req.noticeFlags[0].overdueNotice).toBe(true)
-    })
-
-    it('doesn\t set any flag if they have submitted this year and we are in the notice period', async () => {
-      const req = {
-        resourceLookup: [
-          {
-            dataset: 'brownfield-land',
-            startDate: '1996-03-17T10:00:00.000z'
-          }
-        ]
-      }
-
-      const res = {}
-      const next = vi.fn()
-
-      // tell vitest we use mocked time
-      vi.useFakeTimers()
-
-      // set hour within business hours
-      const date = new Date('1996-03-03T00:00:00.000Z')
-      vi.setSystemTime(date)
-
-      datasetSubmissionDeadlineCheck(req, res, next)
-
-      expect(req.noticeFlags[0].dueNotice).toBe(false)
-      expect(req.noticeFlags[0].overdueNotice).toBe(false)
-    })
-
-    it('sets the due flag if they haven\'t ever submitted and we are in the notice period', async () => {
-      const req = {
-        resourceLookup: []
-      }
-
-      const res = {}
-      const next = vi.fn()
-
-      // tell vitest we use mocked time
-      vi.useFakeTimers()
-
-      // set hour within business hours
-      const date = new Date('1996-03-03T00:00:00.000Z')
-      vi.setSystemTime(date)
-
-      datasetSubmissionDeadlineCheck(req, res, next)
-
-      expect(req.noticeFlags[0].dueNotice).toBe(true)
-      expect(req.noticeFlags[0].overdueNotice).toBe(false)
-    })
-
-    it('sets the overdue flag if they haven\'t ever submitted and we are not the notice period', async () => {
-      const req = {
-        resourceLookup: []
-      }
-
-      const res = {}
-      const next = vi.fn()
-
-      // tell vitest we use mocked time
-      vi.useFakeTimers()
-
-      // set hour within business hours
-      const date = new Date('1995-11-03T00:00:00.000Z')
-      vi.setSystemTime(date)
-
-      datasetSubmissionDeadlineCheck(req, res, next)
-
-      expect(req.noticeFlags[0].dueNotice).toBe(false)
-      expect(req.noticeFlags[0].overdueNotice).toBe(true)
-    })
-  })
-
   describe('datasetSubmissionDeadlineCheck', () => {
     const req = {
       resourceLookup: []
@@ -296,11 +170,15 @@ describe('overview.middleware', () => {
       vi.resetAllMocks()
     })
 
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
     it('sets dueNotice flag if they are in the notice period and they haven\'t submitted this year', async () => {
       req.resourceLookup = [
         {
           dataset: 'brownfield-land',
-          startDate: '1994-03-17T10:00:00.000z'
+          startDate: '1995-03-17T10:00:00.000z'
         }
       ]
 
@@ -316,7 +194,7 @@ describe('overview.middleware', () => {
       req.resourceLookup = [
         {
           dataset: 'brownfield-land',
-          startDate: '1993-03-17T10:00:00.000z'
+          startDate: '1994-03-17T10:00:00.000z'
         }
       ]
 
@@ -366,6 +244,7 @@ describe('overview.middleware', () => {
       expect(req.noticeFlags[0].overdueNotice).toBe(true)
     })
   })
+
 
   describe('addNoticesToDatasets', () => {
     const req = {
