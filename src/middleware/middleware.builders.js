@@ -290,13 +290,12 @@ export const onlyIf = (condition, middlewareFn) => {
   }
 }
 
-async function safeFn (req, res, next) {
-  const [_, err] = await this.middleware(req, res, next).then(val => [val, undefined]).catch(err => [undefined, err])
-  if (err) {
-    return next(err)
+async function safeFn(req, res, next) {
+  try {
+    await this.middleware(req, res, next)
+  } catch (err) {
+    next(err)
   }
-
-  return next()
 }
 
 /**
