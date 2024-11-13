@@ -69,9 +69,9 @@ describe('getDeadlineHistory', () => {
     const deadline = 'XXXX-05-15T00:00:00Z'
     const result = util.getDeadlineHistory(deadline)
     expect(result).toEqual({
-      lastYearDeadline: new Date('Tue, 15 May 2024 00:00:00 GMT+0100'),
-      deadlineDate: new Date('Wed, 15 May 2025 00:00:00 GMT+0100'),
-      twoYearsAgoDeadline: new Date('Tue, 15 May 2023 00:00:00 GMT+0100')
+      lastYearDeadline: new Date('Tue, 15 May 2024 00:00:00'),
+      deadlineDate: new Date('Wed, 15 May 2025 00:00:00'),
+      twoYearsAgoDeadline: new Date('Tue, 15 May 2023 00:00:00')
 
     })
   })
