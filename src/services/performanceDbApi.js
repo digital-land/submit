@@ -184,27 +184,6 @@ export default {
   datasetIssuesQuery,
 
   /**
-     * Retrieves LPA dataset issues for a given resource and dataset ID.
-     *
-     * @param {string} resource - The resource to retrieve issues for.
-     * @param {string} datasetId - The ID of the dataset to retrieve issues for.
-     *
-     * @returns {Promise<object[]>} An array of issue objects, each containing:
-     *   - field: {string} The field associated with the issue.
-     *   - issue_type: {string} The type of issue.
-     *   - line_number: {number} The line number of the issue.
-     *   - value: {string} The value associated with the issue.
-     *   - message: {string} The error message associated with the issue.
-     *   - status: {string} The status of the issue ('Needs fixing' or 'Live').
-     *   - num_issues: {number} The number of issues of this type.
-     */
-  getLpaDatasetIssues: async (resource, datasetId) => {
-    const sql = datasetIssuesQuery(resource, datasetId)
-    const result = await datasette.runQuery(sql)
-    return result.formattedData
-  },
-
-  /**
      * Returns a task message based on the provided issue type, issue count, and entity count.
      *
      * @param {{issue_type: string, num_issues: number, entityCount: number, field: string }} options
@@ -257,20 +236,6 @@ export default {
     LEFT JOIN organisation o ON REPLACE(ro.organisation, '-eng', '') = o.organisation
     WHERE REPLACE(ro.organisation, '-eng', '') = '${lpa}'
     AND rle.pipeline = '${dataset}'`
-  },
-
-  /**
-     * Retrieves the latest resource information for a given LPA and dataset.
-     *
-     * @param {string} lpa - The Local Planning Authority (LPA) identifier.
-     * @param {string} dataset - The dataset to retrieve the latest resource for.
-     * @returns {object} The latest resource information, including the resource, status, endpoint, endpoint URL, days since 200, and exception.
-     */
-  async getLatestResource (lpa, dataset) {
-    const sql = this.latestResourceQuery(lpa, dataset)
-    const result = await datasette.runQuery(sql)
-
-    return result.formattedData[0]
   },
 
   /**
