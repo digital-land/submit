@@ -1,10 +1,10 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
 import { addNoticesToDatasets, aggregateOverviewData, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
 
-vi.mock(import('../../../src/utils/utils.js'), async (importOriginal) => {
-  const origional = await importOriginal()
+vi.mock('../../../src/utils/utils.js', async (importOriginal) => {
+  const original = await importOriginal()
   return {
-    ...origional,
+    ...original,
     dataSubjects: {},
     getDeadlineHistory: () => ({
       deadlineDate: new Date('1996-04-17T10:00:00.000z'),
@@ -244,7 +244,6 @@ describe('overview.middleware', () => {
       expect(req.noticeFlags[0].overdueNotice).toBe(true)
     })
   })
-
 
   describe('addNoticesToDatasets', () => {
     const req = {
