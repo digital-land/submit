@@ -15,3 +15,11 @@
 {% macro noticeLink(organisation, slug) %}
   <a class="govuk-notification-banner__link" href="/organisations/{{organisation}}/{{slug}}/get-started">Follow the steps and check your data meets the specifications before you publish and submit it</a>.
 {% endmacro %}
+
+{% macro noticeCardHint(notice) %}
+  {% if notice.type == 'due' %}
+    You must update this dataset by {{notice.deadline}}
+  {% elseif notice.type == 'overdue' %}
+    This dataset is overdue
+  {% endif %}
+{% endmacro %}

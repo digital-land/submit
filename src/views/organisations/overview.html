@@ -3,7 +3,7 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "components/deadlineNotice.html" import deadlineNotice %}
-{% from "components/deadlineNoticeContent.html" import noticeHeading %}
+{% from "components/deadlineNoticeContent.html" import noticeHeading, noticeCardHint %}
 
 
 {% set pageName = organisation.name + " overview" %}
@@ -95,7 +95,7 @@
             </h2>
             <div class="govuk-task-list__hint">
               {% if dataset.notice %}
-                {{ noticeHeading(dataset.slug, dataset.notice) }}
+                <p>{{ noticeCardHint(dataset.notice) }}</p>
               {% elif dataset.status == 'Not submitted' %}
                 <p>Data URL not submitted</p>
               {% elif dataset.status == 'Error' %}
