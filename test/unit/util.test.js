@@ -99,7 +99,7 @@ describe('getDeadlineHistory', () => {
       const result = util.getDeadlineHistory(deadline)
       expect(result.lastYearDeadline instanceof Date).toBe(true)
       expect(result.deadlineDate.getFullYear()).toBe(2025)
-      expect(result.deadlineDate.getMonth()).toBe(4) // March
+      expect(result.deadlineDate.getMonth()).toBe(4) // May
       expect(result.deadlineDate.getDate()).toBe(15)
       expect(result.deadlineDate.getHours()).toBe(14)
       expect(result.deadlineDate.getMinutes()).toBe(30)
@@ -111,7 +111,7 @@ describe('getDeadlineHistory', () => {
       const result = util.getDeadlineHistory(deadline)
       expect(result.lastYearDeadline instanceof Date).toBe(true)
       expect(result.lastYearDeadline.getFullYear()).toBe(2024)
-      expect(result.lastYearDeadline.getMonth()).toBe(4) // March
+      expect(result.lastYearDeadline.getMonth()).toBe(4) // May
       expect(result.lastYearDeadline.getDate()).toBe(15)
       expect(result.lastYearDeadline.getHours()).toBe(14)
       expect(result.lastYearDeadline.getMinutes()).toBe(30)
@@ -123,7 +123,7 @@ describe('getDeadlineHistory', () => {
       const result = util.getDeadlineHistory(deadline)
       expect(result.twoYearsAgoDeadline instanceof Date).toBe(true)
       expect(result.twoYearsAgoDeadline.getFullYear()).toBe(2023)
-      expect(result.twoYearsAgoDeadline.getMonth()).toBe(4) // March
+      expect(result.twoYearsAgoDeadline.getMonth()).toBe(4) // May
       expect(result.twoYearsAgoDeadline.getDate()).toBe(15)
       expect(result.twoYearsAgoDeadline.getHours()).toBe(14)
       expect(result.twoYearsAgoDeadline.getMinutes()).toBe(30)
