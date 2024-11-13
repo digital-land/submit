@@ -6,9 +6,9 @@
   {% endif %}
 {% endmacro %}
 
-{% macro noticeHint(noticeType) %}
-  {% if dataset.notice.type == 'overdue' %}
-    It was due on {{noticeType}}
+{% macro noticeHint(notice) %}
+  {% if notice.type == 'overdue' %}
+    It was due on {{notice.deadline}}
   {% endif %}
 {% endmacro %}
 
