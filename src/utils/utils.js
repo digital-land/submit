@@ -142,10 +142,18 @@ export const allowedFileTypes = {
 
 }
 
+/**
+ * @typedef {Object} RequiredDataset
+ * @property {string} dataset - The dataset identifier
+ * @property {string} deadline - The deadline pattern in ISO format with YYYY placeholder
+ * @property {number} noticePeriod - Number of months before deadline to show notice
+ */
+
+/** @type {RequiredDataset[]} */
 export const requiredDatasets = [
   {
     dataset: 'brownfield-land',
-    deadline: 'XXXX-12-31T23:59:59.000Z',
+    deadline: 'YYYY-12-31T23:59:59.000Z',
     noticePeriod: 4 // months
   }
 ]
