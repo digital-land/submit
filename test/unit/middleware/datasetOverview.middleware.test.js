@@ -107,7 +107,7 @@ describe('Dataset Overview Middleware', () => {
         }
       }
 
-      vi.setSystemTime(new Date('2021-011-01'))
+      vi.setSystemTime(new Date('2021-11-01'))
 
       setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
       expect(reqWithDataset.notice).toEqual({
