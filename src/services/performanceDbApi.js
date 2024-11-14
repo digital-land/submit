@@ -291,7 +291,7 @@ export default {
     select
       rle.pipeline as dataset,
       rle.resource as resource,
-      rle.resource_start_date as resource_start_date
+      rle.resource_start_date as startDate
     from reporting_latest_endpoints rle
     where
       REPLACE(organisation, '-eng', '') = '${lpa}'
