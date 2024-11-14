@@ -195,6 +195,20 @@ export function aggregateOverviewData (req, res, next) {
     }
     datasets.push(info)
   }
+
+  requiredDatasets.forEach(requiredDataset => {
+    const hasDataset = datasets.findIndex(dataset => dataset.dataset === requiredDataset.dataset) >= 0
+    if (!hasDataset) {
+      datasets.push({
+        slug: requiredDataset.dataset,
+        issue_count: 0,
+        endpoint: undefined,
+        error: undefined,
+        status: 'Not submitted'
+      })
+    }
+  })
+
   req.datasets = datasets
   next()
 }
