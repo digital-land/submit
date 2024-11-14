@@ -33,7 +33,7 @@ const validateIssueDetailsQueryParams = validateQueryParams({
  * Requires resource id under `req.resource.resource`.
  */
 const fetchIssues = fetchMany({
-  query: performanceDbApi.getIssuesQuery,
+  query: ({ req }) => performanceDbApi.getIssuesQuery(req),
   result: 'issues',
   dataset: FetchOptions.fromParams
 })
@@ -102,7 +102,7 @@ async function fetchEntry (req, res, next) {
  * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
  */
 const fetchIssueEntitiesCount = fetchOne({
-  query: performanceDbApi.getEntitiesWithIssuesCountQuery,
+  query: ({ req }) => performanceDbApi.getEntitiesWithIssuesCountQuery(req),
   result: 'issueEntitiesCount',
   dataset: FetchOptions.fromParams
 })
@@ -173,7 +173,8 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, issueEntitiesCount, issuesByEntryNumber, entryNumberCount, entityCount: entityCountRow } = req
+  const { entryData, issueEntitiesCount: issueEntitiesCountObj, issuesByEntryNumber, entryNumberCount, entityCount: entityCountRow } = req
+  const { count: issueEntitiesCount } = issueEntitiesCountObj
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
   const { pageNumber } = req.parsedParams
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
@@ -279,7 +280,7 @@ export const getIssueDetails = renderTemplate({
 
 /* eslint-disable no-return-assign */
 const zeroEntityCount = (req) => req.entityCount = { entity_count: 0 }
-const zeroIssueEntitiesCount = (req) => req.issueEntitiesCount = 0
+const zeroIssueEntitiesCount = (req) => req.issueEntitiesCount = { count: 0 }
 const emptyIssuesCollection = (req) => req.issues = []
 
 export default [

@@ -40,7 +40,7 @@ describe('issueDetails.middleware.js', () => {
         // middleware supplies the below
         entryNumber: 1,
         entityCount: { entity_count: 1 },
-        issueEntitiesCount: 1,
+        issueEntitiesCount: { count: 1 },
         pageNumber: 1,
         orgInfo,
         dataset,
@@ -140,7 +140,7 @@ describe('issueDetails.middleware.js', () => {
         // middleware supplies the below
         entryNumber: 1,
         entityCount: { entity_count: 3 },
-        issueEntitiesCount: 1,
+        issueEntitiesCount: { count: 1 },
         pageNumber: 1,
         orgInfo,
         dataset,
