@@ -47,6 +47,6 @@ describe(`http-error.html(seed: ${seed})`, () => {
 
   it('re-submit link points to get-started page', () => {
     const resubmitLink = document.querySelector('a.resubmit-link')
-    expect(resubmitLink.getAttribute('href')).toBe(`/organisations/${encodeURIComponent(params.organisation.organisation)}/${encodeURIComponent(params.dataset.name)}/get-started`)
+    expect(resubmitLink.getAttribute('href')).toBe(`/organisations/${encodeURIComponent(params.organisation.organisation)}/${encodeURIComponent(params.dataset.dataset)}/get-started`)
   })
 })
