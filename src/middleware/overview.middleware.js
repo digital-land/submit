@@ -201,9 +201,6 @@ export function aggregateOverviewData (req, res, next) {
     if (!hasDataset) {
       datasets.push({
         slug: requiredDataset.dataset,
-        issue_count: 0,
-        endpoint: undefined,
-        error: undefined,
         status: 'Not submitted'
       })
     }

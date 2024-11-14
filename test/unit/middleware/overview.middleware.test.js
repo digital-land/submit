@@ -76,9 +76,11 @@ describe('overview.middleware', () => {
       vi.resetAllMocks()
     })
 
-    it('should set req.datasets to an empty array when input is empty', async () => {
+    it('should set req.datasets to just the required datasets when input is empty', async () => {
       await aggregateOverviewData(req, res, next)
-      expect(req.datasets).toEqual([])
+      expect(req.datasets).toEqual([
+        { status: 'Not submitted', slug: 'brownfield-land' }
+      ])
     })
 
     it('should count issues correctly', async () => {
@@ -96,7 +98,8 @@ describe('overview.middleware', () => {
       expect(req.datasets).toEqual([
         { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
         { endpoint: null, status: 'Error', slug: 'dataset2', error: undefined, issue_count: 0 },
-        { endpoint: 'https://example.com/3', status: 'Needs fixing', slug: 'dataset3', error: undefined, issue_count: 3 }
+        { endpoint: 'https://example.com/3', status: 'Needs fixing', slug: 'dataset3', error: undefined, issue_count: 3 },
+        { slug: 'brownfield-land', status: 'Not submitted' }
       ])
     })
 
