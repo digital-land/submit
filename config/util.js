@@ -50,18 +50,36 @@ export const ConfigSchema = v.object({
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
   }),
-  datasetsConfig: v.record(v.object({
-    guidanceUrl: v.string()
-  })),
+  datasetsConfig: v.object(
+    [
+      'article-4-direction',
+      'article-4-direction-area',
+      'brownfield-land',
+      'conservation-area',
+      'conservation-area-document',
+      'tree-preservation-order',
+      'tree-preservation-zone',
+      'tree',
+      'listed-building',
+      'listed-building-outline'
+    ].reduce((acc, key) => {
+      acc[key] = v.object({ guidanceUrl: v.string() })
+      return acc
+    }, {})
+  ),
   guidanceNavigation: v.object({
     title: v.string(),
     items: v.array(v.object({
       label: v.string(),
       url: v.string(),
-      items: v.array(v.object({
-        label: v.string(),
-        url: v.string()
-      })).optional()
+      items: v.optional(
+        v.array(
+          v.object({
+            label: v.string(),
+            url: v.string()
+          })
+        )
+      )
     }))
   })
 })
