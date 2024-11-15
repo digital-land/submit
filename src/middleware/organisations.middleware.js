@@ -6,7 +6,12 @@ const fetchOrganisations = fetchMany({
     return `
       select name, organisation
       from organisation
-      WHERE organisation like 'local-authority:%' OR organisation like 'national-park-authority:%'
+      WHERE organisation LIKE 'local-authority:%' OR organisation LIKE 'national-park-authority:%'
+      AND (
+          end_date IS NULL
+          OR end_date = ''
+          OR end_date >= current_timestamp
+        )
       ORDER BY name asc
     `
   },
