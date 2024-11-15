@@ -134,6 +134,15 @@ describe('overview.middleware', () => {
       expect(req.datasets[1].status).toBe('Needs fixing')
       expect(req.datasets[1].issue_count).toBe(2) // 2 rows affected (in the same two fields)
     })
+
+    it('should\'t add a required dataset if it is already present', async () => {
+      const exampleData = [
+        { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'brownfield-land', entity_count: 5, issue_count: 5, fields: 'foo,bar' }
+      ]
+      req.lpaOverview = exampleData
+      await aggregateOverviewData(req, res, next)
+      expect(req.datasets.length).toEqual(1)
+    })
   })
 
   describe('getOverview', () => {
