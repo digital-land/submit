@@ -2,7 +2,14 @@ import { logPageError } from './common.middleware.js'
 import { fetchMany, renderTemplate } from './middleware.builders.js'
 
 const fetchOrganisations = fetchMany({
-  query: ({ req, params }) => 'select name, organisation from organisation',
+  query: ({ req, params }) => {
+    return `
+      select name, organisation
+      from organisation
+      WHERE organisation like '%local-authority%' OR organisation like '%national-park-authority%'
+      ORDER BY name asc
+    `
+  },
   result: 'organisations'
 })
 
