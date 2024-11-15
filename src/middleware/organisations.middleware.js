@@ -4,15 +4,25 @@ import { fetchMany, renderTemplate } from './middleware.builders.js'
 const fetchOrganisations = fetchMany({
   query: ({ req, params }) => {
     return `
-      select name, organisation
-      from organisation
-      WHERE organisation LIKE 'local-authority:%' OR organisation LIKE 'national-park-authority:%'
-      AND (
+      SELECT
+        name,
+        organisation,
+        end_date,
+        current_timestamp
+      FROM
+        organisation
+      WHERE
+        (
+          organisation LIKE 'local-authority:%'
+          OR organisation LIKE 'national-park-authority:%'
+        )
+        AND (
           end_date IS NULL
           OR end_date = ''
           OR end_date >= current_timestamp
         )
-      ORDER BY name asc
+      ORDER BY
+        name ASC
     `
   },
   result: 'organisations'
