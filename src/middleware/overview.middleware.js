@@ -197,7 +197,7 @@ export function aggregateOverviewData (req, res, next) {
   }
 
   requiredDatasets.forEach(requiredDataset => {
-    const hasDataset = datasets.findIndex(dataset => dataset.dataset === requiredDataset.dataset) >= 0
+    const hasDataset = datasets.findIndex(dataset => dataset.slug === requiredDataset.dataset) >= 0
     if (!hasDataset) {
       datasets.push({
         slug: requiredDataset.dataset,
