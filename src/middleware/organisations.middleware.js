@@ -6,7 +6,7 @@ const fetchOrganisations = fetchMany({
     return `
       select name, organisation
       from organisation
-      WHERE organisation like '%local-authority%' OR organisation like '%national-park-authority%'
+      WHERE organisation like 'local-authority:%' OR organisation like 'national-park-authority:%'
       ORDER BY name asc
     `
   },
