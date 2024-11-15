@@ -81,7 +81,18 @@ export const ConfigSchema = v.object({
         )
       )
     }))
-  })
+  }),
+  smartlook: v.optional(
+    v.object({
+      key: v.string(),
+      region: v.string()
+    })
+  ),
+  googleAnalytics: v.optional(
+    v.object({
+      measurementId: v.string()
+    })
+  )
 })
 
 const readConfig = (config) => {
