@@ -49,6 +49,20 @@ export const ConfigSchema = v.object({
       AcknowledgementTemplateId: v.uuid()
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
+  }),
+  datasetsConfig: v.record(v.object({
+    guidanceUrl: v.string()
+  })),
+  guidanceNavigation: v.object({
+    title: v.string(),
+    items: v.array(v.object({
+      label: v.string(),
+      url: v.string(),
+      items: v.array(v.object({
+        label: v.string(),
+        url: v.string()
+      })).optional()
+    }))
   })
 })
 
