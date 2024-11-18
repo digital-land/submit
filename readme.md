@@ -29,7 +29,7 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
     - **Contact**: Infrastructure Team @ MHCLG
 - [Local Authorities API](https://github.com/digital-land/async-request-backend) (external dependency)
     - **Description**: asynchronous request processing for frontends
-    - **Used for**: Processing user submitted data 
+    - **Used for**: Processing user submitted data
     - **Contact**: Infrastructure Team @ MHCLG
 
 ## API Keys/Secrets
@@ -46,6 +46,10 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
     - **Description**: Application monitoring service
     - **Used for**: Monotoring warnings and errors.
     - **Contact**: Infrastructure Team @ MHCLG
+- [Google Analytics](https://analytics.google.com/analytics)
+    - **Description**: Web Analytics
+    - **Used for**: Collecting data on website usage
+    - **Contact**: Providers team @ MHCLG
 
 ## Software
 
@@ -66,7 +70,7 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
 - Install the node packages
     ```
     npm install
-    ``` 
+    ```
 - setup husky pre-commit hooks
     ```
     npm run prepare
@@ -78,7 +82,7 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
 
 ## Running the application
 
-The application picks up one of the configs in `config` directory, 
+The application picks up one of the configs in `config` directory,
 depeding on `NODE_ENV` environment variable (set to 'production' by default).
 
 You can start the appliction in one fo the following ways (see "scripts" section

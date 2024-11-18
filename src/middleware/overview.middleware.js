@@ -21,7 +21,7 @@ const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
  */
 const fetchLpaOverview = fetchMany({
   query: ({ req, params }) => {
-    return lpaOverviewQuery(params.lpa, { datasetsFilter: config.datasetsFilter, entityCounts: req.entityCounts })
+    return lpaOverviewQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig), entityCounts: req.entityCounts })
   },
   dataset: FetchOptions.performanceDb,
   result: 'lpaOverview'
@@ -29,7 +29,7 @@ const fetchLpaOverview = fetchMany({
 
 const fetchLatestResources = fetchMany({
   query: ({ params }) => {
-    return performanceDbApi.latestResourcesQuery(params.lpa, { datasetsFilter: config.datasetsFilter })
+    return performanceDbApi.latestResourcesQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
   },
   result: 'resourceLookup',
   dataset: FetchOptions.performanceDb
