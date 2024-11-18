@@ -1,6 +1,6 @@
 import performanceDbApi, { lpaOverviewQuery } from '../services/performanceDbApi.js'
 import { fetchOrgInfo, logPageError } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { fetchMany, FetchOptions, handleRejections, renderTemplate } from './middleware.builders.js'
 import { dataSubjects } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
@@ -21,7 +21,7 @@ const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
  */
 const fetchLpaOverview = fetchMany({
   query: ({ req, params }) => {
-    return lpaOverviewQuery(params.lpa, { datasetsFilter: config.datasetsFilter, entityCounts: req.entityCounts })
+    return lpaOverviewQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig), entityCounts: req.entityCounts })
   },
   dataset: FetchOptions.performanceDb,
   result: 'lpaOverview'
@@ -29,7 +29,7 @@ const fetchLpaOverview = fetchMany({
 
 const fetchLatestResources = fetchMany({
   query: ({ params }) => {
-    return performanceDbApi.latestResourcesQuery(params.lpa, { datasetsFilter: config.datasetsFilter })
+    return performanceDbApi.latestResourcesQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
   },
   result: 'resourceLookup',
   dataset: FetchOptions.performanceDb
@@ -191,7 +191,7 @@ export const getOverview = renderTemplate({
 export default [
   fetchOrgInfo,
   fetchLatestResources,
-  fetchEntityCounts,
+  handleRejections(fetchEntityCounts),
   fetchLpaOverview,
   fetchProvisions,
   prepareOverviewTemplateParams,
