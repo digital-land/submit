@@ -137,4 +137,27 @@ describe('middleware.builders', () => {
       expect(fallbackPolicy).toHaveBeenCalledOnce()
     })
   })
+
+  describe('handleRejections', async () => {
+    const trouble = async () => Promise.reject(new Error('something failed'))
+
+    it('should handle rejections', async () => {
+      const mw = middleware.handleRejections(async (req, res, next) => {
+        await trouble()
+      })
+      const next = vi.fn()
+      await mw({}, {}, next)
+
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(expect.any(Error))
+    })
+
+    it('should invoke the wrapped middleware', async () => {
+      const mw = middleware.handleRejections(async (req, res, next) => next())
+      const next = vi.fn()
+      await mw({}, {}, next)
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
 })

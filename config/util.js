@@ -49,7 +49,50 @@ export const ConfigSchema = v.object({
       AcknowledgementTemplateId: v.uuid()
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
-  })
+  }),
+  datasetsConfig: v.object(
+    [
+      'article-4-direction',
+      'article-4-direction-area',
+      'brownfield-land',
+      'conservation-area',
+      'conservation-area-document',
+      'tree-preservation-order',
+      'tree-preservation-zone',
+      'tree',
+      'listed-building',
+      'listed-building-outline'
+    ].reduce((acc, key) => {
+      acc[key] = v.object({ guidanceUrl: v.string() })
+      return acc
+    }, {})
+  ),
+  guidanceNavigation: v.object({
+    title: v.string(),
+    items: v.array(v.object({
+      label: v.string(),
+      url: v.string(),
+      items: v.optional(
+        v.array(
+          v.object({
+            label: v.string(),
+            url: v.string()
+          })
+        )
+      )
+    }))
+  }),
+  smartlook: v.optional(
+    v.object({
+      key: v.string(),
+      region: v.string()
+    })
+  ),
+  googleAnalytics: v.optional(
+    v.object({
+      measurementId: v.string()
+    })
+  )
 })
 
 const readConfig = (config) => {
