@@ -1,4 +1,4 @@
-import performanceDbApi from '../services/performanceDbApi.js'
+import performanceDbApi, { issuesQueryLimit } from '../services/performanceDbApi.js'
 import {
   fetchDatasetInfo,
   fetchEntityCount,
@@ -10,11 +10,9 @@ import {
   validateQueryParams,
   getIsPageNumberInRange
 } from './common.middleware.js'
-import { fetchIf, renderTemplate } from './middleware.builders.js'
+import { fetchIf, fetchMany, fetchOne, FetchOptions, handleRejections, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
@@ -29,32 +27,16 @@ const validateIssueDetailsQueryParams = validateQueryParams({
   schema: IssueDetailsQueryParams
 })
 
-const issuesQueryLimit = 1000
-
 /**
- *
  * Middleware. Updates `req` with `issues`.
  *
  * Requires resource id under `req.resource.resource`.
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
  */
-async function fetchIssues (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { pageNumber } = req.parsedParams
-  const resourceId = req.resource.resource
-  const offset = Math.floor((pageNumber - 1) / issuesQueryLimit) * issuesQueryLimit
-  logger.debug('fetchIssues()', { type: types.App, resourceId, issueType, issueField, offset })
-  try {
-    const issues = await performanceDbApi.getIssues({ resource: resourceId, issueType, issueField, offset }, datasetId)
-    req.issues = issues
-    next()
-  } catch (error) {
-    next(error)
-  }
-}
+const fetchIssues = fetchMany({
+  query: ({ req }) => performanceDbApi.getIssuesQuery(req),
+  result: 'issues',
+  dataset: FetchOptions.fromParams
+})
 
 /**
  *
@@ -117,22 +99,13 @@ async function fetchEntry (req, res, next) {
 }
 
 /**
- *
  * Middleware. Updates `req` with `issueEntitiesCount` which is the count of entities that have issues.
- *
- * Requires `req.resource.resource`
- *
- * @param {*} req
- * @param {*} res
- * @param {*} next
  */
-async function fetchIssueEntitiesCount (req, res, next) {
-  const { dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
-  const { resource: resourceId } = req.resource
-  const issueEntitiesCount = await performanceDbApi.getEntitiesWithIssuesCount({ resource: resourceId, issueType, issueField }, datasetId)
-  req.issueEntitiesCount = issueEntitiesCount
-  next()
-}
+const fetchIssueEntitiesCount = fetchOne({
+  query: ({ req }) => performanceDbApi.getEntitiesWithIssuesCountQuery(req),
+  result: 'issueEntitiesCount',
+  dataset: FetchOptions.fromParams
+})
 
 /**
  *
@@ -200,7 +173,8 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
  * Middleware. Updates req with `templateParams`
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, issueEntitiesCount, issuesByEntryNumber, entryNumberCount, entityCount: entityCountRow } = req
+  const { entryData, issueEntitiesCount: issueEntitiesCountObj, issuesByEntryNumber, entryNumberCount, entityCount: entityCountRow } = req
+  const { count: issueEntitiesCount } = issueEntitiesCountObj
   const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
   const { pageNumber } = req.parsedParams
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
@@ -306,7 +280,7 @@ export const getIssueDetails = renderTemplate({
 
 /* eslint-disable no-return-assign */
 const zeroEntityCount = (req) => req.entityCount = { entity_count: 0 }
-const zeroIssueEntitiesCount = (req) => req.issueEntitiesCount = 0
+const zeroIssueEntitiesCount = (req) => req.issueEntitiesCount = { count: 0 }
 const emptyIssuesCollection = (req) => req.issues = []
 
 export default [
@@ -318,7 +292,7 @@ export default [
   reformatIssuesToBeByEntryNumber,
   fetchIf(isResourceDataPresent, fetchIssueEntitiesCount, zeroIssueEntitiesCount),
   getIsPageNumberInRange('issueEntitiesCount'),
-  fetchEntry,
+  handleRejections(fetchEntry),
   fetchIf(isResourceDataPresent, fetchEntityCount, zeroEntityCount),
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
