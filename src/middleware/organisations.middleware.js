@@ -6,9 +6,7 @@ const fetchOrganisations = fetchMany({
     return `
       SELECT
         name,
-        organisation,
-        end_date,
-        current_timestamp
+        organisation
       FROM
         organisation
       WHERE
