@@ -90,7 +90,7 @@ describe('Dataset Overview Middleware', () => {
         }
       }
 
-      vi.setSystemTime(new Date('2022-02-01'))
+      vi.setSystemTime(new Date('2022-02-01T00:00:00Z'))
 
       setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
 
@@ -109,7 +109,7 @@ describe('Dataset Overview Middleware', () => {
         }
       }
 
-      vi.setSystemTime(new Date('2021-11-01'))
+      vi.setSystemTime(new Date('2021-11-01T00:00:00Z'))
 
       setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
       expect(reqWithDataset.notice).toEqual({
@@ -197,7 +197,7 @@ describe('Dataset Overview Middleware', () => {
         }
       ]
 
-      vi.setSystemTime(new Date('2022-03-31'))
+      vi.setSystemTime(new Date('2022-03-31T00:00:00Z'))
 
       setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
 
