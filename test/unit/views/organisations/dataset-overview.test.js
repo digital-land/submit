@@ -115,4 +115,30 @@ describe('Dataset Overview Page', () => {
     expect(documentWithGeometries.querySelector('#map')).not.toBeNull()
     expect(documentWithGeometries.querySelector('script[src="/public/js/map.bundle.js"]')).not.toBeNull()
   })
+
+  it('Renders dataset actions sections', () => {
+    const paramsWithGeometries = {
+      ...params,
+      dataset: {
+        dataset: 'article-4-direction-area',
+        name: 'Article 4 direction area',
+        collection: 'article-4-direction'
+      }
+    }
+    const htmlWithGeometries = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithGeometries))
+    const domWithGeometries = new jsdom.JSDOM(htmlWithGeometries)
+    const document = domWithGeometries.window.document
+
+    const actionsColumn = document.querySelector('#main-content .govuk-grid-column-one-third')
+    const header = actionsColumn.querySelector('h2.govuk-heading-m')
+    const links = actionsColumn.querySelectorAll('.govuk-list li')
+
+    expect(header.textContent.trim()).toEqual('Dataset actions')
+
+    expect(links[0].textContent.trim()).toEqual('Check Article 4 direction area dataset')
+    expect(links[0].querySelector('.govuk-link').href).toEqual('/check/link?dataset=article-4-direction-area&orgName=Mock%20org')
+
+    expect(links[1].textContent.trim()).toEqual('Article 4 direction area guidance')
+    expect(links[1].querySelector('.govuk-link').href).toEqual('/guidance/specifications/article-4-direction')
+  })
 })

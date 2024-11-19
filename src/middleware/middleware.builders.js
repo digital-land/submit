@@ -289,3 +289,23 @@ export const onlyIf = (condition, middlewareFn) => {
     }
   }
 }
+
+async function safeFn (req, res, next) {
+  try {
+    await this.middleware(req, res, next)
+  } catch (err) {
+    next(err)
+  }
+}
+
+/**
+ * Express 4.x does not handle promise rejections in middleware on its own. The
+ * @{fetchOne} and @{fetchMany} middleware handle that case but for any other async
+ * code you can wrap it in this middleware to ensure rejections don't end up unhandled.
+ *
+ * @param middleware
+ * @returns {any}
+ */
+export const handleRejections = (middleware) => {
+  return safeFn.bind({ middleware })
+}
