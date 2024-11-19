@@ -23,6 +23,11 @@ describe('overview.middleware', () => {
       const req = {
         params: { lpa: 'LPA' },
         orgInfo: exampleLpa,
+        provisions: [
+          { dataset: 'dataset1', provision_reason: 'statutory', project: 'open-digital-planning' },
+          { dataset: 'dataset2', provision_reason: 'expected', project: 'open-digital-planning' },
+          { dataset: 'dataset3', provision_reason: 'statutory', project: 'open-digital-planning' }
+        ],
         lpaOverview: perfDbApiResponse
       }
       const res = { render: vi.fn() }
@@ -31,11 +36,15 @@ describe('overview.middleware', () => {
 
       const expectedTemplateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
-        datasets: expect.arrayContaining([
-          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
-          { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 },
-          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0 }
-        ]),
+        datasets: {
+          statutory: expect.arrayContaining([
+            { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0, project: 'open-digital-planning' },
+            { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0, project: 'open-digital-planning' }
+          ]),
+          other: expect.arrayContaining([
+            { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0, project: 'open-digital-planning' }
+          ])
+        },
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
@@ -110,11 +119,13 @@ describe('overview.middleware', () => {
 
       req.templateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
-        datasets: [
-          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
-          { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
-          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3' }
-        ],
+        datasets: {
+          other: [
+            { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
+            { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
+            { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3' }
+          ]
+        },
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
