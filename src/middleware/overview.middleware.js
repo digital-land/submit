@@ -4,6 +4,7 @@ import { fetchMany, FetchOptions, handleRejections, renderTemplate } from './mid
 import { dataSubjects, getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
+import logger from '../utils/logger.js'
 
 // get a list of available datasets
 const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
@@ -127,10 +128,20 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
 export const addNoticesToDatasets = (req, res, next) => {
   const { noticeFlags, datasets } = req
 
+  if (!Array.isArray(noticeFlags) || !Array.isArray(datasets)) {
+    logger.error('Invalid noticeFlags or datasets structure')
+    next()
+  }
+
   req.datasets = datasets.map(dataset => {
     const notice = noticeFlags.find(notice => notice.dataset === dataset.dataset)
 
     if (!notice || (!notice.dueNotice && !notice.overdueNotice)) {
+      return dataset
+    }
+
+    if (!(notice.deadline instanceof Date) || isNaN(notice.deadline.getTime())) {
+      logger.error(`Invalid deadline for dataset: ${dataset.dataset}`)
       return dataset
     }
 
