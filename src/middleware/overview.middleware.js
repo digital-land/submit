@@ -150,7 +150,7 @@ export const addNoticesToDatasets = (req, res, next) => {
       return dataset
     }
 
-    if (!(notice.deadline instanceof Date) || isNaN(notice.deadline.getTime())) {
+    if (!(notice.deadline instanceof Date) || Number.isNaN(notice.deadline.getTime())) {
       logger.error(`Invalid deadline for dataset: ${dataset.dataset}`)
       return dataset
     }
