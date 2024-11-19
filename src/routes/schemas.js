@@ -80,21 +80,26 @@ export const datasetStatusEnum = {
 
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
+const DatasetItem = v.strictObject({
+  endpoint: v.optional(v.url()),
+  status: v.enum(datasetStatusEnum),
+  slug: NonEmptyString,
+  issue_count: v.optional(v.number()),
+  error: v.optional(v.nullable(NonEmptyString)),
+  http_error: v.optional(NonEmptyString),
+  issue: v.optional(NonEmptyString),
+  entity_count: v.optional(v.number()),
+  project: v.optional(v.string()),
+  // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
+  numIssues: v.optional(v.number())
+})
 
 export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
-  datasets: v.array(v.strictObject({
-    endpoint: v.optional(v.url()),
-    status: v.enum(datasetStatusEnum),
-    slug: NonEmptyString,
-    issue_count: v.optional(v.number()),
-    error: v.optional(v.nullable(NonEmptyString)),
-    http_error: v.optional(NonEmptyString),
-    issue: v.optional(NonEmptyString),
-    entity_count: v.optional(v.number()),
-    // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
-    numIssues: v.optional(v.number())
-  })),
+  datasets: v.object({
+    statutory: v.optional(v.array(DatasetItem)),
+    other: v.optional(v.array(DatasetItem))
+  }),
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),
   datasetsWithIssues: v.integer(),
@@ -124,7 +129,7 @@ export const OrgDatasetOverview = v.strictObject({
       documentation_url: v.optional(v.string()),
       endpoint: v.string(),
       lastAccessed: v.string(),
-      lastUpdated: v.string(),
+      lastUpdated: v.nullable(v.string()),
       error: v.optional(v.strictObject({
         code: v.integer(),
         exception: v.string()
