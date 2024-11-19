@@ -37,7 +37,7 @@ const fetchLatestResources = fetchMany({
 
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
-    const excludeDatasets = config.datasetsFilter.map(dataset => `'${dataset}'`).join(',')
+    const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
     return /* sql */ `select dataset, project, provision_reason 
        from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
   },

@@ -89,6 +89,7 @@ const DatasetItem = v.strictObject({
   http_error: v.optional(NonEmptyString),
   issue: v.optional(NonEmptyString),
   entity_count: v.optional(v.number()),
+  project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
   numIssues: v.optional(v.number())
 })
@@ -128,7 +129,7 @@ export const OrgDatasetOverview = v.strictObject({
       documentation_url: v.optional(v.string()),
       endpoint: v.string(),
       lastAccessed: v.string(),
-      lastUpdated: v.string(),
+      lastUpdated: v.nullable(v.string()),
       error: v.optional(v.strictObject({
         code: v.integer(),
         exception: v.string()
