@@ -93,8 +93,18 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
 
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(dataset.deadline)
 
+    if (!deadlineDate || !lastYearDeadline || !twoYearsAgoDeadline) {
+      logger.error(`Invalid deadline dates for dataset: ${dataset.dataset}`)
+      return { dataset: dataset.dataset, dueNotice: false, overdueNotice: false, deadline: undefined }
+    }
+
     if (resource) {
       const startDate = new Date(resource.startDate)
+
+      if (!resource.startDate || isNaN(startDate.getTime())) {
+        logger.error(`Invalid start date for resource: ${dataset.dataset}`)
+        return { dataset: dataset.dataset, dueNotice: false, overdueNotice: false, deadline: undefined }
+      }
 
       datasetSuppliedForCurrentYear = startDate >= lastYearDeadline && startDate < deadlineDate
       datasetSuppliedForLastYear = startDate >= twoYearsAgoDeadline && startDate < lastYearDeadline
