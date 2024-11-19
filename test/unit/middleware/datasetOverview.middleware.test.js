@@ -170,7 +170,7 @@ describe('Dataset Overview Middleware', () => {
         }
       ]
 
-      vi.setSystemTime(new Date('2022-03-20'))
+      vi.setSystemTime(new Date('2022-03-20T00:00:00Z'))
 
       setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
 
