@@ -39,8 +39,6 @@
       {{ pageName }}
     </h1>
 
-    {{ datasets | dump }}
-
     {% for dataset in datasets %}
       {% if dataset.notice %}
         {{ deadlineNotice(dataset.dataset, dataset.notice, organisation) }}
