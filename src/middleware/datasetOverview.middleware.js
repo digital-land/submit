@@ -207,7 +207,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
       endpoint: source.endpoint_url,
       documentation_url: source.documentation_url,
       lastAccessed: source.latest_log_entry_date,
-      lastUpdated: source.endpoint_entry_date, // not sure if this is the lastupdated
+      lastUpdated: source.resource_start_date, // as in: when was the _resource_ updated, not data under that resource
       error
     }
   })

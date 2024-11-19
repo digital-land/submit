@@ -13,6 +13,10 @@ export function setupErrorHandlers (app) {
       errorStack: err.stack
     })
 
+    if (res.headersSent) {
+      return next(err)
+    }
+
     err.template = err.template || (err.status && `errorPages/${err.status}`) || 'errorPages/500'
 
     if (err.redirect) {
@@ -28,6 +32,9 @@ export function setupErrorHandlers (app) {
   })
 
   app.use((req, res, next) => {
+    if (res.headersSent) {
+      return next()
+    }
     logger.info({
       type: types.Response,
       method: req.method,
