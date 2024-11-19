@@ -10,7 +10,7 @@ import { datasetSlugToReadableName } from '../../../../src/utils/datasetSlugToRe
 const datasetNameMapping = new Map()
 const nunjucks = setupNunjucks({ datasetNameMapping })
 
-const seed = 1731493378197 || new Date().getTime()
+const seed = new Date().getTime()
 
 /**
  * Verifies the number of rendered dataset cards for group designated by `key`
