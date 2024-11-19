@@ -101,7 +101,7 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
     if (resource) {
       const startDate = new Date(resource.startDate)
 
-      if (!resource.startDate || isNaN(startDate.getTime())) {
+      if (!resource.startDate || Number.isNaN(startDate.getTime())) {
         logger.error(`Invalid start date for resource: ${dataset.dataset}`)
         return { dataset: dataset.dataset, dueNotice: false, overdueNotice: false, deadline: undefined }
       }
@@ -150,7 +150,7 @@ export const addNoticesToDatasets = (req, res, next) => {
       return dataset
     }
 
-    if (!(notice.deadline instanceof Date) || isNaN(notice.deadline.getTime())) {
+    if (!(notice.deadline instanceof Date) || Number.isNaN(notice.deadline.getTime())) {
       logger.error(`Invalid deadline for dataset: ${dataset.dataset}`)
       return dataset
     }
