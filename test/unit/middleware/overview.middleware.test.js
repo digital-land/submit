@@ -24,21 +24,21 @@ describe('overview.middleware', () => {
         orgInfo: exampleLpa,
         datasets: [
           {
-            slug: 'dataset1',
+            dataset: 'dataset1',
             issue_count: 0,
             endpoint: 'https://example.com',
             error: undefined,
             status: 'Live'
           },
           {
-            slug: 'dataset2',
+            dataset: 'dataset2',
             issue_count: 0,
             endpoint: null,
             error: undefined,
             status: 'Needs fixing'
           },
           {
-            slug: 'dataset3',
+            dataset: 'dataset3',
             issue_count: 0,
             endpoint: 'https://example.com',
             error: undefined,
@@ -53,9 +53,9 @@ describe('overview.middleware', () => {
       const expectedTemplateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
         datasets: expect.arrayContaining([
-          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
-          { endpoint: null, status: 'Needs fixing', slug: 'dataset2', error: undefined, issue_count: 0 },
-          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3', error: undefined, issue_count: 0 }
+          { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1', error: undefined, issue_count: 0 },
+          { endpoint: null, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issue_count: 0 },
+          { endpoint: 'https://example.com', status: 'Error', dataset: 'dataset3', error: undefined, issue_count: 0 }
         ]),
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
@@ -79,7 +79,7 @@ describe('overview.middleware', () => {
     it('should set req.datasets to just the required datasets when input is empty', async () => {
       await aggregateOverviewData(req, res, next)
       expect(req.datasets).toEqual([
-        { status: 'Not submitted', slug: 'brownfield-land' }
+        { status: 'Not submitted', dataset: 'brownfield-land' }
       ])
     })
 
@@ -96,10 +96,10 @@ describe('overview.middleware', () => {
       await aggregateOverviewData(req, res, next)
 
       expect(req.datasets).toEqual([
-        { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1', error: undefined, issue_count: 0 },
-        { endpoint: null, status: 'Error', slug: 'dataset2', error: undefined, issue_count: 0 },
-        { endpoint: 'https://example.com/3', status: 'Needs fixing', slug: 'dataset3', error: undefined, issue_count: 3 },
-        { slug: 'brownfield-land', status: 'Not submitted' }
+        { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1', error: undefined, issue_count: 0 },
+        { endpoint: null, status: 'Error', dataset: 'dataset2', error: undefined, issue_count: 0 },
+        { endpoint: 'https://example.com/3', status: 'Needs fixing', dataset: 'dataset3', error: undefined, issue_count: 3 },
+        { dataset: 'brownfield-land', status: 'Not submitted' }
       ])
     })
 
@@ -154,9 +154,9 @@ describe('overview.middleware', () => {
       req.templateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
         datasets: [
-          { endpoint: 'https://example.com', status: 'Live', slug: 'dataset1' },
-          { endpoint: null, status: 'Needs fixing', slug: 'dataset2' },
-          { endpoint: 'https://example.com', status: 'Error', slug: 'dataset3' }
+          { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1' },
+          { endpoint: null, status: 'Needs fixing', dataset: 'dataset2' },
+          { endpoint: 'https://example.com', status: 'Error', dataset: 'dataset3' }
         ],
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
@@ -261,9 +261,9 @@ describe('overview.middleware', () => {
     const req = {
       params: { lpa: 'LPA' },
       datasets: [
-        { slug: 'dataset1', name: 'Dataset 1' },
-        { slug: 'dataset2', name: 'Dataset 2' },
-        { slug: 'dataset3', name: 'Dataset 3' }
+        { dataset: 'dataset1', name: 'Dataset 1' },
+        { dataset: 'dataset2', name: 'Dataset 2' },
+        { dataset: 'dataset3', name: 'Dataset 3' }
       ],
       noticeFlags: [
         { dataset: 'dataset1', dueNotice: true, deadline: new Date('1996-03-17T10:00:00.000z') },

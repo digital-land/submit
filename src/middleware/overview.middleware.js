@@ -128,7 +128,7 @@ export const addNoticesToDatasets = (req, res, next) => {
   const { noticeFlags, datasets } = req
 
   req.datasets = datasets.map(dataset => {
-    const notice = noticeFlags.find(notice => notice.dataset === dataset.slug)
+    const notice = noticeFlags.find(notice => notice.dataset === dataset.dataset)
 
     if (!notice || (!notice.dueNotice && !notice.overdueNotice)) {
       return dataset
@@ -187,7 +187,7 @@ export function aggregateOverviewData (req, res, next) {
       }
     }
     const info = {
-      slug: dataset,
+      dataset,
       issue_count: numIssues,
       endpoint: rows[0].endpoint,
       error: rows[0].error,
@@ -197,10 +197,10 @@ export function aggregateOverviewData (req, res, next) {
   }
 
   requiredDatasets.forEach(requiredDataset => {
-    const hasDataset = datasets.findIndex(dataset => dataset.slug === requiredDataset.dataset) >= 0
+    const hasDataset = datasets.findIndex(dataset => dataset.dataset === requiredDataset.dataset) >= 0
     if (!hasDataset) {
       datasets.push({
-        slug: requiredDataset.dataset,
+        dataset: requiredDataset.dataset,
         status: 'Not submitted'
       })
     }
@@ -213,11 +213,11 @@ export function aggregateOverviewData (req, res, next) {
 export function prepareOverviewTemplateParams (req, res, next) {
   const { datasets, orgInfo: organisation } = req
   // add in any of the missing key 8 datasets
-  const keys = new Set(datasets.map(d => d.slug))
+  const keys = new Set(datasets.map(d => d.dataset))
   availableDatasets.forEach((dataset) => {
     if (!keys.has(dataset)) {
       const row = {
-        slug: dataset,
+        dataset,
         endpoint: null,
         status: 'Not submitted',
         issue_count: 0,
@@ -228,7 +228,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
   })
 
   // re-sort the datasets to be in alphabetical order
-  datasets.sort((a, b) => a.slug.localeCompare(b.slug))
+  datasets.sort((a, b) => a.dataset.localeCompare(b.dataset))
 
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =

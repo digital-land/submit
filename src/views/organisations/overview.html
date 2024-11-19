@@ -39,9 +39,11 @@
       {{ pageName }}
     </h1>
 
+    {{ datasets | dump }}
+
     {% for dataset in datasets %}
       {% if dataset.notice %}
-        {{ deadlineNotice(dataset.slug, dataset.notice, organisation) }}
+        {{ deadlineNotice(dataset.dataset, dataset.notice, organisation) }}
       {% endif %}
     {% endfor %}
 
@@ -83,13 +85,13 @@
             <h2 class="govuk-heading-m">
               {% if dataset.status == 'Not submitted' %}
                 <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/get-started">
-                  {{dataset.slug | datasetSlugToReadableName}}
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/get-started">
+                  {{dataset.dataset | datasetSlugToReadableName}}
                 </a>
               {% else %}
                 <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
-                  {{dataset.slug | datasetSlugToReadableName}}
+                  href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/overview">
+                  {{dataset.dataset | datasetSlugToReadableName}}
                 </a>
               {% endif %}
             </h2>

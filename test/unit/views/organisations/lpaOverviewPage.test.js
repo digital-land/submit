@@ -53,18 +53,18 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
 
     params.datasets.forEach((dataset, i) => {
-      expect(datasetCards[i].querySelector('.govuk-heading-m').textContent).toContain(datasetSlugToReadableName(dataset.slug))
+      expect(datasetCards[i].querySelector('.govuk-heading-m').textContent).toContain(datasetSlugToReadableName(dataset.dataset))
     })
   })
 
   params.datasets.forEach((dataset, i) => {
-    it(`dataset cards are rendered with correct hints for dataset='${dataset.slug}'`, () => {
+    it(`dataset cards are rendered with correct hints for dataset='${dataset.dataset}'`, () => {
       let expectedHint = 'Data URL submitted'
       if (dataset.notice) {
         if (dataset.notice.type === 'due') {
           expectedHint = `You must update this dataset by ${dataset.notice.deadline}`
         } else if (dataset.notice.type === 'overdue') {
-          expectedHint = `Your ${datasetSlugToReadableName(dataset.slug)} dataset is overdue`
+          expectedHint = `Your ${datasetSlugToReadableName(dataset.dataset)} dataset is overdue`
         } else {
           throw new Error('Notice type not recognised')
         }
@@ -104,7 +104,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   })
 
   params.datasets.forEach((dataset, i) => {
-    it(`Renders the correct status on each dataset card for dataset='${dataset.slug}'`, () => {
+    it(`Renders the correct status on each dataset card for dataset='${dataset.dataset}'`, () => {
       if (!(dataset.status in datasetStatusEnum)) {
         throw new Error(`Unknown dataset status: ${dataset.status}`)
       }
@@ -115,13 +115,13 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       expect(statusIndicator.textContent.trim()).toContain(expectedStatus)
     })
 
-    it(`Renders the correct link on each dataset card for dataset='${dataset.slug}'`, () => {
+    it(`Renders the correct link on each dataset card for dataset='${dataset.dataset}'`, () => {
       const expectedLink = datasetCards[i].querySelector('.govuk-task-list__link').href
 
       if (dataset.status === 'Not submitted') {
-        expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.slug}/get-started`)
+        expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.dataset}/get-started`)
       } else {
-        expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.slug}/overview`)
+        expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.dataset}/overview`)
       }
 
       const link = datasetCards[i].querySelector('.govuk-link')
@@ -136,18 +136,18 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       const banner = notificationBanners[currentNoticeIndex]
       currentNoticeIndex++
 
-      it(`Renders the notice for dataset ${dataset.slug}`, () => {
+      it(`Renders the notice for dataset ${dataset.dataset}`, () => {
         let expectedHeader
         let expectedHint
 
         if (dataset.notice.type === 'due') {
-          expectedHeader = `You must update your ${datasetSlugToReadableName(dataset.slug)} dataset by ${dataset.notice.deadline}`
+          expectedHeader = `You must update your ${datasetSlugToReadableName(dataset.dataset)} dataset by ${dataset.notice.deadline}`
         } else if (dataset.notice.type === 'overdue') {
-          expectedHeader = `Your ${datasetSlugToReadableName(dataset.slug)} dataset is overdue`
+          expectedHeader = `Your ${datasetSlugToReadableName(dataset.dataset)} dataset is overdue`
           expectedHint = `It was due on ${dataset.notice.deadline}`
         }
 
-        const expectedLinkHref = `/organisations/${params.organisation.organisation}/${dataset.slug}/get-started`
+        const expectedLinkHref = `/organisations/${params.organisation.organisation}/${dataset.dataset}/get-started`
 
         expect(banner.textContent).toContain(expectedHeader)
         if (expectedHint) {

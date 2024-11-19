@@ -94,7 +94,7 @@ export const OrgOverviewPage = v.strictObject({
   datasets: v.array(v.strictObject({
     endpoint: v.optional(v.url()),
     status: v.enum(datasetStatusEnum),
-    slug: NonEmptyString,
+    dataset: NonEmptyString,
     issue_count: v.optional(v.number()),
     error: v.optional(v.nullable(NonEmptyString)),
     http_error: v.optional(NonEmptyString),
