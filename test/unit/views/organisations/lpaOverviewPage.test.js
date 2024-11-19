@@ -152,7 +152,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
 
   let currentNoticeIndex = 0
   const notificationBanners = document.querySelectorAll('.govuk-notification-banner')
-  params.datasets.forEach((dataset, i) => {
+  allDatasets.forEach((dataset, i) => {
     if (dataset.notice) {
       const banner = notificationBanners[currentNoticeIndex]
       currentNoticeIndex++
