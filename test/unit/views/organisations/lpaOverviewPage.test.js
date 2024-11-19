@@ -12,15 +12,30 @@ const nunjucks = setupNunjucks({ datasetNameMapping })
 
 const seed = 1731493378197 || new Date().getTime()
 
+/**
+ * Verifies the number of rendered dataset cards for group designated by `key`
+ * matches the number of datasets passed to the template.
+ *
+ * @param { Function } expect
+ * @param {string} key
+ * @param {{ slug: string }[]} datasets
+ * @param {Document} document
+ */
+const datasetGroup = ({ expect }, key, datasets, document) => {
+  const datasetCards = document.querySelectorAll(`ul[data-reason="${key}"] li`)
+  expect(datasetCards.length).toEqual(datasets.length)
+  const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
+
+  datasets.forEach((dataset, i) => {
+    expect(datasetCards[i].querySelector('.govuk-heading-m').textContent).toContain(datasetSlugToReadableName(dataset.dataset))
+  })
+}
+
 describe(`LPA Overview Page (seed: ${seed})`, () => {
   const params = mocker(OrgOverviewPage, seed)
-  let html
-  try {
-    html = nunjucks.render('organisations/overview.html', params)
-  } catch (e) {
-    console.log(e)
-    throw e
-  }
+  console.debug(`mocked datasets: statutory = ${params.datasets.statutory?.length ?? 'none'}, other = ${params.datasets.other?.length ?? 'none'}`)
+
+  const html = nunjucks.render('organisations/overview.html', params)
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
@@ -46,18 +61,23 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     expect(statsBoxes[2].textContent).toContain('datasets need fixing')
   })
 
-  const datasetCards = document.querySelector('.govuk-task-list').children
-  it('The correct number of dataset cards are rendered with the correct titles', () => {
-    expect(datasetCards.length).toEqual(params.datasets.length)
-
-    const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
-
-    params.datasets.forEach((dataset, i) => {
-      expect(datasetCards[i].querySelector('.govuk-heading-m').textContent).toContain(datasetSlugToReadableName(dataset.dataset))
-    })
+  it('The correct number of dataset cards are rendered with the correct titles in group "statutory"', () => {
+    if (params.datasets.statutory) {
+      datasetGroup({ expect }, 'statutory', params.datasets.statutory, document)
+    }
   })
 
-  params.datasets.forEach((dataset, i) => {
+  it('The correct number of dataset cards are rendered with the correct titles in group "other"', () => {
+    if (params.datasets.other) {
+      datasetGroup({ expect }, 'other', params.datasets.other, document)
+
+      const infoText = document.querySelector('.org-membership-info').textContent
+      expect(infoText).match(new RegExp(`${params.organisation.name} is (a|not a) member of .*`))
+    }
+  })
+
+  const allDatasets = [].concat(...Object.values(params.datasets.statutory ?? []), ...Object.values(params.datasets.other ?? []))
+  allDatasets.forEach((dataset, i) => {
     it(`dataset cards are rendered with correct hints for dataset='${dataset.dataset}'`, () => {
       let expectedHint = 'Data URL submitted'
       if (dataset.notice) {
@@ -81,13 +101,13 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       } else if (dataset.status === 'Error' && dataset.issue_count > 1) {
         expectedHint = `There are ${dataset.issue_count} issues in this dataset`
       }
-
-      expect(datasetCards[i].querySelector('.govuk-task-list__hint').textContent.trim()).toContain(expectedHint)
+      const datasetCard = document.querySelector(`[data-dataset="${dataset.dataset}"]`)
+      expect(datasetCard.querySelector('.govuk-task-list__hint').textContent.trim()).toContain(expectedHint)
     })
   })
 
   it('Renders the correct actions on each dataset card', () => {
-    params.datasets.forEach((dataset, i) => {
+    allDatasets.forEach((dataset, i) => {
       const expectedActions = []
       if (!dataset.endpoint) {
         expectedActions.push({ text: 'Add endpoint', href: '/taskLists/taskChecklist' })
@@ -103,7 +123,8 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     })
   })
 
-  params.datasets.forEach((dataset, i) => {
+  const datasetCards = document.querySelectorAll('li[data-dataset]:not([data-dataset=""])')
+  allDatasets.forEach((dataset, i) => {
     it(`Renders the correct status on each dataset card for dataset='${dataset.dataset}'`, () => {
       if (!(dataset.status in datasetStatusEnum)) {
         throw new Error(`Unknown dataset status: ${dataset.status}`)
