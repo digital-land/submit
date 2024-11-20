@@ -83,6 +83,13 @@ export class Map {
 
       // Convert the coordinates string to a GeoJSON object
       const geometry = parse(geometryWkt)
+
+      // if the geometry is invalid, log an error and continue
+      if (!geometry) {
+        console.error('Invalid WKT geometry format', geometryWkt)
+        return
+      }
+
       // store geometries for use in calculating the bbox later
       geometries.push(geometry)
       // add the source
