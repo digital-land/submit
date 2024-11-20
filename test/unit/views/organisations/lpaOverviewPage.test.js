@@ -22,7 +22,9 @@ const seed = new Date().getTime()
  * @param {Document} document
  */
 const datasetGroup = ({ expect }, key, datasets, document) => {
-  const datasetCards = document.querySelectorAll(`ul[data-reason="${key}"] li`)
+  const datasetCardBlock = document.querySelector(`ul[data-reason="${key}"]`)
+  const datasetCards = datasetCardBlock.children
+  // const datasetCards = document.querySelectorAll(`ul[data-reason="${key}"] li`)
   expect(datasetCards.length).toEqual(datasets.length)
   const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
 
@@ -123,7 +125,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     })
   })
 
-  const datasetCards = document.querySelectorAll('li[data-dataset]:not([data-dataset=""])')
+  const datasetCards = document.querySelectorAll('li[data-dataset]:not(:empty)')
   allDatasets.forEach((dataset, i) => {
     it(`Renders the correct status on each dataset card for dataset='${dataset.dataset}'`, () => {
       if (!(dataset.status in datasetStatusEnum)) {
@@ -162,9 +164,9 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
         let expectedHint
 
         if (dataset.notice.type === 'due') {
-          expectedHeader = `You must update your ${datasetSlugToReadableName(dataset.dataset)} dataset by ${dataset.notice.deadline}`
+          expectedHeader = `You must update your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} dataset by ${dataset.notice.deadline}`
         } else if (dataset.notice.type === 'overdue') {
-          expectedHeader = `Your ${datasetSlugToReadableName(dataset.dataset)} dataset is overdue`
+          expectedHeader = `Your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} dataset is overdue`
           expectedHint = `It was due on ${dataset.notice.deadline}`
         }
 
