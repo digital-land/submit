@@ -132,9 +132,9 @@ describe('Dataset Overview Page', () => {
     const htmlWithNotice = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithNotice))
     const domWithNotice = new jsdom.JSDOM(htmlWithNotice)
     const documentWithNotice = domWithNotice.window.document
+    const banner = documentWithNotice.querySelector('.govuk-notification-banner')
 
     expect(documentWithNotice.querySelector('.govuk-notification-banner')).not.toBeNull()
-    const banner = documentWithNotice.querySelector('.govuk-notification-banner')
     expect(banner.classList.contains('govuk-notification-banner--warning')).toBeFalsy()
     expect(banner.textContent).toContain(`You must update your ${paramsWithNotice.dataset.dataset} dataset by deadline`)
   })
