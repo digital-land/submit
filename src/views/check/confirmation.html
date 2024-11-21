@@ -1,4 +1,4 @@
-
+{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from 'govuk/components/panel/macro.njk' import govukPanel %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 
@@ -6,6 +6,14 @@
 
 {% set serviceType = 'Check' %}
 {% set pageName = "You can now publish your data" %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "javascript:window.history.back()"
+  }) }}
+{% endblock %}
+
 
 {% set content %}
 
