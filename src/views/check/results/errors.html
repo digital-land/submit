@@ -48,7 +48,7 @@
 
   <div class="govuk-grid-column-full">
     {% if options.geometries %}
-      <div id="map" class="app-map"></div>
+      <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
     {% endif %}
 
     {% if options.tableParams.rows|length > 0 %}
