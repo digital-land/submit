@@ -142,7 +142,8 @@ describe('ResultsController', () => {
         pagination: 'pagination',
         requestParams: 'params',
         template: 'results/no-errors',
-        id: req.params.id
+        id: req.params.id,
+        lastPage: `/check/status/${req.params.id}`
       })
     })
 
