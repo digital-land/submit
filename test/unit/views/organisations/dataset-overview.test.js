@@ -116,6 +116,47 @@ describe('Dataset Overview Page', () => {
     expect(documentWithGeometries.querySelector('script[src="/public/js/map.bundle.js"]')).not.toBeNull()
   })
 
+  it('Does not render a notice when none is provided', () => {
+    expect(document.querySelector('.govuk-notification-banner')).toBeNull()
+  })
+
+  it('Renders a notice when one is provided', () => {
+    const paramsWithNotice = {
+      ...params,
+      notice: {
+        type: 'due',
+        deadline: 'deadline'
+      }
+    }
+
+    const htmlWithNotice = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithNotice))
+    const domWithNotice = new jsdom.JSDOM(htmlWithNotice)
+    const documentWithNotice = domWithNotice.window.document
+
+    expect(documentWithNotice.querySelector('.govuk-notification-banner')).not.toBeNull()
+    const banner = documentWithNotice.querySelector('.govuk-notification-banner')
+    expect(banner.classList.contains('govuk-notification-banner--warning')).toBeFalsy()
+    expect(banner.textContent).toContain(`You must update your ${paramsWithNotice.dataset.dataset} dataset by deadline`)
+  })
+
+  it('Should render "overdue" notice with correct content', () => {
+    const paramsWithNotice = {
+      ...params,
+      notice: {
+        type: 'overdue',
+        deadline: 'deadline'
+      }
+    }
+
+    const htmlWithNotice = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithNotice))
+    const domWithNotice = new jsdom.JSDOM(htmlWithNotice)
+    const documentWithNotice = domWithNotice.window.document
+
+    const banner = documentWithNotice.querySelector('.govuk-notification-banner')
+    expect(banner).not.toBeNull()
+    expect(banner.textContent).toContain(`Your ${paramsWithNotice.dataset.dataset} dataset is overdue`)
+  })
+
   it('Renders dataset actions sections', () => {
     const paramsWithGeometries = {
       ...params,

@@ -2,9 +2,52 @@
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "components/deadlineNotice.html" import deadlineNotice %}
+{% from "components/deadlineNoticeContent.html" import noticeHeading, noticeCardHint %}
+
 
 {% set pageName = organisation.name + " overview" %}
 {% set serviceType = 'Manage' %}
+
+{% macro datasetItem(dataset) %}
+<li class="govuk-task-list__item govuk-task-list__item--with-link" data-dataset="{{ dataset.dataset }}">
+  <div class="govuk-task-list__name-and-hint">
+    <h2 class="govuk-heading-m">
+      {% if dataset.status == 'Not submitted' %}
+      <a class="govuk-link govuk-task-list__link"
+         href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/get-started">
+        {{dataset.dataset | datasetSlugToReadableName}}
+      </a>
+      {% else %}
+      <a class="govuk-link govuk-task-list__link"
+         href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/overview">
+        {{dataset.dataset | datasetSlugToReadableName}}
+      </a>
+      {% endif %}
+    </h2>
+    <div class="govuk-task-list__hint">
+      {% if dataset.notice %}
+        <p>{{ noticeCardHint(dataset.notice) }}</p>
+      {% elif dataset.status == 'Not submitted' %}
+        <p>Data URL not submitted</p>
+      {% elif dataset.status == 'Error' %}
+        <p>{{dataset.error}}</p>
+      {% elif dataset.status == 'Needs fixing' %}
+        <p>There {{ "is" | pluralise(dataset.issue_count) }} {{ dataset.issue_count }} {{ "issue" | pluralise(dataset.issue_count) }} in this dataset</p>
+      {% else %}
+        <p>Data URL submitted</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="govuk-task-list__status">
+    {{govukTag({
+    text: dataset.status,
+    classes: dataset.status | statusToTagClass
+    })}}
+  </div>
+</li>
+{% endmacro %}
 
 {% block beforeContent %}
 {{ super() }}
@@ -35,8 +78,23 @@
     <h1 class="govuk-heading-xl">
       {{ pageName }}
     </h1>
+
+    {% for dataset in datasets.statutory %}
+      {% if dataset.notice %}
+        {{ deadlineNotice(dataset.dataset, dataset.notice, organisation) }}
+      {% endif %}
+    {% endfor %}
+
+    {% for dataset in datasets.other %}
+    {% if dataset.notice %}
+      {{ deadlineNotice(dataset.dataset, dataset.notice, organisation) }}
+    {% endif %}
+  {% endfor %}
+
   </div>
 </div>
+
+
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
@@ -62,49 +120,32 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <h2 class="govuk-heading-m">Datasets</h2>
-    <ul class="govuk-task-list">
 
-      {% for dataset in datasets %}
-        <li class="govuk-task-list__item govuk-task-list__item--with-link">
-          <div class="govuk-task-list__name-and-hint">
-            <h2 class="govuk-heading-m">
-              {% if dataset.status == 'Not submitted' %}
-                <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/get-started">
-                  {{dataset.slug | datasetSlugToReadableName}}
-                </a>
-              {% else %}
-                <a class="govuk-link govuk-task-list__link"
-                  href="/organisations/{{ organisation.organisation }}/{{dataset.slug}}/overview">
-                  {{dataset.slug | datasetSlugToReadableName}}
-                </a>
-              {% endif %}
-            </h2>
-            <div class="govuk-task-list__hint">
-              {% if dataset.status == 'Not submitted' %}
-                <p>Data URL not submitted</p>
-              {% elif dataset.status == 'Error' %}
-                <p>{{dataset.error}}</p>
-              {% elif dataset.status == 'Needs fixing' %}
-                <p>There {{ "is" | pluralise(dataset.issue_count) }} {{ dataset.issue_count }} {{ "issue" | pluralise(dataset.issue_count) }} in this dataset</p>
-              {% else %}
-                <p>Data URL submitted</p>
-              {% endif %}
+  {% if datasets.statutory.length > 0 %}
+    <h2 class="govuk-heading-m">Datasets {{ organisation.name }} must provide</h2>
+    <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="statutory">
 
-            </div>
-          </div>
-
-          <div class="govuk-task-list__status">
-            {{govukTag({
-              text: dataset.status,
-              classes: dataset.status | statusToTagClass
-            })}}
-          </div>
-        </li>
+      {% for dataset in datasets.statutory %}
+        {{ datasetItem(dataset) }}
       {% endfor %}
-
     </ul>
+  {% endif %}
+
+  {% if datasets.other.length > 0 %}
+    <h2 class="govuk-heading-m">Datasets organisations in Open Digital Planning programme must provide</h2>
+      {% if datasets.other[0].project === 'open-digital-planning' %}
+        <p class="org-membership-info">{{ organisation.name}} is a member of the Open Digital Planning programme.</p>
+      {% else %}
+        <p class="org-membership-info">{{ organisation.name}} is not a member of the Open Digital Planning programme.</p>
+      {% endif %}
+    <ul class="govuk-task-list" data-reason="other">
+      {% for dataset in datasets.other %}
+        {{ datasetItem(dataset) }}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+
   </div>
 </div>
 

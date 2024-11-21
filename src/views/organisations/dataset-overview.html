@@ -1,6 +1,7 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
+{% from "components/deadlineNotice.html" import deadlineNotice %}
 {% extends "layouts/main.html" %}
 
 {% set showMap = [
@@ -148,6 +149,10 @@
     <div class="govuk-grid-column-two-thirds">
         <span class="govuk-caption-xl">{{ organisation.name }}</span>
         <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
+
+        {% if notice %}
+          {{ deadlineNotice(dataset.dataset, notice, organisation) }}
+        {% endif %}
     </div>
 </div>
 
