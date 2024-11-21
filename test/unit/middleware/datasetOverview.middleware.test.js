@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { prepareDatasetOverviewTemplateParams } from '../../../src/middleware/datasetOverview.middleware.js'
+/* eslint no-import-assign: 0 */
+import { describe, it, expect, vi } from 'vitest'
+import { prepareDatasetOverviewTemplateParams, setNoticesFromSourceKey } from '../../../src/middleware/datasetOverview.middleware.js'
+import * as utils from '../../../src/utils/utils.js'
 
 describe('Dataset Overview Middleware', () => {
   const req = {
@@ -20,7 +22,7 @@ describe('Dataset Overview Middleware', () => {
       const reqWithResults = {
         ...req,
         orgInfo: { name: 'mock-org' },
-        specification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
+        datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
         sources: [
@@ -35,7 +37,8 @@ describe('Dataset Overview Middleware', () => {
             num_issues: 1,
             status: 'Error'
           }
-        ]
+        ],
+        notice: undefined
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
       expect(reqWithResults.templateParams).toEqual({
@@ -51,8 +54,154 @@ describe('Dataset Overview Middleware', () => {
             { name: 'Data Url 0', endpoint: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01' },
             { name: 'Data Url 1', endpoint: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: '2023-01-02' }
           ]
-        }
+        },
+        notice: undefined
       })
+    })
+  })
+
+  describe('setNoticesFromSourceKey', () => {
+    vi.mock('../../../src/utils/utils.js', async (importOrigional) => {
+      const actual = await importOrigional()
+
+      return {
+        ...actual,
+        requiredDatasets: [
+          {
+            dataset: 'mock-dataset',
+            deadline: '2022-03-31T14:30:00Z',
+            noticePeriod: 2
+          }
+        ],
+        getDeadlineHistory: vi.fn(() => ({
+          deadlineDate: new Date('2022-03-31T14:30:00Z'),
+          lastYearDeadline: new Date('2021-03-31T14:30:00Z'),
+          twoYearsAgoDeadline: new Date('2020-03-31T14:30:00Z')
+        }))
+      }
+    })
+
+    it('should set notice for due dataset', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset',
+          startDate: '2020-11-01'
+        }
+      }
+
+      vi.setSystemTime(new Date('2022-02-01T00:00:00Z'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'due'
+      })
+    })
+
+    it('should set notice for overdue dataset', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset',
+          startDate: '2020-01-01'
+        }
+      }
+
+      vi.setSystemTime(new Date('2021-11-01T00:00:00Z'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'overdue'
+      })
+    })
+
+    it('should not set notice if deadline is not found', () => {
+      const reqWithDataset = {
+        params: {
+          lpa: 'mock-lpa',
+          dataset: 'unknown-dataset'
+        },
+        dataset: {
+          dataset: 'unknown-dataset',
+          startDate: '2022-01-01'
+        }
+      }
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+      expect(reqWithDataset.notice).toBeUndefined()
+    })
+
+    it('should set notice for due dataset at notice period boundary', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset',
+          startDate: '2020-11-01'
+        }
+      }
+
+      vi.setSystemTime(new Date('2022-02-01T15:30:00Z'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'due'
+      })
+    })
+
+    it('should set notice for due dataset with notice period 1', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset-2',
+          startDate: '2020-11-01'
+        }
+      }
+
+      utils.requiredDatasets = [
+        {
+          dataset: 'mock-dataset',
+          deadline: '2022-03-27T14:30:00Z',
+          noticePeriod: 1
+        }
+      ]
+
+      vi.setSystemTime(new Date('2022-03-20T00:00:00Z'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
+      expect(reqWithDataset.notice).toEqual({
+        deadline: '31 March 2022',
+        type: 'due'
+      })
+    })
+
+    it('should not set notice for due dataset with notice period 0', () => {
+      const reqWithDataset = {
+        ...req,
+        dataset: {
+          dataset: 'mock-dataset-3',
+          startDate: '2020-11-01'
+        }
+      }
+
+      utils.requiredDatasets = [
+        {
+          dataset: 'mock-dataset',
+          deadline: '2022-03-31T14:30:00Z',
+          noticePeriod: 0
+        }
+      ]
+
+      vi.setSystemTime(new Date('2022-03-31T00:00:00Z'))
+
+      setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
+
+      expect(reqWithDataset.notice).toBeUndefined()
     })
   })
 })

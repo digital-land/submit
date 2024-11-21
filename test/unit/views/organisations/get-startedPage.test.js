@@ -1,11 +1,11 @@
 // getStartedPage.test.js
 
 import { describe, it, expect } from 'vitest'
-import { runGenericPageTests } from './generic-page.js'
+import { runGenericPageTests } from '../../generic-page.js'
 import jsdom from 'jsdom'
-import mocker from '../utils/mocker.js'
-import { OrgGetStarted } from '../../src/routes/schemas.js'
-import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
+import mocker from '../../../utils/mocker.js'
+import { OrgGetStarted } from '../../../../src/routes/schemas.js'
+import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 
 const nunjucks = setupNunjucks({})
 

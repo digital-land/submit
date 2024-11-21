@@ -15,6 +15,7 @@ const nunjucksEnv = nunjucks.configure([
   'src/views',
   'src/views/check',
   'src/views/submit',
+  'src/views/components',
   'node_modules/govuk-frontend/dist/',
   'node_modules/@x-govuk/govuk-prototype-components/'
 ], {

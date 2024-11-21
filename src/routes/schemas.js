@@ -78,12 +78,20 @@ export const datasetStatusEnum = {
   'Not submitted': 'Not submitted'
 }
 
+export const DeadlineNoticeField = v.strictObject({
+  type: v.union([
+    v.literal('due'),
+    v.literal('overdue')
+  ]),
+  deadline: v.string()
+})
+
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 const DatasetItem = v.strictObject({
   endpoint: v.optional(v.url()),
   status: v.enum(datasetStatusEnum),
-  slug: NonEmptyString,
+  dataset: NonEmptyString,
   issue_count: v.optional(v.number()),
   error: v.optional(v.nullable(NonEmptyString)),
   http_error: v.optional(NonEmptyString),
@@ -91,7 +99,8 @@ const DatasetItem = v.strictObject({
   entity_count: v.optional(v.number()),
   project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
-  numIssues: v.optional(v.number())
+  numIssues: v.optional(v.number()),
+  notice: v.optional(DeadlineNoticeField)
 })
 
 export const OrgOverviewPage = v.strictObject({
@@ -135,7 +144,8 @@ export const OrgDatasetOverview = v.strictObject({
         exception: v.string()
       }))
     }))
-  })
+  }),
+  notice: v.optional(DeadlineNoticeField)
 })
 
 export const OrgDataView = v.strictObject({
