@@ -171,14 +171,10 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
         }
 
         const expectedLinkHref = `/organisations/${params.organisation.organisation}/${dataset.dataset}/get-started`
-
-        expect(banner.textContent).toContain(expectedHeader)
-        if (expectedHint) {
-          expect(banner.textContent).toContain(expectedHint)
-        }
-
         const link = banner.querySelector('.govuk-notification-banner__link')
 
+        if (expectedHint) expect(banner.textContent).toContain(expectedHint)
+        expect(banner.textContent).toContain(expectedHeader)
         expect(link.getAttribute('href')).toEqual(expectedLinkHref)
       })
     }
