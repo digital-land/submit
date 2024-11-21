@@ -75,6 +75,7 @@ class ResultsController extends PageController {
         req.form.options.geometries = responseDetails.getGeometries()
         req.form.options.pagination = responseDetails.getPagination(req.params.pageNumber)
         req.form.options.id = req.params.id
+        req.form.options.lastPage = `/check/status/${req.params.id}`
       } else {
         req.form.options.error = requestData.getError()
       }
