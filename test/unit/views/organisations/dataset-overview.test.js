@@ -151,8 +151,8 @@ describe('Dataset Overview Page', () => {
     const htmlWithNotice = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithNotice))
     const domWithNotice = new jsdom.JSDOM(htmlWithNotice)
     const documentWithNotice = domWithNotice.window.document
-
     const banner = documentWithNotice.querySelector('.govuk-notification-banner')
+
     expect(banner).not.toBeNull()
     expect(banner.textContent).toContain(`Your ${paramsWithNotice.dataset.dataset} dataset is overdue`)
   })
