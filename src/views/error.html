@@ -1,19 +1,8 @@
-{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set pageName = "Error" %}
 
 {% extends "layouts/main.html" %}
-
-{% block beforeContent %}
-    {% if options.lastPage %}
-        {{ govukBackLink({
-            text: options.backLinkText | default("Back"),
-            href: options.lastPage
-        }) }}
-    {% endif %}
-{% endblock %}
-
 {% block content %}
     <h1 class="govuk-heading-xl">Error</h1>
 
