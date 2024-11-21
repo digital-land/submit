@@ -2,6 +2,9 @@ import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgI
 import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } from './middleware.builders.js'
 import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
+import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -48,7 +51,7 @@ const fetchSources = fetchMany({
         rhe.latest_log_entry_date,
         rhe.endpoint_entry_date,
         rhe.endpoint_end_date,
-        rhe.resource_start_date,
+        rhe.resource_start_date as resource_start_date,
         rhe.resource_end_date,
         s.documentation_url,
         ROW_NUMBER() OVER (
@@ -90,6 +93,77 @@ const fetchSources = fetchMany({
   result: 'sources'
 })
 
+/**
+ * Sets notices from a source key in the request object.
+ *
+ * @param {string} sourceKey The key in the request object that contains the source data.
+ * @returns {function} A middleware function that sets notices based on the source data.
+ */
+export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
+  const { dataset } = req.params
+  const source = req[sourceKey]
+
+  const deadlineObj = requiredDatasets.find(deadline => deadline.dataset === dataset)
+
+  if (deadlineObj) {
+    const noticePeriod = typeof deadlineObj.noticePeriod === 'string' ? parseInt(deadlineObj.noticePeriod, 10) : deadlineObj.noticePeriod
+
+    if (Number.isNaN(noticePeriod) || typeof noticePeriod !== 'number') {
+      logger.warn('Invalid notice period configuration.', {
+        type: types.DataValidation
+      })
+      return next()
+    }
+
+    const currentDate = new Date()
+    let datasetSuppliedForCurrentYear = false
+    let datasetSuppliedForLastYear = false
+
+    const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
+
+    const startDate = new Date(source.startDate)
+
+    if (startDate.toString() === 'Invalid Date') {
+      logger.warn('Invalid start date encountered', {
+        type: types.DataValidation,
+        startDate: source.startDate
+      })
+      return next()
+    }
+
+    datasetSuppliedForCurrentYear = startDate >= lastYearDeadline && startDate < deadlineDate
+    datasetSuppliedForLastYear = startDate >= twoYearsAgoDeadline && startDate < lastYearDeadline
+
+    const warningDate = new Date(deadlineDate.getTime())
+    warningDate.setMonth(warningDate.getMonth() - noticePeriod)
+
+    const dueNotice = !datasetSuppliedForCurrentYear && currentDate > warningDate
+    const overdueNotice = !dueNotice && !datasetSuppliedForCurrentYear && !datasetSuppliedForLastYear
+
+    if (dueNotice || overdueNotice) {
+      const deadline = deadlineDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
+
+      let type
+      if (dueNotice) {
+        type = 'due'
+      } else if (overdueNotice) {
+        type = 'overdue'
+      }
+
+      req.notice = {
+        deadline,
+        type
+      }
+    }
+  }
+
+  next()
+}
+
 const fetchEntityCount = fetchOne({
   query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
   result: 'entityCount',
@@ -97,13 +171,13 @@ const fetchEntityCount = fetchOne({
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, specification, columnSummary, entityCount, sources, dataset, issues } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues, notice } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
   const allFields = [...mappingFields, ...nonMappingFields]
 
-  const specFields = specification ? specification.fields : []
+  const specFields = datasetSpecification ? datasetSpecification.fields : []
   const numberOfFieldsSupplied = specFields.reduce((acc, field) => {
     return allFields.includes(field.field) ? acc + 1 : acc
   }, 0)
@@ -148,7 +222,8 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
       numberOfExpectedFields: numberOfExpectedFields ?? 0,
       numberOfRecords: entityCount.entity_count,
       endpoints
-    }
+    },
+    notice
   }
 
   next()
@@ -174,6 +249,7 @@ export default [
   fetchSpecification,
   pullOutDatasetSpecification,
   fetchSources,
+  setNoticesFromSourceKey('resource'),
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,
