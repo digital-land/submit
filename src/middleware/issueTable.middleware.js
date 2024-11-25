@@ -7,6 +7,7 @@
 */
 
 import performanceDbApi from '../services/performanceDbApi.js'
+import logger from '../utils/logger.js'
 import { fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, validateQueryParams } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -78,6 +79,7 @@ export const getErrorSummaryItems = (req, res, next) => {
 
   if (issues.length <= 0) {
     // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
+    logger.warn(`issueTable was accessed from ${req.headers.referer} but there was no issues`)
     issueItems = [{
       html: `this issue is actually a false flag.<br>There are no '${issueType}' issues in the '${issueField}' column.<br>We are working to fix this`
     }]
