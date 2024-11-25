@@ -140,7 +140,7 @@ export const prepareTemplateParams = (req, res, next) => {
   next()
 }
 
-export const issueHasEntity = (req, res, next) => req.issues > 0
+export const issueHasEntity = (req, res, next) => req.issues.length > 0
 export const notIssueHasEntity = (req, res, next) => !issueHasEntity(req, res, next)
 
 export const redirectToEntityView = (req, res, next) => {
