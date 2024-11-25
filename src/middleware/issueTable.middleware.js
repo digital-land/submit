@@ -6,6 +6,7 @@
   then render the template
 */
 
+import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, validateQueryParams } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -65,8 +66,62 @@ export const prepareTableParams = (req, res, next) => {
   next()
 }
 
+export const getErrorSummaryItems = (req, res, next) => {
+  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
+
+  const { entities, issues } = req
+
+  const BaseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}/entity`
+
+  let errorHeading = ''
+  let issueItems
+
+  if (issues.length <= 0) {
+    // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
+    issueItems = [{
+      html: `this issue is actually a false flag.<br>There are no '${issueType}' issues in the '${issueField}' column.<br>We are working to fix this`
+    }]
+  } else if (issues.length < entities.length) {
+    errorHeading = performanceDbApi.getTaskMessage({
+      issue_type: issueType,
+      num_issues: issues.length,
+      entityCount: entities.length,
+      field: issueField
+    },
+    true)
+    issueItems = issues.map((issue, i) => {
+      const pageNum = i + 1
+      return {
+        html: performanceDbApi.getTaskMessage({
+          issue_type: issueType,
+          num_issues: 1,
+          field: issueField
+        }) + ` in entity ${issue.entity}`,
+        href: `${BaseSubpath}${pageNum}`
+      }
+    })
+  } else {
+    issueItems = [{
+      html: performanceDbApi.getTaskMessage({
+        issue_type: issueType,
+        num_issues: issues.length,
+        entityCount: entities.length,
+        field:
+        issueField
+      }, true)
+    }]
+  }
+
+  req.errorSummary = {
+    heading: errorHeading,
+    items: issueItems
+  }
+
+  next()
+}
+
 export const prepareTemplateParams = (req, res, next) => {
-  const { tableParams, orgInfo, dataset } = req
+  const { tableParams, orgInfo, dataset, errorSummary } = req
   const { issue_type: issueType } = req.params
 
   req.templateParams = {
@@ -74,8 +129,7 @@ export const prepareTemplateParams = (req, res, next) => {
 
     organisation: orgInfo,
     dataset,
-    errorHeading: 'ToDo',
-    // issueItems,
+    errorSummary,
     issueType
     // pagination: paginationObj,
     // issueEntitiesCount,
@@ -98,6 +152,7 @@ export default [
   ...processRelevantIssuesMiddlewares,
   ...processEntitiesMiddlewares,
   ...processSpecificationMiddlewares,
+  getErrorSummaryItems,
   prepareTableParams,
   prepareTemplateParams,
   getIssueTable
