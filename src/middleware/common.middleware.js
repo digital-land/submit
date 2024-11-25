@@ -378,11 +378,18 @@ export const processEntitiesMiddlewares = [
 
 // entity issues
 
-const fetchEntityIssues = fetchMany({
-  query: ({ req }) => `
-    SELECT e.entity, i.* FROM entity e
-    INNER JOIN issue i ON e.entity = i.entity
-    WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+const fetchEntityIssuesForFieldAndType = fetchMany({
+  query: ({ req, params }) => {
+    const issueTypeFilter = params.issue_type ? `AND issue_type = '${params.issue_type}'` : ''
+    const issueFieldFilter = params.issue_field ? `AND field = '${params.issue_field}'` : ''
+
+    return `
+      SELECT e.entity, i.* FROM entity e
+      INNER JOIN issue i ON e.entity = i.entity
+      WHERE e.organisation_entity = ${req.orgInfo.entity}
+      ${issueTypeFilter}
+      ${issueFieldFilter}`
+  },
   dataset: FetchOptions.fromParams,
   result: 'issues'
 })
@@ -474,7 +481,7 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
  * @returns {array} An array of middleware functions that construct the necessary data for all the relevant issues.
  */
 export const processRelevantIssuesMiddlewares = [
-  fetchEntityIssues,
+  fetchEntityIssuesForFieldAndType,
   FilterOutIssuesToMostRecent,
   removeIssuesThatHaveBeenFixed
 ]
