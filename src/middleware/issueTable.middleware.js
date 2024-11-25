@@ -9,7 +9,7 @@
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
 import { fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, validateQueryParams } from './common.middleware.js'
-import { renderTemplate } from './middleware.builders.js'
+import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
 export const IssueTableQueryParams = v.object({
@@ -140,6 +140,15 @@ export const prepareTemplateParams = (req, res, next) => {
   next()
 }
 
+export const issueHasEntity = (req, res, next) => req.issues > 0
+export const notIssueHasEntity = (req, res, next) => !issueHasEntity(req, res, next)
+
+export const redirectToEntityView = (req, res, next) => {
+  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
+  return res.redirect(`/organisations/${lpa}/${dataset}/${issueType}/${issueField}/entry`)
+  // don't call next here to avoid rest of middleware chain running
+}
+
 export const getIssueTable = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/issueTable.html',
@@ -154,6 +163,7 @@ export default [
   ...processRelevantIssuesMiddlewares,
   ...processEntitiesMiddlewares,
   ...processSpecificationMiddlewares,
+  onlyIf(notIssueHasEntity, redirectToEntityView),
   getErrorSummaryItems,
   prepareTableParams,
   prepareTemplateParams,
