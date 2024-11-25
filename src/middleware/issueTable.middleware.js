@@ -25,18 +25,30 @@ const validateIssueTableQueryParams = validateQueryParams({
 
 export const prepareTableParams = (req, res, next) => {
   const { entities, issues, uniqueDatasetFields } = req
+  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
 
-  const allRows = entities.map(entity => ({
+  const allRows = entities.map((entity, index) => ({
     columns: Object.fromEntries(uniqueDatasetFields.map((field) => {
       const errorMessage = issues.find(issue => issue.entity === entity.entity && issue.field === field)?.issue_type
-      return [field, {
-        value: entity[field],
-        error: errorMessage
-          ? {
-              message: errorMessage
-            }
-          : undefined
-      }]
+      if (field === 'reference') {
+        return [field, {
+          html: `<a href='/organisations/${lpa}/${dataset}/${issueType}/${issueField}/entry/${index + 1}'>${entity[field]}</a>`,
+          error: errorMessage
+            ? {
+                message: errorMessage
+              }
+            : undefined
+        }]
+      } else {
+        return [field, {
+          value: entity[field],
+          error: errorMessage
+            ? {
+                message: errorMessage
+              }
+            : undefined
+        }]
+      }
     }))
   }))
 
@@ -55,7 +67,7 @@ export const prepareTableParams = (req, res, next) => {
 
 export const prepareTemplateParams = (req, res, next) => {
   const { tableParams, orgInfo, dataset } = req
-  const { issueType } = req.params
+  const { issue_type: issueType } = req.params
 
   req.templateParams = {
     tableParams,
