@@ -1,20 +1,26 @@
 import express from 'express'
-import nunjucks from 'nunjucks'
+/* import nunjucks from 'nunjucks'
 import config from '../../config/index.js'
-import logger from '../utils/logger.js'
+import logger from '../utils/logger.js' */
 
 const router = express.Router()
 
-function getNavigationStructure () {
+router.get('/*', (req, res) => {
+  const path = req.params[0].replace(/[^a-zA-Z0-9/-]/g, '')
+
+  return res.redirect(302, `https://www.planning.data.gov.uk/guidance/${path}`)
+})
+
+/* function getNavigationStructure () {
   if (!config.guidanceNavigation) {
     logger.error('Guidance navigation configuration is missing')
     return { title: 'Guidance', items: [] }
   }
 
   return config.guidanceNavigation
-}
+} */
 
-function extractUrlsFromItems (items) {
+/* function extractUrlsFromItems (items) {
   let urls = []
   items.forEach(item => {
     if (item.url) {
@@ -35,6 +41,9 @@ function checkPathExists (items, path) {
 }
 
 router.get('/*', (req, res) => {
+  const path = req.params[0].replace(/[^a-zA-Z0-9/-]/g, '')
+  return res.redirect(302, `https://www.planning.data.gov.uk/guidance${path}`)
+
   try {
     const navigationStructure = getNavigationStructure()
     const path = req.params[0].replace(/[^a-zA-Z0-9/-]/g, '')
@@ -78,6 +87,6 @@ router.get('/*', (req, res) => {
       res.status(500).render('errorPages/500', {})
     }
   }
-})
+}) */
 
 export default router
