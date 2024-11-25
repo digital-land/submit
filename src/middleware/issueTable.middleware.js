@@ -54,10 +54,20 @@ export const prepareTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { tableParams } = req
+  const { tableParams, orgInfo, dataset } = req
+  const { issueType } = req.params
 
   req.templateParams = {
-    tableParams
+    tableParams,
+
+    organisation: orgInfo,
+    dataset,
+    errorHeading: 'ToDo',
+    // issueItems,
+    issueType
+    // pagination: paginationObj,
+    // issueEntitiesCount,
+    // pageNumber
   }
   next()
 }
