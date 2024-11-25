@@ -4,6 +4,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
+import datasette from '../services/datasette.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -205,6 +206,61 @@ export const createPaginationTemplateParams = (req, res, next) => {
   next()
 }
 
+// Resources
+
+export const fetchResources = fetchMany({
+  query: ({ req }) => `
+    select * from resource r
+    LEFT JOIN resource_organisation ro ON ro.resource = r.resource
+    LEFT JOIN resource_dataset rd ON rd.resource = r.resource
+    WHERE ro.organisation = 'local-authority:LBH'
+    AND rd.dataset = 'brownfield-land'
+    AND r.end_date = ''
+    ORDER BY start_date desc`,
+  result: 'resources'
+})
+
+// Specification
+
+export const fetchSpecification = fetchOne({
+  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
+  result: 'specification'
+})
+
+export const pullOutDatasetSpecification = (req, res, next) => {
+  const { specification } = req
+  let collectionSpecifications
+  try {
+    collectionSpecifications = JSON.parse(specification.json)
+  } catch (error) {
+    logger.error('Invalid JSON in specification.json', { error })
+    return next(new Error('Invalid specification format'))
+  }
+  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
+  if (!datasetSpecification) {
+    logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
+    return next(new Error('Dataset specification not found'))
+  }
+  req.specification = datasetSpecification
+  next()
+}
+
+export const replaceUnderscoreInSpecification = (req, res, next) => {
+  req.specification.fields = req.specification.fields.map((spec) => {
+    if (spec.datasetField) {
+      spec.datasetField = spec.datasetField.replace(/_/g, '-')
+    }
+    return spec
+  })
+
+  next()
+}
+
+export const fetchFieldMappings = fetchMany({
+  query: () => 'select * from transform',
+  result: 'fieldMappings'
+})
+
 export const addDatabaseFieldToSpecification = (req, res, next) => {
   const { specification, fieldMappings } = req
 
@@ -230,34 +286,41 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
   next()
 }
 
-export const replaceUnderscoreInSpecification = (req, res, next) => {
-  req.specification.fields = req.specification.fields.map((spec) => {
-    if (spec.datasetField) {
-      spec.datasetField = spec.datasetField.replace(/_/g, '-')
-    }
-    return spec
-  })
-
-  next()
-}
-
-export const pullOutDatasetSpecification = (req, res, next) => {
+export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   const { specification } = req
-  let collectionSpecifications
-  try {
-    collectionSpecifications = JSON.parse(specification.json)
-  } catch (error) {
-    logger.error('Invalid JSON in specification.json', { error })
-    return next(new Error('Invalid specification format'))
+
+  if (!specification) {
+    throw new Error('specification is required')
   }
-  const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
-  if (!datasetSpecification) {
-    logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
-    return next(new Error('Dataset specification not found'))
-  }
-  req.specification = datasetSpecification
+
+  req.uniqueDatasetFields = [...new Set(specification.fields.map(field => field.datasetField))]
+
   next()
 }
+
+/**
+ * @name processSpecificationMiddleware
+ * @function
+ * @description Middleware chain to process the dataset specification and prepare it for the issue table
+ */
+export const processSpecificationMiddlewares = [
+  fetchSpecification,
+  pullOutDatasetSpecification,
+  replaceUnderscoreInSpecification,
+  fetchFieldMappings,
+  addDatabaseFieldToSpecification,
+  getUniqueDatasetFieldsFromSpecification
+]
+
+// Entities
+
+export const fetchEntities = fetchMany({
+  query: ({ req }) => `
+    SELECT * FROM entity e
+    WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+  dataset: FetchOptions.fromParams,
+  result: 'entities'
+})
 
 export const extractJsonFieldFromEntities = (req, res, next) => {
   const { entities } = req
@@ -301,6 +364,122 @@ export const replaceUnderscoreInEntities = (req, res, next) => {
 
   next()
 }
+
+/**
+ * @name processEntitiesMiddleware
+ * @function
+ * @description Middleware chain to process entities and prepare them for the issue table
+ */
+export const processEntitiesMiddlewares = [
+  fetchEntities,
+  extractJsonFieldFromEntities,
+  replaceUnderscoreInEntities
+]
+
+// entity issues
+
+const fetchEntityIssues = fetchMany({
+  query: ({ req }) => `
+    SELECT e.entity, i.* FROM entity e
+    INNER JOIN issue i ON e.entity = i.entity
+    WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+  dataset: FetchOptions.fromParams,
+  result: 'issues'
+})
+
+const FilterOutIssuesToMostRecent = (req, res, next) => {
+  const { resources, issues } = req
+
+  const groupedIssues = issues.reduce((acc, current) => {
+    current.start_date = resources.find(resource => resource.resource === current.resource)?.start_date
+    const { entity, field } = current
+    if (!acc[entity]) {
+      acc[entity] = {}
+    }
+    if (!acc[entity][field]) {
+      acc[entity][field] = []
+    }
+    acc[entity][field].push(current)
+
+    return acc
+  }, {})
+
+  const recentIssues = Object.fromEntries(Object.entries(groupedIssues).map(([entityName, issuesByEntity]) =>
+    [
+      entityName,
+      Object.fromEntries(Object.entries(issuesByEntity).map(([field, issues]) =>
+        [
+          field,
+          issues.sort((a, b) => a.start_date > b.start_date)[0]
+        ]
+      ))
+    ]
+  ))
+
+  const issuesFlattened = []
+
+  Object.values(recentIssues).forEach(issueByEntry => {
+    Object.values(issueByEntry).forEach(issueByField => {
+      issuesFlattened.push(issueByField)
+    })
+  })
+
+  req.issues = issuesFlattened
+  next()
+}
+
+// the problem with this is it assumes the entity contains the most recent fact, is this the case???
+export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
+  const { issues, resources } = req
+
+  // get all more recent facts for each issue
+  const promises = issues
+    .filter(issue => issue.resource !== resources[0].resource)
+    .map((issue) => {
+      const resourceIndex = resources.findIndex(resource => resource.resource === issue.resource)
+      const newerResources = resourceIndex >= 0 ? resources.slice(0, resourceIndex) : resources
+
+      return datasette.runQuery(`
+        SELECT * FROM fact f
+        LEFT JOIN fact_resource fr ON f.fact = fr.fact
+        WHERE entity = ${issue.entity}
+        AND field = '${issue.field}'
+        AND fr.resource IN ('${newerResources.map(resource => resource.resource).join("','")}')`,
+      issue.dataset
+      )
+    })
+
+  Promise.allSettled(promises).then((results) => {
+    // results is an array of objects with status (fulfilled or rejected) and value or reason
+    results.forEach(result => {
+      if (result.value.formattedData.length > 0) {
+        req.issues = issues.filter(issue => issue.entity !== result.value.formattedData.entity && issue.field !== result.value.formattedData.field)
+      }
+    })
+
+    next()
+  })
+}
+
+/**
+ * This middleware chain is responsible for retrieving all entities for the given organisation, their latest issues,
+ * filtering out issues that have been fixed, and constructing the table params.
+ *
+ * @required {object} orgInfo - The orgInfo obtained by fetchOrgInfo middleware
+ * @required {string} resources - Array of resources, obtained by fetchResources middleware
+ *
+ * @memberof IssueTableMiddleware
+ * @name getRelevantIssues
+ * @function
+ * @returns {array} An array of middleware functions that construct the necessary data for all the relevant issues.
+ */
+export const processRelevantIssuesMiddlewares = [
+  fetchEntityIssues,
+  FilterOutIssuesToMostRecent,
+  removeIssuesThatHaveBeenFixed
+]
+
+// Other
 
 export const setDefaultParams = (req, res, next) => {
   if (!req.parsedParams) {

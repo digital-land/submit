@@ -1,4 +1,4 @@
-import { addDatabaseFieldToSpecification, createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getIsPageNumberInRange, isResourceAccessible, isResourceIdInParams, pullOutDatasetSpecification, replaceUnderscoreInEntities, replaceUnderscoreInSpecification, setDefaultParams, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getIsPageNumberInRange, isResourceAccessible, isResourceIdInParams, processEntitiesMiddlewares, processSpecificationMiddlewares, setDefaultParams, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -16,15 +16,16 @@ const validatedataviewQueryParams = validateQueryParams({
   schema: dataviewQueryParams
 })
 
-export const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
-  result: 'specification'
-})
-
 export const fetchEntitiesCount = fetchOne({
   query: ({ req }) => `SELECT count(*) as count FROM entity WHERE organisation_entity = ${req.orgInfo.entity}`,
   dataset: FetchOptions.fromParams,
   result: 'entityCount'
+})
+
+export const fetchEntities = fetchMany({
+  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${req.offset}`,
+  dataset: FetchOptions.fromParams,
+  result: 'entities'
 })
 
 export const setTotalPages = (req, res, next) => {
@@ -43,17 +44,6 @@ export const setOffset = (req, res, next) => {
   next()
 }
 
-export const fetchEntities = fetchMany({
-  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${req.offset}`,
-  dataset: FetchOptions.fromParams,
-  result: 'entities'
-})
-
-export const fetchFieldMappings = fetchMany({
-  query: () => 'select * from transform',
-  result: 'fieldMappings'
-})
-
 export const setPaginationOptions = (pageLength) => (req, res, next) => {
   const { entityCount } = req
   const { lpa, dataset } = req.params
@@ -61,18 +51,6 @@ export const setPaginationOptions = (pageLength) => (req, res, next) => {
   req.resultsCount = entityCount.count
   req.urlSubPath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/data/`
   req.paginationPageLength = pageLength
-
-  next()
-}
-
-export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
-  const { specification } = req
-
-  if (!specification) {
-    throw new Error('specification is required')
-  }
-
-  req.uniqueDatasetFields = [...new Set(specification.fields.map(field => field.datasetField))]
 
   next()
 }
@@ -163,17 +141,8 @@ export default [
 
   setOffset,
 
-  fetchEntities,
-  extractJsonFieldFromEntities,
-  replaceUnderscoreInEntities,
-
-  fetchSpecification,
-  pullOutDatasetSpecification,
-  replaceUnderscoreInSpecification,
-
-  fetchFieldMappings,
-  addDatabaseFieldToSpecification,
-  getUniqueDatasetFieldsFromSpecification,
+  ...processEntitiesMiddlewares,
+  ...processSpecificationMiddlewares,
 
   constructTableParams,
 
