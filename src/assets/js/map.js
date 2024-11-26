@@ -39,7 +39,7 @@ export class Map {
     // Add map controls
     this.addControls(opts.interactive)
 
-    this.map.on('load', () => {
+    this.map.on('load', async () => {
       // Store the first symbol layer id
       this.setFirstMapLayerId()
 
@@ -48,10 +48,10 @@ export class Map {
 
       // Add layer data to map
       if (opts.wktFormat) this.addWktDataToMap(opts.data)
-      else this.addGeoJsonUrlsToMap(opts.data)
+      else await this.addGeoJsonUrlsToMap(opts.data)
 
       // Move the map to the bounding box
-      if (this.bbox) this.setMapViewToBoundingBox()
+      if (this.bbox && this.bbox.length) this.setMapViewToBoundingBox()
     })
   }
 
@@ -138,7 +138,7 @@ export class Map {
     this.bbox = calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
   }
 
-  addGeoJsonUrlsToMap (geoJsonUrls) {
+  async addGeoJsonUrlsToMap (geoJsonUrls) {
     geoJsonUrls.forEach(async (url, index) => {
       const name = `geometry-${index}`
       this.map.addSource(name, {
@@ -180,6 +180,10 @@ export class Map {
         }
       }, this.firstMapLayerId)
     })
+
+    if (!this.bbox || this.bbox.length === 0) {
+      this.bbox = await generateBoundingBox(geoJsonUrls?.[0])
+    }
   }
 
   addBoundaryGeoJsonToMap (geoJsonUrl) {
@@ -202,14 +206,7 @@ export class Map {
   }
 
   setMapViewToBoundingBox () {
-    this.map.fitBounds(this.bbox, { padding: 20, duration: 0 })
-  }
-
-  moveMapToLocation (location) {
-    this.map.flyTo({
-      center: location,
-      zoom: 11
-    })
+    this.map.fitBounds(this.bbox, { padding: 20, duration: 0, maxZoom: 11 })
   }
 }
 
@@ -218,6 +215,8 @@ export const calculateBoundingBoxFromGeometries = (geometries) => {
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
+
+  if (!geometries) return []
 
   const pullOutCoordinates = (geometry) => {
     if (Array.isArray(geometry[0])) {
@@ -275,10 +274,13 @@ export const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
 }
 
 export const generateBoundingBox = async (boundaryGeoJsonUrl) => {
+  if (!boundaryGeoJsonUrl) return []
+
   const res = await fetch(boundaryGeoJsonUrl)
   const boundaryGeoJson = await res.json()
+  const coordinates = boundaryGeoJson?.features?.[0]?.geometry?.coordinates ?? null
 
-  return calculateBoundingBoxFromGeometries(boundaryGeoJson?.features?.[0]?.geometry?.coordinates)
+  return calculateBoundingBoxFromGeometries(coordinates)
 }
 
 export const createMapFromServerContext = async () => {

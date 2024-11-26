@@ -64,18 +64,6 @@ describe('map.js', () => {
       expect(result).toEqual([[-5, -5], [15, 15]])
     })
 
-    it('should handle flyTo method correctly', () => {
-      const map = new Map({ containerId: 'map', data: [], interactive: true })
-      const location = [-1.123, 50.789]
-
-      map.moveMapToLocation(location)
-
-      expect(map.map.flyTo).toHaveBeenCalledWith({
-        center: location,
-        zoom: 11
-      })
-    })
-
     it('should set first map layer id on map load', () => {
       const map = new Map({ containerId: 'map', data: [], interactive: true })
 
@@ -97,6 +85,13 @@ describe('map.js', () => {
       const result = calculateBoundingBoxFromGeometries(geometries)
 
       expect(result).toEqual([[-25, -25], [15, 15]])
+    })
+
+    it('should return empty array if geometry is undefined', () => {
+      const geometries = undefined
+      const result = calculateBoundingBoxFromGeometries(geometries)
+
+      expect(result).toEqual([])
     })
   })
 
