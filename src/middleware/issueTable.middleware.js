@@ -31,7 +31,7 @@ export const prepareTableParams = (req, res, next) => {
 
   const allRows = entities.map((entity, index) => ({
     columns: Object.fromEntries(uniqueDatasetFields.map((field) => {
-      const errorMessage = issues.find(issue => issue.entity === entity.entity && issue.field === field)?.issue_type
+      const errorMessage = issues.find(issue => issue.entity === entity.entity && (issue.field === field || issue.replacement_field === field))?.issue_type
       if (field === 'reference') {
         return [field, {
           html: `<a href='/organisations/${lpa}/${dataset}/${issueType}/${issueField}/entry/${index + 1}'>${entity[field]}</a>`,

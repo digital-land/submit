@@ -468,6 +468,19 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   })
 }
 
+const addFieldMappingsToIssue = (req, res, next) => {
+  const { issues, fieldMappings } = req
+
+  req.issues = issues.map(issue => {
+    return {
+      ...issue,
+      replacement_field: fieldMappings.find(mapping => mapping.field === issue.field)?.replacement_field
+    }
+  })
+
+  next()
+}
+
 /**
  * This middleware chain is responsible for retrieving all entities for the given organisation, their latest issues,
  * filtering out issues that have been fixed, and constructing the table params.
@@ -483,7 +496,9 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
 export const processRelevantIssuesMiddlewares = [
   fetchEntityIssuesForFieldAndType,
   FilterOutIssuesToMostRecent,
-  removeIssuesThatHaveBeenFixed
+  removeIssuesThatHaveBeenFixed,
+  fetchFieldMappings,
+  addFieldMappingsToIssue
 ]
 
 // Other
