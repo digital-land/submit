@@ -48,6 +48,20 @@ export const PaginationParams = v.optional(v.strictObject({
   ]))
 }))
 
+export const dataRangeParams = v.strictObject({
+  minRow: v.integer(),
+  maxRow: v.integer(),
+  totalRows: v.integer()
+})
+
+export const errorSummaryParams = v.strictObject({
+  heading: v.optional(v.string()),
+  items: v.array(v.strictObject({
+    html: v.string(),
+    href: v.url()
+  }))
+})
+
 export const tableParams = v.strictObject({
   columns: v.array(NonEmptyString),
   rows: v.array(v.strictObject({
@@ -154,11 +168,7 @@ export const OrgDataView = v.strictObject({
   taskCount: v.integer(),
   tableParams,
   pagination: PaginationParams,
-  dataRange: v.strictObject({
-    minRow: v.integer(),
-    maxRow: v.integer(),
-    totalRows: v.integer()
-  })
+  dataRange: dataRangeParams
 })
 
 export const OrgDatasetTaskList = v.strictObject({
@@ -191,14 +201,20 @@ export const OrgEndpointError = v.strictObject({
   })
 })
 
+export const OrgIssueTable = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  errorSummary: errorSummaryParams,
+  issueType: v.string(),
+  tableParams,
+  pagination: PaginationParams,
+  dataRange: dataRangeParams
+})
+
 export const OrgIssueDetails = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  errorHeading: v.optional(NonEmptyString),
-  issueItems: v.array(v.strictObject({
-    html: v.string(),
-    href: v.url()
-  })),
+  errorSummary: errorSummaryParams,
   issueType: NonEmptyString,
   entry: v.strictObject({
     title: NonEmptyString,
@@ -278,6 +294,7 @@ export const templateSchema = new Map([
   ['organisations/dataview.html', OrgDataView],
   ['organisations/datasetTaskList.html', OrgDatasetTaskList],
   ['organisations/http-error.html', OrgEndpointError],
+  ['organisations/issueTable.html', OrgIssueTable],
   ['organisations/issueDetails.html', OrgIssueDetails],
 
   ['errorPages/503', UptimeParams],

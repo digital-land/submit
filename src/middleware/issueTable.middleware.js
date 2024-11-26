@@ -190,7 +190,6 @@ export const prepareTemplateParams = (req, res, next) => {
 
   req.templateParams = {
     tableParams,
-
     organisation: orgInfo,
     dataset,
     errorSummary,

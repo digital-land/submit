@@ -256,8 +256,10 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   req.templateParams = {
     organisation: req.orgInfo,
     dataset: req.dataset,
-    errorHeading,
-    issueItems,
+    errorSummary: {
+      heading: errorHeading,
+      items: issueItems
+    },
     entry,
     issueType,
     pagination: paginationObj,
