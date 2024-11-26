@@ -457,14 +457,25 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
     })
 
   Promise.allSettled(promises).then((results) => {
-    // results is an array of objects with status (fulfilled or rejected) and value or reason
+  // results is an array of objects with status (fulfilled or rejected) and value or reason
     results.forEach(result => {
-      if (result.value.formattedData.length > 0) {
-        req.issues = issues.filter(issue => issue.entity !== result.value.formattedData.entity && issue.field !== result.value.formattedData.field)
+      if (result.status === 'fulfilled') {
+        if (result.value.formattedData.length > 0) {
+          req.issues = issues.filter(issue => issue.entity !== result.value.formattedData.entity && issue.field !== result.value.formattedData.field)
+        }
+      } else {
+      // Handle the rejection case
+        console.error('Error:', result.reason)
+      // You can also log the error to a centralized error logging system if needed
       }
     })
 
     next()
+  }).catch(error => {
+  // Handle any errors that occur in the promise chain
+    console.error('Error in middleware:', error)
+    // You can also log the error to a centralized error logging system if needed
+    next(error)
   })
 }
 

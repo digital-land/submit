@@ -8,6 +8,7 @@
 
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
+import { pagination } from '../utils/pagination.js'
 import { fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -17,7 +18,7 @@ export const IssueTableQueryParams = v.object({
   dataset: v.string(),
   issue_type: v.string(),
   issue_field: v.string(),
-  pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.number(), v.integer(), v.minValue(1))),
+  pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.number(), v.integer(), v.minValue(1)), '1'),
   resourceId: v.optional(v.string())
 })
 
@@ -25,8 +26,67 @@ const validateIssueTableQueryParams = validateQueryParams({
   schema: IssueTableQueryParams
 })
 
+const pageLength = 50
+export const getDataRange = (req, res, next) => {
+  const { issues } = req
+  const { pageNumber } = req.parsedParams
+  req.dataRange = {
+    minRow: (pageNumber - 1) * pageLength,
+    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, issues.length),
+    totalRows: issues.length
+  }
+  next()
+}
+
+export const preparePaginationParams = (req, res, next) => {
+  const { issues } = req
+  const { pageNumber } = req.parsedParams
+  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
+
+  const maxPageNumber = Math.ceil(issues.length / pageLength)
+
+  const BaseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}/`
+
+  const paginationObj = {
+    previous: undefined,
+    next: undefined,
+    items: undefined
+  }
+
+  if (pageNumber > 1) {
+    paginationObj.previous = {
+      href: `${BaseSubpath}${pageNumber - 1}`
+    }
+  }
+  if (pageNumber < maxPageNumber) {
+    paginationObj.next = {
+      href: `${BaseSubpath}${pageNumber + 1}`
+    }
+  }
+  paginationObj.items = pagination(maxPageNumber, pageNumber).map(item => {
+    if (item === '...') {
+      return {
+        type: 'ellipsis',
+        ellipsis: true,
+        href: '#'
+      }
+    } else {
+      return {
+        type: 'number',
+        number: item,
+        href: `${BaseSubpath}${item}`,
+        current: pageNumber === parseInt(item)
+      }
+    }
+  })
+
+  req.pagination = paginationObj
+
+  next()
+}
+
 export const prepareTableParams = (req, res, next) => {
-  const { entities, issues, uniqueDatasetFields } = req
+  const { entities, issues, uniqueDatasetFields, dataRange } = req
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
 
   const allRows = entities.map((entity, index) => ({
@@ -58,10 +118,12 @@ export const prepareTableParams = (req, res, next) => {
     return column.error !== undefined || hasError
   }, false))
 
+  const rowsPaginated = rowsWithErrors.slice(dataRange.minRow, dataRange.maxRow)
+
   req.tableParams = {
     columns: uniqueDatasetFields,
     fields: uniqueDatasetFields,
-    rows: rowsWithErrors
+    rows: rowsPaginated
   }
 
   next()
@@ -123,7 +185,7 @@ export const getErrorSummaryItems = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { tableParams, orgInfo, dataset, errorSummary } = req
+  const { tableParams, orgInfo, dataset, errorSummary, pagination, dataRange } = req
   const { issue_type: issueType } = req.params
 
   req.templateParams = {
@@ -132,16 +194,33 @@ export const prepareTemplateParams = (req, res, next) => {
     organisation: orgInfo,
     dataset,
     errorSummary,
-    issueType
-    // pagination: paginationObj,
+    issueType,
+    pagination,
+    dataRange
     // issueEntitiesCount,
     // pageNumber
   }
   next()
 }
 
-export const issueHasEntity = (req, res, next) => req.issues.length > 0
-export const notIssueHasEntity = (req, res, next) => !issueHasEntity(req, res, next)
+export const notIssueHasEntity = (req, res, next) => req.issues.length <= 0
+
+const redirectIssueGroups = [
+  {
+    type: 'missing value',
+    field: 'reference'
+  },
+  {
+    type: 'reference values are not unique',
+    field: 'reference'
+  },
+  {
+    type: 'unknown entity - missing reference',
+    field: 'entity'
+  }
+]
+export const issueTypeAndFieldShouldRedirect = (req, res, next) =>
+  redirectIssueGroups.find(({ type, field }) => (type === req.params.issue_type && field === req.params.issue_field))
 
 export const redirectToEntityView = (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
@@ -156,6 +235,7 @@ export const getIssueTable = renderTemplate({
 })
 
 export default [
+  onlyIf(issueTypeAndFieldShouldRedirect, redirectToEntityView),
   validateIssueTableQueryParams,
   fetchOrgInfo,
   fetchDatasetInfo,
@@ -165,6 +245,8 @@ export default [
   ...processSpecificationMiddlewares,
   onlyIf(notIssueHasEntity, redirectToEntityView),
   getErrorSummaryItems,
+  getDataRange,
+  preparePaginationParams,
   prepareTableParams,
   prepareTemplateParams,
   getIssueTable
