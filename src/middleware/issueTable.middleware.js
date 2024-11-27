@@ -8,8 +8,7 @@
 
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
-import { pagination } from '../utils/pagination.js'
-import { fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -38,50 +37,19 @@ export const getDataRange = (req, res, next) => {
   next()
 }
 
-export const preparePaginationParams = (req, res, next) => {
-  const { issues } = req
-  const { pageNumber } = req.parsedParams
+export const setBaseSubpath = (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
+  req.baseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}`
+  next()
+}
 
-  const maxPageNumber = Math.ceil(issues.length / pageLength)
-
-  const BaseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}/`
-
-  const paginationObj = {
-    previous: undefined,
-    next: undefined,
-    items: undefined
+export const setPaginationOptions = (req, res, next) => {
+  const { issues } = req
+  const pageLength = 50
+  req.paginationOptions = {
+    maxPageNumber: Math.ceil(issues.length / pageLength),
+    pageLength
   }
-
-  if (pageNumber > 1) {
-    paginationObj.previous = {
-      href: `${BaseSubpath}${pageNumber - 1}`
-    }
-  }
-  if (pageNumber < maxPageNumber) {
-    paginationObj.next = {
-      href: `${BaseSubpath}${pageNumber + 1}`
-    }
-  }
-  paginationObj.items = pagination(maxPageNumber, pageNumber).map(item => {
-    if (item === '...') {
-      return {
-        type: 'ellipsis',
-        ellipsis: true,
-        href: '#'
-      }
-    } else {
-      return {
-        type: 'number',
-        number: item,
-        href: `${BaseSubpath}${item}`,
-        current: pageNumber === parseInt(item)
-      }
-    }
-  })
-
-  req.pagination = paginationObj
-
   next()
 }
 
@@ -130,11 +98,9 @@ export const prepareTableParams = (req, res, next) => {
 }
 
 export const getErrorSummaryItems = (req, res, next) => {
-  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
+  const { issue_type: issueType, issue_field: issueField, baseSubpath } = req.params
 
   const { entities, issues } = req
-
-  const BaseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}/entity`
 
   let errorHeading = ''
   let issueItems
@@ -161,7 +127,7 @@ export const getErrorSummaryItems = (req, res, next) => {
           num_issues: 1,
           field: issueField
         }) + ` in entity ${issue.entity}`,
-        href: `${BaseSubpath}${pageNum}`
+        href: `${baseSubpath}/entity/${pageNum}`
       }
     })
   } else {
@@ -243,9 +209,11 @@ export default [
   ...processEntitiesMiddlewares,
   ...processSpecificationMiddlewares,
   onlyIf(notIssueHasEntity, redirectToEntityView),
+  setBaseSubpath,
   getErrorSummaryItems,
   getDataRange,
-  preparePaginationParams,
+  setPaginationOptions,
+  createPaginationTemplateParams,
   prepareTableParams,
   prepareTemplateParams,
   getIssueTable

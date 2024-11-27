@@ -152,7 +152,7 @@ export const getIsPageNumberInRange = (maxPagesKey) => {
  *
  * @returns {void}
  */
-export const createPaginationTemplateParams = (req, res, next) => {
+export const createPaginationTemplateParams2 = (req, res, next) => {
   const { resultsCount, urlSubPath, paginationPageLength } = req
   if (typeof resultsCount !== 'number' || typeof paginationPageLength !== 'number' || !urlSubPath) {
     logger.error('Missing or invalid pagination parameters', { resultsCount, urlSubPath, paginationPageLength })
@@ -196,6 +196,48 @@ export const createPaginationTemplateParams = (req, res, next) => {
         type: 'number',
         number: item,
         href: `${urlSubPath}${item}`,
+        current: pageNumber === parseInt(item)
+      }
+    }
+  })
+
+  req.pagination = paginationObj
+
+  next()
+}
+
+export const createPaginationTemplateParams = (req, res, next) => {
+  const { pageNumber } = req.parsedParams
+  const { baseSubpath, paginationOptions } = req
+
+  const paginationObj = {
+    previous: undefined,
+    next: undefined,
+    items: undefined
+  }
+
+  if (pageNumber > 1) {
+    paginationObj.previous = {
+      href: `${baseSubpath}/${pageNumber - 1}`
+    }
+  }
+  if (pageNumber < paginationOptions.maxPageNumber) {
+    paginationObj.next = {
+      href: `${baseSubpath}/${pageNumber + 1}`
+    }
+  }
+  paginationObj.items = pagination(paginationOptions.maxPageNumber, pageNumber).map(item => {
+    if (item === '...') {
+      return {
+        type: 'ellipsis',
+        ellipsis: true,
+        href: '#'
+      }
+    } else {
+      return {
+        type: 'number',
+        number: item,
+        href: `${baseSubpath}/${item}`,
         current: pageNumber === parseInt(item)
       }
     }
