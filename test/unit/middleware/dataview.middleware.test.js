@@ -4,8 +4,7 @@ import {
   setPaginationOptions,
   constructTableParams,
   prepareTemplateParams,
-  setOffset,
-  getUniqueDatasetFieldsFromSpecification
+  setOffset
 } from '../../../src/middleware/dataview.middleware'
 
 describe('dataview.middleware.test.js', () => {
@@ -65,50 +64,6 @@ describe('dataview.middleware.test.js', () => {
       expect(req.urlSubPath).toEqual(`/organisations/${encodeURIComponent(req.params.lpa)}/${encodeURIComponent(req.params.dataset)}/data/`)
       expect(req.paginationPageLength).toEqual(pageLength)
       expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('getUniqueDatasetFieldsFromSpecification', () => {
-    it('gets unique dataset fields from specification', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'foo', datasetField: 'foo_field' },
-            { field: 'bar', datasetField: 'bar_field' },
-            { field: 'baz', datasetField: 'foo_field' } // duplicate
-          ]
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      getUniqueDatasetFieldsFromSpecification(req, res, next)
-
-      expect(req.uniqueDatasetFields).toEqual(['foo_field', 'bar_field'])
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('returns an empty array when specification.fields is empty', () => {
-      const req = {
-        specification: {
-          fields: []
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      getUniqueDatasetFieldsFromSpecification(req, res, next)
-
-      expect(req.uniqueDatasetFields).toEqual([])
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('throws an error when specification is not provided', () => {
-      const req = {}
-      const res = {}
-      const next = vi.fn()
-
-      expect(() => getUniqueDatasetFieldsFromSpecification(req, res, next)).toThrowError('specification is required')
     })
   })
 
