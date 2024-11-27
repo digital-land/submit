@@ -175,11 +175,18 @@ export const setBaseSubpath = (req, res, next) => {
   next()
 }
 
-export const setPaginationOptions = (req, res, next) => {
+export const getDataRange = (req, res, next) => {
+  const { pageNumber } = req.parsedParams
   const { issueEntitiesCount: issueEntitiesCountObj } = req
   const { count: issueEntitiesCount } = issueEntitiesCountObj
-  req.paginationOptions = {
-    maxPageNumber: issueEntitiesCount,
+
+  const pageLength = 1
+  const recordCount = issueEntitiesCount
+  req.dataRange = {
+    minRow: (pageNumber - 1) * pageLength,
+    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
+    totalRows: recordCount,
+    maxPageNumber: recordCount,
     pageLength: 1
   }
   next()
@@ -280,7 +287,7 @@ export default [
   handleRejections(fetchEntry),
   fetchIf(isResourceDataPresent, fetchEntityCount, zeroEntityCount),
   setBaseSubpath,
-  setPaginationOptions,
+  getDataRange,
   createPaginationTemplateParams,
   prepareIssueDetailsTemplateParams,
   getIssueDetails,

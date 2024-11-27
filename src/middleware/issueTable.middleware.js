@@ -25,14 +25,17 @@ const validateIssueTableQueryParams = validateQueryParams({
   schema: IssueTableQueryParams
 })
 
-const pageLength = 50
 export const getDataRange = (req, res, next) => {
   const { issues } = req
   const { pageNumber } = req.parsedParams
+  const pageLength = 50
+  const recordCount = issues.length
   req.dataRange = {
     minRow: (pageNumber - 1) * pageLength,
-    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, issues.length),
-    totalRows: issues.length
+    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
+    totalRows: recordCount,
+    maxPageNumber: Math.ceil(recordCount / pageLength),
+    pageLength
   }
   next()
 }
@@ -40,16 +43,6 @@ export const getDataRange = (req, res, next) => {
 export const setBaseSubpath = (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
   req.baseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}`
-  next()
-}
-
-export const setPaginationOptions = (req, res, next) => {
-  const { issues } = req
-  const pageLength = 50
-  req.paginationOptions = {
-    maxPageNumber: Math.ceil(issues.length / pageLength),
-    pageLength
-  }
   next()
 }
 
@@ -212,7 +205,6 @@ export default [
   setBaseSubpath,
   getErrorSummaryItems,
   getDataRange,
-  setPaginationOptions,
   createPaginationTemplateParams,
   prepareTableParams,
   prepareTemplateParams,
