@@ -81,7 +81,7 @@ async function fetchEntry (req, res, next) {
   let entryData
   const issuesByEntry = Object.values(issuesByEntryNumber)
   if (issues.length > 0) {
-    if (pageNumber <= issueEntitiesCount) {
+    if (pageNumber <= issueEntitiesCount.count) {
       const entryIssues = issuesByEntry[(pageNumber - 1) % issuesQueryLimit] ?? []
       const entryNum = entryIssues.length > 0 ? entryIssues[0].entry_number : undefined
       entryData = entryNum
