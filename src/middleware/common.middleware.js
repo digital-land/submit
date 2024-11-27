@@ -142,6 +142,14 @@ export const createPaginationTemplateParams = (req, res, next) => {
   const { pageNumber } = req.parsedParams
   const { baseSubpath, dataRange } = req
 
+  if (dataRange.maxPageNumber <= 1) {
+    return next()
+  }
+
+  if (isNaN(pageNumber) || pageNumber < 1) {
+    throw new Error('Invalid page number')
+  }
+
   const paginationObj = {
     previous: undefined,
     next: undefined,
@@ -158,7 +166,7 @@ export const createPaginationTemplateParams = (req, res, next) => {
       href: `${baseSubpath}/${pageNumber + 1}`
     }
   }
-  paginationObj.items = pagination(dataRange.maxPageNumber, pageNumber).map(item => {
+  paginationObj.items = pagination(dataRange.maxPageNumber, Math.min(pageNumber, dataRange.maxPageNumber)).map(item => {
     if (item === '...') {
       return {
         type: 'ellipsis',
