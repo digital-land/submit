@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getIsPageNumberInRange, getUniqueDatasetFieldsFromSpecification } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 
 describe('createPaginationTemplateParams', () => {
@@ -609,63 +609,5 @@ describe('setDefaultParams', () => {
 
     expect(req.params).toEqual({ pageNumber: 1 })
     expect(next).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe('getIsPageNumberInRange', () => {
-  it('correctly retrieves maxPages from request', () => {
-    const req = { parsedParams: { pageNumber: 3 }, maxPagesFoo: 5, maxPages: 10 }
-    const res = {}
-    const next = vi.fn()
-
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-
-    // Check that the middleware used the correct maxPages value
-    req.parsedParams.pageNumber = 11
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next.mock.calls[1][0].status).toBe(404)
-    expect(next.mock.calls[1][0].message).toBe('Page not found')
-  })
-
-  it('allows valid page numbers', () => {
-    const req = { parsedParams: { pageNumber: 3 }, maxPages: 5 }
-    const res = {}
-    const next = vi.fn()
-
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-
-  it('blocks non-integer page numbers', () => {
-    const req = { parsedParams: { pageNumber: 'foo' }, maxPages: 5 }
-    const res = {}
-    const next = vi.fn()
-
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next.mock.calls[0][0].message).toBe('Page number not a number')
-  })
-
-  it('blocks page numbers less than 1', () => {
-    const req = { parsedParams: { pageNumber: 0 }, maxPages: 5 }
-    const res = {}
-    const next = vi.fn()
-
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next.mock.calls[0][0].status).toBe(404)
-    expect(next.mock.calls[0][0].message).toBe('Page not found')
-  })
-
-  it('blocks page numbers exceeding max pages', () => {
-    const req = { parsedParams: { pageNumber: 6 }, maxPages: 5 }
-    const res = {}
-    const next = vi.fn()
-
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next.mock.calls[0][0].status).toBe(404)
-    expect(next.mock.calls[0][0].message).toBe('Page not found')
   })
 })

@@ -115,27 +115,16 @@ export const getDatasetTaskListError = renderTemplate({
   handlerName: 'getDatasetTaskListError'
 })
 
-export const getIsPageNumberInRange = (maxPagesKey) => {
-  /**
-   * Middleware. Short-circuits with 404 error if pageNumber is not in range.
-   * Updates req with `pageNumber`
-   *
-   * @param req
-   * @param res
-   * @param next
-   */
-  return (req, res, next) => {
-    const { pageNumber } = req.parsedParams
-    if (!Number.isInteger(pageNumber)) {
-      return next(new Error('Page number not a number'))
-    }
-    if (pageNumber < 1 || req[maxPagesKey] < pageNumber) {
-      const error = new Error('Page not found')
-      error.status = 404
-      return next(error)
-    }
-    next()
+export const show404IfPageNumberNotInRange = (req, res, next) => {
+  const { dataRange } = req
+  const { pageNumber } = req.parsedParams
+
+  if (pageNumber > dataRange.maxPageNumber || pageNumber < 1) {
+    const error = new Error('page number not in range')
+    error.status = 404
+    return next(error)
   }
+  next()
 }
 
 export const createPaginationTemplateParams = (req, res, next) => {

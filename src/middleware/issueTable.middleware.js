@@ -8,7 +8,7 @@
 
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -202,9 +202,10 @@ export default [
   ...processEntitiesMiddlewares,
   ...processSpecificationMiddlewares,
   onlyIf(notIssueHasEntity, redirectToEntityView),
+  getDataRange,
+  show404IfPageNumberNotInRange,
   setBaseSubpath,
   getErrorSummaryItems,
-  getDataRange,
   createPaginationTemplateParams,
   prepareTableParams,
   prepareTemplateParams,

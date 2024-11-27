@@ -8,8 +8,8 @@ import {
   logPageError,
   takeResourceIdFromParams,
   validateQueryParams,
-  getIsPageNumberInRange,
-  createPaginationTemplateParams
+  createPaginationTemplateParams,
+  show404IfPageNumberNotInRange
 } from './common.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, handleRejections, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -283,11 +283,11 @@ export default [
   fetchIf(isResourceDataPresent, fetchIssues, emptyIssuesCollection),
   reformatIssuesToBeByEntryNumber,
   fetchIf(isResourceDataPresent, fetchIssueEntitiesCount, zeroIssueEntitiesCount),
-  getIsPageNumberInRange('issueEntitiesCount'),
   handleRejections(fetchEntry),
   fetchIf(isResourceDataPresent, fetchEntityCount, zeroEntityCount),
   setBaseSubpath,
   getDataRange,
+  show404IfPageNumberNotInRange,
   createPaginationTemplateParams,
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
