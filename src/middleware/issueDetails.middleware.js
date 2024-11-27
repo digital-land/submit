@@ -182,7 +182,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   let errorHeading
   let issueItems
 
-  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entity/`
+  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/entry/`
 
   if (entryNumberCount < entityCount) {
     errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
