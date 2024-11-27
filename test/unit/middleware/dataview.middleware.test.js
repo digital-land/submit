@@ -1,72 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
-  setTotalPages,
-  setPaginationOptions,
   constructTableParams,
-  prepareTemplateParams,
-  setOffset
+  prepareTemplateParams
 } from '../../../src/middleware/dataview.middleware'
 
 describe('dataview.middleware.test.js', () => {
-  describe('setTotalPages', () => {
-    it('sets total pages', () => {
-      const req = {
-        entityCount: { count: 100 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      setTotalPages(req, res, next)
-      expect(req.totalPages).toBe(2)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('setOffset', () => {
-    it('sets offset correctly', () => {
-      const req = {
-        params: { pageNumber: 2 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      setOffset(req, res, next)
-      expect(req.offset).toBe(50) // assuming pageLength is 50
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('sets offset to 0 when pageNumber is 1', () => {
-      const req = {
-        params: { pageNumber: 1 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      setOffset(req, res, next)
-      expect(req.offset).toBe(0)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('setPaginationOptions', () => {
-    it('sets pagination options', () => {
-      const req = {
-        entityCount: { count: 100 },
-        params: { lpa: 'lpa', dataset: 'dataset' }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      const pageLength = 100
-
-      setPaginationOptions(pageLength)(req, res, next)
-      expect(req.resultsCount).toEqual(100)
-      expect(req.urlSubPath).toEqual(`/organisations/${encodeURIComponent(req.params.lpa)}/${encodeURIComponent(req.params.dataset)}/data/`)
-      expect(req.paginationPageLength).toEqual(pageLength)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
   describe('constructTableParams', () => {
     it('constructs table parameters with correct columns, fields, and rows', () => {
       const req = {
@@ -183,7 +121,12 @@ describe('dataview.middleware.test.js', () => {
         issues: [],
         pagination: {},
         entityCount: { count: 1 },
-        offset: 0
+        offset: 0,
+        dataRange: {
+          minRow: 1,
+          maxRow: 1,
+          totalRows: 1
+        }
       }
       const res = {}
       const next = vi.fn()

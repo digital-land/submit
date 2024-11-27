@@ -6,9 +6,12 @@ describe('createPaginationTemplateParams', () => {
   it('creates pagination object with correct parameters', () => {
     const req = {
       resultsCount: 100,
-      urlSubPath: '/api/results/',
-      paginationPageLength: 10,
-      params: { pageNumber: 2 }
+      baseSubpath: '/api/results',
+      params: { pageNumber: 2 },
+      parsedParams: { pageNumber: 2 },
+      dataRange: {
+        maxPageNumber: 10
+      }
     }
     const res = {}
     const next = vi.fn()
@@ -29,32 +32,15 @@ describe('createPaginationTemplateParams', () => {
     expect(next).toHaveBeenCalledTimes(1)
   })
 
-  it('handles edge cases for pagination', () => {
-    const req = {
-      resultsCount: 10,
-      urlSubPath: '/api/results/',
-      paginationPageLength: 10,
-      params: { pageNumber: 1 }
-    }
-    const res = {}
-    const next = vi.fn()
-
-    createPaginationTemplateParams(req, res, next)
-
-    expect(req.pagination).toEqual({
-      items: [
-        { type: 'number', number: 1, href: '/api/results/1', current: true }
-      ]
-    })
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-
   it('handles invalid page numbers (negative)', () => {
     const req = {
       resultsCount: 100,
       urlSubPath: '/api/results/',
-      paginationPageLength: 10,
-      params: { pageNumber: -1 }
+      dataRange: {
+        pageLength: 10
+      },
+      params: { pageNumber: -1 },
+      parsedParams: { pageNumber: -1 }
     }
     const res = {}
     const next = vi.fn()
@@ -69,7 +55,11 @@ describe('createPaginationTemplateParams', () => {
       resultsCount: 100,
       urlSubPath: '/api/results/',
       paginationPageLength: 10,
-      params: { pageNumber: 'abc' }
+      params: { pageNumber: 'abc' },
+      parsedParams: { pageNumber: 'abc' },
+      dataRange: {
+        maxPageNumber: 10
+      }
     }
     const res = {}
     const next = vi.fn()
@@ -83,8 +73,11 @@ describe('createPaginationTemplateParams', () => {
     const req = {
       resultsCount: 0,
       urlSubPath: '/api/results/',
-      paginationPageLength: 10,
-      params: { pageNumber: 1 }
+      params: { pageNumber: 1 },
+      parsedParams: { pageNumber: 1 },
+      dataRange: {
+        maxPageNumber: 1
+      }
     }
     const res = {}
     const next = vi.fn()
@@ -98,9 +91,15 @@ describe('createPaginationTemplateParams', () => {
   it('handles page number beyond available pages', () => {
     const req = {
       resultsCount: 50,
-      urlSubPath: '/api/results/',
-      paginationPageLength: 10,
-      params: { pageNumber: 6 }
+      baseSubpath: '/api/results',
+      params: { pageNumber: 6 },
+      parsedParams: { pageNumber: 6 },
+      dataRange: {
+        minRow: 1,
+        maxRow: 1,
+        totalRows: 1,
+        maxPageNumber: 5
+      }
     }
     const res = {}
     const next = vi.fn()

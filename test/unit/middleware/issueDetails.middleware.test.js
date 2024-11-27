@@ -42,6 +42,17 @@ describe('issueDetails.middleware.js', () => {
         entityCount: { entity_count: 1 },
         issueEntitiesCount: { count: 1 },
         pageNumber: 1,
+        pagination: {
+          items: [
+            {
+              current: true,
+              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
+              number: 1,
+              type: 'number'
+            }
+          ]
+        },
+        baseSubpath: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry',
         orgInfo,
         dataset,
         entryData,
@@ -139,7 +150,17 @@ describe('issueDetails.middleware.js', () => {
       const req = {
         params: requestParams,
         parsedParams: { pageNumber: 1 },
-        // middleware supplies the below
+        pagination: {
+          items: [
+            {
+              current: true,
+              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
+              number: 1,
+              type: 'number'
+            }
+          ]
+        },
+        baseSubpath: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry',
         entryNumber: 1,
         entityCount: { entity_count: 3 },
         issueEntitiesCount: { count: 1 },
