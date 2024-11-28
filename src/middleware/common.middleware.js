@@ -119,7 +119,7 @@ export const show404IfPageNumberNotInRange = (req, res, next) => {
   const { dataRange } = req
   const { pageNumber } = req.parsedParams
 
-  if (!dataRange || !dataRange.maxPageNumber || isNaN(dataRange.maxPageNumber)) {
+  if (!dataRange || !dataRange.maxPageNumber || Number.isNaN(dataRange.maxPageNumber)) {
     const error = new Error('invalid req.dataRange object')
     return next(error)
   }
