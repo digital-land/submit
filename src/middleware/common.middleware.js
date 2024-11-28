@@ -189,8 +189,8 @@ export const fetchResources = fetchMany({
     select * from resource r
     LEFT JOIN resource_organisation ro ON ro.resource = r.resource
     LEFT JOIN resource_dataset rd ON rd.resource = r.resource
-    WHERE ro.organisation = 'local-authority:LBH'
-    AND rd.dataset = 'brownfield-land'
+    WHERE ro.organisation = '${req.params.lpa}'
+    AND rd.dataset = '${req.params.dataset}'
     AND r.end_date = ''
     ORDER BY start_date desc`,
   result: 'resources'
