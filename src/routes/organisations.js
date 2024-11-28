@@ -11,7 +11,7 @@ router.get('/:lpa/:dataset/:issue_type/:issue_field/entry/:pageNumber', Organisa
 router.get('/:lpa/:dataset/:issue_type/:issue_field/entry', OrganisationsController.issueDetailsMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/:pageNumber?', OrganisationsController.issueTableMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field', OrganisationsController.issueTableMiddleware)
-router.get('/:lpa/:dataset', OrganisationsController.oatasetTaskListMiddleware)
+router.get('/:lpa/:dataset', OrganisationsController.datasetTaskListMiddleware)
 router.get('/:lpa', OrganisationsController.overviewMiddleware)
 router.get('/', OrganisationsController.organisationsMiddleware)
 
