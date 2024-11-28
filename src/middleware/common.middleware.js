@@ -141,7 +141,8 @@ export const createPaginationTemplateParams = (req, res, next) => {
   }
 
   if (isNaN(pageNumber) || pageNumber < 1) {
-    throw new Error('Invalid page number')
+    const error = new Error('Invalid page number')
+    return next(error)
   }
 
   const paginationObj = {

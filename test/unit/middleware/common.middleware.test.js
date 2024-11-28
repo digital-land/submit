@@ -137,9 +137,9 @@ describe('createPaginationTemplateParams', () => {
     const res = {}
     const next = vi.fn()
 
-    expect(() => createPaginationTemplateParams(req, res, next)).toThrowError('Invalid page number')
-
-    expect(next).not.toHaveBeenCalled()
+    expect(() => createPaginationTemplateParams(req, res, next))
+    expect(next).toHaveBeenCalledOnce()
+    expect(next).toHaveBeenCalledWith(new Error('Invalid page number'))
   })
 
   it('handles invalid page numbers (non-numeric)', () => {
