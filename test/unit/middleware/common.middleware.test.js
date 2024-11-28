@@ -781,6 +781,90 @@ describe('FilterOutIssuesToMostRecent', () => {
       { entity: 'entity3', field: 'field3', start_date: new Date('2022-01-02'), resource: 'resource3' }
     ])
   })
+
+  it('handles correctly with invalid date strings in start_date', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: 'not-a-date' },
+        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
+  })
+
+  it('handles correctly with missing start_date field', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: undefined },
+        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
+  })
+
+  it('handles correctly with malformed date objects', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: new Date(' invalid-date') },
+        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
+  })
 })
 
 describe('removeIssuesThatHaveBeenFixed', () => {
