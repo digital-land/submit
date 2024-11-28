@@ -101,9 +101,8 @@ export const getErrorSummaryItems = (req, res, next) => {
   if (issues.length <= 0) {
     // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
     logger.warn(`issueTable was accessed from ${req.headers.referer} but there was no issues`)
-    issueItems = [{
-      html: `this issue is actually a false flag.<br>There are no '${issueType}' issues in the '${issueField}' column.<br>We are working to fix this`
-    }]
+    const error = new Error('issue count must be larger than 0')
+    return next(error)
   } else if (issues.length < entities.length) {
     errorHeading = performanceDbApi.getTaskMessage({
       issue_type: issueType,
@@ -178,7 +177,7 @@ const redirectIssueGroups = [
   }
 ]
 export const issueTypeAndFieldShouldRedirect = (req, res, next) =>
-  redirectIssueGroups.find(({ type, field }) => (type === req.params.issue_type && field === req.params.issue_field))
+  redirectIssueGroups.findIndex(({ type, field }) => (type === req.params.issue_type && field === req.params.issue_field)) >= 0
 
 export const redirectToEntityView = (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
