@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 
 describe('show404IfPageNumberNotInRange middleware', () => {
@@ -694,5 +694,85 @@ describe('setDefaultParams', () => {
 
     expect(req.params).toEqual({ pageNumber: 1 })
     expect(next).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('FilterOutIssuesToMostRecent', () => {
+  it('removes issues of the same type and field and entity to only get the most recent', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity1', field: 'field1', resource: 'resource2' },
+        { entity: 'entity1', field: 'field2', resource: 'resource1' },
+        { entity: 'entity1', field: 'field2', resource: 'resource2' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
+  })
+
+  it('leaves issues with different resources', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2' },
+        { entity: 'entity3', field: 'field3', resource: 'resource3' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: new Date('2022-01-01') },
+      { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity3', field: 'field3', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
+  })
+
+  it('handles issues with no corresponding resource', () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', start_date: '2022-01-01', resource: 'resource1' },
+        { entity: 'entity2', field: 'field2', start_date: '2022-01-01', resource: 'invalid-resource' },
+        { entity: 'entity3', field: 'field3', start_date: '2022-01-02', resource: 'resource3' }
+      ],
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource3', start_date: '2022-01-02' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', start_date: new Date('2022-01-01'), resource: 'resource1' },
+      { entity: 'entity3', field: 'field3', start_date: new Date('2022-01-02'), resource: 'resource3' }
+    ])
   })
 })

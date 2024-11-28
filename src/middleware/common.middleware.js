@@ -370,11 +370,19 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
   result: 'issues'
 })
 
-const FilterOutIssuesToMostRecent = (req, res, next) => {
+export const FilterOutIssuesToMostRecent = (req, res, next) => {
   const { resources, issues } = req
 
-  const groupedIssues = issues.reduce((acc, current) => {
-    current.start_date = resources.find(resource => resource.resource === current.resource)?.start_date
+  const issuesWithResources = issues.filter(issue => {
+    if (!issue.resource || !resources.find(resource => resource.resource === issue.resource)) {
+      logger.warn(`Missing resource on issue: ${JSON.stringify(issue)}`)
+      return false
+    }
+    return true
+  })
+
+  const groupedIssues = issuesWithResources.reduce((acc, current) => {
+    current.start_date = new Date(resources.find(resource => resource.resource === current.resource)?.start_date)
     const { entity, field } = current
     if (!acc[entity]) {
       acc[entity] = {}
@@ -390,12 +398,10 @@ const FilterOutIssuesToMostRecent = (req, res, next) => {
   const recentIssues = Object.fromEntries(Object.entries(groupedIssues).map(([entityName, issuesByEntity]) =>
     [
       entityName,
-      Object.fromEntries(Object.entries(issuesByEntity).map(([field, issues]) =>
-        [
-          field,
-          issues.sort((a, b) => a.start_date > b.start_date)[0]
-        ]
-      ))
+      Object.fromEntries(Object.entries(issuesByEntity).map(([field, issues]) => [
+        field,
+        issues.sort((a, b) => b.start_date.getTime() - a.start_date.getTime())[0]
+      ]))
     ]
   ))
 
