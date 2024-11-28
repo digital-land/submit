@@ -1,6 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
+import datasette from '../../../src/services/datasette.js'
+
+vi.mock('../../../src/services/datasette.js', () => ({
+  default: {
+    runQuery: vi.fn()
+  }
+}))
 
 describe('show404IfPageNumberNotInRange middleware', () => {
   const dataRange = {
@@ -774,5 +781,197 @@ describe('FilterOutIssuesToMostRecent', () => {
       { entity: 'entity1', field: 'field1', start_date: new Date('2022-01-01'), resource: 'resource1' },
       { entity: 'entity3', field: 'field3', start_date: new Date('2022-01-02'), resource: 'resource3' }
     ])
+  })
+})
+
+describe('removeIssuesThatHaveBeenFixed', () => {
+  const mockDatasetteQuery = (moreRecentEntityFieldsFacts) => {
+    datasette.runQuery.mockImplementation((query, dataset) => {
+      let formattedData = []
+      moreRecentEntityFieldsFacts.forEach(([entity, field, resource]) => {
+        if (query.includes(entity) && query.includes(field) && query.includes(resource)) {
+          formattedData = [{ entity, field, resource }]
+        }
+      })
+      return {
+        formattedData
+      }
+    })
+  }
+
+  it('removes issues with more a recent fact', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity2', field: 'field1', resource: 'resource2' },
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = [
+      ['entity2', 'field1', 'resource3'],
+      ['entity1', 'field1', 'resource3']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ])
+    })
+  })
+
+  it('leaves issues that are the most recent resource', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    datasette.runQuery.mockImplementation((query, dataset) => {
+      if (query.includes('resource3') && query.includes('entity3')) {
+        return {
+          formattedData: [
+            { entity: 'entity3', field: 'field1' }
+          ]
+        }
+      } else {
+        return {
+          formattedData: []
+        }
+      }
+    })
+    const moreRecentEntityFieldsFacts = [
+      ['entity3', 'field1', 'resource3']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ])
+    })
+  })
+
+  it('leaves issues that do not have a more recent fact', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity3', field: 'field1', resource: 'resource2' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = []
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity3', field: 'field1', resource: 'resource2' }
+      ])
+    })
+  })
+
+  it('removes multiple issues for the same resource', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity2', field: 'field1', resource: 'resource1' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = [
+      ['entity1', 'field1', 'resource2'],
+      ['entity2', 'field1', 'resource2']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([])
+    })
+  })
+
+  it('leaves no issues when none have been fixed', async () => {
+    const req = {
+      issues: [],
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = []
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([])
+    })
+  })
+
+  it('leaves issues when no resources', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ],
+      resources: []
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = [
+      ['entity1', 'field1', 'resource1']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ])
+    })
+  })
+
+  it('handles rejected Promise in Promise.allSettled, and does not remove any issues', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ],
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+
+    datasette.runQuery.mockRejectedValue(new Error('async error'))
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ])
+    })
   })
 })

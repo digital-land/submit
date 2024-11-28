@@ -421,6 +421,11 @@ export const FilterOutIssuesToMostRecent = (req, res, next) => {
 export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   const { issues, resources } = req
 
+  if (!resources || resources.length <= 0) {
+    logger.warn('no resources provided for removeIssueThatHaveBeenFixed')
+    return next()
+  }
+
   // get all more recent facts for each issue
   const promises = issues
     .filter(issue => issue.resource !== resources[0].resource)
@@ -433,7 +438,9 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
         LEFT JOIN fact_resource fr ON f.fact = fr.fact
         WHERE entity = ${issue.entity}
         AND field = '${issue.field}'
-        AND fr.resource IN ('${newerResources.map(resource => resource.resource).join("','")}')`,
+        AND fr.resource IN ('${newerResources.map(resource => resource.resource).join("','")}')
+        ORDER BY fr.start_date desc
+        LIMIT 1`,
       issue.dataset
       )
     })
@@ -443,7 +450,7 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
     results.forEach(result => {
       if (result.status === 'fulfilled') {
         if (result.value.formattedData.length > 0) {
-          req.issues = issues.filter(issue => issue.entity !== result.value.formattedData.entity && issue.field !== result.value.formattedData.field)
+          req.issues = req.issues.filter(issue => (issue.entity !== result.value.formattedData[0].entity || issue.field !== result.value.formattedData[0].field))
         }
       } else {
       // Handle the rejection case
@@ -452,12 +459,12 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
       }
     })
 
-    next()
+    return next()
   }).catch(error => {
   // Handle any errors that occur in the promise chain
     console.error('Error in middleware:', error)
     // You can also log the error to a centralized error logging system if needed
-    next(error)
+    return next(error)
   })
 }
 
