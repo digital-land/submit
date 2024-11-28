@@ -31,11 +31,11 @@
     },
     {
       text: organisation.name,
-      href: '/organisations/' + organisation.organisation
+      href: '/organisations/' + organisation.organisation | urlencode
     },
     {
       text: dataset.name | capitalize,
-      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
+      href: '/organisations/' + organisation.organisation | urlencode + '/' + dataset.dataset | urlencode
     },
     {
       text: issueType | capitalize
