@@ -453,17 +453,18 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
           req.issues = req.issues.filter(issue => (issue.entity !== result.value.formattedData[0].entity || issue.field !== result.value.formattedData[0].field))
         }
       } else {
-      // Handle the rejection case
-        console.error('Error:', result.reason)
-      // You can also log the error to a centralized error logging system if needed
+        logger.warn('request to datasette failed', {
+          error: result.reason,
+          stack: result.reason.stack
+        })
       }
     })
 
     return next()
   }).catch(error => {
-  // Handle any errors that occur in the promise chain
-    console.error('Error in middleware:', error)
-    // You can also log the error to a centralized error logging system if needed
+    logger.warn('Error in middleware, could not process promise array', {
+      error
+    })
     return next(error)
   })
 }
