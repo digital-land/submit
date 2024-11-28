@@ -171,7 +171,7 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
 
 export const setBaseSubpath = (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
-  req.baseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}/entry`
+  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}/entry`
   next()
 }
 

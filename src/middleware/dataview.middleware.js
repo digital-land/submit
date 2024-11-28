@@ -28,7 +28,7 @@ export const fetchEntities = fetchMany({
 
 export const setBaseSubpath = (req, res, next) => {
   const { lpa, dataset } = req.params
-  req.baseSubpath = `/organisations/${lpa}/${dataset}/data`
+  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/data`
   next()
 }
 

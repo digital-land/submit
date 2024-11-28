@@ -42,7 +42,7 @@ export const getDataRange = (req, res, next) => {
 
 export const setBaseSubpath = (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
-  req.baseSubpath = `/organisations/${lpa}/${dataset}/${issueType}/${issueField}`
+  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}`
   next()
 }
 
