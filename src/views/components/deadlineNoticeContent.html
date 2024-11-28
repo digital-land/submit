@@ -1,6 +1,6 @@
 {% macro noticeHeading(datasetName, notice) %}
   {% if notice.type == 'due' %}
-    You must update your {{datasetName | datasetSlugToReadableName | lower}} dataset by {{notice.deadline}}
+    You are required to update your {{datasetName | datasetSlugToReadableName | lower}} dataset by {{notice.deadline}}
   {% elseif notice.type == 'overdue' %}
     Your {{datasetName | datasetSlugToReadableName | lower}} dataset is overdue
   {% endif %}
@@ -18,7 +18,7 @@
 
 {% macro noticeCardHint(notice) %}
   {% if notice.type == 'due' %}
-    You must update this dataset by {{notice.deadline}}
+    You are required to update this dataset by {{notice.deadline}}
   {% elseif notice.type == 'overdue' %}
     This dataset is overdue
   {% endif %}
