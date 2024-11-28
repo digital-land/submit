@@ -55,7 +55,7 @@ export const prepareTableParams = (req, res, next) => {
       const errorMessage = issues.find(issue => issue.entity === entity.entity && (issue.field === field || issue.replacement_field === field))?.issue_type
       if (field === 'reference') {
         return [field, {
-          html: `<a href='/organisations/${lpa}/${dataset}/${issueType}/${issueField}/entry/${index + 1}'>${entity[field]}</a>`,
+          html: `<a href='/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}/entry/${index + 1}'>${entity[field]}</a>`,
           error: errorMessage
             ? {
                 message: errorMessage
