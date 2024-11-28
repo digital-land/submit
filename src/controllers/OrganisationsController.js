@@ -1,21 +1,21 @@
-import DatasetTaskListMiddleware from '../middleware/datasetTaskList.middleware.js'
-import DatasetOverviewMiddleware from '../middleware/datasetOverview.middleware.js'
-import IssueDetailsMiddleware from '../middleware/issueDetails.middleware.js'
-import IssueTableMiddleware from '../middleware/issueTable.middleware.js'
-import OrganisationsMiddleware from '../middleware/organisations.middleware.js'
-import GetStartedMiddleware from '../middleware/getStarted.middleware.js'
-import OverviewMiddleware from '../middleware/overview.middleware.js'
-import DatasetDataviewMiddleware from '../middleware/dataview.middleware.js'
+import datasetTaskListMiddleware from '../middleware/datasetTaskList.middleware.js'
+import datasetOverviewMiddleware from '../middleware/datasetOverview.middleware.js'
+import issueDetailsMiddleware from '../middleware/issueDetails.middleware.js'
+import issueTableMiddleware from '../middleware/issueTable.middleware.js'
+import organisationsMiddleware from '../middleware/organisations.middleware.js'
+import getStartedMiddleware from '../middleware/getStarted.middleware.js'
+import overviewMiddleware from '../middleware/overview.middleware.js'
+import datasetDataviewMiddleware from '../middleware/dataview.middleware.js'
 
 const organisationsController = {
-  OrganisationsMiddleware,
-  DatasetTaskListMiddleware,
-  DatasetOverviewMiddleware,
-  IssueDetailsMiddleware,
-  IssueTableMiddleware,
-  GetStartedMiddleware,
-  OverviewMiddleware,
-  DatasetDataviewMiddleware
+  organisationsMiddleware,
+  datasetTaskListMiddleware,
+  datasetOverviewMiddleware,
+  issueDetailsMiddleware,
+  issueTableMiddleware,
+  getStartedMiddleware,
+  overviewMiddleware,
+  datasetDataviewMiddleware
 }
 
 export default organisationsController
