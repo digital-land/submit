@@ -417,7 +417,6 @@ export const FilterOutIssuesToMostRecent = (req, res, next) => {
   next()
 }
 
-// the problem with this is it assumes the entity contains the most recent fact, is this the case???
 export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   const { issues, resources } = req
 
