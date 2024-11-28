@@ -6,6 +6,7 @@
   then render the template
 */
 
+import config from '../../config/index.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
@@ -28,7 +29,7 @@ const validateIssueTableQueryParams = validateQueryParams({
 export const getDataRange = (req, res, next) => {
   const { issues } = req
   const { pageNumber } = req.parsedParams
-  const pageLength = 50
+  const pageLength = config.tablePageLength
   const recordCount = issues.length
   req.dataRange = {
     minRow: (pageNumber - 1) * pageLength,

@@ -88,3 +88,4 @@ guidanceNavigation:
       url: /guidance/publish-data-on-your-website
     - label: Keep your data up to date
       url: /guidance/keep-your-data-up-to-date
+tablePageLength: 50
