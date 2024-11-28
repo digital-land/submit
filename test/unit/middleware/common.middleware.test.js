@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 
@@ -972,6 +972,96 @@ describe('removeIssuesThatHaveBeenFixed', () => {
       expect(req.issues).toEqual([
         { entity: 'entity1', field: 'field1', resource: 'resource1' }
       ])
+    })
+  })
+})
+
+describe('addFieldMappingsToIssue', () => {
+  it('adds a replacement_field to an issue', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: [{ field: 'field1', replacement_field: 'new_field1' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1', replacement_field: 'new_field1' })
+    })
+  })
+
+  it('adds a replacement_field to multiple issues', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }, { entity: 'entity2', field: 'field2' }],
+      fieldMappings: [
+        { field: 'field1', replacement_field: 'new_field1' },
+        { field: 'field2', replacement_field: 'new_field2' }
+      ]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1', replacement_field: 'new_field1' })
+      expect(req.issues[1]).toEqual({ entity: 'entity2', field: 'field2', replacement_field: 'new_field2' })
+    })
+  })
+
+  it('does not modify issue if field mapping is not found', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: [{ field: 'field2', replacement_field: 'new_field2' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1' })
+    })
+  })
+
+  it('handles empty fieldMappings array', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: []
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1' })
+    })
+  })
+
+  it('handles empty issues array', () => {
+    const req = {
+      issues: [],
+      fieldMappings: [{ field: 'field1', replacement_field: 'new_field1' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues).toEqual([])
+    })
+  })
+
+  it('handles undefined fieldMappings array', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: undefined
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1' })
+    })
+  })
+
+  it('handles undefined issues array', () => {
+    const req = {
+      issues: undefined,
+      fieldMappings: [{ field: 'field1', replacement_field: 'new_field1' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues).toEqual(undefined)
     })
   })
 })

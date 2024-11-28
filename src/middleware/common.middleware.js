@@ -467,8 +467,18 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   })
 }
 
-const addFieldMappingsToIssue = (req, res, next) => {
+export const addFieldMappingsToIssue = (req, res, next) => {
   const { issues, fieldMappings } = req
+
+  if (!issues) {
+    logger.warn('no issues provided to addFieldMappingsToIssues')
+    return next()
+  }
+
+  if (!fieldMappings) {
+    logger.warn('no fieldMappings provided to addFieldMappingsToIssues')
+    return next()
+  }
 
   req.issues = issues.map(issue => {
     return {
