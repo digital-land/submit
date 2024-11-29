@@ -75,7 +75,7 @@ export const getDataRange = (req, res, next) => {
     maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
     totalRows: recordCount,
     maxPageNumber: recordCount,
-    pageLength: 1
+    pageLength
   }
   next()
 }
