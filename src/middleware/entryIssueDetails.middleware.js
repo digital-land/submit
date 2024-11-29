@@ -48,8 +48,9 @@ const fetchEntryIssues = fetchMany({
     from issue
     WHERE resource = '${req.resources[0].resource}'
     AND issue_type = '${params.issue_type}'
+    AND it.responsibility = 'external'
     AND field = '${params.issue_field}'
-    AND (entity is null or entity = '')
+    AND issue
   `,
   dataset: FetchOptions.fromParams,
   result: 'issues'
