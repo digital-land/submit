@@ -117,21 +117,25 @@ export function getErrorSummaryItems (req, res, next) {
 }
 
 export function prepareEntity (req, res, next) {
-  const { entities, issues } = req
+  const { entities, issues, specification } = req
   const { pageNumber, issue_type: issueType } = req.parsedParams
 
   const entityData = entities[pageNumber - 1]
   const entityIssues = issues.filter(issue => issue.entity === entityData.entity)
 
-  const fields = Object.entries(entityData).map(([field, value]) => ({
-    key: {
-      text: field
-    },
-    value: {
-      html: value ? value.toString() : ''
-    },
-    classes: ''
-  }))
+  const fields = specification.fields.map(({ field, datasetField }) => {
+    const value = entityData[field] || entityData[datasetField]
+
+    return {
+      key: {
+        text: field
+      },
+      value: {
+        html: value ? value.toString() : ''
+      },
+      classes: ''
+    }
+  })
 
   entityIssues.forEach(issue => {
     const field = fields.find(field => field.key.text === issue.field)
