@@ -2,3 +2,7 @@
   border-top: 1px solid $govuk-border-colour;
   border-bottom: none;
 }
+
+.dl-summary-card-list__row--error .govuk-summary-list__key {
+  padding-left: govuk-spacing(2);
+}
