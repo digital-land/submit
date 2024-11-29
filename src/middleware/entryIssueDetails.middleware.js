@@ -204,5 +204,4 @@ export default [
   prepareEntry,
   prepareEntryIssueDetailsTemplateParams,
   getIssueDetails
-  // logPageError
 ]
