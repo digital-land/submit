@@ -90,7 +90,7 @@ export function getErrorSummaryItems (req, res, next) {
 
   if (issues.length <= 0) {
     // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
-    logger.warn(`issueTable was accessed from ${req.headers.referer} but there was no issues`)
+    logger.warn(`entity issue details was accessed from ${req.headers.referer} but there was no issues`)
     const error = new Error('issue count must be larger than 0')
     return next(error)
   } else if (issues.length < entities.length) {
@@ -116,13 +116,9 @@ export function getErrorSummaryItems (req, res, next) {
   next()
 }
 
-/***
- * Middleware. Updates req with `templateParams`
- */
-export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entities, issues, pagination, errorSummary, dataRange } = req
-  const { issue_type: issueType } = req.params
-  const { pageNumber } = req.parsedParams
+export function prepareEntity (req, res, next) {
+  const { entities, issues } = req
+  const { pageNumber, issue_type: issueType } = req.parsedParams
 
   const entityData = entities[pageNumber - 1]
   const entityIssues = issues.filter(issue => issue.entity === entityData.entity)
@@ -160,16 +156,28 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
   const geometries = fields
     .filter((row) => row.field === 'geometry')
     .map((row) => row.value)
-  const entry = {
+
+  req.entry = {
     title: entityData.name || `entity: ${entityData.entity}`,
     fields,
     geometries
   }
 
+  next()
+}
+
+/***
+ * Middleware. Updates req with `templateParams`
+ */
+export function prepareEntityIssueDetailsTemplateParams (req, res, next) {
+  const { entry, pagination, errorSummary, dataRange, dataset, orgInfo } = req
+  const { issue_type: issueType } = req.params
+  const { pageNumber } = req.parsedParams
+
   // schema: OrgIssueDetails
   req.templateParams = {
-    organisation: req.orgInfo,
-    dataset: req.dataset,
+    organisation: orgInfo,
+    dataset,
     errorSummary,
     entry,
     issueType,
@@ -204,7 +212,8 @@ export default [
   setBaseSubpath,
   createPaginationTemplateParams,
   getErrorSummaryItems,
-  prepareIssueDetailsTemplateParams,
+  prepareEntity,
+  prepareEntityIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError
 ]

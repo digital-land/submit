@@ -187,9 +187,10 @@ export const createPaginationTemplateParams = (req, res, next) => {
 
 export const fetchResources = fetchMany({
   query: ({ req }) => `
-    select * from resource r
+    SELECT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
     LEFT JOIN resource_organisation ro ON ro.resource = r.resource
     LEFT JOIN resource_dataset rd ON rd.resource = r.resource
+    LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
     WHERE ro.organisation = '${req.params.lpa}'
     AND rd.dataset = '${req.params.dataset}'
     AND r.end_date = ''
