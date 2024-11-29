@@ -45,12 +45,12 @@ const addResourceMetaDataToResources = (req, res, next) => {
 const fetchEntryIssues = fetchMany({
   query: ({ req, params }) => `
     select * 
-    from issue
+    from issue i
+    LEFT JOIN issue_type it ON i.issue_type = it.issue_type
     WHERE resource = '${req.resources[0].resource}'
     AND issue_type = '${params.issue_type}'
     AND it.responsibility = 'external'
     AND field = '${params.issue_field}'
-    AND issue
   `,
   dataset: FetchOptions.fromParams,
   result: 'issues'
