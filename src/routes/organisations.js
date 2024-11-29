@@ -9,6 +9,8 @@ router.get('/:lpa/:dataset/data/:pageNumber', OrganisationsController.datasetDat
 router.get('/:lpa/:dataset/data', OrganisationsController.datasetDataviewMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/entity/:pageNumber', OrganisationsController.entityIssueDetailsMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/entity', OrganisationsController.entityIssueDetailsMiddleware)
+router.get('/:lpa/:dataset/:issue_type/:issue_field/entry/:pageNumber', OrganisationsController.entryIssueDetailsMiddleware)
+router.get('/:lpa/:dataset/:issue_type/:issue_field/entry', OrganisationsController.entryIssueDetailsMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/:pageNumber?', OrganisationsController.issueTableMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field', OrganisationsController.issueTableMiddleware)
 router.get('/:lpa/:dataset', OrganisationsController.datasetTaskListMiddleware)
