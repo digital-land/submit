@@ -8,11 +8,11 @@ import {
   logPageError,
   takeResourceIdFromParams,
   validateQueryParams,
-  getIsPageNumberInRange
+  createPaginationTemplateParams,
+  show404IfPageNumberNotInRange
 } from './common.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, handleRejections, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
-import { pagination } from '../utils/pagination.js'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
@@ -81,7 +81,7 @@ async function fetchEntry (req, res, next) {
   let entryData
   const issuesByEntry = Object.values(issuesByEntryNumber)
   if (issues.length > 0) {
-    if (pageNumber <= issueEntitiesCount) {
+    if (issueEntitiesCount?.count && pageNumber <= issueEntitiesCount.count) {
       const entryIssues = issuesByEntry[(pageNumber - 1) % issuesQueryLimit] ?? []
       const entryNum = entryIssues.length > 0 ? entryIssues[0].entry_number : undefined
       entryData = entryNum
@@ -169,20 +169,41 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
   return getIssueField(row.field, valueHtml, classes)
 }
 
+export const setBaseSubpath = (req, res, next) => {
+  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
+  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}/entry`
+  next()
+}
+
+export const getDataRange = (req, res, next) => {
+  const { pageNumber } = req.parsedParams
+  const { issueEntitiesCount: issueEntitiesCountObj } = req
+  const { count: issueEntitiesCount } = issueEntitiesCountObj
+
+  const pageLength = 1
+  const recordCount = issueEntitiesCount
+  req.dataRange = {
+    minRow: (pageNumber - 1) * pageLength,
+    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
+    totalRows: recordCount,
+    maxPageNumber: recordCount,
+    pageLength: 1
+  }
+  next()
+}
+
 /***
  * Middleware. Updates req with `templateParams`
  */
 export function prepareIssueDetailsTemplateParams (req, res, next) {
-  const { entryData, issueEntitiesCount: issueEntitiesCountObj, issuesByEntryNumber, entryNumberCount, entityCount: entityCountRow } = req
+  const { entryData, issueEntitiesCount: issueEntitiesCountObj, issuesByEntryNumber, entryNumberCount, entityCount: entityCountRow, pagination, baseSubpath } = req
   const { count: issueEntitiesCount } = issueEntitiesCountObj
-  const { lpa, dataset: datasetId, issue_type: issueType, issue_field: issueField } = req.params
+  const { issue_type: issueType, issue_field: issueField } = req.params
   const { pageNumber } = req.parsedParams
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
 
   let errorHeading
   let issueItems
-
-  const BaseSubpath = `/organisations/${lpa}/${datasetId}/${issueType}/${issueField}/`
 
   if (entryNumberCount < entityCount) {
     errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issueEntitiesCount, entityCount, field: issueField }, true)
@@ -190,7 +211,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
       const pageNum = i + 1
       return {
         html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in record ${entryNumber}`,
-        href: `${BaseSubpath}${pageNum}`
+        href: `${baseSubpath}/${pageNum}`
       }
     })
   } else {
@@ -199,7 +220,6 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     }]
   }
 
-  const maxPageNumber = issueEntitiesCount
   const fields = entryData.map((row) => processEntryRow(issueType, issuesByEntryNumber, row))
   const entityIssues = Object.values(issuesByEntryNumber)[pageNumber - 1] || []
   for (const issue of entityIssues) {
@@ -222,45 +242,17 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
     geometries
   }
 
-  const paginationObj = {}
-  if (pageNumber > 1) {
-    paginationObj.previous = {
-      href: `${BaseSubpath}${pageNumber - 1}`
-    }
-  }
-
-  if (pageNumber < maxPageNumber) {
-    paginationObj.next = {
-      href: `${BaseSubpath}${pageNumber + 1}`
-    }
-  }
-
-  paginationObj.items = pagination(maxPageNumber, pageNumber).map(item => {
-    if (item === '...') {
-      return {
-        type: 'ellipsis',
-        ellipsis: true,
-        href: '#'
-      }
-    } else {
-      return {
-        type: 'number',
-        number: item,
-        href: `${BaseSubpath}${item}`,
-        current: pageNumber === parseInt(item)
-      }
-    }
-  })
-
   // schema: OrgIssueDetails
   req.templateParams = {
     organisation: req.orgInfo,
     dataset: req.dataset,
-    errorHeading,
-    issueItems,
+    errorSummary: {
+      heading: errorHeading,
+      items: issueItems
+    },
     entry,
     issueType,
-    pagination: paginationObj,
+    pagination,
     issueEntitiesCount,
     pageNumber
   }
@@ -291,9 +283,12 @@ export default [
   fetchIf(isResourceDataPresent, fetchIssues, emptyIssuesCollection),
   reformatIssuesToBeByEntryNumber,
   fetchIf(isResourceDataPresent, fetchIssueEntitiesCount, zeroIssueEntitiesCount),
-  getIsPageNumberInRange('issueEntitiesCount'),
   handleRejections(fetchEntry),
   fetchIf(isResourceDataPresent, fetchEntityCount, zeroEntityCount),
+  setBaseSubpath,
+  getDataRange,
+  show404IfPageNumberNotInRange,
+  createPaginationTemplateParams,
   prepareIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError
