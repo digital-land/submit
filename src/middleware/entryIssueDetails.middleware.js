@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, getSetDataRange, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import logger from '../utils/logger.js'
 import performanceDbApi from '../services/performanceDbApi.js'
@@ -55,19 +55,8 @@ const fetchEntryIssues = fetchMany({
   result: 'issues'
 })
 
-export const getDataRange = (req, res, next) => {
-  const { pageNumber } = req.parsedParams
-  const { issues } = req
-
-  const pageLength = 1
-  const recordCount = issues.length
-  req.dataRange = {
-    minRow: (pageNumber - 1) * pageLength,
-    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
-    totalRows: recordCount,
-    maxPageNumber: recordCount,
-    pageLength: 1
-  }
+export const setRecordCount = (req, res, next) => {
+  req.recordCount = req.issues.length
   next()
 }
 
@@ -189,7 +178,8 @@ export default [
   fetchResourceMetaData,
   addResourceMetaDataToResources,
   fetchEntryIssues,
-  getDataRange,
+  setRecordCount,
+  getSetDataRange(1),
   show404IfPageNumberNotInRange,
   getSetBaseSubPath(['entry']),
   createPaginationTemplateParams,

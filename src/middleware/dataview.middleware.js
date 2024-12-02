@@ -1,4 +1,5 @@
-import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath } from './common.middleware.js'
+import config from '../../config/index.js'
+import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath, getSetDataRange } from './common.middleware.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -26,20 +27,8 @@ export const fetchEntities = fetchMany({
   result: 'entities'
 })
 
-export const getDataRange = (req, res, next) => {
-  const { entityCount } = req
-  const { pageNumber } = req.parsedParams
-
-  const pageLength = 50
-  const recordCount = entityCount.count
-  req.dataRange = {
-    minRow: (pageNumber - 1) * pageLength,
-    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
-    totalRows: recordCount,
-    maxPageNumber: Math.ceil(recordCount / pageLength),
-    pageLength,
-    offset: (pageNumber - 1) * pageLength
-  }
+export const setRecordCount = (req, res, next) => {
+  req.recordCount = req.entityCount.count
   next()
 }
 
@@ -118,7 +107,8 @@ export default [
   fetchDatasetInfo,
   fetchResourceStatus,
   fetchEntitiesCount,
-  getDataRange,
+  setRecordCount,
+  getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
 
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),

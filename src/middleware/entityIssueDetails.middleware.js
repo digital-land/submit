@@ -11,7 +11,8 @@ import {
   processRelevantIssuesMiddlewares,
   processEntitiesMiddlewares,
   processSpecificationMiddlewares,
-  getSetBaseSubPath
+  getSetBaseSubPath,
+  getSetDataRange
 } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -59,19 +60,8 @@ const getIssueField = (text, html, classes) => {
   }
 }
 
-export const getDataRange = (req, res, next) => {
-  const { pageNumber } = req.parsedParams
-  const { issues } = req
-
-  const pageLength = 1
-  const recordCount = issues.length
-  req.dataRange = {
-    minRow: (pageNumber - 1) * pageLength,
-    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
-    totalRows: recordCount,
-    maxPageNumber: recordCount,
-    pageLength
-  }
+export const setRecordCount = (req, res, next) => {
+  req.recordCount = req.issues.length
   next()
 }
 
@@ -206,8 +196,10 @@ export default [
   ...processRelevantIssuesMiddlewares,
   ...processEntitiesMiddlewares,
   ...processSpecificationMiddlewares,
-  getDataRange,
+  setRecordCount,
+  getSetDataRange(1),
   show404IfPageNumberNotInRange,
+  setRecordCount,
   getSetBaseSubPath(['entity']),
   createPaginationTemplateParams,
   getErrorSummaryItems,

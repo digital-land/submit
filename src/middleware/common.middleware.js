@@ -542,3 +542,18 @@ export const getSetBaseSubPath = (additionalParts = []) => (req, res, next) => {
   req.baseSubpath = path
   next()
 }
+
+export const getSetDataRange = (pageLength) => (req, res, next) => {
+  const { recordCount } = req
+  const { pageNumber } = req.parsedParams
+
+  req.dataRange = {
+    minRow: (pageNumber - 1) * pageLength,
+    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
+    totalRows: recordCount,
+    maxPageNumber: Math.ceil(recordCount / pageLength),
+    pageLength,
+    offset: (pageNumber - 1) * pageLength
+  }
+  next()
+}

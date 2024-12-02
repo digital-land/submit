@@ -9,7 +9,7 @@
 import config from '../../config/index.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, getSetDataRange, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -26,18 +26,8 @@ const validateIssueTableQueryParams = validateQueryParams({
   schema: IssueTableQueryParams
 })
 
-export const getDataRange = (req, res, next) => {
-  const { issues } = req
-  const { pageNumber } = req.parsedParams
-  const pageLength = config.tablePageLength
-  const recordCount = issues.length
-  req.dataRange = {
-    minRow: (pageNumber - 1) * pageLength,
-    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
-    totalRows: recordCount,
-    maxPageNumber: Math.max(1, Math.ceil(recordCount / pageLength)),
-    pageLength
-  }
+export const setRecordCount = (req, res, next) => {
+  req.recordCount = req.issues.length
   next()
 }
 
@@ -195,7 +185,8 @@ export default [
   ...processEntitiesMiddlewares,
   ...processSpecificationMiddlewares,
   onlyIf(notIssueHasEntity, redirectToEntityView),
-  getDataRange,
+  setRecordCount,
+  getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
   getSetBaseSubPath(),
   getErrorSummaryItems,
