@@ -1,5 +1,3 @@
-import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
 import {
   fetchDatasetInfo,
   fetchOrgInfo,
@@ -12,7 +10,8 @@ import {
   processEntitiesMiddlewares,
   processSpecificationMiddlewares,
   getSetBaseSubPath,
-  getSetDataRange
+  getSetDataRange,
+  getErrorSummaryItems
 } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -64,43 +63,6 @@ export const setRecordCount = (req, res, next) => {
   req.recordCount = req.issues.length
   next()
 }
-
-export function getErrorSummaryItems (req, res, next) {
-  const { issue_type: issueType, issue_field: issueField, baseSubpath } = req.params
-
-  const { entities, issues } = req
-
-  let errorHeading = ''
-  let issueItems
-
-  if (issues.length <= 0) {
-    // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
-    logger.warn(`entity issue details was accessed from ${req.headers.referer} but there was no issues`)
-    const error = new Error('issue count must be larger than 0')
-    return next(error)
-  } else if (issues.length < entities.length) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: entities.length, field: issueField }, true)
-    issueItems = issues.map((issue, i) => {
-      const pageNum = i + 1
-      return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in entity ${issue.entity}`,
-        href: `${baseSubpath}/${pageNum}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: entities.length, field: issueField }, true)
-    }]
-  }
-
-  req.errorSummary = {
-    heading: errorHeading,
-    items: issueItems
-  }
-
-  next()
-}
-
 export function prepareEntity (req, res, next) {
   const { entities, issues, specification } = req
   const { pageNumber, issue_type: issueType } = req.parsedParams
@@ -199,7 +161,6 @@ export default [
   setRecordCount,
   getSetDataRange(1),
   show404IfPageNumberNotInRange,
-  setRecordCount,
   getSetBaseSubPath(['entity']),
   createPaginationTemplateParams,
   getErrorSummaryItems,

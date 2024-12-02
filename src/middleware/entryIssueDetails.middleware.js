@@ -1,8 +1,6 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, getSetDataRange, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
-import logger from '../utils/logger.js'
-import performanceDbApi from '../services/performanceDbApi.js'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
@@ -59,51 +57,6 @@ export const setRecordCount = (req, res, next) => {
   req.recordCount = req.issues.length
   next()
 }
-
-export function getErrorSummaryItems (req, res, next) {
-  const { issue_type: issueType, issue_field: issueField } = req.params
-  const { baseSubpath, resources } = req
-
-  const { issues } = req
-
-  const entryCount = resources[0].entry_count
-
-  let errorHeading = ''
-  let issueItems
-
-  if (issues.length <= 0) {
-    // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
-    logger.warn(`entry issue details was accessed from ${req.headers.referer} but there was no issues`)
-    const error = new Error('issue count must be larger than 0')
-    return next(error)
-  } else if (issues.length < entryCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: entryCount, field: issueField }, true)
-    issueItems = issues.map((issue, i) => {
-      const pageNum = i + 1
-      return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + ` in entity ${issue.entity}`,
-        href: `${baseSubpath}/${pageNum}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: entryCount, field: issueField }, true)
-    }]
-  }
-
-  req.errorSummary = {
-    heading: errorHeading,
-    items: issueItems
-  }
-
-  next()
-}
-
-// what we show in the table
-// - resource
-// - line number
-// - reference
-
 const prepareEntry = (req, res, next) => {
   const { resources, issues } = req
   const { pageNumber } = req.parsedParams

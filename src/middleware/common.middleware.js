@@ -557,3 +557,40 @@ export const getSetDataRange = (pageLength) => (req, res, next) => {
   }
   next()
 }
+
+export function getErrorSummaryItems (req, res, next) {
+  const { issue_type: issueType, issue_field: issueField } = req.params
+  const { baseSubpath, issues, entities, resources } = req
+
+  let errorHeading = ''
+  let issueItems
+
+  const totalRecordCount = entities ? entities.length : resources[0].entry_count
+
+  if (issues.length <= 0) {
+    // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
+    logger.warn(`entry issue details was accessed from ${req.headers.referer} but there was no issues`)
+    const error = new Error('issue count must be larger than 0')
+    return next(error)
+  } else if (issues.length < totalRecordCount) {
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: totalRecordCount, field: issueField }, true)
+    issueItems = issues.map((issue, i) => {
+      const pageNum = i + 1
+      return {
+        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }), // ToDo: + ` in entity ${issue.entity}`,
+        href: `${baseSubpath}/${pageNum}`
+      }
+    })
+  } else {
+    issueItems = [{
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: totalRecordCount, field: issueField }, true)
+    }]
+  }
+
+  req.errorSummary = {
+    heading: errorHeading,
+    items: issueItems
+  }
+
+  next()
+}

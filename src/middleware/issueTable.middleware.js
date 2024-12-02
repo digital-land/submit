@@ -7,9 +7,7 @@
 */
 
 import config from '../../config/index.js'
-import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, getSetDataRange, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -69,58 +67,6 @@ export const prepareTableParams = (req, res, next) => {
     columns: uniqueDatasetFields,
     fields: uniqueDatasetFields,
     rows: rowsPaginated
-  }
-
-  next()
-}
-
-export const getErrorSummaryItems = (req, res, next) => {
-  const { issue_type: issueType, issue_field: issueField, baseSubpath } = req.params
-
-  const { entities, issues } = req
-
-  let errorHeading = ''
-  let issueItems
-
-  if (issues.length <= 0) {
-    // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
-    logger.warn(`issueTable was accessed from ${req.headers.referer} but there was no issues`)
-    const error = new Error('issue count must be larger than 0')
-    return next(error)
-  } else if (issues.length < entities.length) {
-    errorHeading = performanceDbApi.getTaskMessage({
-      issue_type: issueType,
-      num_issues: issues.length,
-      entityCount: entities.length,
-      field: issueField
-    },
-    true)
-    issueItems = issues.map((issue, i) => {
-      const pageNum = i + 1
-      return {
-        html: performanceDbApi.getTaskMessage({
-          issue_type: issueType,
-          num_issues: 1,
-          field: issueField
-        }) + ` in entity ${issue.entity}`,
-        href: `${baseSubpath}/entity/${pageNum}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({
-        issue_type: issueType,
-        num_issues: issues.length,
-        entityCount: entities.length,
-        field:
-        issueField
-      }, true)
-    }]
-  }
-
-  req.errorSummary = {
-    heading: errorHeading,
-    items: issueItems
   }
 
   next()
