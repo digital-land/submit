@@ -1,9 +1,7 @@
-import { addDatabaseFieldToSpecification, createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getIsPageNumberInRange, isResourceAccessible, isResourceIdInParams, pullOutDatasetSpecification, replaceUnderscoreInEntities, replaceUnderscoreInSpecification, setDefaultParams, takeResourceIdFromParams, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange } from './common.middleware.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
-
-const pageLength = 50
 
 export const dataviewQueryParams = v.object({
   lpa: v.string(),
@@ -16,64 +14,37 @@ const validatedataviewQueryParams = validateQueryParams({
   schema: dataviewQueryParams
 })
 
-export const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
-  result: 'specification'
-})
-
 export const fetchEntitiesCount = fetchOne({
   query: ({ req }) => `SELECT count(*) as count FROM entity WHERE organisation_entity = ${req.orgInfo.entity}`,
   dataset: FetchOptions.fromParams,
   result: 'entityCount'
 })
 
-export const setTotalPages = (req, res, next) => {
-  req.totalPages = Math.ceil(req.entityCount.count / pageLength)
-  next()
-}
-
-export const setOffset = (req, res, next) => {
-  const pageNumber = Number(req.params.pageNumber)
-
-  if (isNaN(pageNumber)) {
-    return next(new Error('Invalid page number'))
-  }
-
-  req.offset = (pageNumber - 1) * pageLength
-  next()
-}
-
 export const fetchEntities = fetchMany({
-  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${pageLength} OFFSET ${req.offset}`,
+  query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}`,
   dataset: FetchOptions.fromParams,
   result: 'entities'
 })
 
-export const fetchFieldMappings = fetchMany({
-  query: () => 'select * from transform',
-  result: 'fieldMappings'
-})
-
-export const setPaginationOptions = (pageLength) => (req, res, next) => {
-  const { entityCount } = req
+export const setBaseSubpath = (req, res, next) => {
   const { lpa, dataset } = req.params
-
-  req.resultsCount = entityCount.count
-  req.urlSubPath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/data/`
-  req.paginationPageLength = pageLength
-
+  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/data`
   next()
 }
 
-export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
-  const { specification } = req
-
-  if (!specification) {
-    throw new Error('specification is required')
+export const getDataRange = (req, res, next) => {
+  const { entityCount } = req
+  const { pageNumber } = req.parsedParams
+  const pageLength = 50
+  const recordCount = entityCount.count
+  req.dataRange = {
+    minRow: (pageNumber - 1) * pageLength,
+    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
+    totalRows: recordCount,
+    maxPageNumber: Math.ceil(recordCount / pageLength),
+    pageLength,
+    offset: (pageNumber - 1) * pageLength
   }
-
-  req.uniqueDatasetFields = [...new Set(specification.fields.map(field => field.datasetField))]
-
   next()
 }
 
@@ -124,7 +95,7 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, issues, pagination, entityCount, offset } = req
+  const { orgInfo, dataset, tableParams, issues, pagination, dataRange } = req
 
   req.templateParams = {
     organisation: orgInfo,
@@ -132,11 +103,7 @@ export const prepareTemplateParams = (req, res, next) => {
     taskCount: (issues?.length) ?? 0,
     tableParams,
     pagination,
-    dataRange: {
-      minRow: offset + 1,
-      maxRow: Math.min(offset + pageLength, entityCount.count),
-      totalRows: entityCount.count
-    }
+    dataRange
   }
   next()
 }
@@ -151,33 +118,25 @@ export default [
   validatedataviewQueryParams,
   setDefaultParams,
 
+  setBaseSubpath,
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchResourceStatus,
+  fetchEntitiesCount,
+  getDataRange,
+  show404IfPageNumberNotInRange,
+
   fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
   fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-
-  fetchEntitiesCount,
-  setTotalPages,
-  getIsPageNumberInRange('totalPages'),
-
-  setOffset,
 
   fetchEntities,
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,
 
-  fetchSpecification,
-  pullOutDatasetSpecification,
-  replaceUnderscoreInSpecification,
-
-  fetchFieldMappings,
-  addDatabaseFieldToSpecification,
-  getUniqueDatasetFieldsFromSpecification,
+  ...processSpecificationMiddlewares,
 
   constructTableParams,
 
-  setPaginationOptions(pageLength),
   createPaginationTemplateParams,
 
   prepareTemplateParams,

@@ -5,6 +5,8 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
+{% from "../components/table.html" import table %}
+
 {% set serviceType = 'Submit'%}
 
 {% if issueEntitiesCount > 1 %}
@@ -29,11 +31,11 @@
     },
     {
       text: organisation.name,
-      href: '/organisations/' + organisation.organisation
+      href: '/organisations/' + organisation.organisation | urlencode
     },
     {
       text: dataset.name | capitalize,
-      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
+      href: '/organisations/' + organisation.organisation | urlencode + '/' + dataset.dataset | urlencode
     },
     {
       text: issueType | capitalize
@@ -44,6 +46,7 @@
 {% endblock %}
 
 {% block content %}
+
 
 <div class="govuk-grid-row">
   {% include "includes/_dataset-page-header.html" %}
@@ -56,7 +59,7 @@
       errorList: errorSummary.items
     }) }}
 
-    {% if entry.geometries and entry.geometries.length %}
+    {% if geometries and geometries.length %}
       <div
         id="map"
         class="app-map"
@@ -65,20 +68,27 @@
       </div>
     {% endif %}
 
-    {{ govukSummaryList({
-      card: {
-        title: {
-          text: entry.title
-        }
-      },
-      rows: entry.fields
-    }) }}
+    
+  </div>
+</div>
 
-    {% if pagination.items | length > 1 %}
-      {{ govukPagination(pagination) }}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    {% if tableParams.rows.length > 0 %}
+      {{ table(tableParams) }}
     {% endif %}
   </div>
 </div>
+
+
+{% if pagination.items | length > 1 %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <p>Showing rows {{dataRange.minRow}} to {{dataRange.maxRow}} of {{dataRange.totalRows}}</p>
+    {{ govukPagination(pagination) }}
+  </div>
+</div>
+{% endif %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
@@ -98,12 +108,12 @@
 
 {% block scripts %}
   {{ super() }}
-  {% if entry.geometries and entry.geometries.length %}
+  {% if geometries and geometries.length %}
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
         containerId: 'map',
-        geometries: {{ entry.geometries | dump | safe }},
+        geometries: {{ geometries | dump | safe }},
         mapType: "static"
       }
     </script>
