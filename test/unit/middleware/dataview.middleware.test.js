@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   constructTableParams,
-  getDataRange,
   prepareTemplateParams
 } from '../../../src/middleware/dataview.middleware'
 
@@ -108,50 +107,6 @@ describe('dataview.middleware.test.js', () => {
             }
           }
         ]
-      })
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('getDataRange', () => {
-    it('should set up correct dataRange properties when pageNumber is 1', () => {
-      const req = {
-        entityCount: { count: 10 },
-        parsedParams: { pageNumber: 1 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      getDataRange(req, res, next)
-
-      expect(req.dataRange).toEqual({
-        minRow: 0,
-        maxRow: 10,
-        totalRows: 10,
-        pageLength: 50,
-        offset: 0,
-        maxPageNumber: Math.ceil(10 / 50)
-      })
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('should set up correct dataRange properties when pageNumber is greater than 1', () => {
-      const req = {
-        entityCount: { count: 80 },
-        parsedParams: { pageNumber: 2 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      getDataRange(req, res, next)
-
-      expect(req.dataRange).toEqual({
-        minRow: 50,
-        maxRow: 80,
-        totalRows: 80,
-        pageLength: 50,
-        offset: 50,
-        maxPageNumber: Math.ceil(80 / 50)
       })
       expect(next).toHaveBeenCalledTimes(1)
     })

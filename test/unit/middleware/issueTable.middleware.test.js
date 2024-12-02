@@ -1,103 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import { getDataRange, getErrorSummaryItems, issueTypeAndFieldShouldRedirect, notIssueHasEntity, prepareTableParams, prepareTemplateParams, redirectToEntityView, setBaseSubpath } from '../../../src/middleware/issueTable.middleware'
-import performanceDbApi from '../../../src/services/performanceDbApi.js'
+import { issueTypeAndFieldShouldRedirect, notIssueHasEntity, prepareTableParams, prepareTemplateParams, redirectToEntityView } from '../../../src/middleware/issueTable.middleware'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
 describe('issueTableMiddleware', () => {
-  describe('setBaseSubpath', () => {
-    it('sets baseSubpath correctly', () => {
-      const req = {
-        params: {
-          lpa: 'lpa-value',
-          dataset: 'dataset-value',
-          issue_type: 'issue-type-value',
-          issue_field: 'issue-field-value'
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      setBaseSubpath(req, res, next)
-
-      expect(req.baseSubpath).toBe('/organisations/lpa-value/dataset-value/issue-type-value/issue-field-value')
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('getDataRange', () => {
-    it('sets dataRange correctly', () => {
-      const req = {
-        issues: [
-          { entity: 'entity1', field: 'field1', resource: 'resource1' },
-          { entity: 'entity2', field: 'field2', resource: 'resource1' },
-          { entity: 'entity3', field: 'field3', resource: 'resource1' }
-        ],
-        parsedParams: {
-          pageNumber: 1
-        }
-      }
-      const next = vi.fn()
-
-      getDataRange(req, {}, next)
-
-      expect(req.dataRange).toEqual({
-        minRow: 0,
-        maxRow: 3,
-        totalRows: 3,
-        maxPageNumber: 1,
-        pageLength: 50
-      })
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('sets dataRange correctly for last page', () => {
-      const req = {
-        issues: {
-          length: 160
-        },
-        parsedParams: {
-          pageNumber: 2
-        }
-      }
-      const next = vi.fn()
-
-      getDataRange(req, {}, next)
-
-      expect(req.dataRange).toEqual({
-        minRow: 50,
-        maxRow: 100,
-        totalRows: 160,
-        maxPageNumber: 4,
-        pageLength: 50
-      })
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('sets dataRange correctly for first page', () => {
-      const req = {
-        issues: {
-          length: 160
-        },
-        parsedParams: {
-          pageNumber: 1
-        }
-      }
-      const next = vi.fn()
-
-      getDataRange(req, {}, next)
-
-      expect(req.dataRange).toEqual({
-        minRow: 0,
-        maxRow: 50,
-        totalRows: 160,
-        maxPageNumber: 4,
-        pageLength: 50
-      })
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
   describe('prepareTableParams', () => {
     const req = {
       entities: [
@@ -122,7 +28,8 @@ describe('issueTableMiddleware', () => {
         dataset: 'dataset-value',
         issue_type: 'issue-type-value',
         issue_field: 'issue-field-value'
-      }
+      },
+      baseSubpath: '/organisations/lpa-value/dataset-value/issue-type-value/issue-field-value'
     }
 
     it('correctly sets tableParams.fields', async () => {
@@ -165,7 +72,7 @@ describe('issueTableMiddleware', () => {
         {
           columns: {
             reference: {
-              html: "<a href='/organisations/lpa-value/dataset-value/issue-type-value/issue-field-value/entry/1'>entity1</a>",
+              html: "<a href='/organisations/lpa-value/dataset-value/issue-type-value/issue-field-value/entity/1'>entity1</a>",
               error: undefined
             },
             name: {
@@ -183,7 +90,7 @@ describe('issueTableMiddleware', () => {
         {
           columns: {
             reference: {
-              html: "<a href='/organisations/lpa-value/dataset-value/issue-type-value/issue-field-value/entry/2'>entity2</a>",
+              html: "<a href='/organisations/lpa-value/dataset-value/issue-type-value/issue-field-value/entity/2'>entity2</a>",
               error: undefined
             },
             name: {
@@ -201,115 +108,6 @@ describe('issueTableMiddleware', () => {
       ]
 
       expect(reqCopy.tableParams.rows).toEqual(expectedRows)
-    })
-  })
-
-  describe('getErrorSummaryItems', () => {
-    it('handles no issues are found', () => {
-      const req = {
-        params: {
-          issue_type: 'issue-type-value',
-          issue_field: 'issue-field-value',
-          baseSubpath: 'baseSubpath-value'
-        },
-        entities: [],
-        issues: [],
-        headers: {
-          referer: 'referer'
-        }
-      }
-
-      const next = vi.fn()
-
-      getErrorSummaryItems(req, null, next)
-
-      expect(next).toHaveBeenCalledWith(new Error('issue count must be larger than 0'))
-    })
-
-    it('does not set this header if every entity has the issue', () => {
-      const req = {
-        params: {
-          issue_type: 'issue-type-value',
-          issue_field: 'issue-field-value',
-          baseSubpath: 'baseSubpath-value'
-        },
-        entities: [
-          { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
-          { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' }
-        ],
-        issues: [
-          { entity: 'entity1', error: 'Invalid Amount' },
-          { entity: 'entity2', error: ' Invalid Name' }
-        ]
-      }
-
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('message')
-
-      getErrorSummaryItems(req, null, vi.fn())
-
-      const errorSummary = req.errorSummary
-      expect(errorSummary.heading).toBe('')
-    })
-
-    it('does sets the header if some entities do not have the issue', () => {
-      const req = {
-        params: {
-          issue_type: 'issue-type-value',
-          issue_field: 'issue-field-value',
-          baseSubpath: 'baseSubpath-value'
-        },
-        entities: [
-          { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
-          { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' },
-          { reference: 'entity3', name: 'Name 3', amount: 300 }
-        ],
-        issues: [
-          { entity: 'entity1', error: 'Invalid Amount' },
-          { entity: 'entity2', error: ' Invalid Name' }
-        ]
-      }
-
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('message')
-
-      getErrorSummaryItems(req, null, vi.fn())
-
-      const errorSummary = req.errorSummary
-      expect(errorSummary.heading).toBe('message')
-    })
-
-    it('Correctly sets the issue items', () => {
-      const req = {
-        params: {
-          issue_type: 'issue-type-value',
-          issue_field: 'issue-field-value',
-          baseSubpath: 'baseSubpath-value'
-        },
-        entities: [
-          { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
-          { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' },
-          { reference: 'entity3', name: 'Name 3', amount: 300 }
-        ],
-        issues: [
-          { entity: 'entity1', error: 'Invalid Amount' },
-          { entity: 'entity2', error: ' Invalid Name' }
-        ]
-      }
-
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('issue')
-
-      getErrorSummaryItems(req, null, vi.fn())
-
-      const errorSummary = req.errorSummary
-      expect(errorSummary.items).toEqual([
-        {
-          html: 'issue in entity entity1',
-          href: 'baseSubpath-value/entity/1'
-        },
-        {
-          html: 'issue in entity entity2',
-          href: 'baseSubpath-value/entity/2'
-        }
-      ])
     })
   })
 

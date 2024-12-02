@@ -13,8 +13,6 @@ const seed = new Date().getTime()
 describe(`issueDetails.html(seed: ${seed})`, () => {
   const params = mocker(OrgIssueDetails, seed)
 
-  params.issueEntitiesCount = undefined
-
   const html = nunjucks.render('organisations/issueDetails.html', params)
   const dom = new JSDOM(html)
   const document = dom.window.document
@@ -118,7 +116,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
       next,
       items
     }
-    params.issueEntitiesCount = 10
+
     const multiPageHtml = nunjucks.render('organisations/issueDetails.html', params)
     // const multiPageDom = new JSDOM(multiPageHtml)
     // const multiPageDocument = multiPageDom.window.document
@@ -174,6 +172,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
   describe('Dataset visualisation: Maps', () => {
     it('should render a map when geometries are passed in', () => {
       const paramWithGeometry = {
+        ...params,
         organisation: params.organisation,
         dataset: params.dataset,
         errorSummary: {
