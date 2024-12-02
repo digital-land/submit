@@ -92,7 +92,8 @@ export const ConfigSchema = v.object({
     v.object({
       measurementId: v.string()
     })
-  )
+  ),
+  tablePageLength: v.number()
 })
 
 const readConfig = (config) => {
