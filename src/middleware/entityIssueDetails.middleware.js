@@ -10,7 +10,8 @@ import {
   fetchResources,
   processRelevantIssuesMiddlewares,
   processEntitiesMiddlewares,
-  processSpecificationMiddlewares
+  processSpecificationMiddlewares,
+  getSetBaseSubPath
 } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -56,12 +57,6 @@ const getIssueField = (text, html, classes) => {
     },
     classes
   }
-}
-
-export const setBaseSubpath = (req, res, next) => {
-  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
-  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}/entity`
-  next()
 }
 
 export const getDataRange = (req, res, next) => {
@@ -213,7 +208,7 @@ export default [
   ...processSpecificationMiddlewares,
   getDataRange,
   show404IfPageNumberNotInRange,
-  setBaseSubpath,
+  getSetBaseSubPath(['entity']),
   createPaginationTemplateParams,
   getErrorSummaryItems,
   prepareEntity,

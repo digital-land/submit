@@ -1,4 +1,4 @@
-import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange } from './common.middleware.js'
+import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath } from './common.middleware.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -26,15 +26,10 @@ export const fetchEntities = fetchMany({
   result: 'entities'
 })
 
-export const setBaseSubpath = (req, res, next) => {
-  const { lpa, dataset } = req.params
-  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/data`
-  next()
-}
-
 export const getDataRange = (req, res, next) => {
   const { entityCount } = req
   const { pageNumber } = req.parsedParams
+
   const pageLength = 50
   const recordCount = entityCount.count
   req.dataRange = {
@@ -118,7 +113,7 @@ export default [
   validatedataviewQueryParams,
   setDefaultParams,
 
-  setBaseSubpath,
+  getSetBaseSubPath(['data']),
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchResourceStatus,

@@ -9,7 +9,7 @@
 import config from '../../config/index.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import logger from '../utils/logger.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -38,12 +38,6 @@ export const getDataRange = (req, res, next) => {
     maxPageNumber: Math.max(1, Math.ceil(recordCount / pageLength)),
     pageLength
   }
-  next()
-}
-
-export const setBaseSubpath = (req, res, next) => {
-  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
-  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}`
   next()
 }
 
@@ -203,7 +197,7 @@ export default [
   onlyIf(notIssueHasEntity, redirectToEntityView),
   getDataRange,
   show404IfPageNumberNotInRange,
-  setBaseSubpath,
+  getSetBaseSubPath(),
   getErrorSummaryItems,
   createPaginationTemplateParams,
   prepareTableParams,

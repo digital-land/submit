@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getSetBaseSubPath, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import logger from '../utils/logger.js'
 import performanceDbApi from '../services/performanceDbApi.js'
@@ -48,11 +48,10 @@ const fetchEntryIssues = fetchMany({
     from issue i
     LEFT JOIN issue_type it ON i.issue_type = it.issue_type
     WHERE resource = '${req.resources[0].resource}'
-    AND issue_type = '${params.issue_type}'
+    AND i.issue_type = '${params.issue_type}'
     AND it.responsibility = 'external'
     AND field = '${params.issue_field}'
   `,
-  dataset: FetchOptions.fromParams,
   result: 'issues'
 })
 
@@ -69,12 +68,6 @@ export const getDataRange = (req, res, next) => {
     maxPageNumber: recordCount,
     pageLength: 1
   }
-  next()
-}
-
-export const setBaseSubpath = (req, res, next) => {
-  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
-  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}/entry`
   next()
 }
 
@@ -198,7 +191,7 @@ export default [
   fetchEntryIssues,
   getDataRange,
   show404IfPageNumberNotInRange,
-  setBaseSubpath,
+  getSetBaseSubPath(['entry']),
   createPaginationTemplateParams,
   getErrorSummaryItems,
   prepareEntry,
