@@ -155,8 +155,6 @@ export const prepareTemplateParams = (req, res, next) => {
     issueType,
     pagination,
     dataRange
-    // issueEntitiesCount,
-    // pageNumber
   }
   next()
 }
