@@ -48,12 +48,13 @@ const issueErrorMessageHtml = (errorMessage, issue) =>
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
 export const getIssueField = (text, html, classes) => {
+  classes = classes || ''
   return {
     key: {
       text
     },
     value: {
-      html
+      html: html ? html.toString() : ''
     },
     classes
   }
@@ -74,15 +75,7 @@ export function prepareEntity (req, res, next) {
   const fields = specification.fields.map(({ field, datasetField }) => {
     const value = entityData[field] || entityData[datasetField]
 
-    return {
-      key: {
-        text: field
-      },
-      value: {
-        html: value ? value.toString() : ''
-      },
-      classes: ''
-    }
+    return getIssueField(field, value)
   })
 
   entityIssues.forEach(issue => {
