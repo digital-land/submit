@@ -47,7 +47,7 @@ const issueErrorMessageHtml = (errorMessage, issue) =>
  * @param {*} classes
  * @returns {{key: {text: string}, value: { html: string}, classes: string}}
  */
-const getIssueField = (text, html, classes) => {
+export const getIssueField = (text, html, classes) => {
   return {
     key: {
       text
@@ -60,7 +60,7 @@ const getIssueField = (text, html, classes) => {
 }
 
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req.issues.length
+  req.recordCount = req?.issues?.length
   next()
 }
 

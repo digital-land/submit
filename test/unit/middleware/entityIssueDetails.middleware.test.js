@@ -1,14 +1,71 @@
 import { describe, it, vi, expect } from 'vitest'
-import { getIssueDetails } from '../../../src/middleware/entityIssueDetails.middleware.js'
+import { getIssueDetails, getIssueField, setRecordCount } from '../../../src/middleware/entityIssueDetails.middleware.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
 describe('issueDetails.middleware.js', () => {
-  describe('prepareEntity', () => {
+  describe('getIssueField', () => {
+    it('returns an object with key, value, and classes properties', () => {
+      const text = 'Issue Text'
+      const html = '<p>Issue HTML</p>'
+      const classes = ['issue-class']
+      const result = getIssueField(text, html, classes)
 
+      expect(result).toEqual({
+        key: { text },
+        value: { html },
+        classes
+      })
+    })
+
+    it('returns an object with default classes if classes are not provided', () => {
+      const text = 'Issue Text'
+      const html = '<p>Issue HTML</p>'
+      const result = getIssueField(text, html)
+
+      expect(result).toEqual({
+        key: { text },
+        value: { html }
+      })
+    })
   })
 
   describe('set record count', () => {
+    it('sets req.recordCount to the length of req.issues', () => {
+      const req = { issues: [{}, {}, {}] }
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(3)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not modify req.recordCount if req.issues is undefined', () => {
+      const req = {}
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(undefined)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not modify req.recordCount if req.issues is null', () => {
+      const req = { issues: null }
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(undefined)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('prepareEntity', () => {
 
   })
 
