@@ -1,340 +1,472 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getIsPageNumberInRange } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
+import datasette from '../../../src/services/datasette.js'
 
-describe('common.middleware.test.js', () => {
-  describe('createPaginationTemplateParams', () => {
-    it('creates pagination object with correct parameters', () => {
-      const req = {
-        resultsCount: 100,
-        urlSubPath: '/api/results/',
-        paginationPageLength: 10,
-        params: { pageNumber: 2 }
+vi.mock('../../../src/services/datasette.js', () => ({
+  default: {
+    runQuery: vi.fn()
+  }
+}))
+
+describe('show404IfPageNumberNotInRange middleware', () => {
+  const dataRange = {
+    maxPageNumber: 3
+  }
+
+  it('should not throw an error when the page number is within the range', () => {
+    const req = {
+      parsedParams: { pageNumber: 1 },
+      dataRange
+    }
+    const res = {}
+    const next = vi.fn()
+    show404IfPageNumberNotInRange(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('should throw a 404 error when the page number is greater than the max page number', () => {
+    const req = {
+      parsedParams: { pageNumber: dataRange.maxPageNumber + 1 },
+      dataRange
+    }
+    const res = {}
+    const next = vi.fn((err) => {
+      expect(err instanceof Error).toBe(true)
+      expect(err.status).toBe(404)
+      expect(err.message).toBe('page number not in range')
+    })
+    show404IfPageNumberNotInRange(req, res, next)
+  })
+
+  it('should throw a 404 error when the page number is less than 1', () => {
+    const req = {
+      parsedParams: { pageNumber: 0 },
+      dataRange
+    }
+    const res = {}
+    const next = vi.fn((err) => {
+      expect(err instanceof Error).toBe(true)
+      expect(err.status).toBe(404)
+      expect(err.message).toBe('page number not in range')
+    })
+    show404IfPageNumberNotInRange(req, res, next)
+  })
+
+  it('should throw an error when dataRange is undefined', () => {
+    const req = {
+      parsedParams: { pageNumber: 1 },
+      dataRange: undefined
+    }
+    const res = {}
+    const next = vi.fn()
+    show404IfPageNumberNotInRange(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+  })
+
+  it('should throw an error when dataRange.maxPageNumber is non numeric', () => {
+    const req = {
+      parsedParams: { pageNumber: 1 },
+      dataRange: {
+        maxPageNumber: 'abc'
       }
-      const res = {}
-      const next = vi.fn()
+    }
+    const res = {}
+    const next = vi.fn()
+    show404IfPageNumberNotInRange(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+  })
 
-      createPaginationTemplateParams(req, res, next)
+  it('should throw an error when dataRange.maxPageNumber is undefined', () => {
+    const req = {
+      parsedParams: { pageNumber: 1 },
+      dataRange: {
+        maxPageNumber: undefined
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+    show404IfPageNumberNotInRange(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+  })
+})
 
-      expect(req.pagination).toEqual({
-        previous: { href: '/api/results/1' },
-        next: { href: '/api/results/3' },
-        items: [
-          { type: 'number', number: 1, href: '/api/results/1', current: false },
-          { type: 'number', number: 2, href: '/api/results/2', current: true },
-          { type: 'number', number: 3, href: '/api/results/3', current: false },
-          { type: 'ellipsis', ellipsis: true, href: '#' },
-          { type: 'number', number: 10, href: '/api/results/10', current: false }
+describe('createPaginationTemplateParams', () => {
+  it('creates pagination object with correct parameters', () => {
+    const req = {
+      resultsCount: 100,
+      baseSubpath: '/api/results',
+      params: { pageNumber: 2 },
+      parsedParams: { pageNumber: 2 },
+      dataRange: {
+        maxPageNumber: 10
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    createPaginationTemplateParams(req, res, next)
+
+    expect(req.pagination).toEqual({
+      previous: { href: '/api/results/1' },
+      next: { href: '/api/results/3' },
+      items: [
+        { type: 'number', number: 1, href: '/api/results/1', current: false },
+        { type: 'number', number: 2, href: '/api/results/2', current: true },
+        { type: 'number', number: 3, href: '/api/results/3', current: false },
+        { type: 'ellipsis', ellipsis: true, href: '#' },
+        { type: 'number', number: 10, href: '/api/results/10', current: false }
+      ]
+    })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles invalid page numbers (negative)', () => {
+    const req = {
+      resultsCount: 100,
+      urlSubPath: '/api/results/',
+      dataRange: {
+        pageLength: 10
+      },
+      params: { pageNumber: -1 },
+      parsedParams: { pageNumber: -1 }
+    }
+    const res = {}
+    const next = vi.fn()
+    createPaginationTemplateParams(req, res, next)
+    expect(next).toHaveBeenCalledOnce()
+    expect(next).toHaveBeenCalledWith(new Error('Invalid page number'))
+  })
+
+  it('handles invalid page numbers (non-numeric)', () => {
+    const req = {
+      resultsCount: 100,
+      urlSubPath: '/api/results/',
+      paginationPageLength: 10,
+      params: { pageNumber: 'abc' },
+      parsedParams: { pageNumber: 'abc' },
+      dataRange: {
+        maxPageNumber: 10
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    createPaginationTemplateParams(req, res, next)
+    expect(next).toHaveBeenCalledOnce()
+    expect(next).toHaveBeenCalledWith(new Error('Invalid page number'))
+  })
+
+  it('handles zero total results', () => {
+    const req = {
+      resultsCount: 0,
+      urlSubPath: '/api/results/',
+      params: { pageNumber: 1 },
+      parsedParams: { pageNumber: 1 },
+      dataRange: {
+        maxPageNumber: 1
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    createPaginationTemplateParams(req, res, next)
+
+    expect(req.pagination).toBeUndefined()
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles page number beyond available pages', () => {
+    const req = {
+      resultsCount: 50,
+      baseSubpath: '/api/results',
+      params: { pageNumber: 6 },
+      parsedParams: { pageNumber: 6 },
+      dataRange: {
+        minRow: 1,
+        maxRow: 1,
+        totalRows: 1,
+        maxPageNumber: 5
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    createPaginationTemplateParams(req, res, next)
+
+    expect(req.pagination).toEqual({
+      previous: { href: '/api/results/5' },
+      items: [
+        { type: 'number', number: 1, href: '/api/results/1', current: false },
+        { type: 'number', number: 2, href: '/api/results/2', current: false },
+        { type: 'number', number: 3, href: '/api/results/3', current: false },
+        { type: 'number', number: 4, href: '/api/results/4', current: false },
+        { type: 'number', number: 5, href: '/api/results/5', current: false }
+      ]
+    })
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('replaceUnderscoreInSpecification', () => {
+  it('replaces underscore with hyphen in specification datasetFields', () => {
+    const req = {
+      specification: {
+        fields: [
+          { datasetField: 'dataset_field' },
+          { datasetField: 'data_set_field' }
         ]
-      })
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('handles edge cases for pagination', () => {
-      const req = {
-        resultsCount: 10,
-        urlSubPath: '/api/results/',
-        paginationPageLength: 10,
-        params: { pageNumber: 1 }
       }
-      const res = {}
-      const next = vi.fn()
+    }
+    const res = {}
+    const next = vi.fn()
 
-      createPaginationTemplateParams(req, res, next)
+    replaceUnderscoreInSpecification(req, res, next)
 
-      expect(req.pagination).toEqual({
-        items: [
-          { type: 'number', number: 1, href: '/api/results/1', current: true }
+    expect(req.specification.fields).toHaveLength(2)
+    expect(req.specification.fields).toEqual([
+      { datasetField: 'dataset-field' },
+      { datasetField: 'data-set-field' }
+    ])
+  })
+
+  it('calls next function', () => {
+    const req = {
+      specification: {
+        fields: [
+          { datasetField: 'dataset_field' },
+          { datasetField: 'data_set_field' }
         ]
-      })
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('handles invalid page numbers (negative)', () => {
-      const req = {
-        resultsCount: 100,
-        urlSubPath: '/api/results/',
-        paginationPageLength: 10,
-        params: { pageNumber: -1 }
       }
-      const res = {}
-      const next = vi.fn()
+    }
+    const res = {}
+    const next = vi.fn()
 
-      expect(() => createPaginationTemplateParams(req, res, next)).toThrowError('Invalid page number')
+    replaceUnderscoreInSpecification(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+  })
 
-      expect(next).not.toHaveBeenCalled()
-    })
-
-    it('handles invalid page numbers (non-numeric)', () => {
-      const req = {
-        resultsCount: 100,
-        urlSubPath: '/api/results/',
-        paginationPageLength: 10,
-        params: { pageNumber: 'abc' }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      expect(() => createPaginationTemplateParams(req, res, next)).toThrowError('Invalid page number')
-
-      expect(next).not.toHaveBeenCalled()
-    })
-
-    it('handles zero total results', () => {
-      const req = {
-        resultsCount: 0,
-        urlSubPath: '/api/results/',
-        paginationPageLength: 10,
-        params: { pageNumber: 1 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      createPaginationTemplateParams(req, res, next)
-
-      expect(req.pagination).toBeUndefined()
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('handles page number beyond available pages', () => {
-      const req = {
-        resultsCount: 50,
-        urlSubPath: '/api/results/',
-        paginationPageLength: 10,
-        params: { pageNumber: 6 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      createPaginationTemplateParams(req, res, next)
-
-      expect(req.pagination).toEqual({
-        previous: { href: '/api/results/5' },
-        items: [
-          { type: 'number', number: 1, href: '/api/results/1', current: false },
-          { type: 'number', number: 2, href: '/api/results/2', current: false },
-          { type: 'number', number: 3, href: '/api/results/3', current: false },
-          { type: 'number', number: 4, href: '/api/results/4', current: false },
-          { type: 'number', number: 5, href: '/api/results/5', current: false }
+  it('handles entities with no underscore in keys', () => {
+    const req = {
+      specification: {
+        fields: [
+          { datasetField: 'datasetField' }
         ]
-      })
-      expect(next).toHaveBeenCalledTimes(1)
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    replaceUnderscoreInSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(1)
+    expect(req.specification.fields[0]).toEqual({ datasetField: 'datasetField' })
+  })
+})
+
+describe('addDatabaseFieldToSpecification', () => {
+  it('adds database field to specification fields', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'name' },
+          { field: 'address' }
+        ]
+      },
+      fieldMappings: [
+        { field: 'name', replacement_field: 'full_name' },
+        { field: 'address', replacement_field: 'physical_address' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(2)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'name',
+      datasetField: 'full_name'
+    })
+    expect(req.specification.fields[1]).toEqual({
+      field: 'address',
+      datasetField: 'physical_address'
     })
   })
 
-  describe('replaceUnderscoreInSpecification', () => {
-    it('replaces underscore with hyphen in specification datasetFields', () => {
-      const req = {
-        specification: {
-          fields: [
-            { datasetField: 'dataset_field' },
-            { datasetField: 'data_set_field' }
-          ]
-        }
-      }
-      const res = {}
-      const next = vi.fn()
+  it('handles special case for GeoX and GeoY fields', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'GeoX' },
+          { field: 'GeoY' }
+        ]
+      },
+      fieldMappings: []
+    }
+    const res = {}
+    const next = vi.fn()
 
-      replaceUnderscoreInSpecification(req, res, next)
-
-      expect(req.specification.fields).toHaveLength(2)
-      expect(req.specification.fields).toEqual([
-        { datasetField: 'dataset-field' },
-        { datasetField: 'data-set-field' }
-      ])
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(2)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'GeoX',
+      datasetField: 'point'
     })
-
-    it('calls next function', () => {
-      const req = {
-        specification: {
-          fields: [
-            { datasetField: 'dataset_field' },
-            { datasetField: 'data_set_field' }
-          ]
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      replaceUnderscoreInSpecification(req, res, next)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('handles entities with no underscore in keys', () => {
-      const req = {
-        specification: {
-          fields: [
-            { datasetField: 'datasetField' }
-          ]
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      replaceUnderscoreInSpecification(req, res, next)
-      expect(req.specification.fields).toHaveLength(1)
-      expect(req.specification.fields[0]).toEqual({ datasetField: 'datasetField' })
+    expect(req.specification.fields[1]).toEqual({
+      field: 'GeoY',
+      datasetField: 'point'
     })
   })
 
-  describe('addDatabaseFieldToSpecification', () => {
-    it('adds database field to specification fields', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'name' },
-            { field: 'address' }
-          ]
-        },
-        fieldMappings: [
-          { field: 'name', replacement_field: 'full_name' },
-          { field: 'address', replacement_field: 'physical_address' }
+  it('handles single GeoX field without GeoY', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'GeoX' }
+        ]
+      },
+      fieldMappings: []
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(1)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'GeoX',
+      datasetField: 'point'
+    })
+  })
+
+  it('handles single GeoY field without GeoX', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'GeoY' }
+        ]
+      },
+      fieldMappings: []
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(1)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'GeoY',
+      datasetField: 'point'
+    })
+  })
+
+  it('handles invalid coordinate values', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'GeoX', invalid: true },
+          { field: 'GeoY', invalid: true }
+        ]
+      },
+      fieldMappings: []
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(2)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'GeoX',
+      datasetField: 'point',
+      invalid: true
+    })
+    expect(req.specification.fields[1]).toEqual({
+      field: 'GeoY',
+      datasetField: 'point',
+      invalid: true
+    })
+  })
+
+  it('handles fields with no matching field mapping', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'unknownField' }
+        ]
+      },
+      fieldMappings: []
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(req.specification.fields).toHaveLength(1)
+    expect(req.specification.fields[0]).toEqual({
+      field: 'unknownField',
+      datasetField: 'unknownField'
+    })
+  })
+
+  it('calls next function', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'name' }
+        ]
+      },
+      fieldMappings: [
+        { field: 'name', replacement_field: 'full_name' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    addDatabaseFieldToSpecification(req, res, next)
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('getUniqueDatasetFieldsFromSpecification', () => {
+  it('gets unique dataset fields from specification', () => {
+    const req = {
+      specification: {
+        fields: [
+          { field: 'foo', datasetField: 'foo_field' },
+          { field: 'bar', datasetField: 'bar_field' },
+          { field: 'baz', datasetField: 'foo_field' } // duplicate
         ]
       }
-      const res = {}
-      const next = vi.fn()
+    }
+    const res = {}
+    const next = vi.fn()
 
-      addDatabaseFieldToSpecification(req, res, next)
-      expect(req.specification.fields).toHaveLength(2)
-      expect(req.specification.fields[0]).toEqual({
-        field: 'name',
-        datasetField: 'full_name'
-      })
-      expect(req.specification.fields[1]).toEqual({
-        field: 'address',
-        datasetField: 'physical_address'
-      })
-    })
+    getUniqueDatasetFieldsFromSpecification(req, res, next)
 
-    it('handles special case for GeoX and GeoY fields', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'GeoX' },
-            { field: 'GeoY' }
-          ]
-        },
-        fieldMappings: []
+    expect(req.uniqueDatasetFields).toEqual(['foo_field', 'bar_field'])
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns an empty array when specification.fields is empty', () => {
+    const req = {
+      specification: {
+        fields: []
       }
-      const res = {}
-      const next = vi.fn()
+    }
+    const res = {}
+    const next = vi.fn()
 
-      addDatabaseFieldToSpecification(req, res, next)
-      expect(req.specification.fields).toHaveLength(2)
-      expect(req.specification.fields[0]).toEqual({
-        field: 'GeoX',
-        datasetField: 'point'
-      })
-      expect(req.specification.fields[1]).toEqual({
-        field: 'GeoY',
-        datasetField: 'point'
-      })
-    })
+    getUniqueDatasetFieldsFromSpecification(req, res, next)
 
-    it('handles single GeoX field without GeoY', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'GeoX' }
-          ]
-        },
-        fieldMappings: []
-      }
-      const res = {}
-      const next = vi.fn()
+    expect(req.uniqueDatasetFields).toEqual([])
+    expect(next).toHaveBeenCalledTimes(1)
+  })
 
-      addDatabaseFieldToSpecification(req, res, next)
-      expect(req.specification.fields).toHaveLength(1)
-      expect(req.specification.fields[0]).toEqual({
-        field: 'GeoX',
-        datasetField: 'point'
-      })
-    })
+  it('throws an error when specification is not provided', () => {
+    const req = {}
+    const res = {}
+    const next = vi.fn()
 
-    it('handles single GeoY field without GeoX', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'GeoY' }
-          ]
-        },
-        fieldMappings: []
-      }
-      const res = {}
-      const next = vi.fn()
-
-      addDatabaseFieldToSpecification(req, res, next)
-      expect(req.specification.fields).toHaveLength(1)
-      expect(req.specification.fields[0]).toEqual({
-        field: 'GeoY',
-        datasetField: 'point'
-      })
-    })
-
-    it('handles invalid coordinate values', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'GeoX', invalid: true },
-            { field: 'GeoY', invalid: true }
-          ]
-        },
-        fieldMappings: []
-      }
-      const res = {}
-      const next = vi.fn()
-
-      addDatabaseFieldToSpecification(req, res, next)
-      expect(req.specification.fields).toHaveLength(2)
-      expect(req.specification.fields[0]).toEqual({
-        field: 'GeoX',
-        datasetField: 'point',
-        invalid: true
-      })
-      expect(req.specification.fields[1]).toEqual({
-        field: 'GeoY',
-        datasetField: 'point',
-        invalid: true
-      })
-    })
-
-    it('handles fields with no matching field mapping', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'unknownField' }
-          ]
-        },
-        fieldMappings: []
-      }
-      const res = {}
-      const next = vi.fn()
-
-      addDatabaseFieldToSpecification(req, res, next)
-      expect(req.specification.fields).toHaveLength(1)
-      expect(req.specification.fields[0]).toEqual({
-        field: 'unknownField',
-        datasetField: 'unknownField'
-      })
-    })
-
-    it('calls next function', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'name' }
-          ]
-        },
-        fieldMappings: [
-          { field: 'name', replacement_field: 'full_name' }
-        ]
-      }
-      const res = {}
-      const next = vi.fn()
-
-      addDatabaseFieldToSpecification(req, res, next)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
+    expect(() => getUniqueDatasetFieldsFromSpecification(req, res, next)).toThrowError('specification is required')
   })
 })
 
@@ -571,60 +703,448 @@ describe('setDefaultParams', () => {
   })
 })
 
-describe('getIsPageNumberInRange', () => {
-  it('correctly retrieves maxPages from request', () => {
-    const req = { parsedParams: { pageNumber: 3 }, maxPagesFoo: 5, maxPages: 10 }
+describe('FilterOutIssuesToMostRecent', () => {
+  it('removes issues of the same type and field and entity to only get the most recent', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity1', field: 'field1', resource: 'resource2' },
+        { entity: 'entity1', field: 'field2', resource: 'resource1' },
+        { entity: 'entity1', field: 'field2', resource: 'resource2' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3' }
+      ]
+    }
     const res = {}
     const next = vi.fn()
 
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
+    FilterOutIssuesToMostRecent(req, res, next)
 
-    // Check that the middleware used the correct maxPages value
-    req.parsedParams.pageNumber = 11
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next.mock.calls[1][0].status).toBe(404)
-    expect(next.mock.calls[1][0].message).toBe('Page not found')
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
   })
 
-  it('allows valid page numbers', () => {
-    const req = { parsedParams: { pageNumber: 3 }, maxPages: 5 }
+  it('leaves issues with different resources', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2' },
+        { entity: 'entity3', field: 'field3', resource: 'resource3' }
+      ]
+    }
     const res = {}
     const next = vi.fn()
 
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: new Date('2022-01-01') },
+      { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity3', field: 'field3', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
   })
 
-  it('blocks non-integer page numbers', () => {
-    const req = { parsedParams: { pageNumber: 'foo' }, maxPages: 5 }
+  it('handles issues with no corresponding resource', () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', start_date: '2022-01-01', resource: 'resource1' },
+        { entity: 'entity2', field: 'field2', start_date: '2022-01-01', resource: 'invalid-resource' },
+        { entity: 'entity3', field: 'field3', start_date: '2022-01-02', resource: 'resource3' }
+      ],
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource3', start_date: '2022-01-02' }
+      ]
+    }
     const res = {}
     const next = vi.fn()
 
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next.mock.calls[0][0].message).toBe('Page number not a number')
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', start_date: new Date('2022-01-01'), resource: 'resource1' },
+      { entity: 'entity3', field: 'field3', start_date: new Date('2022-01-02'), resource: 'resource3' }
+    ])
   })
 
-  it('blocks page numbers less than 1', () => {
-    const req = { parsedParams: { pageNumber: 0 }, maxPages: 5 }
+  it('handles correctly with invalid date strings in start_date', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: 'not-a-date' },
+        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
     const res = {}
     const next = vi.fn()
 
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next.mock.calls[0][0].status).toBe(404)
-    expect(next.mock.calls[0][0].message).toBe('Page not found')
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
   })
 
-  it('blocks page numbers exceeding max pages', () => {
-    const req = { parsedParams: { pageNumber: 6 }, maxPages: 5 }
+  it('handles correctly with missing start_date field', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: undefined },
+        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
     const res = {}
     const next = vi.fn()
 
-    getIsPageNumberInRange('maxPages')(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next.mock.calls[0][0].status).toBe(404)
-    expect(next.mock.calls[0][0].message).toBe('Page not found')
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
+  })
+
+  it('handles correctly with malformed date objects', () => {
+    const req = {
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ],
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: new Date(' invalid-date') },
+        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
+        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
+        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
+        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+    const next = vi.fn()
+
+    FilterOutIssuesToMostRecent(req, res, next)
+
+    expect(req.issues).toEqual([
+      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
+      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
+      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
+    ])
+  })
+})
+
+describe('removeIssuesThatHaveBeenFixed', () => {
+  const mockDatasetteQuery = (moreRecentEntityFieldsFacts) => {
+    datasette.runQuery.mockImplementation((query, dataset) => {
+      let formattedData = []
+      moreRecentEntityFieldsFacts.forEach(([entity, field, resource]) => {
+        if (query.includes(entity) && query.includes(field) && query.includes(resource)) {
+          formattedData = [{ entity, field, resource }]
+        }
+      })
+      return {
+        formattedData
+      }
+    })
+  }
+
+  it('removes issues with more a recent fact', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity2', field: 'field1', resource: 'resource2' },
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = [
+      ['entity2', 'field1', 'resource3'],
+      ['entity1', 'field1', 'resource3']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ])
+    })
+  })
+
+  it('leaves issues that are the most recent resource', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    datasette.runQuery.mockImplementation((query, dataset) => {
+      if (query.includes('resource3') && query.includes('entity3')) {
+        return {
+          formattedData: [
+            { entity: 'entity3', field: 'field1' }
+          ]
+        }
+      } else {
+        return {
+          formattedData: []
+        }
+      }
+    })
+    const moreRecentEntityFieldsFacts = [
+      ['entity3', 'field1', 'resource3']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity3', field: 'field1', resource: 'resource3' }
+      ])
+    })
+  })
+
+  it('leaves issues that do not have a more recent fact', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity3', field: 'field1', resource: 'resource2' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = []
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity3', field: 'field1', resource: 'resource2' }
+      ])
+    })
+  })
+
+  it('removes multiple issues for the same resource', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' },
+        { entity: 'entity2', field: 'field1', resource: 'resource1' }
+      ],
+      resources: [
+        { resource: 'resource3', start_date: '2022-01-03' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource1', start_date: '2022-01-01' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = [
+      ['entity1', 'field1', 'resource2'],
+      ['entity2', 'field1', 'resource2']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([])
+    })
+  })
+
+  it('leaves no issues when none have been fixed', async () => {
+    const req = {
+      issues: [],
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = []
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([])
+    })
+  })
+
+  it('leaves issues when no resources', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ],
+      resources: []
+    }
+    const res = {}
+
+    const moreRecentEntityFieldsFacts = [
+      ['entity1', 'field1', 'resource1']
+    ]
+    mockDatasetteQuery(moreRecentEntityFieldsFacts)
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ])
+    })
+  })
+
+  it('handles rejected Promise in Promise.allSettled, and does not remove any issues', async () => {
+    const req = {
+      issues: [
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ],
+      resources: [
+        { resource: 'resource1', start_date: '2022-01-01' },
+        { resource: 'resource2', start_date: '2022-01-02' },
+        { resource: 'resource3', start_date: '2022-01-03' }
+      ]
+    }
+    const res = {}
+
+    datasette.runQuery.mockRejectedValue(new Error('async error'))
+
+    await removeIssuesThatHaveBeenFixed(req, res, () => {
+      expect(req.issues).toEqual([
+        { entity: 'entity1', field: 'field1', resource: 'resource1' }
+      ])
+    })
+  })
+})
+
+describe('addFieldMappingsToIssue', () => {
+  it('adds a replacement_field to an issue', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: [{ field: 'field1', replacement_field: 'new_field1' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1', replacement_field: 'new_field1' })
+    })
+  })
+
+  it('adds a replacement_field to multiple issues', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }, { entity: 'entity2', field: 'field2' }],
+      fieldMappings: [
+        { field: 'field1', replacement_field: 'new_field1' },
+        { field: 'field2', replacement_field: 'new_field2' }
+      ]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1', replacement_field: 'new_field1' })
+      expect(req.issues[1]).toEqual({ entity: 'entity2', field: 'field2', replacement_field: 'new_field2' })
+    })
+  })
+
+  it('does not modify issue if field mapping is not found', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: [{ field: 'field2', replacement_field: 'new_field2' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1' })
+    })
+  })
+
+  it('handles empty fieldMappings array', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: []
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1' })
+    })
+  })
+
+  it('handles empty issues array', () => {
+    const req = {
+      issues: [],
+      fieldMappings: [{ field: 'field1', replacement_field: 'new_field1' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues).toEqual([])
+    })
+  })
+
+  it('handles undefined fieldMappings array', () => {
+    const req = {
+      issues: [{ entity: 'entity1', field: 'field1' }],
+      fieldMappings: undefined
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues[0]).toEqual({ entity: 'entity1', field: 'field1' })
+    })
+  })
+
+  it('handles undefined issues array', () => {
+    const req = {
+      issues: undefined,
+      fieldMappings: [{ field: 'field1', replacement_field: 'new_field1' }]
+    }
+    const res = {}
+
+    addFieldMappingsToIssue(req, res, () => {
+      expect(req.issues).toEqual(undefined)
+    })
   })
 })

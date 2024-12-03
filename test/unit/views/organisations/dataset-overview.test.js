@@ -136,7 +136,9 @@ describe('Dataset Overview Page', () => {
 
     expect(documentWithNotice.querySelector('.govuk-notification-banner')).not.toBeNull()
     expect(banner.classList.contains('govuk-notification-banner--warning')).toBeFalsy()
-    expect(banner.textContent).toContain(`You are required to update your ${paramsWithNotice.dataset.dataset} dataset by deadline`)
+    expect(banner.querySelector('.govuk-notification-banner__heading').textContent).toContain(`You must review your ${paramsWithNotice.dataset.dataset} register by deadline`)
+    expect(banner.querySelector('.govuk-notification-banner__body').textContent).toContain(`Update your register as soon as a new ${paramsWithNotice.dataset.dataset} site is identified or an existing one changes status, to increase trust in the data.`)
+    expect(banner.querySelector('.govuk-notification-banner__cta').textContent).toContain('Follow the steps and check your data meets the specifications before you provide it.')
   })
 
   it('Should render "overdue" notice with correct content', () => {
