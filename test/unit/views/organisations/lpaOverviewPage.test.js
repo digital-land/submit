@@ -84,7 +84,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       let expectedHint = 'Data URL submitted'
       if (dataset.notice) {
         if (dataset.notice.type === 'due') {
-          expectedHint = `You are required to update this dataset by ${dataset.notice.deadline}`
+          expectedHint = `You must review your ${datasetSlugToReadableName(dataset.dataset)} register by ${dataset.notice.deadline} and update it as soon as a new site is identified or an existing one changes status.`
         } else if (dataset.notice.type === 'overdue') {
           expectedHint = `Your ${datasetSlugToReadableName(dataset.dataset)} dataset is overdue`
         } else {
@@ -164,7 +164,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
         let expectedHint
 
         if (dataset.notice.type === 'due') {
-          expectedHeader = `You are required to update your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} dataset by ${dataset.notice.deadline}`
+          expectedHeader = `You must review your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} register by ${dataset.notice.deadline}`
         } else if (dataset.notice.type === 'overdue') {
           expectedHeader = `Your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} dataset is overdue`
           expectedHint = `It was due on ${dataset.notice.deadline}`
