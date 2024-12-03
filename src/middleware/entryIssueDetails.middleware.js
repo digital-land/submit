@@ -25,13 +25,13 @@ const fetchResourceMetaData = fetchMany({
   result: 'resourceMetaData'
 })
 
-const addResourceMetaDataToResources = (req, res, next) => {
+export const addResourceMetaDataToResources = (req, res, next) => {
   const { resources, resourceMetaData } = req
 
   req.resources = resources.map(resource => {
     const metaData = resourceMetaData.find(metaData => metaData.resource === resource.resource)
     if (metaData) {
-      return { ...resource, ...resourceMetaData }
+      return { ...resource, ...metaData }
     }
     return resource
   })
@@ -57,7 +57,7 @@ export const setRecordCount = (req, res, next) => {
   req.recordCount = req.issues.length
   next()
 }
-const prepareEntry = (req, res, next) => {
+export const prepareEntry = (req, res, next) => {
   const { resources, issues } = req
   const { pageNumber } = req.parsedParams
 
@@ -98,7 +98,7 @@ const prepareEntry = (req, res, next) => {
   next()
 }
 
-const prepareEntryIssueDetailsTemplateParams = (req, res, next) => {
+export const prepareEntryIssueDetailsTemplateParams = (req, res, next) => {
   const { issue_type: issueType, pageNumber } = req.parsedParams
   const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
 
