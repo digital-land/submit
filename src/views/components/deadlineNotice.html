@@ -3,9 +3,9 @@
 
 {% macro deadlineNotice(datasetName, notice, organisation) %}
   {% set html %}
-    <p class="govuk-notification-banner__heading">{{ noticeHeading(datasetName, notice) }}</p> 
-    <p class="govuk-body">{{ noticeHint(notice) }}</p>
-    {{ noticeLink(organisation.organisation, datasetName) }}
+    <p class="govuk-notification-banner__heading">{{ noticeHeading(datasetName, notice) }}</p>
+    <p class="govuk-body govuk-notification-banner__body">{{ noticeHint(notice, datasetName) }}</p>
+    <p class="govuk-body govuk-notification-banner__cta">{{ noticeLink(organisation.organisation, datasetName) }}</p>
   {% endset %}
 
   {{ govukNotificationBanner({
