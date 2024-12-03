@@ -12,7 +12,7 @@
 {% macro datasetItem(dataset) %}
 <li class="govuk-task-list__item govuk-task-list__item--with-link" data-dataset="{{ dataset.dataset }}">
   <div class="govuk-task-list__name-and-hint">
-    <h2 class="govuk-heading-m">
+    <h3 class="govuk-heading-m">
       {% if dataset.status == 'Not submitted' %}
       <a class="govuk-link govuk-task-list__link"
          href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/get-started">
@@ -24,7 +24,7 @@
         {{dataset.dataset | datasetSlugToReadableName}}
       </a>
       {% endif %}
-    </h2>
+    </h3>
     <div class="govuk-task-list__hint">
       {% if dataset.notice %}
         <p>{{ noticeCardHint(dataset.notice, dataset.dataset) }}</p>
@@ -122,27 +122,30 @@
 
 
   {% if datasets.statutory.length > 0 %}
-    <h2 class="govuk-heading-m">Datasets {{ organisation.name }} must provide</h2>
-    <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="statutory">
-
-      {% for dataset in datasets.statutory %}
-        {{ datasetItem(dataset) }}
-      {% endfor %}
-    </ul>
+    <div data-testid="datasetsMandatory">
+      <h2 class="govuk-heading-m">Datasets {{ organisation.name }} must provide</h2>
+      <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="statutory">
+        {% for dataset in datasets.statutory %}
+          {{ datasetItem(dataset) }}
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
 
   {% if datasets.other.length > 0 %}
-    <h2 class="govuk-heading-m">Datasets organisations in Open Digital Planning programme must provide</h2>
+    <div data-testid="datasetsOdpMandatory">
+      <h2 class="govuk-heading-m">Datasets organisations in Open Digital Planning programme must provide</h2>
       {% if datasets.other[0].project === 'open-digital-planning' %}
         <p class="org-membership-info">{{ organisation.name}} is a member of the Open Digital Planning programme.</p>
       {% else %}
         <p class="org-membership-info">{{ organisation.name}} is not a member of the Open Digital Planning programme.</p>
       {% endif %}
-    <ul class="govuk-task-list" data-reason="other">
-      {% for dataset in datasets.other %}
-        {{ datasetItem(dataset) }}
-      {% endfor %}
-    </ul>
+      <ul class="govuk-task-list" data-reason="other">
+        {% for dataset in datasets.other %}
+          {{ datasetItem(dataset) }}
+        {% endfor %}
+      </ul>
+    </div>
   {% endif %}
 
 
