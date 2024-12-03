@@ -53,6 +53,7 @@
     "pluralize": "^8.0.0",
     "standard": "^17.1.0",
     "supertest": "^7.0.0",
+    "typescript": "^5.7.2",
     "vite": "^5.3.3",
     "vitest": "^2.0.4",
     "webpack": "^5.90.3",
