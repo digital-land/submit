@@ -1,7 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
+import performanceDbApi from '../../../src/services/performanceDbApi.js'
+
+vi.mock('../../../src/services/performanceDbApi.js')
 
 vi.mock('../../../src/services/datasette.js', () => ({
   default: {
@@ -1146,5 +1149,257 @@ describe('addFieldMappingsToIssue', () => {
     addFieldMappingsToIssue(req, res, () => {
       expect(req.issues).toEqual(undefined)
     })
+  })
+})
+
+describe('setDataRange', () => {
+  describe('tableView', () => {
+    const setTableDataRange = getSetDataRange(50)
+
+    it('should set up correct dataRange properties when pageNumber is 1', () => {
+      const req = {
+        recordCount: 10,
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setTableDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 0,
+        maxRow: 10,
+        totalRows: 10,
+        pageLength: 50,
+        offset: 0,
+        maxPageNumber: Math.ceil(10 / 50)
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('should set up correct dataRange properties when pageNumber is greater than 1', () => {
+      const req = {
+        recordCount: 80,
+        parsedParams: { pageNumber: 2 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setTableDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 50,
+        maxRow: 80,
+        totalRows: 80,
+        pageLength: 50,
+        offset: 50,
+        maxPageNumber: Math.ceil(80 / 50)
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('entityView', () => {
+    const setEntityDataRange = getSetDataRange(1)
+
+    it('should set up correct dataRange properties when pageNumber is 1', () => {
+      const req = {
+        recordCount: 10,
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setEntityDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 0,
+        maxRow: 1,
+        totalRows: 10,
+        pageLength: 1,
+        offset: 0,
+        maxPageNumber: 10
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('should set up correct dataRange properties when pageNumber is greater than 1', () => {
+      const req = {
+        recordCount: 10,
+        parsedParams: { pageNumber: 3 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setEntityDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 2,
+        maxRow: 3,
+        totalRows: 10,
+        pageLength: 1,
+        offset: 2,
+        maxPageNumber: 10
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+})
+
+describe('setBaseSubPath', () => {
+  it('sets baseSubpath correctly when given all url params', () => {
+
+  })
+
+  it('sets up baseSubpath correctly when given partial params', () => {
+
+  })
+
+  it('adds additional path parts on at the end', () => {
+
+  })
+})
+
+describe('getErrorSummaryItems', () => {
+  it('handles no issues are found', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value',
+      entities: [],
+      issues: [],
+      headers: {
+        referer: 'referer'
+      }
+    }
+
+    const next = vi.fn()
+
+    getErrorSummaryItems(req, null, next)
+
+    expect(next).toHaveBeenCalledWith(new Error('issue count must be larger than 0'))
+  })
+
+  it('handles if every entity has the issue', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value',
+      entities: [
+        { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
+        { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' }
+      ],
+      issues: [
+        { entity: 'entity1', error: 'Invalid Amount' },
+        { entity: 'entity2', error: ' Invalid Name' }
+      ]
+    }
+
+    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('message')
+
+    getErrorSummaryItems(req, null, vi.fn())
+
+    const errorSummary = req.errorSummary
+    expect(errorSummary.heading).toBe('')
+  })
+
+  it('handles some entities not having the issue', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value',
+      entities: [
+        { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
+        { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' },
+        { reference: 'entity3', name: 'Name 3', amount: 300 }
+      ],
+      issues: [
+        { entity: 'entity1', error: 'Invalid Amount' },
+        { entity: 'entity2', error: ' Invalid Name' }
+      ]
+    }
+
+    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('message')
+
+    getErrorSummaryItems(req, null, vi.fn())
+
+    const errorSummary = req.errorSummary
+    expect(errorSummary.heading).toBe('message')
+  })
+
+  it('Correctly sets the issue items when some entities dont have issues', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value/entity',
+      entities: [
+        { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
+        { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' },
+        { reference: 'entity3', name: 'Name 3', amount: 300 }
+      ],
+      issues: [
+        { entity: 'entity1', error: 'Invalid Amount' },
+        { entity: 'entity2', error: ' Invalid Name' }
+      ]
+    }
+
+    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('issue')
+
+    getErrorSummaryItems(req, null, vi.fn())
+
+    const errorSummary = req.errorSummary
+    expect(errorSummary.items).toEqual([
+      {
+        html: 'issue in entity entity1',
+        href: 'baseSubpath-value/entity/1'
+      },
+      {
+        html: 'issue in entity entity2',
+        href: 'baseSubpath-value/entity/2'
+      }
+    ])
+  })
+
+  it('handles no entities provided, but a resource provided with less issues than entries', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value/entry',
+      resources: [
+        {
+          entry_count: 3
+        }
+      ],
+      issues: [
+        { entry_number: 1, error: 'Invalid Amount' },
+        { entry_number: 2, error: ' Invalid Name' }
+      ]
+    }
+
+    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('issue')
+
+    getErrorSummaryItems(req, null, vi.fn())
+
+    const errorSummary = req.errorSummary
+    expect(errorSummary.items).toEqual([
+      {
+        html: 'issue in entry 1',
+        href: 'baseSubpath-value/entry/1'
+      },
+      {
+        html: 'issue in entry 2',
+        href: 'baseSubpath-value/entry/2'
+      }
+    ])
   })
 })

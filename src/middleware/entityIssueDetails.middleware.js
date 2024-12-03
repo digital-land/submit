@@ -63,6 +63,7 @@ export const setRecordCount = (req, res, next) => {
   req.recordCount = req.issues.length
   next()
 }
+
 export function prepareEntity (req, res, next) {
   const { entities, issues, specification } = req
   const { pageNumber, issue_type: issueType } = req.parsedParams

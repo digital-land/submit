@@ -576,8 +576,14 @@ export function getErrorSummaryItems (req, res, next) {
     errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: totalRecordCount, field: issueField }, true)
     issueItems = issues.map((issue, i) => {
       const pageNum = i + 1
+      let inString = ''
+      if (issue.entity) {
+        inString = ` in entity ${issue.entity}`
+      } else if (issue.entry_number) {
+        inString = ` in entry ${issue.entry_number}`
+      }
       return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }), // ToDo: + ` in entity ${issue.entity}`,
+        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + inString,
         href: `${baseSubpath}/${pageNum}`
       }
     })
