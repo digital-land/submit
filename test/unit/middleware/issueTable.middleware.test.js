@@ -16,25 +16,25 @@ describe('issueTableMiddleware', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('does not modify req.recordCount if req.issues is undefined', () => {
+    it('sets the record count to 0 if req.issues is undefined', () => {
       const req = {}
       const res = {}
       const next = vi.fn()
 
       setRecordCount(req, res, next)
 
-      expect(req.recordCount).toBe(undefined)
+      expect(req.recordCount).toBe(0)
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('does not modify req.recordCount if req.issues is null', () => {
+    it('sets the record count to 0 if req.issues is null', () => {
       const req = { issues: null }
       const res = {}
       const next = vi.fn()
 
       setRecordCount(req, res, next)
 
-      expect(req.recordCount).toBe(undefined)
+      expect(req.recordCount).toBe(0)
       expect(next).toHaveBeenCalledTimes(1)
     })
   })

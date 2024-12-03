@@ -18,25 +18,25 @@ describe('dataview.middleware.test.js', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('does not modify req.recordCount if req.entityCount is undefined', () => {
+    it('sets the record count to 0 if req.entityCount is undefined', () => {
       const req = {}
       const res = {}
       const next = vi.fn()
 
       setRecordCount(req, res, next)
 
-      expect(req.recordCount).toBe(undefined)
+      expect(req.recordCount).toBe(0)
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('does not modify req.recordCount if req.entityCount is null', () => {
+    it('sets the record count to 0 if req.entityCount is null', () => {
       const req = { entityCount: null }
       const res = {}
       const next = vi.fn()
 
       setRecordCount(req, res, next)
 
-      expect(req.recordCount).toBe(undefined)
+      expect(req.recordCount).toBe(0)
       expect(next).toHaveBeenCalledTimes(1)
     })
   })
