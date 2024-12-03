@@ -104,8 +104,10 @@ describe('issueDetails.middleware.js', () => {
           fields: [
             {
               key: { text: 'start-date' },
-              value: { html: '<p class="govuk-error-message">mock message</p>02-02-2022' },
-              classes: 'dl-summary-card-list__row--error'
+              value: {
+                html: '<p class="govuk-error-message">mock message</p>02-02-2022'
+              },
+              classes: 'dl-summary-card-list__row--error govuk-form-group--error'
             }
           ],
           geometries: []
@@ -218,8 +220,10 @@ describe('issueDetails.middleware.js', () => {
           fields: [
             {
               key: { text: 'start-date' },
-              value: { html: '<p class="govuk-error-message">mock message</p>02-02-2022' },
-              classes: 'dl-summary-card-list__row--error'
+              value: {
+                html: '<p class="govuk-error-message">mock message</p>02-02-2022'
+              },
+              classes: 'dl-summary-card-list__row--error govuk-form-group--error'
             },
             {
               classes: '',
@@ -277,8 +281,8 @@ describe('issueDetails.middleware.js', () => {
             fields: [
               {
                 key: { text: 'start-date' },
-                value: { html: '<p class="govuk-error-message">mock message</p>02-02-2022' },
-                classes: 'dl-summary-card-list__row--error'
+                value: { html: '02-02-2022<p class="govuk-error-message">mock message</p>' },
+                classes: 'dl-summary-card-list__row--error govuk-form-group--error'
               },
               {
                 classes: '',
