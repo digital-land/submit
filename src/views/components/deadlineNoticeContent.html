@@ -1,24 +1,26 @@
 {% macro noticeHeading(datasetName, notice) %}
   {% if notice.type == 'due' %}
-    You are required to update your {{datasetName | datasetSlugToReadableName | lower}} dataset by {{notice.deadline}}
+    You must review your {{datasetName | datasetSlugToReadableName | lower}} register by {{notice.deadline}}
   {% elseif notice.type == 'overdue' %}
     Your {{datasetName | datasetSlugToReadableName | lower}} dataset is overdue
   {% endif %}
 {% endmacro %}
 
-{% macro noticeHint(notice) %}
-  {% if notice.type == 'overdue' %}
+{% macro noticeHint(notice, datasetName) %}
+  {% if notice.type == 'due' %}
+    Update your register as soon as a new {{datasetName | datasetSlugToReadableName | lower}} site is identified or an existing one changes status, to increase trust in the data.
+  {% elseif notice.type == 'overdue' %}
     It was due on {{notice.deadline}}
   {% endif %}
 {% endmacro %}
 
 {% macro noticeLink(organisation, slug) %}
-  <a class="govuk-notification-banner__link" href="/organisations/{{organisation}}/{{slug}}/get-started">Follow the steps and check your data meets the specifications before you publish and submit it</a>.
+  <a class="govuk-notification-banner__link" href="/organisations/{{organisation}}/{{slug}}/get-started">Follow the steps and check your data meets the specifications before you provide it.</a>
 {% endmacro %}
 
-{% macro noticeCardHint(notice) %}
+{% macro noticeCardHint(notice, datasetName) %}
   {% if notice.type == 'due' %}
-    You are required to update this dataset by {{notice.deadline}}
+    You must review your {{datasetName | datasetSlugToReadableName | lower}} register by {{notice.deadline}} and update it as soon as a new site is identified or an existing one changes status.
   {% elseif notice.type == 'overdue' %}
     This dataset is overdue
   {% endif %}
