@@ -110,8 +110,8 @@ describe('entryIssueDetails.middleware.test.js', () => {
           },
           {
             key: { text: 'Field Name' },
-            value: { html: '<p class="govuk-error-message">Error message</p>Error value' },
-            classes: ''
+            value: { html: 'Error value<p class="govuk-error-message">Error message</p>' },
+            classes: 'dl-summary-card-list__row--error govuk-form-group--error'
           }
         ]
       })

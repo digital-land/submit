@@ -1,6 +1,7 @@
 import * as v from 'valibot'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { issueErrorMessageHtml } from '../utils/utils.js'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
@@ -70,6 +71,8 @@ export const prepareEntry = (req, res, next) => {
 
   const issue = issues[pageNumber - 1]
 
+  const errorMessage = issue.message || issue.issue_type
+
   req.entry = {
     title: `entry: ${issue.entry_number}`,
     fields: [
@@ -96,9 +99,9 @@ export const prepareEntry = (req, res, next) => {
           text: issue.field
         },
         value: {
-          html: `<p class="govuk-error-message">${issue.message || issue.issue_type}</p>${issue.value}`
+          html: issueErrorMessageHtml(errorMessage, issue)
         },
-        classes: ''
+        classes: 'dl-summary-card-list__row--error govuk-form-group--error'
       }
     ]
   }

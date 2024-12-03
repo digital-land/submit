@@ -89,8 +89,8 @@ describe('issueDetails.middleware.js', () => {
       expect(req.entry).toEqual({
         title: 'Entity 1',
         fields: [
-          { key: { text: 'field1' }, value: { html: '<p class="govuk-error-message">Error 1</p>value1' }, classes: 'dl-summary-card-list__row--error' },
-          { key: { text: 'field2' }, value: { html: '<p class="govuk-error-message">Error 2</p>value2' }, classes: 'dl-summary-card-list__row--error' }
+          { key: { text: 'field1' }, value: { html: '<p class="govuk-error-message">Error 1</p>value1' }, classes: 'dl-summary-card-list__row--error govuk-form-group--error' },
+          { key: { text: 'field2' }, value: { html: '<p class="govuk-error-message">Error 2</p>value2' }, classes: 'dl-summary-card-list__row--error govuk-form-group--error' }
         ],
         geometries: []
       })

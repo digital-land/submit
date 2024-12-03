@@ -1,3 +1,4 @@
+import { issueErrorMessageHtml } from '../utils/utils.js'
 import {
   fetchDatasetInfo,
   fetchOrgInfo,
@@ -29,17 +30,6 @@ export const IssueDetailsQueryParams = v.object({
 const validateIssueDetailsQueryParams = validateQueryParams({
   schema: IssueDetailsQueryParams
 })
-
-/**
- *
- * @param {string} errorMessage
- * @param {{value: string}?} issue
- * @returns {string}
- */
-const issueErrorMessageHtml = (errorMessage, issue) =>
-    `<p class="govuk-error-message">${errorMessage}</p>${
-      issue ? issue.value ?? '' : ''
-    }`
 
 /**
  *
@@ -84,7 +74,7 @@ export function prepareEntity (req, res, next) {
     if (field) {
       const message = issue.message || issue.type
       field.value.html = issueErrorMessageHtml(message, null) + field.value.html
-      field.classes += 'dl-summary-card-list__row--error'
+      field.classes += 'dl-summary-card-list__row--error govuk-form-group--error'
     }
   })
 
@@ -93,7 +83,7 @@ export function prepareEntity (req, res, next) {
       const errorMessage = issue.message || issueType
       // TODO: pull the html out of here and into the template
       const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
-      const classes = 'dl-summary-card-list__row--error'
+      const classes = 'dl-summary-card-list__row--error govuk-form-group--error'
 
       fields.push(getIssueField(issue.field, valueHtml, classes))
     }
