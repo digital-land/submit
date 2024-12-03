@@ -1,117 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
-  setTotalPages,
-  setPaginationOptions,
   constructTableParams,
-  prepareTemplateParams,
-  setOffset,
-  getUniqueDatasetFieldsFromSpecification
+  getDataRange,
+  prepareTemplateParams
 } from '../../../src/middleware/dataview.middleware'
 
 describe('dataview.middleware.test.js', () => {
-  describe('setTotalPages', () => {
-    it('sets total pages', () => {
-      const req = {
-        entityCount: { count: 100 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      setTotalPages(req, res, next)
-      expect(req.totalPages).toBe(2)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('setOffset', () => {
-    it('sets offset correctly', () => {
-      const req = {
-        params: { pageNumber: 2 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      setOffset(req, res, next)
-      expect(req.offset).toBe(50) // assuming pageLength is 50
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('sets offset to 0 when pageNumber is 1', () => {
-      const req = {
-        params: { pageNumber: 1 }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      setOffset(req, res, next)
-      expect(req.offset).toBe(0)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('setPaginationOptions', () => {
-    it('sets pagination options', () => {
-      const req = {
-        entityCount: { count: 100 },
-        params: { lpa: 'lpa', dataset: 'dataset' }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      const pageLength = 100
-
-      setPaginationOptions(pageLength)(req, res, next)
-      expect(req.resultsCount).toEqual(100)
-      expect(req.urlSubPath).toEqual(`/organisations/${encodeURIComponent(req.params.lpa)}/${encodeURIComponent(req.params.dataset)}/data/`)
-      expect(req.paginationPageLength).toEqual(pageLength)
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('getUniqueDatasetFieldsFromSpecification', () => {
-    it('gets unique dataset fields from specification', () => {
-      const req = {
-        specification: {
-          fields: [
-            { field: 'foo', datasetField: 'foo_field' },
-            { field: 'bar', datasetField: 'bar_field' },
-            { field: 'baz', datasetField: 'foo_field' } // duplicate
-          ]
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      getUniqueDatasetFieldsFromSpecification(req, res, next)
-
-      expect(req.uniqueDatasetFields).toEqual(['foo_field', 'bar_field'])
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('returns an empty array when specification.fields is empty', () => {
-      const req = {
-        specification: {
-          fields: []
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
-      getUniqueDatasetFieldsFromSpecification(req, res, next)
-
-      expect(req.uniqueDatasetFields).toEqual([])
-      expect(next).toHaveBeenCalledTimes(1)
-    })
-
-    it('throws an error when specification is not provided', () => {
-      const req = {}
-      const res = {}
-      const next = vi.fn()
-
-      expect(() => getUniqueDatasetFieldsFromSpecification(req, res, next)).toThrowError('specification is required')
-    })
-  })
-
   describe('constructTableParams', () => {
     it('constructs table parameters with correct columns, fields, and rows', () => {
       const req = {
@@ -219,6 +113,50 @@ describe('dataview.middleware.test.js', () => {
     })
   })
 
+  describe('getDataRange', () => {
+    it('should set up correct dataRange properties when pageNumber is 1', () => {
+      const req = {
+        entityCount: { count: 10 },
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 0,
+        maxRow: 10,
+        totalRows: 10,
+        pageLength: 50,
+        offset: 0,
+        maxPageNumber: Math.ceil(10 / 50)
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('should set up correct dataRange properties when pageNumber is greater than 1', () => {
+      const req = {
+        entityCount: { count: 80 },
+        parsedParams: { pageNumber: 2 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 50,
+        maxRow: 80,
+        totalRows: 80,
+        pageLength: 50,
+        offset: 50,
+        maxPageNumber: Math.ceil(80 / 50)
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('prepareTemplateParams', () => {
     it('prepares template parameters with correct properties', () => {
       const req = {
@@ -228,7 +166,12 @@ describe('dataview.middleware.test.js', () => {
         issues: [],
         pagination: {},
         entityCount: { count: 1 },
-        offset: 0
+        offset: 0,
+        dataRange: {
+          minRow: 1,
+          maxRow: 1,
+          totalRows: 1
+        }
       }
       const res = {}
       const next = vi.fn()

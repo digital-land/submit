@@ -136,7 +136,7 @@ describe('Dataset Overview Page', () => {
 
     expect(documentWithNotice.querySelector('.govuk-notification-banner')).not.toBeNull()
     expect(banner.classList.contains('govuk-notification-banner--warning')).toBeFalsy()
-    expect(banner.textContent).toContain(`You must update your ${paramsWithNotice.dataset.dataset} dataset by deadline`)
+    expect(banner.textContent).toContain(`You are required to update your ${paramsWithNotice.dataset.dataset} dataset by deadline`)
   })
 
   it('Should render "overdue" notice with correct content', () => {

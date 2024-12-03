@@ -42,6 +42,17 @@ describe('issueDetails.middleware.js', () => {
         entityCount: { entity_count: 1 },
         issueEntitiesCount: { count: 1 },
         pageNumber: 1,
+        pagination: {
+          items: [
+            {
+              current: true,
+              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
+              number: 1,
+              type: 'number'
+            }
+          ]
+        },
+        baseSubpath: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry',
         orgInfo,
         dataset,
         entryData,
@@ -80,12 +91,14 @@ describe('issueDetails.middleware.js', () => {
           dataset: 'mock-dataset',
           collection: 'mock-collection'
         },
-        errorHeading: undefined,
-        issueItems: [
-          {
-            html: 'mockMessageFor: 0'
-          }
-        ],
+        errorSummary: {
+          heading: undefined,
+          items: [
+            {
+              html: 'mockMessageFor: 0'
+            }
+          ]
+        },
         entry: {
           title: 'entry: 1',
           fields: [
@@ -101,7 +114,7 @@ describe('issueDetails.middleware.js', () => {
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
             number: 1,
             type: 'number'
           }]
@@ -137,7 +150,17 @@ describe('issueDetails.middleware.js', () => {
       const req = {
         params: requestParams,
         parsedParams: { pageNumber: 1 },
-        // middleware supplies the below
+        pagination: {
+          items: [
+            {
+              current: true,
+              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
+              number: 1,
+              type: 'number'
+            }
+          ]
+        },
+        baseSubpath: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry',
         entryNumber: 1,
         entityCount: { entity_count: 3 },
         issueEntitiesCount: { count: 1 },
@@ -181,13 +204,15 @@ describe('issueDetails.middleware.js', () => {
           dataset: 'mock-dataset',
           collection: 'mock-collection'
         },
-        errorHeading: 'mockMessageFor: 0',
-        issueItems: [
-          {
-            html: 'mock task message 1 in record 1',
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
-          }
-        ],
+        errorSummary: {
+          heading: 'mockMessageFor: 0',
+          items: [
+            {
+              html: 'mock task message 1 in record 1',
+              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1'
+            }
+          ]
+        },
         entry: {
           title: 'entry: 1',
           fields: [
@@ -212,7 +237,7 @@ describe('issueDetails.middleware.js', () => {
         pagination: {
           items: [{
             current: true,
-            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1',
+            href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/entry/1',
             number: 1,
             type: 'number'
           }]
@@ -238,13 +263,15 @@ describe('issueDetails.middleware.js', () => {
             dataset: 'mock-dataset',
             collection: 'mock-collection'
           },
-          errorHeading: 'mockMessageFor: 0',
-          issueItems: [
-            {
-              html: 'mock task message 1 in record 1',
-              href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
-            }
-          ],
+          errorSummary: {
+            heading: 'mockMessageFor: 0',
+            items: [
+              {
+                html: 'mock task message 1 in record 1',
+                href: '/organisations/test-lpa/test-dataset/test-issue-type/test-issue-field/1'
+              }
+            ]
+          },
           entry: {
             title: 'entry: 1',
             fields: [
