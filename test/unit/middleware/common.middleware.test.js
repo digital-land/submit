@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems } from '../../../src/middleware/common.middleware'
+import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -1247,16 +1247,52 @@ describe('setDataRange', () => {
 })
 
 describe('setBaseSubPath', () => {
+  const lpa = 'lpa'
+  const dataset = 'dataset'
+  const issueType = 'issueType'
+  const issueField = 'issueField'
   it('sets baseSubpath correctly when given all url params', () => {
+    const req = {
+      params: {
+        lpa,
+        dataset,
+        issue_type: issueType,
+        issue_field: issueField
+      }
+    }
+    const setBaseSubPath = getSetBaseSubPath([])
 
+    setBaseSubPath(req, {}, vi.fn())
+
+    expect(req.baseSubpath).toEqual('/organisations/lpa/dataset/issueType/issueField')
   })
 
   it('sets up baseSubpath correctly when given partial params', () => {
+    const req = {
+      params: {
+        lpa,
+        dataset
+      }
+    }
+    const setBaseSubPath = getSetBaseSubPath([])
 
+    setBaseSubPath(req, {}, vi.fn())
+
+    expect(req.baseSubpath).toEqual('/organisations/lpa/dataset')
   })
 
   it('adds additional path parts on at the end', () => {
+    const req = {
+      params: {
+        lpa,
+        dataset
+      }
+    }
+    const setBaseSubPath = getSetBaseSubPath(['subPath'])
 
+    setBaseSubPath(req, {}, vi.fn())
+
+    expect(req.baseSubpath).toEqual('/organisations/lpa/dataset/subPath')
   })
 })
 
