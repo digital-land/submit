@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { addResourceMetaDataToResources } from '../../../src/middleware/entryIssueDetails.middleware'
+import { addResourceMetaDataToResources, prepareEntry, setRecordCount } from '../../../src/middleware/entryIssueDetails.middleware'
 
 describe('entryIssueDetails.middleware.test.js', () => {
   describe('addResourceMetaDataToResources', () => {
@@ -63,11 +63,94 @@ describe('entryIssueDetails.middleware.test.js', () => {
   })
 
   describe('setRecordCount', () => {
+    it('should set req.recordCount to req.issues.length', () => {
+      const req = { issues: [{}, {}, {}] }
+      const res = {}
+      const next = vi.fn()
 
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(3)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('prepareEntry', () => {
+    it('should prepare entry with correct fields', () => {
+      const req = {
+        resources: [{ endpoint_url: 'https://example.com' }],
+        issues: [
+          {
+            entry_number: 1,
+            line_number: 2,
+            field: 'Field Name',
+            message: 'Error message',
+            value: 'Error value'
+          }
+        ],
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
 
+      prepareEntry(req, res, next)
+
+      expect(req.entry).toEqual({
+        title: 'entry: 1',
+        fields: [
+          {
+            key: { text: 'Endpoint' },
+            value: { html: '<a href=\'https://example.com\'>https://example.com</a>' },
+            classes: ''
+          },
+          {
+            key: { text: 'Line number' },
+            value: { html: '2' },
+            classes: ''
+          },
+          {
+            key: { text: 'Field Name' },
+            value: { html: '<p class="govuk-error-message">Error message</p>Error value' },
+            classes: ''
+          }
+        ]
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('should call next with error if issue is missing', () => {
+      const req = {
+        resources: [{ endpoint_url: 'https://example.com' }],
+        issues: [],
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+      prepareEntry(req, res, next)
+
+      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object'))
+    })
+
+    it('should throw error if resources is missing', () => {
+      const req = {
+        issues: [
+          {
+            entry_number: 1,
+            line_number: 2,
+            field: 'Field Name',
+            message: 'Error message',
+            value: 'Error value'
+          }
+        ],
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      prepareEntry(req, res, next)
+
+      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object'))
+    })
   })
 
   describe('prepareEntryIssueDetailsTemplateParams', () => {

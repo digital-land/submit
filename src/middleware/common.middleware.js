@@ -600,3 +600,22 @@ export function getErrorSummaryItems (req, res, next) {
 
   next()
 }
+
+export const prepareIssueDetailsTemplateParams = (req, res, next) => {
+  const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
+  const { issue_type: issueType, pageNumber } = req.parsedParams
+
+  // schema: OrgIssueDetails
+  req.templateParams = {
+    organisation: orgInfo,
+    dataset,
+    errorSummary,
+    entry,
+    issueType,
+    pagination,
+    pageNumber,
+    dataRange
+  }
+
+  next()
+}

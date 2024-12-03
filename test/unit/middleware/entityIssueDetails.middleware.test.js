@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import { getIssueDetails, getIssueField, prepareEntity, prepareEntityIssueDetailsTemplateParams, setRecordCount } from '../../../src/middleware/entityIssueDetails.middleware.js'
+import { getIssueDetails, getIssueField, prepareEntity, setRecordCount } from '../../../src/middleware/entityIssueDetails.middleware.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -120,48 +120,6 @@ describe('issueDetails.middleware.js', () => {
         fields: [],
         geometries: []
       })
-    })
-  })
-
-  describe('prepareEntityIssueDetailsTemplateParams', () => {
-    const req = {
-      params: { issue_type: 'some-issue-type' },
-      parsedParams: { pageNumber: 1 },
-      entry: 'some-entry',
-      pagination: 'some-pagination',
-      errorSummary: 'some-error-summary',
-      dataRange: 'some-data-range',
-      dataset: 'some-dataset',
-      orgInfo: 'some-org-info'
-    }
-
-    const res = {}
-
-    beforeEach(() => {
-      req.templateParams = undefined
-    })
-
-    it('should set req.templateParams with expected values', () => {
-      const next = vi.fn()
-      prepareEntityIssueDetailsTemplateParams(req, res, next)
-
-      expect(req.templateParams).toEqual({
-        organisation: 'some-org-info',
-        dataset: 'some-dataset',
-        errorSummary: 'some-error-summary',
-        entry: 'some-entry',
-        issueType: 'some-issue-type',
-        pagination: 'some-pagination',
-        pageNumber: 1,
-        dataRange: 'some-data-range'
-      })
-    })
-
-    it('should call next function', () => {
-      const next = vi.fn()
-      prepareEntityIssueDetailsTemplateParams(req, res, next)
-
-      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 

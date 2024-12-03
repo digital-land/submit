@@ -11,7 +11,8 @@ import {
   processSpecificationMiddlewares,
   getSetBaseSubPath,
   getSetDataRange,
-  getErrorSummaryItems
+  getErrorSummaryItems,
+  prepareIssueDetailsTemplateParams
 } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -111,29 +112,6 @@ export function prepareEntity (req, res, next) {
   next()
 }
 
-/***
- * Middleware. Updates req with `templateParams`
- */
-export function prepareEntityIssueDetailsTemplateParams (req, res, next) {
-  const { entry, pagination, errorSummary, dataRange, dataset, orgInfo } = req
-  const { issue_type: issueType } = req.params
-  const { pageNumber } = req.parsedParams
-
-  // schema: OrgIssueDetails
-  req.templateParams = {
-    organisation: orgInfo,
-    dataset,
-    errorSummary,
-    entry,
-    issueType,
-    pagination,
-    pageNumber,
-    dataRange
-  }
-
-  next()
-}
-
 /**
  * Middleware. Renders the issue details page with the list of issues, entry data,
  * and organisation and dataset details.
@@ -159,7 +137,7 @@ export default [
   createPaginationTemplateParams,
   getErrorSummaryItems,
   prepareEntity,
-  prepareEntityIssueDetailsTemplateParams,
+  prepareIssueDetailsTemplateParams,
   getIssueDetails,
   logPageError
 ]

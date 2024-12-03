@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 
 export const IssueDetailsQueryParams = v.object({
@@ -57,9 +57,16 @@ export const setRecordCount = (req, res, next) => {
   req.recordCount = req.issues.length
   next()
 }
+
 export const prepareEntry = (req, res, next) => {
   const { resources, issues } = req
   const { pageNumber } = req.parsedParams
+
+  if (!issues[pageNumber - 1] || !resources) {
+    const error = new Error('Missing required values on request object')
+    error.status = 404
+    return next(error)
+  }
 
   const issue = issues[pageNumber - 1]
 
@@ -98,25 +105,6 @@ export const prepareEntry = (req, res, next) => {
   next()
 }
 
-export const prepareEntryIssueDetailsTemplateParams = (req, res, next) => {
-  const { issue_type: issueType, pageNumber } = req.parsedParams
-  const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
-
-  // schema: OrgIssueDetails
-  req.templateParams = {
-    organisation: orgInfo,
-    dataset,
-    errorSummary,
-    entry,
-    issueType,
-    pagination,
-    pageNumber,
-    dataRange
-  }
-
-  next()
-}
-
 export const getIssueDetails = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/issueDetails.html',
@@ -138,6 +126,6 @@ export default [
   createPaginationTemplateParams,
   getErrorSummaryItems,
   prepareEntry,
-  prepareEntryIssueDetailsTemplateParams,
+  prepareIssueDetailsTemplateParams,
   getIssueDetails
 ]
