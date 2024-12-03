@@ -1,10 +1,46 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   constructTableParams,
-  prepareTemplateParams
+  prepareTemplateParams,
+  setRecordCount
 } from '../../../src/middleware/dataview.middleware'
 
 describe('dataview.middleware.test.js', () => {
+  describe('set record count', () => {
+    it('sets req.recordCount to the length of req.issues', () => {
+      const req = { entityCount: { count: 3 } }
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(3)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not modify req.recordCount if req.entityCount is undefined', () => {
+      const req = {}
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(undefined)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not modify req.recordCount if req.entityCount is null', () => {
+      const req = { entityCount: null }
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(undefined)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('constructTableParams', () => {
     it('constructs table parameters with correct columns, fields, and rows', () => {
       const req = {

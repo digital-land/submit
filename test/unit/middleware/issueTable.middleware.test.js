@@ -1,9 +1,44 @@
 import { describe, it, expect, vi } from 'vitest'
-import { issueTypeAndFieldShouldRedirect, notIssueHasEntity, prepareTableParams, prepareTemplateParams, redirectToEntityView } from '../../../src/middleware/issueTable.middleware'
+import { issueTypeAndFieldShouldRedirect, notIssueHasEntity, prepareTableParams, prepareTemplateParams, redirectToEntityView, setRecordCount } from '../../../src/middleware/issueTable.middleware'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
 describe('issueTableMiddleware', () => {
+  describe('set record count', () => {
+    it('sets req.recordCount to the length of req.issues', () => {
+      const req = { issues: [{}, {}, {}] }
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(3)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not modify req.recordCount if req.issues is undefined', () => {
+      const req = {}
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(undefined)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not modify req.recordCount if req.issues is null', () => {
+      const req = { issues: null }
+      const res = {}
+      const next = vi.fn()
+
+      setRecordCount(req, res, next)
+
+      expect(req.recordCount).toBe(undefined)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('prepareTableParams', () => {
     const req = {
       entities: [

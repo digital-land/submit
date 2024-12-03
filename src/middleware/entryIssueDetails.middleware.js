@@ -54,7 +54,7 @@ const fetchEntryIssues = fetchMany({
 })
 
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req.issues.length
+  req.recordCount = req?.issues?.length
   next()
 }
 

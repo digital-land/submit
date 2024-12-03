@@ -28,7 +28,7 @@ export const fetchEntities = fetchMany({
 })
 
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req.entityCount.count
+  req.recordCount = req?.entityCount?.count
   next()
 }
 
