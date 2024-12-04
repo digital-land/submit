@@ -560,6 +560,16 @@ export const getSetDataRange = (pageLength) => (req, res, next) => {
   const { recordCount } = req
   const { pageNumber } = req.parsedParams
 
+  if (typeof recordCount !== 'number' || recordCount < 0) {
+    return next(new Error('Invalid record count'))
+  }
+  if (typeof pageNumber !== 'number' || pageNumber < 1) {
+    return next(new Error('Invalid page number'))
+  }
+  if (typeof pageLength !== 'number' || pageLength < 1) {
+    return next(new Error('Invalid page length'))
+  }
+
   req.dataRange = {
     minRow: (pageNumber - 1) * pageLength,
     maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
