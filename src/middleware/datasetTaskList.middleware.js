@@ -1,16 +1,12 @@
 import {
   fetchDatasetInfo,
-  isResourceAccessible,
-  isResourceNotAccessible,
-  fetchLatestResource,
-  fetchEntityCount,
-  logPageError,
-  fetchLpaDatasetIssues,
   validateQueryParams,
-  getDatasetTaskListError,
-  isResourceIdValid, and
+  fetchResources,
+  processEntitiesMiddlewares,
+  processRelevantIssuesMiddlewares,
+  fetchOrgInfo
 } from './common.middleware.js'
-import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
+import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 import * as v from 'valibot'
@@ -21,13 +17,6 @@ import * as v from 'valibot'
 export const fetchResourceStatus = fetchOne({
   query: ({ params }) => performanceDbApi.resourceStatusQuery(params.lpa, params.dataset),
   result: 'resourceStatus'
-})
-
-const fetchOrgInfoWithStatGeo = fetchOne({
-  query: ({ params }) => {
-    return /* sql */ `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
-  },
-  result: 'orgInfo'
 })
 
 /**
@@ -45,6 +34,49 @@ function getStatusTag (status) {
   }
 }
 
+export const prepareTasks = (req, res, next) => {
+  const { lpa, dataset } = req.parsedParams
+  const { issues, entities, resources } = req
+
+  const entityCount = entities.length
+
+  const specialIssueTypeCases = ['reference values are not unique']
+
+  const groupedIssues = issues.reduce((acc, issue) => {
+    const { field, issue_type: type } = issue
+    const key = `${field}_${type}`
+    if (acc[key]) {
+      acc[key].count += 1
+    } else {
+      acc[key] = {
+        type,
+        field,
+        count: 1
+      }
+    }
+    return acc
+  }, {})
+
+  req.taskList = Object.values(groupedIssues).map(({ field, type, count }) => {
+    // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
+
+    let rowCount = entityCount
+    if (specialIssueTypeCases.includes(type)) {
+      rowCount = resources[0].entry_count
+    }
+
+    return {
+      title: {
+        text: performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type })
+      },
+      href: `/organisations/${lpa}/${dataset}/${type}/${field}`,
+      status: getStatusTag('Needs fixing')
+    }
+  })
+
+  next()
+}
+
 /**
  * Middleware. Updates req with `templateParams`
  *
@@ -54,20 +86,7 @@ function getStatusTag (status) {
  * @returns { { templateParams: object }}
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
-  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
-  const { lpa, dataset: datasetId } = params
-  console.assert(typeof entityCount === 'number', 'entityCount should be a number')
-
-  const taskList = issues.map((issue) => {
-    return {
-      title: {
-        text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
-      },
-      href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}/${issue.field}`,
-      status: getStatusTag(issue.status)
-    }
-  })
+  const { taskList, dataset, orgInfo: organisation } = req
 
   req.templateParams = {
     taskList,
@@ -123,20 +142,22 @@ const validateParams = validateQueryParams({
   })
 })
 
-/* eslint-disable-next-line no-return-assign */
-const zeroEntityCount = (req) => req.entityCount = { entity_count: 0 }
-
 export default [
   validateParams,
-  fetchResourceStatus,
-  fetchOrgInfoWithStatGeo,
+  fetchOrgInfo,
   fetchDatasetInfo,
-  fetchIf(isResourceAccessible, fetchLatestResource),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-  fetchIf(and(isResourceAccessible, isResourceIdValid), fetchEntityCount, zeroEntityCount),
-  onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
-  onlyIf(isResourceAccessible, getDatasetTaskList),
-  onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
-  onlyIf(isResourceNotAccessible, getDatasetTaskListError),
-  logPageError
+  fetchResources,
+  ...processEntitiesMiddlewares,
+  ...processRelevantIssuesMiddlewares,
+  prepareTasks,
+  prepareDatasetTaskListTemplateParams,
+  getDatasetTaskList
+  // fetchIf(isResourceAccessible, fetchLatestResource),
+  // fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+  // fetchIf(and(isResourceAccessible, isResourceIdValid), fetchEntityCount, zeroEntityCount),
+  // onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
+  // onlyIf(isResourceAccessible, getDatasetTaskList),
+  // onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
+  // onlyIf(isResourceNotAccessible, getDatasetTaskListError),
+  // logPageError
 ]
