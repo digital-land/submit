@@ -493,6 +493,18 @@ export const addFieldMappingsToIssue = (req, res, next) => {
   next()
 }
 
+export const addReferencesToIssues = (req, res, next) => {
+  const { issues, entities } = req
+
+  req.issues = issues.map(issue => {
+    const reference = entities.find(entity => entity.entity === issue.entity)?.reference
+
+    return { ...issue, reference }
+  })
+
+  next()
+}
+
 /**
  * This middleware chain is responsible for retrieving all entities for the given organisation, their latest issues,
  * filtering out issues that have been fixed, and constructing the table params.
@@ -510,7 +522,8 @@ export const processRelevantIssuesMiddlewares = [
   FilterOutIssuesToMostRecent,
   removeIssuesThatHaveBeenFixed,
   fetchFieldMappings,
-  addFieldMappingsToIssue
+  addFieldMappingsToIssue,
+  addReferencesToIssues
 ]
 
 // Other
@@ -560,12 +573,13 @@ export const getSetDataRange = (pageLength) => (req, res, next) => {
 
 export function getErrorSummaryItems (req, res, next) {
   const { issue_type: issueType, issue_field: issueField } = req.params
-  const { baseSubpath, issues, entities, resources } = req
+  const { baseSubpath, issues, issueCount, entities, resources } = req
 
   let errorHeading = ''
   let issueItems
 
   const totalRecordCount = entities ? entities.length : resources[0].entry_count
+  const totalIssues = issueCount?.count || issues.length
 
   if (issues.length <= 0) {
     // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
@@ -573,14 +587,18 @@ export function getErrorSummaryItems (req, res, next) {
     const error = new Error('issue count must be larger than 0')
     return next(error)
   } else if (issues.length < totalRecordCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: totalRecordCount, field: issueField }, true)
+    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount: totalRecordCount, field: issueField }, true)
     issueItems = issues.map((issue, i) => {
       const pageNum = i + 1
       let inString = ''
-      if (issue.entity) {
-        inString = ` in entity ${issue.entity}`
-      } else if (issue.entry_number) {
-        inString = ` in entry ${issue.entry_number}`
+
+      // we have to hard code this in because though the entitiy has beeb assigned, it has been assigned incorrectly
+      const specialIssueTypeCases = ['reference values are not unique']
+
+      if (issue.reference && !specialIssueTypeCases.includes(issue.issue_type)) {
+        inString = ` in entity with reference ${issue.reference}`
+      } else if (issue.line_number) {
+        inString = ` in row ${issue.line_number}`
       }
       return {
         html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + inString,
@@ -589,7 +607,7 @@ export function getErrorSummaryItems (req, res, next) {
     })
   } else {
     issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: issues.length, entityCount: totalRecordCount, field: issueField }, true)
+      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount: totalRecordCount, field: issueField }, true)
     }]
   }
 

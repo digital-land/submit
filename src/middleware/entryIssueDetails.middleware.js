@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
 
 export const IssueDetailsQueryParams = v.object({
@@ -54,8 +54,21 @@ const fetchEntryIssues = fetchMany({
   result: 'issues'
 })
 
+const fetchIssueCount = fetchOne({
+  query: ({ req, params }) => `
+    select count(*) as count
+    from issue i
+    LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+    WHERE resource = '${req.resources[0].resource}'
+    AND i.issue_type = '${params.issue_type}'
+    AND it.responsibility = 'external'
+    AND field = '${params.issue_field}'
+  `,
+  result: 'issueCount'
+})
+
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req?.issues?.length || 0
+  req.recordCount = req?.issueCount?.count || 0
   next()
 }
 
@@ -122,6 +135,7 @@ export default [
   fetchResourceMetaData,
   addResourceMetaDataToResources,
   fetchEntryIssues,
+  fetchIssueCount,
   setRecordCount,
   getSetDataRange(1),
   show404IfPageNumberNotInRange,
