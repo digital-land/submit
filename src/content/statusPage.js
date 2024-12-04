@@ -1,6 +1,6 @@
 export const headingTexts = {
   checking: 'Checking your data',
-  checked: 'Data Checked'
+  checked: 'Data checked'
 }
 
 export const messageTexts = {

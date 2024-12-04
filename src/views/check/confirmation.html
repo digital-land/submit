@@ -1,4 +1,4 @@
-
+{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from 'govuk/components/panel/macro.njk' import govukPanel %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 
@@ -6,6 +6,14 @@
 
 {% set serviceType = 'Check' %}
 {% set pageName = "You can now publish your data" %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "javascript:window.history.back()"
+  }) }}
+{% endblock %}
+
 
 {% set content %}
 
@@ -31,7 +39,7 @@
   Details about what to do next are also available [in the guidance](/guidance)
 
   {% if options.deepLink %}
-    <p><a href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset }} overview</a></p>
+    <p><a href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName }} overview</a></p>
   {% else %}
     <p><a href="/">Return to Home</a></p>
   {% endif %}
