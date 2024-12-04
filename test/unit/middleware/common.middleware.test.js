@@ -1382,8 +1382,8 @@ describe('getErrorSummaryItems', () => {
         { reference: 'entity3', name: 'Name 3', amount: 300 }
       ],
       issues: [
-        { entity: 'entity1', error: 'Invalid Amount' },
-        { entity: 'entity2', error: ' Invalid Name' }
+        { entity: 'entity1', error: 'Invalid Amount', reference: 'entity1' },
+        { entity: 'entity2', error: ' Invalid Name', reference: 'entity2' }
       ]
     }
 
@@ -1394,11 +1394,11 @@ describe('getErrorSummaryItems', () => {
     const errorSummary = req.errorSummary
     expect(errorSummary.items).toEqual([
       {
-        html: 'issue in entity entity1',
+        html: 'issue in entity with reference entity1',
         href: 'baseSubpath-value/entity/1'
       },
       {
-        html: 'issue in entity entity2',
+        html: 'issue in entity with reference entity2',
         href: 'baseSubpath-value/entity/2'
       }
     ])
@@ -1417,8 +1417,8 @@ describe('getErrorSummaryItems', () => {
         }
       ],
       issues: [
-        { entry_number: 1, error: 'Invalid Amount' },
-        { entry_number: 2, error: ' Invalid Name' }
+        { entry_number: 1, error: 'Invalid Amount', reference: '1' },
+        { entry_number: 2, error: ' Invalid Name', reference: '2' }
       ]
     }
 
@@ -1429,11 +1429,11 @@ describe('getErrorSummaryItems', () => {
     const errorSummary = req.errorSummary
     expect(errorSummary.items).toEqual([
       {
-        html: 'issue in entry 1',
+        html: 'issue in entity with reference 1',
         href: 'baseSubpath-value/entry/1'
       },
       {
-        html: 'issue in entry 2',
+        html: 'issue in entity with reference 2',
         href: 'baseSubpath-value/entry/2'
       }
     ])

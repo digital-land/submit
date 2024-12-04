@@ -64,7 +64,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
 
   describe('setRecordCount', () => {
     it('should set req.recordCount to req.issues.length', () => {
-      const req = { issues: [{}, {}, {}] }
+      const req = { issueCount: { count: 3 } }
       const res = {}
       const next = vi.fn()
 
