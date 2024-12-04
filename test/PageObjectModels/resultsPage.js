@@ -39,10 +39,10 @@ export default class ResultsPage extends BasePage {
     // Check if there's a table
     expect(await this.page.locator('table').isVisible())
 
-    await this.page.waitForSelector('.govuk-list.govuk-list--bullet')
+    await this.page.waitForSelector('.govuk-error-summary .govuk-list')
     // Get the text content of the bullet points
     const summarytext = await this.page.evaluate(() => {
-      const bulletPoints = Array.from(document.querySelectorAll('.govuk-list.govuk-list--bullet li'))
+      const bulletPoints = Array.from(document.querySelectorAll('.govuk-error-summary .govuk-list li'))
       return bulletPoints.map(li => li.textContent.trim())
     })
 
