@@ -543,13 +543,19 @@ export const setDefaultParams = (req, res, next) => {
 export const getSetBaseSubPath = (additionalParts = []) => (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
 
+  const encodedParams = {
+    lpa: encodeURIComponent(lpa),
+    dataset: encodeURIComponent(dataset),
+    issueType: encodeURIComponent(issueType),
+    issueField: encodeURIComponent(issueField)
+  }
   const additionalPartsEncoded = additionalParts.map(part => encodeURIComponent(part))
 
   let path = '/organisations'
-  if (lpa) path += `/${lpa}`
-  if (dataset) path += `/${dataset}`
-  if (issueType) path += `/${issueType}`
-  if (issueField) path += `/${issueField}`
+  if (lpa) path += `/${encodedParams.lpa}`
+  if (dataset) path += `/${encodedParams.dataset}`
+  if (issueType) path += `/${encodedParams.issueType}`
+  if (issueField) path += `/${encodedParams.issueField}`
   if (additionalPartsEncoded.length > 0) path += `/${additionalPartsEncoded.join('/')}`
 
   req.baseSubpath = path
