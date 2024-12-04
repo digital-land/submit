@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams } from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -1478,5 +1478,76 @@ describe('prepareEntityIssueDetailsTemplateParams', () => {
     prepareIssueDetailsTemplateParams(req, res, next)
 
     expect(next).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('filterOutEntitiesWithoutIssues middleware', () => {
+  it('should filter out entities without issues', () => {
+    const entities = [
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ]
+
+    const issues = [
+      { entity: 'entity1', issue: 'issue1' },
+      { entity: 'entity2', issue: 'issue2' }
+    ]
+
+    const req = { entities, issues }
+    const res = {}
+    const next = vi.fn()
+
+    filterOutEntitiesWithoutIssues(req, res, next)
+
+    expect(req.issueEntities).toEqual([
+      { entity: 'entity1' },
+      { entity: 'entity2' }
+    ])
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('should return an empty array if no entities have issues', () => {
+    const entities = [
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ]
+
+    const issues = []
+
+    const req = { entities, issues }
+    const res = {}
+    const next = vi.fn()
+
+    filterOutEntitiesWithoutIssues(req, res, next)
+
+    expect(req.issueEntities).toEqual([])
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not modify the original entities array', () => {
+    const entities = [
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ]
+
+    const issues = [
+      { entity: 'entity1', issue: 'issue1' },
+      { entity: 'entity2', issue: 'issue2' }
+    ]
+
+    const req = { entities, issues }
+    const res = {}
+    const next = vi.fn()
+
+    filterOutEntitiesWithoutIssues(req, res, next)
+
+    expect(entities).toEqual([
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ])
   })
 })

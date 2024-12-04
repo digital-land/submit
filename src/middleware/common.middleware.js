@@ -354,6 +354,16 @@ export const processEntitiesMiddlewares = [
   replaceUnderscoreInEntities
 ]
 
+export const filterOutEntitiesWithoutIssues = (req, res, next) => {
+  const { entities, issues } = req
+
+  req.issueEntities = entities.filter(entity => {
+    return issues.findIndex(issue => issue.entity === entity.entity) >= 0
+  })
+
+  next()
+}
+
 // entity issues
 
 const fetchEntityIssuesForFieldAndType = fetchMany({

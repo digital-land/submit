@@ -33,7 +33,7 @@ describe('issueDetails.middleware.js', () => {
 
   describe('set record count', () => {
     it('sets req.recordCount to the length of req.issues', () => {
-      const req = { issues: [{}, {}, {}] }
+      const req = { issueEntities: [{}, {}, {}] }
       const res = {}
       const next = vi.fn()
 
@@ -72,6 +72,10 @@ describe('issueDetails.middleware.js', () => {
 
     beforeEach(() => {
       req.entities = [
+        { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2' },
+        { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4' }
+      ]
+      req.issueEntities = [
         { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2' },
         { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4' }
       ]

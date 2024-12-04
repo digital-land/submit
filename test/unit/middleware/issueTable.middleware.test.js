@@ -46,6 +46,10 @@ describe('issueTableMiddleware', () => {
         { entity: 'entity2', reference: 'entity2', name: 'Name 2', amount: 200 },
         { entity: 'entity3', reference: 'entity3', name: 'Name 3', amount: 300 }
       ],
+      issueEntities: [
+        { entity: 'entity1', reference: 'entity1', name: 'Name 1', amount: 100 },
+        { entity: 'entity2', reference: 'entity2', name: 'Name 2', amount: 200 }
+      ],
       issues: [
         { entity: 'entity1', field: 'amount', issue_type: 'Invalid Amount' },
         { entity: 'entity2', field: 'name', issue_type: 'Invalid Name' }

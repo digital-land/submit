@@ -7,7 +7,7 @@
 */
 
 import config from '../../config/index.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -30,9 +30,9 @@ export const setRecordCount = (req, res, next) => {
 }
 
 export const prepareTableParams = (req, res, next) => {
-  const { entities, issues, uniqueDatasetFields, dataRange, baseSubpath } = req
+  const { issueEntities, issues, uniqueDatasetFields, dataRange, baseSubpath } = req
 
-  const allRows = entities.map((entity, index) => ({
+  const allRows = issueEntities.map((entity, index) => ({
     columns: Object.fromEntries(uniqueDatasetFields.map((field) => {
       const errorMessage = issues.find(issue => issue.entity === entity.entity && (issue.field === field || issue.replacement_field === field))?.issue_type
       if (field === 'reference') {
@@ -129,6 +129,7 @@ export default [
   ...processRelevantIssuesMiddlewares,
   ...processSpecificationMiddlewares,
   onlyIf(notIssueHasEntity, redirectToEntityView),
+  filterOutEntitiesWithoutIssues,
   setRecordCount,
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,

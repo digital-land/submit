@@ -13,7 +13,8 @@ import {
   getSetBaseSubPath,
   getSetDataRange,
   getErrorSummaryItems,
-  prepareIssueDetailsTemplateParams
+  prepareIssueDetailsTemplateParams,
+  filterOutEntitiesWithoutIssues
 } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -52,15 +53,15 @@ export const getIssueField = (text, html, classes) => {
 }
 
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req?.entities?.length || 0
+  req.recordCount = req?.issueEntities?.length || 0
   next()
 }
 
 export function prepareEntity (req, res, next) {
-  const { entities, issues, specification } = req
+  const { issueEntities, issues, specification } = req
   const { pageNumber, issue_type: issueType } = req.parsedParams
 
-  const entityData = entities[pageNumber - 1]
+  const entityData = issueEntities[pageNumber - 1]
   const entityIssues = issues.filter(issue => issue.entity === entityData.entity)
 
   const fields = specification.fields.map(({ field, datasetField }) => {
@@ -120,6 +121,7 @@ export default [
   ...processEntitiesMiddlewares,
   ...processRelevantIssuesMiddlewares,
   ...processSpecificationMiddlewares,
+  filterOutEntitiesWithoutIssues,
   setRecordCount,
   getSetDataRange(1),
   show404IfPageNumberNotInRange,
