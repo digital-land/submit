@@ -52,7 +52,7 @@ export const getIssueField = (text, html, classes) => {
 }
 
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req?.issues?.length || 0
+  req.recordCount = req?.entities?.length || 0
   next()
 }
 
