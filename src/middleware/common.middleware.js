@@ -618,7 +618,7 @@ export function getErrorSummaryItems (req, res, next) {
       if (issue.reference && !specialIssueTypeCases.includes(issue.issue_type)) {
         inString = ` in entity with reference ${issue.reference}`
       } else if (issue.line_number) {
-        inString = ` in row ${issue.line_number}`
+        inString = ` on row ${issue.line_number}`
       }
       return {
         html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + inString,

@@ -99,12 +99,12 @@ describe('entryIssueDetails.middleware.test.js', () => {
         title: 'entry: 1',
         fields: [
           {
-            key: { text: 'Endpoint' },
+            key: { text: 'Endpoint URL' },
             value: { html: '<a href=\'https://example.com\'>https://example.com</a>' },
             classes: ''
           },
           {
-            key: { text: 'Line number' },
+            key: { text: 'Row' },
             value: { html: '2' },
             classes: ''
           },

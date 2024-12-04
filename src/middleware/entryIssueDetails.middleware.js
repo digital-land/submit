@@ -91,7 +91,7 @@ export const prepareEntry = (req, res, next) => {
     fields: [
       {
         key: {
-          text: 'Endpoint'
+          text: 'Endpoint URL'
         },
         value: {
           html: `<a href='${resources[0].endpoint_url}'>${resources[0].endpoint_url}</a>`
@@ -100,7 +100,7 @@ export const prepareEntry = (req, res, next) => {
       },
       {
         key: {
-          text: 'Line number'
+          text: 'Row'
         },
         value: {
           html: issue.line_number.toString()
