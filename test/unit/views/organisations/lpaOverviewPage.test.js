@@ -84,9 +84,9 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
       let expectedHint = 'Data URL submitted'
       if (dataset.notice) {
         if (dataset.notice.type === 'due') {
-          expectedHint = `You must review your ${datasetSlugToReadableName(dataset.dataset)} register by ${dataset.notice.deadline} and update it as soon as a new site is identified or an existing one changes status.`
+          expectedHint = `You must review your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} register by ${dataset.notice.deadline} and update it as soon as a new site is identified or an existing one changes status.`
         } else if (dataset.notice.type === 'overdue') {
-          expectedHint = `Your ${datasetSlugToReadableName(dataset.dataset)} dataset is overdue`
+          expectedHint = `Your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} dataset is overdue`
         } else {
           throw new Error('Notice type not recognised')
         }

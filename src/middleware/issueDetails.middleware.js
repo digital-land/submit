@@ -114,9 +114,7 @@ const fetchIssueEntitiesCount = fetchOne({
  * @returns {string}
  */
 const issueErrorMessageHtml = (errorMessage, issue) =>
-    `<p class="govuk-error-message">${errorMessage}</p>${
-      issue ? issue.value ?? '' : ''
-    }`
+    `${issue && issue.value ? issue.value : (issue && issue.length ? issue : '')}<p class="govuk-error-message">${errorMessage}</p>`
 
 /**
  *
@@ -162,7 +160,7 @@ const processEntryRow = (issueType, issuesByEntryNumber, row) => {
     const message =
         issuesByEntryNumber[entryNumber][issueIndex].message || issueType
     valueHtml += issueErrorMessageHtml(message, null)
-    classes += 'dl-summary-card-list__row--error'
+    classes += 'dl-summary-card-list__row--error govuk-form-group--error'
   }
   valueHtml += row.value
 
@@ -227,7 +225,7 @@ export function prepareIssueDetailsTemplateParams (req, res, next) {
       const errorMessage = issue.message || issueType
       // TODO: pull the html out of here and into the template
       const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
-      const classes = 'dl-summary-card-list__row--error'
+      const classes = 'dl-summary-card-list__row--error govuk-form-group--error'
 
       fields.push(getIssueField(issue.field, valueHtml, classes))
     }
