@@ -54,6 +54,10 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
 
+      {% if options.geometries %}
+        <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
+      {% endif %}
+
       {{ table(options.tableParams) }}
 
       {% if options.pagination.items | length > 1 %}
@@ -66,13 +70,6 @@
           } if options.pagination.nextPage else undefined,
           items: options.pagination.items
         })}}
-      {% endif %}
-
-
-
-      {% if options.geometries %}
-        <p>Here’s your data on a map:</p>
-        <div id="map" class="app-map"></div>
       {% endif %}
 
 

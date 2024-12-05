@@ -65,11 +65,17 @@ class ResultsController extends PageController {
           fields: responseDetails.getFields()
         }
 
-        req.form.options.errorSummary = requestData.getErrorSummary()
+        req.form.options.errorSummary = requestData.getErrorSummary().map(message => {
+          return {
+            text: message,
+            href: ''
+          }
+        })
         req.form.options.mappings = responseDetails.getFieldMappings()
         req.form.options.geometries = responseDetails.getGeometries()
         req.form.options.pagination = responseDetails.getPagination(req.params.pageNumber)
         req.form.options.id = req.params.id
+        req.form.options.lastPage = `/check/status/${req.params.id}`
       } else {
         req.form.options.error = requestData.getError()
       }
