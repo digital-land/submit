@@ -35,7 +35,7 @@ describe('DeepLinkController', () => {
     })
 
     it('should update session with deep link info', async () => {
-      const query = { dataset: 'conservation-area', orgName: 'Some Org' }
+      const query = { dataset: 'conservation-area', orgName: 'Some Org', orgId: 'some-org' }
       const { req, res, next } = mockMiddlewareArgs({ query })
 
       deepLinkController.get(req, res, next)
@@ -43,6 +43,7 @@ describe('DeepLinkController', () => {
       expect(req.sessionModel.get(deepLinkController.checkToolDeepLinkSessionKey)).toStrictEqual({
         'data-subject': 'conservation-area',
         orgName: 'Some Org',
+        orgId: 'some-org',
         dataset: 'conservation-area',
         datasetName: 'Conservation area'
       })
