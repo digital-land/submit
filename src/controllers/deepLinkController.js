@@ -8,7 +8,8 @@ import { NonEmptyString } from '../routes/schemas.js'
 
 const QueryParams = v.object({
   dataset: NonEmptyString,
-  orgName: NonEmptyString
+  orgName: NonEmptyString,
+  orgId: NonEmptyString
 })
 
 /**
@@ -44,7 +45,7 @@ class DeepLinkController extends PageController {
   get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
-    const { dataset, orgName } = req.query
+    const { dataset, orgName, orgId } = req.query
     const validationResult = v.safeParse(QueryParams, req.query)
     if (!(validationResult.success && datasets.has(dataset))) {
       logger.info('DeepLinkController.get(): invalid params for deep link, redirecting to start page',
@@ -55,7 +56,7 @@ class DeepLinkController extends PageController {
     req.sessionModel.set('dataset', dataset)
     const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false }
     req.sessionModel.set('data-subject', datasetInfo.dataSubject)
-    const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, dataset, datasetName: datasetInfo.text }
+    const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, orgId, dataset, datasetName: datasetInfo.text }
     maybeSetReferrer(req, sessionData)
     req.sessionModel.set(this.checkToolDeepLinkSessionKey, sessionData)
 

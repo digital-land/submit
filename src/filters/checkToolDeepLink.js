@@ -7,5 +7,5 @@
  * @return {string}
  */
 export function checkToolDeepLink (organisation, dataset) {
-  return `/check/link?dataset=${encodeURIComponent(dataset.dataset)}&orgName=${encodeURIComponent(organisation.name)}`
+  return `/check/link?dataset=${encodeURIComponent(dataset.dataset)}&orgName=${encodeURIComponent(organisation.name)}&orgId=${encodeURIComponent(organisation.organisation)}`
 }
