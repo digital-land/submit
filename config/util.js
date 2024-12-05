@@ -30,6 +30,7 @@ export const ConfigSchema = v.object({
     })
   ),
   url: v.url(),
+  mainWebsiteUrl: v.url(),
   serviceName: NonEmptyString,
   serviceNames: v.object({
     check: NonEmptyString,
