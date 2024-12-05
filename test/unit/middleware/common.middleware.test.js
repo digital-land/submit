@@ -1315,10 +1315,15 @@ describe('getErrorSummaryItems', () => {
 
     getErrorSummaryItems(req, null, next)
 
-    expect(next).toHaveBeenCalledWith(new Error('issue count must be larger than 0'))
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+      issue_type: 'issue-type-value',
+      num_issues: 0,
+      entityCount: 0,
+      field: 'issue-field-value'
+    }, true)
   })
 
-  it('handles if every entity has the issue', () => {
+  it('handles if entities are provided', () => {
     const req = {
       params: {
         issue_type: 'issue-type-value',
@@ -1341,70 +1346,16 @@ describe('getErrorSummaryItems', () => {
 
     const errorSummary = req.errorSummary
     expect(errorSummary.heading).toBe('')
+
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+      issue_type: 'issue-type-value',
+      num_issues: 2,
+      entityCount: 2,
+      field: 'issue-field-value'
+    }, true)
   })
 
-  it('handles some entities not having the issue', () => {
-    const req = {
-      params: {
-        issue_type: 'issue-type-value',
-        issue_field: 'issue-field-value'
-      },
-      baseSubpath: 'baseSubpath-value',
-      entities: [
-        { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
-        { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' },
-        { reference: 'entity3', name: 'Name 3', amount: 300 }
-      ],
-      issues: [
-        { entity: 'entity1', error: 'Invalid Amount' },
-        { entity: 'entity2', error: ' Invalid Name' }
-      ]
-    }
-
-    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('message')
-
-    getErrorSummaryItems(req, null, vi.fn())
-
-    const errorSummary = req.errorSummary
-    expect(errorSummary.heading).toBe('message')
-  })
-
-  it('Correctly sets the issue items when some entities dont have issues', () => {
-    const req = {
-      params: {
-        issue_type: 'issue-type-value',
-        issue_field: 'issue-field-value'
-      },
-      baseSubpath: 'baseSubpath-value/entity',
-      entities: [
-        { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
-        { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' },
-        { reference: 'entity3', name: 'Name 3', amount: 300 }
-      ],
-      issues: [
-        { entity: 'entity1', error: 'Invalid Amount', reference: 'entity1' },
-        { entity: 'entity2', error: ' Invalid Name', reference: 'entity2' }
-      ]
-    }
-
-    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('issue')
-
-    getErrorSummaryItems(req, null, vi.fn())
-
-    const errorSummary = req.errorSummary
-    expect(errorSummary.items).toEqual([
-      {
-        html: 'issue in entity with reference entity1',
-        href: 'baseSubpath-value/entity/1'
-      },
-      {
-        html: 'issue in entity with reference entity2',
-        href: 'baseSubpath-value/entity/2'
-      }
-    ])
-  })
-
-  it('handles no entities provided, but a resource provided with less issues than entries', () => {
+  it('handles no entities provided, but a resource provided', () => {
     const req = {
       params: {
         issue_type: 'issue-type-value',
@@ -1429,14 +1380,11 @@ describe('getErrorSummaryItems', () => {
     const errorSummary = req.errorSummary
     expect(errorSummary.items).toEqual([
       {
-        html: 'issue in entity with reference 1',
-        href: 'baseSubpath-value/entry/1'
-      },
-      {
-        html: 'issue in entity with reference 2',
-        href: 'baseSubpath-value/entry/2'
+        html: 'issue'
       }
     ])
+
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({ issue_type: 'issue-type-value', num_issues: 2, entityCount: 3, field: 'issue-field-value' }, true)
   })
 })
 
