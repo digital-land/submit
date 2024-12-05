@@ -187,9 +187,10 @@ export const createPaginationTemplateParams = (req, res, next) => {
 
 export const fetchResources = fetchMany({
   query: ({ req }) => `
-    select * from resource r
+    SELECT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
     LEFT JOIN resource_organisation ro ON ro.resource = r.resource
     LEFT JOIN resource_dataset rd ON rd.resource = r.resource
+    LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
     WHERE ro.organisation = '${req.params.lpa}'
     AND rd.dataset = '${req.params.dataset}'
     AND r.end_date = ''
@@ -353,6 +354,16 @@ export const processEntitiesMiddlewares = [
   replaceUnderscoreInEntities
 ]
 
+export const filterOutEntitiesWithoutIssues = (req, res, next) => {
+  const { entities, issues } = req
+
+  req.issueEntities = entities.filter(entity => {
+    return issues.findIndex(issue => issue.entity === entity.entity) >= 0
+  })
+
+  next()
+}
+
 // entity issues
 
 const fetchEntityIssuesForFieldAndType = fetchMany({
@@ -492,6 +503,18 @@ export const addFieldMappingsToIssue = (req, res, next) => {
   next()
 }
 
+export const addReferencesToIssues = (req, res, next) => {
+  const { issues, entities } = req
+
+  req.issues = issues.map(issue => {
+    const reference = entities.find(entity => entity.entity === issue.entity)?.reference
+
+    return { ...issue, reference }
+  })
+
+  next()
+}
+
 /**
  * This middleware chain is responsible for retrieving all entities for the given organisation, their latest issues,
  * filtering out issues that have been fixed, and constructing the table params.
@@ -509,7 +532,8 @@ export const processRelevantIssuesMiddlewares = [
   FilterOutIssuesToMostRecent,
   removeIssuesThatHaveBeenFixed,
   fetchFieldMappings,
-  addFieldMappingsToIssue
+  addFieldMappingsToIssue,
+  addReferencesToIssues
 ]
 
 // Other
@@ -522,6 +546,86 @@ export const setDefaultParams = (req, res, next) => {
   Object.keys(req.parsedParams).forEach((key) => {
     req.params[key] = req.parsedParams[key]
   })
+
+  next()
+}
+
+export const getSetBaseSubPath = (additionalParts = []) => (req, res, next) => {
+  const params = [
+    req.params.lpa,
+    req.params.dataset,
+    req.params.issue_type,
+    req.params.issue_field,
+    ...additionalParts.map(encodeURIComponent)
+  ]
+
+  req.baseSubpath = params.reduce(
+    (path, param) => (param ? `${path}/${param}` : path),
+    '/organisations'
+  )
+  next()
+}
+
+export const getSetDataRange = (pageLength) => (req, res, next) => {
+  const { recordCount } = req
+  const { pageNumber } = req.parsedParams
+
+  if (typeof recordCount !== 'number' || recordCount < 0) {
+    return next(new Error('Invalid record count'))
+  }
+  if (typeof pageNumber !== 'number' || pageNumber < 1) {
+    return next(new Error('Invalid page number'))
+  }
+  if (typeof pageLength !== 'number' || pageLength < 1) {
+    return next(new Error('Invalid page length'))
+  }
+
+  req.dataRange = {
+    minRow: (pageNumber - 1) * pageLength,
+    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
+    totalRows: recordCount,
+    maxPageNumber: Math.ceil(recordCount / pageLength),
+    pageLength,
+    offset: (pageNumber - 1) * pageLength
+  }
+  next()
+}
+
+export function getErrorSummaryItems (req, res, next) {
+  const { issue_type: issueType, issue_field: issueField } = req.params
+  const { issues, issueCount, entities, resources } = req
+
+  const totalRecordCount = entities ? entities.length : resources[0].entry_count
+  const totalIssues = issueCount?.count || issues.length
+
+  const errorHeading = ''
+  const issueItems = [{
+    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount: totalRecordCount, field: issueField }, true)
+  }]
+
+  req.errorSummary = {
+    heading: errorHeading,
+    items: issueItems
+  }
+
+  next()
+}
+
+export const prepareIssueDetailsTemplateParams = (req, res, next) => {
+  const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
+  const { issue_type: issueType, pageNumber } = req.parsedParams
+
+  // schema: OrgIssueDetails
+  req.templateParams = {
+    organisation: orgInfo,
+    dataset,
+    errorSummary,
+    entry,
+    issueType,
+    pagination,
+    pageNumber,
+    dataRange
+  }
 
   next()
 }

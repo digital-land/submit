@@ -216,3 +216,6 @@ export const getDeadlineHistory = (deadline) => {
     twoYearsAgoDeadline
   }
 }
+
+export const issueErrorMessageHtml = (errorMessage, issue) =>
+  `${issue && issue.value ? issue.value : (issue && issue.length ? issue : '')}<p class="govuk-error-message">${errorMessage}</p>`
