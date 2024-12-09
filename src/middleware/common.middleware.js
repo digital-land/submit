@@ -627,7 +627,7 @@ export function getErrorSummaryItems (req, res, next) {
 
   const errorHeading = ''
   const issueItems = [{
-    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount: totalRecordCount, field: issueField }, true)
+    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField }, true)
   }]
 
   req.errorSummary = {

@@ -152,12 +152,4 @@ export default [
   prepareTasks,
   prepareDatasetTaskListTemplateParams,
   getDatasetTaskList
-  // fetchIf(isResourceAccessible, fetchLatestResource),
-  // fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-  // fetchIf(and(isResourceAccessible, isResourceIdValid), fetchEntityCount, zeroEntityCount),
-  // onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
-  // onlyIf(isResourceAccessible, getDatasetTaskList),
-  // onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
-  // onlyIf(isResourceNotAccessible, getDatasetTaskListError),
-  // logPageError
 ]
