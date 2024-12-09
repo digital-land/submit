@@ -83,12 +83,12 @@ describe('performanceDbApi', () => {
     })
 
     it('returns an entity-level message when entityLevel is true', () => {
-      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, entityCount: 2 }, true)
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, rowCount: 2 }, true)
       expect(message).toContain('singular entities message for value')
     })
 
-    it('returns an "all rows" message when num_issues >= entityCount', () => {
-      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 5, entityCount: 5, field: 'some_field' })
+    it('returns an "all rows" message when num_issues >= rowCount', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 5, rowCount: 5, field: 'some_field' })
       expect(message).toContain('all rows message for some_field')
     })
 

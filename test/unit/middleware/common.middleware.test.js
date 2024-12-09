@@ -1318,7 +1318,7 @@ describe('getErrorSummaryItems', () => {
     expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
       issue_type: 'issue-type-value',
       num_issues: 0,
-      entityCount: 0,
+      rowCount: 0,
       field: 'issue-field-value'
     }, true)
   })
@@ -1350,7 +1350,7 @@ describe('getErrorSummaryItems', () => {
     expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
       issue_type: 'issue-type-value',
       num_issues: 2,
-      entityCount: 2,
+      rowCount: 2,
       field: 'issue-field-value'
     }, true)
   })
@@ -1384,7 +1384,12 @@ describe('getErrorSummaryItems', () => {
       }
     ])
 
-    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({ issue_type: 'issue-type-value', num_issues: 2, entityCount: 3, field: 'issue-field-value' }, true)
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+      issue_type: 'issue-type-value',
+      num_issues: 2,
+      rowCount: 3,
+      field: 'issue-field-value'
+    }, true)
   })
 })
 

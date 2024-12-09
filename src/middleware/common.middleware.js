@@ -429,6 +429,30 @@ export const FilterOutIssuesToMostRecent = (req, res, next) => {
   next()
 }
 
+export const fetchIssueTypes = fetchMany({
+  query: () => 'SELECT * FROM issue_type',
+  result: 'issueTypes'
+})
+
+export const addIssueSeverityToIssues = (req, res, next) => {
+  const { issues, issueTypes } = req
+
+  req.issues = issues.map(issue => {
+    const issueTypeData = issueTypes.find(issueType => issueType.issue_type === issue.issue_type)
+    return { ...issue, severity: issueTypeData.severity }
+  })
+
+  next()
+}
+
+const filterOutNonErrorSeverityIssues = (req, res, next) => {
+  const { issues } = req
+
+  req.issues = issues.filter(issue => issue.severity === 'error')
+
+  next()
+}
+
 export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   const { issues, resources } = req
 
@@ -530,6 +554,9 @@ export const addReferencesToIssues = (req, res, next) => {
 export const processRelevantIssuesMiddlewares = [
   fetchEntityIssuesForFieldAndType,
   FilterOutIssuesToMostRecent,
+  fetchIssueTypes,
+  addIssueSeverityToIssues,
+  filterOutNonErrorSeverityIssues,
   removeIssuesThatHaveBeenFixed,
   fetchFieldMappings,
   addFieldMappingsToIssue,
@@ -600,7 +627,7 @@ export function getErrorSummaryItems (req, res, next) {
 
   const errorHeading = ''
   const issueItems = [{
-    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount: totalRecordCount, field: issueField }, true)
+    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField }, true)
   }]
 
   req.errorSummary = {
