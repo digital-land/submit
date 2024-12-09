@@ -7,9 +7,7 @@
 */
 
 import config from '../../config/index.js'
-import performanceDbApi from '../services/performanceDbApi.js'
-import logger from '../utils/logger.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
@@ -26,37 +24,20 @@ const validateIssueTableQueryParams = validateQueryParams({
   schema: IssueTableQueryParams
 })
 
-export const getDataRange = (req, res, next) => {
-  const { issues } = req
-  const { pageNumber } = req.parsedParams
-  const pageLength = config.tablePageLength
-  const recordCount = issues.length
-  req.dataRange = {
-    minRow: (pageNumber - 1) * pageLength,
-    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
-    totalRows: recordCount,
-    maxPageNumber: Math.max(1, Math.ceil(recordCount / pageLength)),
-    pageLength
-  }
-  next()
-}
-
-export const setBaseSubpath = (req, res, next) => {
-  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
-  req.baseSubpath = `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}`
+export const setRecordCount = (req, res, next) => {
+  req.recordCount = req?.issues?.length || 0
   next()
 }
 
 export const prepareTableParams = (req, res, next) => {
-  const { entities, issues, uniqueDatasetFields, dataRange } = req
-  const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
+  const { issueEntities, issues, uniqueDatasetFields, dataRange, baseSubpath } = req
 
-  const allRows = entities.map((entity, index) => ({
+  const allRows = issueEntities.map((entity, index) => ({
     columns: Object.fromEntries(uniqueDatasetFields.map((field) => {
       const errorMessage = issues.find(issue => issue.entity === entity.entity && (issue.field === field || issue.replacement_field === field))?.issue_type
       if (field === 'reference') {
         return [field, {
-          html: `<a href='/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(issueType)}/${encodeURIComponent(issueField)}/entry/${index + 1}'>${entity[field]}</a>`,
+          html: `<a href='${baseSubpath}/entity/${index + 1}'>${entity[field]}</a>`,
           error: errorMessage
             ? {
                 message: errorMessage
@@ -86,58 +67,6 @@ export const prepareTableParams = (req, res, next) => {
     columns: uniqueDatasetFields,
     fields: uniqueDatasetFields,
     rows: rowsPaginated
-  }
-
-  next()
-}
-
-export const getErrorSummaryItems = (req, res, next) => {
-  const { issue_type: issueType, issue_field: issueField, baseSubpath } = req.params
-
-  const { entities, issues } = req
-
-  let errorHeading = ''
-  let issueItems
-
-  if (issues.length <= 0) {
-    // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
-    logger.warn(`issueTable was accessed from ${req.headers.referer} but there was no issues`)
-    const error = new Error('issue count must be larger than 0')
-    return next(error)
-  } else if (issues.length < entities.length) {
-    errorHeading = performanceDbApi.getTaskMessage({
-      issue_type: issueType,
-      num_issues: issues.length,
-      entityCount: entities.length,
-      field: issueField
-    },
-    true)
-    issueItems = issues.map((issue, i) => {
-      const pageNum = i + 1
-      return {
-        html: performanceDbApi.getTaskMessage({
-          issue_type: issueType,
-          num_issues: 1,
-          field: issueField
-        }) + ` in entity ${issue.entity}`,
-        href: `${baseSubpath}/entity/${pageNum}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({
-        issue_type: issueType,
-        num_issues: issues.length,
-        entityCount: entities.length,
-        field:
-        issueField
-      }, true)
-    }]
-  }
-
-  req.errorSummary = {
-    heading: errorHeading,
-    items: issueItems
   }
 
   next()
@@ -196,13 +125,15 @@ export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchResources,
-  ...processRelevantIssuesMiddlewares,
   ...processEntitiesMiddlewares,
+  ...processRelevantIssuesMiddlewares,
   ...processSpecificationMiddlewares,
   onlyIf(notIssueHasEntity, redirectToEntityView),
-  getDataRange,
+  filterOutEntitiesWithoutIssues,
+  setRecordCount,
+  getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
-  setBaseSubpath,
+  getSetBaseSubPath(),
   getErrorSummaryItems,
   createPaginationTemplateParams,
   prepareTableParams,
