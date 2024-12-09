@@ -36,6 +36,19 @@ const fetchLatestResources = fetchMany({
   dataset: FetchOptions.performanceDb
 })
 
+/**
+ * Middleware. Updates req with 'datasetErrorStatus'.
+ *
+ * Fetches datasets which have active endpoints in error state.
+ */
+const fetchDatasetErrorStatus = fetchMany({
+  query: ({ params }) => {
+    return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
+  },
+  result: 'datasetErrorStatus',
+  dataset: FetchOptions.performanceDb
+})
+
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
     const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
@@ -247,7 +260,7 @@ export function aggregateOverviewData (req, res, next) {
  * @param next
  */
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { orgInfo: organisation, provisions, datasets } = req
+  const { orgInfo: organisation, provisions, datasets, datasetErrorStatus } = req
   // add in any of the missing key 8 datasets
   const keys = new Set(datasets.map(d => d.dataset))
   availableDatasets.forEach((dataset) => {
@@ -263,18 +276,23 @@ export function prepareOverviewTemplateParams (req, res, next) {
     }
   })
 
-  const totalDatasets = datasets.length
-  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
-      datasets.reduce(orgStatsReducer, [0, 0, 0])
-
   const provisionData = new Map()
   for (const provision of provisions ?? []) {
     provisionData.set(provision.dataset, provision)
   }
 
+  // we patch the datasets' project (based on provision data) and status (based on its endpoints error status)
+  const datasetsWithEndpointErrors = new Set(datasetErrorStatus.map(item => item.dataset))
   for (const dataset of datasets) {
     dataset.project = provisionData.get(dataset.dataset)?.project
+    if (dataset.status !== 'Error' && datasetsWithEndpointErrors.has(dataset.dataset)) {
+      dataset.status = 'Error'
+    }
   }
+
+  const totalDatasets = datasets.length
+  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
+      datasets.reduce(orgStatsReducer, [0, 0, 0])
 
   const datasetsByReason = _.groupBy(datasets, (ds) => {
     const reason = provisionData.get(ds.dataset)?.provision_reason
@@ -314,6 +332,7 @@ export const getOverview = renderTemplate({
 export default [
   fetchOrgInfo,
   fetchLatestResources,
+  fetchDatasetErrorStatus,
   handleRejections(fetchEntityCounts),
   fetchLpaOverview,
   aggregateOverviewData,
