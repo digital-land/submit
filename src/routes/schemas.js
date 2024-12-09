@@ -229,8 +229,8 @@ export const OrgIssueDetails = v.strictObject({
     geometries: v.optional(v.array(v.string()))
   }),
   pagination: PaginationParams,
-  issueEntitiesCount: v.integer(),
-  pageNumber: v.integer()
+  pageNumber: v.integer(),
+  dataRange: dataRangeParams
 })
 
 export const CheckAnswers = v.strictObject({
