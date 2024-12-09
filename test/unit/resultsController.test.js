@@ -136,13 +136,14 @@ describe('ResultsController', () => {
         },
         datasetName: req.sessionModel.get('dataset'),
 
-        errorSummary: ['error summary'],
+        errorSummary: [{ text: 'error summary', href: '' }],
         mappings: { fields: 'geometries' },
         geometries: ['geometries'],
         pagination: 'pagination',
         requestParams: 'params',
         template: 'results/no-errors',
-        id: req.params.id
+        id: req.params.id,
+        lastPage: `/check/status/${req.params.id}`
       })
     })
 

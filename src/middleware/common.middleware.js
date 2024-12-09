@@ -620,43 +620,15 @@ export const getSetDataRange = (pageLength) => (req, res, next) => {
 
 export function getErrorSummaryItems (req, res, next) {
   const { issue_type: issueType, issue_field: issueField } = req.params
-  const { baseSubpath, issues, issueCount, entities, resources } = req
-
-  let errorHeading = ''
-  let issueItems
+  const { issues, issueCount, entities, resources } = req
 
   const totalRecordCount = entities ? entities.length : resources[0].entry_count
   const totalIssues = issueCount?.count || issues.length
 
-  if (issues.length <= 0) {
-    // currently the task list page is getting its issues incorrectly, not factoring in the fact that an issue might have been fixed.
-    logger.warn(`entry issue details was accessed from ${req.headers.referer} but there was no issues`)
-    const error = new Error('issue count must be larger than 0')
-    return next(error)
-  } else if (issues.length < totalRecordCount) {
-    errorHeading = performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField }, true)
-    issueItems = issues.map((issue, i) => {
-      const pageNum = i + 1
-      let inString = ''
-
-      // we have to hard code this in because though the entitiy has beeb assigned, it has been assigned incorrectly
-      const specialIssueTypeCases = ['reference values are not unique']
-
-      if (issue.reference && !specialIssueTypeCases.includes(issue.issue_type)) {
-        inString = ` in entity with reference ${issue.reference}`
-      } else if (issue.line_number) {
-        inString = ` on row ${issue.line_number}`
-      }
-      return {
-        html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: 1, field: issueField }) + inString,
-        href: `${baseSubpath}/${pageNum}`
-      }
-    })
-  } else {
-    issueItems = [{
-      html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField }, true)
-    }]
-  }
+  const errorHeading = ''
+  const issueItems = [{
+    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, entityCount: totalRecordCount, field: issueField }, true)
+  }]
 
   req.errorSummary = {
     heading: errorHeading,

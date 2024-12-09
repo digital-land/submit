@@ -1,4 +1,5 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from "./statusContentMacro.html" import statusContent %}
 {% from '../../components/dataset-banner.html' import datasetBanner %}
 
@@ -16,6 +17,15 @@
   {% set buttonText = "Retrieve Latest Status" %}
   {% set buttonClasses = "js-hidden" %}
 {% endif %}
+
+{% block beforeContent %}
+  {% if options.lastPage %}
+    {{ govukBackLink({
+      text: options.backLinkText | default("Back"),
+      href: options.lastPage
+    }) }}
+  {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">
