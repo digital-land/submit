@@ -25,7 +25,7 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 
 {% block head %}
   <link rel="stylesheet" href="/public/stylesheets/index.css">
-  {% if smartlookKey %}
+  {% if smartlookKey and (cookiesAccepted == true or cookiesAccepted == 'true') %}
     {% block smartlook %}
       <script type='text/javascript'>
       {% include "common/smartlook.js" %}
