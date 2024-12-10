@@ -104,8 +104,9 @@
     <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
-        containerId: 'map', 
+        containerId: 'map',
         geometries: {{ options.geometries | dump | safe }},
+        {% if options.deepLink.orgId %}boundaryGeoJsonUrl: "/api/lpa-boundary/{{ options.deepLink.orgId }}"{% endif %}
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>
