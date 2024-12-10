@@ -1,5 +1,9 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
 import { addNoticesToDatasets, aggregateOverviewData, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
+import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
+import jsdom from 'jsdom'
+
+const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 vi.mock('../../../src/utils/utils.js', async (importOriginal) => {
   const original = await importOriginal()
@@ -16,6 +20,13 @@ vi.mock('../../../src/utils/utils.js', async (importOriginal) => {
 
 describe('overview.middleware', () => {
   const exampleLpa = { name: 'Example LPA', organisation: 'LPA' }
+
+  const getRenderedErrorCards = (templateParams) => {
+    const html = nunjucks.render('organisations/overview.html', templateParams)
+    const doc = new jsdom.JSDOM(html).window.document
+    const errorNodes = doc.querySelectorAll('[data-dataset-status="Error"]')
+    return Array.from(errorNodes)
+  }
 
   describe('prepareOverviewTemplateParams', () => {
     it('should render the overview page', async () => {
@@ -43,12 +54,21 @@ describe('overview.middleware', () => {
             endpoint: 'https://example.com',
             error: undefined,
             status: 'Error'
+          },
+          {
+            dataset: 'dataset4',
+            issue_count: 0,
+            endpoint: null,
+            error: 'There was a 404 error',
+            status: 'Error'
           }
+
         ],
         provisions: [
           { dataset: 'dataset1', provision_reason: 'statutory', project: 'open-digital-planning' },
           { dataset: 'dataset2', provision_reason: 'expected', project: 'open-digital-planning' },
-          { dataset: 'dataset3', provision_reason: 'statutory', project: 'open-digital-planning' }
+          { dataset: 'dataset3', provision_reason: 'statutory', project: 'open-digital-planning' },
+          { dataset: 'dataset4', provision_reason: 'expected', project: 'open-digital-planning' }
         ]
       }
       const res = { render: vi.fn() }
@@ -63,16 +83,21 @@ describe('overview.middleware', () => {
             { endpoint: 'https://example.com', status: 'Error', dataset: 'dataset3', error: undefined, issue_count: 0, project: 'open-digital-planning' }
           ]),
           other: expect.arrayContaining([
-            { endpoint: null, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issue_count: 0, project: 'open-digital-planning' }
+            { endpoint: null, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issue_count: 0, project: 'open-digital-planning' },
+            { endpoint: null, status: 'Error', dataset: 'dataset4', error: 'There was a 404 error', issue_count: 0, project: 'open-digital-planning' }
           ])
         },
-        totalDatasets: 3,
+        totalDatasets: 4,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
-        datasetsWithErrors: 1
+        datasetsWithErrors: 2
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
+
+      const errorCardNodes = getRenderedErrorCards(req.templateParams)
+      expect(errorCardNodes[0].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was an error accessing the data URL')
+      expect(errorCardNodes[1].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was a 404 error')
     })
   })
 
