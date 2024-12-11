@@ -94,6 +94,21 @@ export const dataSubjects = {
   }
 }
 
+export const entryIssueGroups = [
+  {
+    type: 'missing value',
+    field: 'reference'
+  },
+  {
+    type: 'reference values are not unique',
+    field: 'reference'
+  },
+  {
+    type: 'unknown entity - missing reference',
+    field: 'entity'
+  }
+]
+
 export function makeDatasetsLookup (dataSubjects) {
   const lookup = new Map()
   for (const [key, dataSubject] of Object.entries(dataSubjects)) {
