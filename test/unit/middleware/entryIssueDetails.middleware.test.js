@@ -79,7 +79,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
     it('should prepare entry with correct fields', () => {
       const req = {
         resources: [{ endpoint_url: 'https://example.com' }],
-        issues: [
+        entryIssues: [
           {
             entry_number: 1,
             line_number: 2,
@@ -121,7 +121,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
     it('should call next with error if issue is missing', () => {
       const req = {
         resources: [{ endpoint_url: 'https://example.com' }],
-        issues: [],
+        entryIssues: [],
         parsedParams: { pageNumber: 1 }
       }
       const res = {}
@@ -133,7 +133,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
 
     it('should throw error if resources is missing', () => {
       const req = {
-        issues: [
+        entryIssues: [
           {
             entry_number: 1,
             line_number: 2,
