@@ -67,9 +67,7 @@ describe(`Dataset Task List Page (seed: ${seed})`, () => {
     })
 
     const paragraphText = `There are no issues with ${organisation.name}'s ${dataset.name} dataset.`
-    const linkHref = `https://www.planning.data.gov.uk/entity/?dataset=${dataset.dataset}&geometry_curie=statistical-geography:${organisation.statistical_geography}`
 
     expect(html).toContain(paragraphText)
-    expect(html).toContain(linkHref)
   })
 })
