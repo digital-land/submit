@@ -3,8 +3,9 @@ import {
   validateQueryParams,
   fetchResources,
   processEntitiesMiddlewares,
-  processRelevantIssuesMiddlewares,
-  fetchOrgInfo
+  fetchOrgInfo,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts
 } from './common.middleware.js'
 import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
@@ -36,11 +37,14 @@ function getStatusTag (status) {
 
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
-  const { issues, entities, resources } = req
+  const { entities, resources } = req
+  const { entryIssueCounts, entityIssueCounts } = req
 
   const entityCount = entities.length
 
   const specialIssueTypeCases = ['reference values are not unique']
+
+  const issues = [...entryIssueCounts, ...entityIssueCounts]
 
   const groupedIssues = issues.reduce((acc, issue) => {
     const { field, issue_type: type } = issue
@@ -148,7 +152,8 @@ export default [
   fetchDatasetInfo,
   fetchResources,
   ...processEntitiesMiddlewares,
-  ...processRelevantIssuesMiddlewares,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
   prepareTasks,
   prepareDatasetTaskListTemplateParams,
   getDatasetTaskList

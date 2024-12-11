@@ -1,5 +1,6 @@
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -187,7 +188,7 @@ export const createPaginationTemplateParams = (req, res, next) => {
 
 export const fetchResources = fetchMany({
   query: ({ req }) => `
-    SELECT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
+    SELECT DISTINCT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
     LEFT JOIN resource_organisation ro ON ro.resource = r.resource
     LEFT JOIN resource_dataset rd ON rd.resource = r.resource
     LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
@@ -368,90 +369,23 @@ export const filterOutEntitiesWithoutIssues = (req, res, next) => {
 
 const fetchEntityIssuesForFieldAndType = fetchMany({
   query: ({ req, params }) => {
-    const issueTypeFilter = params.issue_type ? `AND issue_type = '${params.issue_type}'` : ''
-    const issueFieldFilter = params.issue_field ? `AND field = '${params.issue_field}'` : ''
-
+    const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
+    const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
-      SELECT e.entity, i.* FROM entity e
-      INNER JOIN issue i ON e.entity = i.entity
-      WHERE e.organisation_entity = ${req.orgInfo.entity}
-      ${issueTypeFilter}
-      ${issueFieldFilter}`
+        select * 
+        from issue i
+        LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+        WHERE resource = '${req.resources[0].resource}'
+        ${issueTypeClause}
+        AND it.responsibility = 'external'
+        AND it.severity = 'error'
+        ${issueFieldClause}
+        AND entity != ''
+        `
+    // LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
   },
-  dataset: FetchOptions.fromParams,
   result: 'issues'
 })
-
-export const FilterOutIssuesToMostRecent = (req, res, next) => {
-  const { resources, issues } = req
-
-  const issuesWithResources = issues.filter(issue => {
-    if (!issue.resource || !resources.find(resource => resource.resource === issue.resource)) {
-      logger.warn(`Missing resource on issue: ${JSON.stringify(issue)}`)
-      return false
-    }
-    return true
-  })
-
-  const groupedIssues = issuesWithResources.reduce((acc, current) => {
-    current.start_date = new Date(resources.find(resource => resource.resource === current.resource)?.start_date)
-    const { entity, field } = current
-    if (!acc[entity]) {
-      acc[entity] = {}
-    }
-    if (!acc[entity][field]) {
-      acc[entity][field] = []
-    }
-    acc[entity][field].push(current)
-
-    return acc
-  }, {})
-
-  const recentIssues = Object.fromEntries(Object.entries(groupedIssues).map(([entityName, issuesByEntity]) =>
-    [
-      entityName,
-      Object.fromEntries(Object.entries(issuesByEntity).map(([field, issues]) => [
-        field,
-        issues.sort((a, b) => b.start_date.getTime() - a.start_date.getTime())[0]
-      ]))
-    ]
-  ))
-
-  const issuesFlattened = []
-
-  Object.values(recentIssues).forEach(issueByEntry => {
-    Object.values(issueByEntry).forEach(issueByField => {
-      issuesFlattened.push(issueByField)
-    })
-  })
-
-  req.issues = issuesFlattened
-  next()
-}
-
-export const fetchIssueTypes = fetchMany({
-  query: () => 'SELECT * FROM issue_type',
-  result: 'issueTypes'
-})
-
-export const addIssueSeverityToIssues = (req, res, next) => {
-  const { issues, issueTypes } = req
-
-  req.issues = issues.map(issue => {
-    const issueTypeData = issueTypes.find(issueType => issueType.issue_type === issue.issue_type)
-    return { ...issue, severity: issueTypeData.severity }
-  })
-
-  next()
-}
-
-const filterOutNonErrorSeverityIssues = (req, res, next) => {
-  const { issues } = req
-
-  req.issues = issues.filter(issue => issue.severity === 'error')
-
-  next()
-}
 
 export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   const { issues, resources } = req
@@ -527,17 +461,50 @@ export const addFieldMappingsToIssue = (req, res, next) => {
   next()
 }
 
-export const addReferencesToIssues = (req, res, next) => {
-  const { issues, entities } = req
+// We can only get the issues without entity from the latest resource as we have no way of knowing if those in previous resources have been fixed?
+export const fetchEntryIssues = fetchMany({
+  query: ({ req, params }) => {
+    const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
+    const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
+    return `
+      select * 
+      from issue i
+      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+      WHERE resource = '${req.resources[0].resource}'
+      ${issueTypeClause}
+      AND it.responsibility = 'external'
+      AND it.severity = 'error'
+      ${issueFieldClause}
+      AND (entity = '' OR i.issue_type in ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))
+      LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
+    `
+  },
+  result: 'entryIssues'
+})
 
-  req.issues = issues.map(issue => {
-    const reference = entities.find(entity => entity.entity === issue.entity)?.reference
+export const fetchEntityIssueCounts = fetchMany({
+  query: ({ req }) => `
+    select field, i.issue_type, COUNT(resource+line_number) as count
+    from issue i
+    LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+    WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
+    AND entity != ''
+    GROUP BY field, i.issue_type
+  `,
+  result: 'entityIssueCounts'
+})
 
-    return { ...issue, reference }
-  })
-
-  next()
-}
+export const fetchEntryIssueCounts = fetchMany({
+  query: ({ req }) => `
+    select field, i.issue_type, COUNT(resource+line_number) as count
+    from issue i
+    LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+    WHERE resource =  '${req.resources[0].resource}'
+    AND entity = ''
+    GROUP BY field, i.issue_type
+  `,
+  result: 'entryIssueCounts'
+})
 
 /**
  * This middleware chain is responsible for retrieving all entities for the given organisation, their latest issues,
@@ -553,14 +520,11 @@ export const addReferencesToIssues = (req, res, next) => {
  */
 export const processRelevantIssuesMiddlewares = [
   fetchEntityIssuesForFieldAndType,
-  FilterOutIssuesToMostRecent,
-  fetchIssueTypes,
-  addIssueSeverityToIssues,
-  filterOutNonErrorSeverityIssues,
-  removeIssuesThatHaveBeenFixed,
+  // arguably removeIssuesThatHaveBeenFixed should be s step however we have only currently found one organisation,
+  // however this step is very time consuming, so in order to progress im commenting it out for now
+  // removeIssuesThatHaveBeenFixed,
   fetchFieldMappings,
-  addFieldMappingsToIssue,
-  addReferencesToIssues
+  addFieldMappingsToIssue
 ]
 
 // Other
@@ -620,7 +584,9 @@ export const getSetDataRange = (pageLength) => (req, res, next) => {
 
 export function getErrorSummaryItems (req, res, next) {
   const { issue_type: issueType, issue_field: issueField } = req.params
-  const { issues, issueCount, entities, resources } = req
+  const { entryIssues, issues: entityIssues, issueCount, entities, resources } = req
+
+  const issues = entityIssues || entryIssues
 
   const totalRecordCount = entities ? entities.length : resources[0].entry_count
   const totalIssues = issueCount?.count || issues.length
