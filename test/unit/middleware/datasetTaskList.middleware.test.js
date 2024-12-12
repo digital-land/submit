@@ -5,7 +5,7 @@ import performanceDbApi from '../../../src/services/performanceDbApi.js'
 vi.mock('../../../src/services/performanceDbApi.js')
 
 describe('datasetTaskList.middleware.js', () => {
-  describe('prepareDatasetTaskListParams', () => {
+  describe('prepareDatasetTaskListTemplateParams', () => {
     it('sets the correct template params on the request object', async () => {
       const req = {
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
