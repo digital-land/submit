@@ -188,7 +188,7 @@ export const createPaginationTemplateParams = (req, res, next) => {
 
 export const fetchResources = fetchMany({
   query: ({ req }) => `
-    SELECT DISTINCT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
+    SELECT DISTINCT rd.dataset, r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
     LEFT JOIN resource_organisation ro ON ro.resource = r.resource
     LEFT JOIN resource_dataset rd ON rd.resource = r.resource
     LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
@@ -203,7 +203,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
   const { resources } = req
 
   const promises = resources.map(resource => {
-    const query = `SELECT entry_count FROM dataset_resource WHERE resource = '${resource.resource}'`
+    const query = `SELECT entry_count FROM dataset_resource WHERE resource = "${resource.resource}"`
     return datasette.runQuery(query, resource.dataset)
   })
 
@@ -501,7 +501,7 @@ export const fetchEntryIssues = fetchMany({
       AND it.severity = 'error'
       AND i.dataset = '${req.params.dataset}'
       ${issueFieldClause}
-      AND (entity = '' OR i.issue_type in ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))
+      AND (entity = '' OR entity is NULL OR i.issue_type in ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))
       LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
     `
   },
@@ -534,7 +534,7 @@ export const fetchEntryIssueCounts = fetchMany({
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource =  '${req.resources[0].resource}'
-      AND entity = ''
+      AND (entity = '' OR entity is NULL)
       ${datasetClause}
       GROUP BY field, i.issue_type, dataset
     `
