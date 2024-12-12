@@ -60,22 +60,7 @@ export const prepareTasks = (req, res, next) => {
 
   const issues = [...entryIssueCounts, ...entityIssueCounts]
 
-  const groupedIssues = issues.reduce((acc, issue) => {
-    const { field, issue_type: type } = issue
-    const key = `${field}_${type}`
-    if (acc[key]) {
-      acc[key].count += 1
-    } else {
-      acc[key] = {
-        type,
-        field,
-        count: 1
-      }
-    }
-    return acc
-  }, {})
-
-  req.taskList = Object.values(groupedIssues).map(({ field, type, count }) => {
+  req.taskList = Object.values(issues).map(({ field, issue_type: type, count }) => {
     // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
 
     let rowCount = entityCount
