@@ -68,13 +68,6 @@ export const takeResourceIdFromParams = (req) => {
   req.resource = { resource: req.params.resourceId }
 }
 
-export const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.resource.resource),
-  result: 'entityCount',
-  dataset: FetchOptions.fromParams,
-  fallbackPolicy: FetchOneFallbackPolicy.continue
-})
-
 export const fetchOrgInfo = fetchOne({
   query: ({ params }) => {
     return `SELECT name, organisation, entity, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
@@ -187,15 +180,19 @@ export const createPaginationTemplateParams = (req, res, next) => {
 // Resources
 
 export const fetchResources = fetchMany({
-  query: ({ req }) => `
-    SELECT DISTINCT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
-    LEFT JOIN resource_organisation ro ON ro.resource = r.resource
-    LEFT JOIN resource_dataset rd ON rd.resource = r.resource
-    LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
-    WHERE ro.organisation = '${req.params.lpa}'
-    AND rd.dataset = '${req.params.dataset}'
-    AND r.end_date = ''
-    ORDER BY start_date desc`,
+  query: ({ req }) => {
+    const lpaClause = req.params.lpa ? `AND ro.organisation = '${req.params.lpa}'` : ''
+    const datasetClause = req.params.dataset ? `AND rd.dataset = '${req.params.dataset}'` : ''
+    return `
+      SELECT DISTINCT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rd.dataset, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
+      LEFT JOIN resource_organisation ro ON ro.resource = r.resource
+      LEFT JOIN resource_dataset rd ON rd.resource = r.resource
+      LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
+      WHERE r.end_date = ''
+      ${lpaClause}
+      ${datasetClause}
+      ORDER BY start_date desc`
+  },
   result: 'resources'
 })
 
@@ -375,7 +372,7 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
         select * 
         from issue i
         LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-        WHERE resource = '${req.resources[0].resource}'
+        WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
         ${issueTypeClause}
         AND it.responsibility = 'external'
         AND it.severity = 'error'
@@ -484,24 +481,26 @@ export const fetchEntryIssues = fetchMany({
 
 export const fetchEntityIssueCounts = fetchMany({
   query: ({ req }) => `
-    select field, i.issue_type, COUNT(resource+line_number) as count
+    select dataset, field, i.issue_type, COUNT(resource+line_number) as count
     from issue i
     LEFT JOIN issue_type it ON i.issue_type = it.issue_type
     WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
     AND entity != ''
-    GROUP BY field, i.issue_type
+    AND it.responsibility = 'external'
+    AND it.severity = 'error'
+    GROUP BY field, i.issue_type, dataset
   `,
   result: 'entityIssueCounts'
 })
 
 export const fetchEntryIssueCounts = fetchMany({
   query: ({ req }) => `
-    select field, i.issue_type, COUNT(resource+line_number) as count
+    select dataset, field, i.issue_type, COUNT(resource+line_number) as count
     from issue i
     LEFT JOIN issue_type it ON i.issue_type = it.issue_type
     WHERE resource =  '${req.resources[0].resource}'
     AND entity = ''
-    GROUP BY field, i.issue_type
+    GROUP BY field, i.issue_type, dataset
   `,
   result: 'entryIssueCounts'
 })

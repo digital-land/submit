@@ -33,7 +33,7 @@
       {% elif dataset.status == 'Error' %}
         <p>{{dataset.error}}</p>
       {% elif dataset.status == 'Needs fixing' %}
-        <p>There {{ "is" | pluralise(dataset.issue_count) }} {{ dataset.issue_count }} {{ "issue" | pluralise(dataset.issue_count) }} in this dataset</p>
+        <p>There {{ "is" | pluralise(dataset.issueCount) }} {{ dataset.issueCount }} {{ "issue" | pluralise(dataset.issueCount) }} in this dataset</p>
       {% else %}
         <p>Data URL submitted</p>
       {% endif %}

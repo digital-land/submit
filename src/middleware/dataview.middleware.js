@@ -1,5 +1,5 @@
 import config from '../../config/index.js'
-import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath, getSetDataRange } from './common.middleware.js'
+import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath, getSetDataRange, logPageError } from './common.middleware.js'
 import { fetchResourceStatus } from './datasetTaskList.middleware.js'
 import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -125,5 +125,7 @@ export default [
   createPaginationTemplateParams,
 
   prepareTemplateParams,
-  getGetDataview
+  getGetDataview,
+
+  logPageError
 ]

@@ -106,14 +106,13 @@ export const DeadlineNoticeField = v.strictObject({
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 const DatasetItem = v.strictObject({
-  endpoint: v.optional(v.url()),
+  endpointCount: v.optional(v.number()),
   status: v.enum(datasetStatusEnum),
   dataset: NonEmptyString,
-  issue_count: v.optional(v.number()),
+  issueCount: v.optional(v.number()),
   error: v.optional(v.nullable(NonEmptyString)),
-  http_error: v.optional(NonEmptyString),
   issue: v.optional(NonEmptyString),
-  entity_count: v.optional(v.number()),
+  entityCount: v.optional(v.number()),
   project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
   numIssues: v.optional(v.number()),

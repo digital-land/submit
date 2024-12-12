@@ -1,6 +1,5 @@
-import performanceDbApi, { lpaOverviewQuery } from '../services/performanceDbApi.js'
-import { fetchOrgInfo, logPageError } from './common.middleware.js'
-import { fetchMany, FetchOptions, handleRejections, renderTemplate } from './middleware.builders.js'
+import { fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError } from './common.middleware.js'
+import { fetchMany, fetchOneFromAllDatasets, renderTemplate } from './middleware.builders.js'
 import { dataSubjects, getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
@@ -13,29 +12,6 @@ const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
     .map((dataset) => dataset.value)
 )
 
-/**
- * Middleware. Updates req with 'lpaOverview'
- *
- * Relies on {@link config}.
- *
- * @param {{ params: { lpa: string }, entityCounts: { dataset: string, resource: string, entityCount?: number }[]}} req
- */
-const fetchLpaOverview = fetchMany({
-  query: ({ req, params }) => {
-    return lpaOverviewQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig), entityCounts: req.entityCounts })
-  },
-  dataset: FetchOptions.performanceDb,
-  result: 'lpaOverview'
-})
-
-const fetchLatestResources = fetchMany({
-  query: ({ params }) => {
-    return performanceDbApi.latestResourcesQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
-  },
-  result: 'resourceLookup',
-  dataset: FetchOptions.performanceDb
-})
-
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
     const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
@@ -45,25 +21,13 @@ const fetchProvisions = fetchMany({
   result: 'provisions'
 })
 
-/**
- * Updates req with `entityCounts` (of shape `{ resource, dataset}|{ resource, dataset, entityCount }`)
- *
- * @param {{ resourceLookup: {resource: string, dataset: string}[] }} req
- * @param {*} res
- * @param {*} next
- */
-const fetchEntityCounts = async (req, res, next) => {
-  const { resourceLookup } = req
-
-  req.entityCounts = await performanceDbApi.getEntityCounts(resourceLookup)
-  next()
-}
-
-/**
- * For the purpose of displaying single status label on (possibly) many issues,
- * we want issues with 'worse' status to be weighted higher.
- */
-const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'].map((status, i) => [status, i]))
+const fetchEntityCounts = fetchOneFromAllDatasets({
+  query: ({ req }) => `
+    select count(entity) as entity_count
+    from entity
+    WHERE organisation_entity = '${req.orgInfo.entity}'`,
+  result: 'entityCounts'
+})
 
 /**
  * Calculates overall "health" of the datasets (not)provided by an organisation.
@@ -73,7 +37,7 @@ const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'
  * @returns
  */
 const orgStatsReducer = (accumulator, dataset) => {
-  if (dataset.endpoint) accumulator[0]++
+  if (dataset.endpointCount > 0) accumulator[0]++
   if (dataset.status === 'Needs fixing') accumulator[1]++
   if (dataset.status === 'Error') accumulator[2]++
   return accumulator
@@ -91,11 +55,14 @@ const orgStatsReducer = (accumulator, dataset) => {
  * and sets flags for due and overdue notices accordingly.
  */
 export const datasetSubmissionDeadlineCheck = (req, res, next) => {
-  const { resourceLookup } = req
+  const { resources } = req
   const currentDate = new Date()
 
   req.noticeFlags = requiredDatasets.map(dataset => {
-    let resource = resourceLookup.find(resource => resource.dataset === dataset.dataset)
+    let resource
+    if (resources[dataset]) {
+      resource = resources[dataset][0]
+    }
 
     let datasetSuppliedForCurrentYear = false
     let datasetSuppliedForLastYear = false
@@ -189,54 +156,64 @@ export const addNoticesToDatasets = (req, res, next) => {
   next()
 }
 
-/**
- * The overview data can contain multiple rows per dataset,
- * and we want a collection of one item per dataset,
- * because that's how we display it on the page.
- *
- * @param {object[]} lpaOverview
- * @returns {object[]}
- */
-export function aggregateOverviewData (req, res, next) {
-  const { lpaOverview } = req
-  if (!Array.isArray(lpaOverview)) {
-    throw new Error('lpaOverview should be an array')
-  }
-  const grouped = _.groupBy(lpaOverview, 'dataset')
-  const datasets = []
-  for (const [dataset, rows] of Object.entries(grouped)) {
-    let numIssues = 0
-    for (const row of rows) {
-      if (row.status !== 'Needs fixing') {
-        continue
-      }
-      if (row.issue_count) {
-        const numFields = (row.fields ?? '').split(',').length
-        if (row.issue_count >= row.entity_count) numIssues += numFields
-        else numIssues += row.issue_count
-      }
-    }
-    const info = {
-      dataset,
-      issue_count: numIssues,
-      endpoint: rows[0].endpoint,
-      error: rows[0].error,
-      status: _.maxBy(rows, row => statusOrdering.get(row.status)).status
-    }
-    datasets.push(info)
-  }
+export function groupResourcesByDataset (req, res, next) {
+  const { resources } = req
 
-  requiredDatasets.forEach(requiredDataset => {
-    const hasDataset = datasets.findIndex(dataset => dataset.dataset === requiredDataset.dataset) >= 0
-    if (!hasDataset) {
-      datasets.push({
-        dataset: requiredDataset.dataset,
-        status: 'Not submitted'
-      })
+  req.resources = resources.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
     }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
+
+  next()
+}
+
+export function groupIssuesCountsByDataset (req, res, next) {
+  const { entityIssueCounts, entryIssuesCounts } = req
+
+  // merge arrays and handle undefined
+  const issueCounts = [...(entityIssueCounts || []), ...(entryIssuesCounts || [])]
+  req.issues = issueCounts.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
+    }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
+
+  next()
+}
+
+export function prepareDatasetObjects (req, res, next) {
+  const { resources, issues } = req
+
+  req.datasets = availableDatasets.map((dataset) => {
+    const datasetResources = resources[dataset]
+    const datasetIssues = issues[dataset]
+
+    if (!datasetResources) {
+      return { status: 'Not submitted', endpointCount: 0, dataset }
+    }
+
+    const endpointCount = datasetResources.length
+    const httpStatus = datasetResources.find(resource => resource.status !== '200')?.latest_status
+    const error = httpStatus ? `There was a ${httpStatus} error accessing the data URL` : undefined
+    const issueCount = datasetIssues?.length || 0
+
+    let status
+    if (error) {
+      status = 'Error'
+    } else if (issueCount > 0) {
+      status = 'Needs fixing'
+    } else {
+      status = 'Live'
+    }
+
+    return { dataset, error, issueCount, status, endpointCount }
   })
 
-  req.datasets = datasets
   next()
 }
 
@@ -249,19 +226,6 @@ export function aggregateOverviewData (req, res, next) {
 export function prepareOverviewTemplateParams (req, res, next) {
   const { orgInfo: organisation, provisions, datasets } = req
   // add in any of the missing key 8 datasets
-  const keys = new Set(datasets.map(d => d.dataset))
-  availableDatasets.forEach((dataset) => {
-    if (!keys.has(dataset)) {
-      const row = {
-        dataset,
-        endpoint: null,
-        status: 'Not submitted',
-        issue_count: 0,
-        entity_count: undefined
-      }
-      datasets.push(row)
-    }
-  })
 
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
@@ -313,10 +277,18 @@ export const getOverview = renderTemplate({
 
 export default [
   fetchOrgInfo,
-  fetchLatestResources,
-  handleRejections(fetchEntityCounts),
-  fetchLpaOverview,
-  aggregateOverviewData,
+  fetchResources,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
+  fetchEntityCounts,
+  groupResourcesByDataset,
+  groupIssuesCountsByDataset,
+
+  prepareDatasetObjects,
+  // prepareOverviewData,
+
+  // fetchLpaOverview,
+  // aggregateOverviewData,
   datasetSubmissionDeadlineCheck,
   addNoticesToDatasets,
   fetchProvisions,

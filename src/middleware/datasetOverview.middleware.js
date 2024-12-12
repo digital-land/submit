@@ -1,7 +1,6 @@
 import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getDatasetTaskListError, isResourceAccessible, isResourceIdInParams, isResourceNotAccessible, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } from './middleware.builders.js'
+import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
-import performanceDbApi from '../services/performanceDbApi.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
@@ -169,10 +168,15 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   next()
 }
 
-const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
+export const fetchEntityCount = fetchOne({
+  query: ({ req }) => `
+    select count(entity) as entity_count
+    from entity
+    WHERE organisation_entity = '${req.orgInfo.entity}'
+  `,
   result: 'entityCount',
-  dataset: FetchOptions.fromParams
+  dataset: FetchOptions.fromParams,
+  fallbackPolicy: FetchOneFallbackPolicy.continue
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
