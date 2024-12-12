@@ -138,6 +138,23 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
   }
 }
 
+export async function fetchManyFromAllDatasetsFn (req, res, next) {
+  try {
+    const query = this.query({ req, params: req.params })
+    const promises = availableDatasets.map((dataset) => {
+      return datasette.runQuery(query, dataset)
+    })
+    const result = await Promise.all(promises)
+    req[this.result] = Object.fromEntries(result.map(({ formattedData }, i) => [availableDatasets[i], formattedData]))
+    logger.debug({ type: types.DataFetch, message: 'fetchManyFromAllDatasets', resultKey: this.result })
+    next()
+  } catch (error) {
+    logger.debug('fetchMany: failed', { type: types.DataFetch, errorMessage: error.message, endpoint: req.originalUrl, resultKey: this.result })
+    req.handlerName = `fetching '${this.result}'`
+    next(error)
+  }
+}
+
 /**
    * Middleware. Does a conditional fetch. Optionally invokes `else` if condition is false.
    *
@@ -203,12 +220,21 @@ export function fetchMany (context) {
 }
 
 /**
-   * Fetches a collection of records from all dataset databases and stores them in `req` under key specified by `result` entry.
+   * Fetches a single record from each dataset databases and stores them in `req` under key specified by `result` entry.
    *
    * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
    */
 export function fetchOneFromAllDatasets (context) {
   return fetchOneFromAllDatasetsFn.bind(context)
+}
+
+/**
+   * Fetches a collection of records from all dataset databases and stores them in `req` under key specified by `result` entry.
+   *
+   * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
+   */
+export function fetchManyFromAllDatasets (context) {
+  return fetchManyFromAllDatasetsFn.bind(context)
 }
 
 /**

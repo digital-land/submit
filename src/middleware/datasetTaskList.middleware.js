@@ -6,7 +6,9 @@ import {
   fetchOrgInfo,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
-  logPageError
+  logPageError,
+  fetchDatasetResources,
+  addLineCountsToResources
 } from './common.middleware.js'
 import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
@@ -164,6 +166,8 @@ export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchResources,
+  fetchDatasetResources,
+  addLineCountsToResources,
   ...processEntitiesMiddlewares,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
