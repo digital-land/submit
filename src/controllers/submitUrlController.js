@@ -157,8 +157,9 @@ class SubmitUrlController extends UploadController {
     if (!response) {
       return false
     }
+
     try {
-      return (response.status >= 200 && response.status < 300) || response.status === 400 // need to add 400 as some servers return 400 for head requests
+      return response.status !== 404 // Allow everything except 404, we cannot be sure what the server will return for HEAD requests
     } catch (err) {
       logger.warn(err)
       return true
