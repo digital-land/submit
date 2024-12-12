@@ -706,4 +706,3 @@ export const fetchSources = fetchMany({
   `,
   result: 'sources'
 })
-
