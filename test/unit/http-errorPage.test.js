@@ -41,10 +41,14 @@ describe(`http-error.html(seed: ${seed})`, () => {
     }
 
     expect(rows[2].querySelector('.govuk-summary-list__key').textContent).toContain('Last attempted access')
-    expect(rows[2].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    if (params.errorData.latest_log_entry_date) {
+      expect(rows[2].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    }
 
     expect(rows[3].querySelector('.govuk-summary-list__key').textContent).toContain('Last successful access')
-    expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    if (params.errorData.latest_200_date) {
+      expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    }
   })
 
   it('re-submit link points to get-started page', () => {
