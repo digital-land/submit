@@ -36,6 +36,18 @@ function getStatusTag (status) {
   }
 }
 
+/**
+ * Prepares the task list for the dataset task list page
+ *
+ * This function takes the request, response, and next middleware function as arguments
+ * and uses the parsed request parameters, entities, resources, and entry/ entity issue counts
+ * to generate a list of tasks based on the issues found in the dataset
+ *
+ * @param {Object} req - The request object
+ * @param {Object} res - The response object
+ * @param {Function} next - The next middleware function
+ * @return {undefined}
+ */
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
   const { entities, resources } = req
