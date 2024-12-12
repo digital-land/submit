@@ -13,7 +13,13 @@ import { templateSchema } from '../routes/schemas.js'
 import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
 import * as v from 'valibot'
-import { availableDatasets } from '../utils/utils.js'
+import { dataSubjects } from '../utils/utils.js'
+
+const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
+  dataSubject.dataSets
+    .filter((dataset) => dataset.available)
+    .map((dataset) => dataset.value)
+)
 
 export const FetchOptions = {
   /**
