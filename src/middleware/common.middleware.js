@@ -377,6 +377,7 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
         AND it.responsibility = 'external'
         AND it.severity = 'error'
         ${issueFieldClause}
+        AND i.dataset = '${req.params.dataset}'
         AND entity != ''
         `
     // LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
@@ -471,6 +472,7 @@ export const fetchEntryIssues = fetchMany({
       ${issueTypeClause}
       AND it.responsibility = 'external'
       AND it.severity = 'error'
+      AND i.dataset = '${req.params.dataset}'
       ${issueFieldClause}
       AND (entity = '' OR i.issue_type in ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))
       LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
@@ -480,28 +482,36 @@ export const fetchEntryIssues = fetchMany({
 })
 
 export const fetchEntityIssueCounts = fetchMany({
-  query: ({ req }) => `
-    select dataset, field, i.issue_type, COUNT(resource+line_number) as count
-    from issue i
-    LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-    WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-    AND entity != ''
-    AND it.responsibility = 'external'
-    AND it.severity = 'error'
-    GROUP BY field, i.issue_type, dataset
-  `,
+  query: ({ req }) => {
+    const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
+    return `
+      select dataset, field, i.issue_type, COUNT(resource+line_number) as count
+      from issue i
+      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+      WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
+      AND entity != ''
+      AND it.responsibility = 'external'
+      AND it.severity = 'error'
+      ${datasetClause}
+      GROUP BY field, i.issue_type, dataset
+    `
+  },
   result: 'entityIssueCounts'
 })
 
 export const fetchEntryIssueCounts = fetchMany({
-  query: ({ req }) => `
-    select dataset, field, i.issue_type, COUNT(resource+line_number) as count
-    from issue i
-    LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-    WHERE resource =  '${req.resources[0].resource}'
-    AND entity = ''
-    GROUP BY field, i.issue_type, dataset
-  `,
+  query: ({ req }) => {
+    const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
+    return `
+      select dataset, field, i.issue_type, COUNT(resource+line_number) as count
+      from issue i
+      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+      WHERE resource =  '${req.resources[0].resource}'
+      AND entity = ''
+      ${datasetClause}
+      GROUP BY field, i.issue_type, dataset
+    `
+  },
   result: 'entryIssueCounts'
 })
 
