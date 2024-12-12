@@ -26,14 +26,16 @@ describe('Dataset Overview Page', () => {
       endpoints: [
         {
           name: 'endpoint 1',
-          endpoint: 'http://endpoint1.co.uk',
+          endpoint: 'FOO',
+          endpoint_url: 'http://endpoint1.co.uk',
           documentation_url: 'http://endpoint1-docs.co.uk',
           lastAccessed: '2024-09-09',
           lastUpdated: '2024-09-09'
         },
         {
           name: 'endpoint 2',
-          endpoint: 'http://endpoint2.co.uk',
+          endpoint: 'BAR',
+          endpoint_url: 'http://endpoint2.co.uk',
           lastAccessed: '2024-19-19',
           lastUpdated: '2024-19-19',
           error: {
@@ -76,11 +78,11 @@ describe('Dataset Overview Page', () => {
     expect(summaryListValues[1].textContent.trim()).toEqual(`${params.stats.numberOfFieldsSupplied}/${params.stats.numberOfExpectedFields}`)
     expect(summaryListValues[2].textContent.trim()).toEqual(`${params.stats.numberOfFieldsMatched}/${params.stats.numberOfExpectedFields}`)
     expect(summaryListValues[3].textContent.trim()).toEqual('Open Government Licence')
-    expect(summaryListValues[4].textContent).toContain(params.stats.endpoints[0].endpoint)
+    expect(summaryListValues[4].textContent).toContain(params.stats.endpoints[0].endpoint_url)
     expect(summaryListValues[5].textContent).toContain(params.stats.endpoints[0].documentation_url)
     expect(summaryListValues[6].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastAccessed))
     expect(summaryListValues[7].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastUpdated))
-    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].endpoint)
+    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].endpoint_url)
     expect(summaryListValues[9].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastAccessed))
     expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].error.code)
     expect(summaryListValues[10].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
