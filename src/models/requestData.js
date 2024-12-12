@@ -32,6 +32,10 @@ export default class ResultData {
     return new ResponseDetails(this.id, response.data, pagination, this.getColumnFieldLog())
   }
 
+  /**
+   *
+   * @returns {string[]}
+   */
   getErrorSummary () {
     if (!this.response || !this.response.data || !this.response.data['error-summary']) {
       logger.warn('trying to get error summary when there is none', { requestId: this.id })

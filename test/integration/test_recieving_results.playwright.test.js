@@ -40,10 +40,8 @@ test('receiving a result with errors', async ({ page }) => {
   await resultsPage.navigateToRequest('complete-errors')
   await resultsPage.expectPageIsErrorsPage()
 
-  await page.getByText('1 geometry must be in Well-Known Text (WKT) format 1 documentation URL must be').click()
-
   for (const error of errorResponse.response.data['error-summary']) {
-    await expect(page.locator('.govuk-list')).toContainText(error)
+    await expect(page.locator('ul.govuk-list')).toContainText(error)
   }
 
   const tableValues = await getTableContents(page, 'govuk-table')

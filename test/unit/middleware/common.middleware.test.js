@@ -1,7 +1,10 @@
-import { describe, it, expect, vi } from 'vitest'
-import { createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue } from '../../../src/middleware/common.middleware'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
+import performanceDbApi from '../../../src/services/performanceDbApi.js'
+
+vi.mock('../../../src/services/performanceDbApi.js')
 
 vi.mock('../../../src/services/datasette.js', () => ({
   default: {
@@ -1146,5 +1149,353 @@ describe('addFieldMappingsToIssue', () => {
     addFieldMappingsToIssue(req, res, () => {
       expect(req.issues).toEqual(undefined)
     })
+  })
+})
+
+describe('setDataRange', () => {
+  describe('tableView', () => {
+    const setTableDataRange = getSetDataRange(50)
+
+    it('should set up correct dataRange properties when pageNumber is 1', () => {
+      const req = {
+        recordCount: 10,
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setTableDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 0,
+        maxRow: 10,
+        totalRows: 10,
+        pageLength: 50,
+        offset: 0,
+        maxPageNumber: Math.ceil(10 / 50)
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('should set up correct dataRange properties when pageNumber is greater than 1', () => {
+      const req = {
+        recordCount: 80,
+        parsedParams: { pageNumber: 2 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setTableDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 50,
+        maxRow: 80,
+        totalRows: 80,
+        pageLength: 50,
+        offset: 50,
+        maxPageNumber: Math.ceil(80 / 50)
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('entityView', () => {
+    const setEntityDataRange = getSetDataRange(1)
+
+    it('should set up correct dataRange properties when pageNumber is 1', () => {
+      const req = {
+        recordCount: 10,
+        parsedParams: { pageNumber: 1 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setEntityDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 0,
+        maxRow: 1,
+        totalRows: 10,
+        pageLength: 1,
+        offset: 0,
+        maxPageNumber: 10
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('should set up correct dataRange properties when pageNumber is greater than 1', () => {
+      const req = {
+        recordCount: 10,
+        parsedParams: { pageNumber: 3 }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      setEntityDataRange(req, res, next)
+
+      expect(req.dataRange).toEqual({
+        minRow: 2,
+        maxRow: 3,
+        totalRows: 10,
+        pageLength: 1,
+        offset: 2,
+        maxPageNumber: 10
+      })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+})
+
+describe('setBaseSubPath', () => {
+  const lpa = 'lpa'
+  const dataset = 'dataset'
+  const issueType = 'issueType'
+  const issueField = 'issueField'
+  it('sets baseSubpath correctly when given all url params', () => {
+    const req = {
+      params: {
+        lpa,
+        dataset,
+        issue_type: issueType,
+        issue_field: issueField
+      }
+    }
+    const setBaseSubPath = getSetBaseSubPath([])
+
+    setBaseSubPath(req, {}, vi.fn())
+
+    expect(req.baseSubpath).toEqual('/organisations/lpa/dataset/issueType/issueField')
+  })
+
+  it('sets up baseSubpath correctly when given partial params', () => {
+    const req = {
+      params: {
+        lpa,
+        dataset
+      }
+    }
+    const setBaseSubPath = getSetBaseSubPath([])
+
+    setBaseSubPath(req, {}, vi.fn())
+
+    expect(req.baseSubpath).toEqual('/organisations/lpa/dataset')
+  })
+
+  it('adds additional path parts on at the end', () => {
+    const req = {
+      params: {
+        lpa,
+        dataset
+      }
+    }
+    const setBaseSubPath = getSetBaseSubPath(['subPath'])
+
+    setBaseSubPath(req, {}, vi.fn())
+
+    expect(req.baseSubpath).toEqual('/organisations/lpa/dataset/subPath')
+  })
+})
+
+describe('getErrorSummaryItems', () => {
+  it('handles no issues are found', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value',
+      entities: [],
+      issues: [],
+      headers: {
+        referer: 'referer'
+      }
+    }
+
+    const next = vi.fn()
+
+    getErrorSummaryItems(req, null, next)
+
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+      issue_type: 'issue-type-value',
+      num_issues: 0,
+      entityCount: 0,
+      field: 'issue-field-value'
+    }, true)
+  })
+
+  it('handles if entities are provided', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value',
+      entities: [
+        { reference: 'entity1', name: 'Name 1', amount: 100, error: 'Invalid Amount' },
+        { reference: 'entity2', name: 'Name 2', amount: 200, error: ' Invalid Name' }
+      ],
+      issues: [
+        { entity: 'entity1', error: 'Invalid Amount' },
+        { entity: 'entity2', error: ' Invalid Name' }
+      ]
+    }
+
+    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('message')
+
+    getErrorSummaryItems(req, null, vi.fn())
+
+    const errorSummary = req.errorSummary
+    expect(errorSummary.heading).toBe('')
+
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+      issue_type: 'issue-type-value',
+      num_issues: 2,
+      entityCount: 2,
+      field: 'issue-field-value'
+    }, true)
+  })
+
+  it('handles no entities provided, but a resource provided', () => {
+    const req = {
+      params: {
+        issue_type: 'issue-type-value',
+        issue_field: 'issue-field-value'
+      },
+      baseSubpath: 'baseSubpath-value/entry',
+      resources: [
+        {
+          entry_count: 3
+        }
+      ],
+      issues: [
+        { entry_number: 1, error: 'Invalid Amount', reference: '1' },
+        { entry_number: 2, error: ' Invalid Name', reference: '2' }
+      ]
+    }
+
+    vi.mocked(performanceDbApi.getTaskMessage).mockReturnValue('issue')
+
+    getErrorSummaryItems(req, null, vi.fn())
+
+    const errorSummary = req.errorSummary
+    expect(errorSummary.items).toEqual([
+      {
+        html: 'issue'
+      }
+    ])
+
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({ issue_type: 'issue-type-value', num_issues: 2, entityCount: 3, field: 'issue-field-value' }, true)
+  })
+})
+
+describe('prepareEntityIssueDetailsTemplateParams', () => {
+  const req = {
+    parsedParams: { pageNumber: 1, issue_type: 'some-issue-type' },
+    entry: 'some-entry',
+    pagination: 'some-pagination',
+    errorSummary: 'some-error-summary',
+    dataRange: 'some-data-range',
+    dataset: 'some-dataset',
+    orgInfo: 'some-org-info'
+  }
+
+  const res = {}
+
+  beforeEach(() => {
+    req.templateParams = undefined
+  })
+
+  it('should set req.templateParams with expected values', () => {
+    const next = vi.fn()
+    prepareIssueDetailsTemplateParams(req, res, next)
+
+    expect(req.templateParams).toEqual({
+      organisation: 'some-org-info',
+      dataset: 'some-dataset',
+      errorSummary: 'some-error-summary',
+      entry: 'some-entry',
+      issueType: 'some-issue-type',
+      pagination: 'some-pagination',
+      pageNumber: 1,
+      dataRange: 'some-data-range'
+    })
+  })
+
+  it('should call next function', () => {
+    const next = vi.fn()
+    prepareIssueDetailsTemplateParams(req, res, next)
+
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('filterOutEntitiesWithoutIssues middleware', () => {
+  it('should filter out entities without issues', () => {
+    const entities = [
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ]
+
+    const issues = [
+      { entity: 'entity1', issue: 'issue1' },
+      { entity: 'entity2', issue: 'issue2' }
+    ]
+
+    const req = { entities, issues }
+    const res = {}
+    const next = vi.fn()
+
+    filterOutEntitiesWithoutIssues(req, res, next)
+
+    expect(req.issueEntities).toEqual([
+      { entity: 'entity1' },
+      { entity: 'entity2' }
+    ])
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('should return an empty array if no entities have issues', () => {
+    const entities = [
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ]
+
+    const issues = []
+
+    const req = { entities, issues }
+    const res = {}
+    const next = vi.fn()
+
+    filterOutEntitiesWithoutIssues(req, res, next)
+
+    expect(req.issueEntities).toEqual([])
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('should not modify the original entities array', () => {
+    const entities = [
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ]
+
+    const issues = [
+      { entity: 'entity1', issue: 'issue1' },
+      { entity: 'entity2', issue: 'issue2' }
+    ]
+
+    const req = { entities, issues }
+    const res = {}
+    const next = vi.fn()
+
+    filterOutEntitiesWithoutIssues(req, res, next)
+
+    expect(entities).toEqual([
+      { entity: 'entity1' },
+      { entity: 'entity2' },
+      { entity: 'entity3' }
+    ])
   })
 })

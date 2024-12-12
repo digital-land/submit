@@ -37,6 +37,11 @@
 {% macro table(params) %}
     <div class="app-scrollable-container dl-scrollable">
         <table class="govuk-table dl-table">
+            <colgroup>
+                {% for field in params.fields %}
+                    <col class="{% if (r/.*-date/g).test(field) %}govuk-table__cell--numeric{% endif %}" />
+                {% endfor %}
+            </colgroup>
             <thead class="govuk-table__head dl-table__head">
                 <tr class="govuk-table__row">
                     {% for column in params.columns %}

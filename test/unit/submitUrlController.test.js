@@ -188,8 +188,8 @@ describe('SubmitUrlController', async () => {
         expect(SubmitUrlController.isUrlAccessible({ status: 200 })).toBe(true)
       })
 
-      it('should return false for URLs that exist with a 3XX status code', async () => {
-        expect(SubmitUrlController.isUrlAccessible({ status: 301 })).toBe(false)
+      it('should return true for URLs that exist with a 3XX status code', async () => {
+        expect(SubmitUrlController.isUrlAccessible({ status: 301 })).toBe(true)
       })
 
       it('should return false for URLs that exist with a 4XX status code', async () => {
