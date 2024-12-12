@@ -2,7 +2,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate, fetchManyFromAllDatasets } from './middleware.builders.js'
+import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
@@ -196,27 +196,28 @@ export const fetchResources = fetchMany({
   result: 'resources'
 })
 
-export const fetchDatasetResources = fetchManyFromAllDatasets({
-  query: ({ req }) => `
-    SELECT * FROM dataset_resource WHERE end_date = ''
-  `,
-  dataset: FetchOptions.performanceDb,
-  result: 'datasetResources'
-})
+export const addEntityCountsToResources = async (req, res, next) => {
+  const { resources } = req
 
-export const addLineCountsToResources = (req, res, next) => {
-  const { resources, datasetResources } = req
-
-  req.resources = resources.map(resource => {
-    const thisDatasetResource = datasetResources[resource.dataset]
-    const datasetResource = thisDatasetResource.find(
-      _datasetResource =>
-        _datasetResource.resource === resource.resource
-    )
-    return { ...resource, entry_count: datasetResource.entry_count }
+  const promises = resources.map(resource => {
+    const query = `SELECT entry_count FROM dataset_resource WHERE resource = "${resource.resource}"`
+    return datasette.runQuery(query, resource.dataset)
   })
 
-  next()
+  try {
+    const datasetResources = await Promise.all(promises).catch(error => {
+      console.log(error)
+    })
+
+    req.resources = resources.map((resource, i) => {
+      return { ...resource, entry_count: datasetResources[i]?.formattedData[0]?.entry_count }
+    })
+
+    next()
+  } catch (error) {
+    // Any other error handling code goes here
+    console.log(error)
+  }
 }
 
 // Specification
@@ -497,7 +498,7 @@ export const fetchEntryIssues = fetchMany({
       AND it.severity = 'error'
       AND i.dataset = '${req.params.dataset}'
       ${issueFieldClause}
-      AND (entity = '' OR i.issue_type in ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))
+      AND (entity = '' OR entity is NULL OR i.issue_type in ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))
       LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
     `
   },
@@ -530,7 +531,7 @@ export const fetchEntryIssueCounts = fetchMany({
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource =  '${req.resources[0].resource}'
-      AND entity = ''
+      AND (entity = '' OR entity is NULL)
       ${datasetClause}
       GROUP BY field, i.issue_type, dataset
     `
