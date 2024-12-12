@@ -278,7 +278,7 @@ export default {
     from 
       provision_summary 
     where 
-      "active_endpoint_count" > 1 and "error_endpoint_count" >= 1
+      coalesce("active_endpoint_count", 0) > 1 and coalesce("error_endpoint_count", 0) >= 1
       and "organisation" = '${lpa}'
       and "dataset" in (${params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')})
     order by dataset asc`
