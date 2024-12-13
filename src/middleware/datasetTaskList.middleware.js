@@ -92,7 +92,7 @@ export const prepareTasks = (req, res, next) => {
       title: {
         text: title
       },
-      href: `/organisations/${lpa}/${dataset}/${type}/${field}`,
+      href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(type)}/${encodeURIComponent(field)}`,
       status: getStatusTag('Needs fixing')
     }
   })
