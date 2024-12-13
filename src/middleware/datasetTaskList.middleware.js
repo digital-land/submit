@@ -38,6 +38,8 @@ function getStatusTag (status) {
   }
 }
 
+const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
+
 /**
  * Prepares the task list for the dataset task list page
  *
@@ -50,15 +52,6 @@ function getStatusTag (status) {
  * @param {Function} next - The next middleware function
  * @return {undefined}
  */
-export const prepareTasks = (req, res, next) => {
-  const { lpa, dataset } = req.parsedParams
-  const { entities, resources } = req
-  const { entryIssueCounts, entityIssueCounts } = req
-
-  const entityCount = entities.length
-
-const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
-
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
   const { entities, resources } = req
@@ -78,7 +71,7 @@ export const prepareTasks = (req, res, next) => {
     // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
 
     let rowCount = entityCount
-    if (specialIssueTypeCases.includes(type)) {
+    if (SPECIAL_ISSUE_TYPES.includes(type)) {
       if (resources.length > 0) {
         rowCount = resources[0].entry_count
       } else {
