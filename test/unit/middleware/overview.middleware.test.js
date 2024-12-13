@@ -1,5 +1,9 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
 import { addNoticesToDatasets, aggregateOverviewData, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
+import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
+import jsdom from 'jsdom'
+
+const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 vi.mock('../../../src/utils/utils.js', async (importOriginal) => {
   const original = await importOriginal()
@@ -14,43 +18,62 @@ vi.mock('../../../src/utils/utils.js', async (importOriginal) => {
   }
 })
 
+const exampleLpa = { name: 'Example LPA', organisation: 'LPA' }
+
+const reqTemplate = {
+  params: { lpa: 'LPA' },
+  orgInfo: exampleLpa,
+  datasets: [
+    {
+      dataset: 'dataset1',
+      issue_count: 0,
+      endpoint: 'https://example.com',
+      error: undefined,
+      status: 'Live'
+    },
+    {
+      dataset: 'dataset2',
+      issue_count: 0,
+      endpoint: null,
+      error: undefined,
+      status: 'Needs fixing'
+    },
+    {
+      dataset: 'dataset3',
+      issue_count: 0,
+      endpoint: 'https://example.com',
+      error: undefined,
+      status: 'Error'
+    },
+    {
+      dataset: 'dataset4',
+      issue_count: 0,
+      endpoint: null,
+      error: 'There was a 404 error',
+      status: 'Error'
+    }
+
+  ],
+  provisions: [
+    { dataset: 'dataset1', provision_reason: 'statutory', project: 'open-digital-planning' },
+    { dataset: 'dataset2', provision_reason: 'expected', project: 'open-digital-planning' },
+    { dataset: 'dataset3', provision_reason: 'statutory', project: 'open-digital-planning' },
+    { dataset: 'dataset4', provision_reason: 'expected', project: 'open-digital-planning' }
+  ],
+  datasetErrorStatus: []
+}
+
 describe('overview.middleware', () => {
-  const exampleLpa = { name: 'Example LPA', organisation: 'LPA' }
+  const getRenderedErrorCards = (templateParams) => {
+    const html = nunjucks.render('organisations/overview.html', templateParams)
+    const doc = new jsdom.JSDOM(html).window.document
+    const errorNodes = doc.querySelectorAll('[data-dataset-status="Error"]')
+    return Array.from(errorNodes)
+  }
 
   describe('prepareOverviewTemplateParams', () => {
     it('should render the overview page', async () => {
-      const req = {
-        params: { lpa: 'LPA' },
-        orgInfo: exampleLpa,
-        datasets: [
-          {
-            dataset: 'dataset1',
-            issue_count: 0,
-            endpoint: 'https://example.com',
-            error: undefined,
-            status: 'Live'
-          },
-          {
-            dataset: 'dataset2',
-            issue_count: 0,
-            endpoint: null,
-            error: undefined,
-            status: 'Needs fixing'
-          },
-          {
-            dataset: 'dataset3',
-            issue_count: 0,
-            endpoint: 'https://example.com',
-            error: undefined,
-            status: 'Error'
-          }
-        ],
-        provisions: [
-          { dataset: 'dataset1', provision_reason: 'statutory', project: 'open-digital-planning' },
-          { dataset: 'dataset2', provision_reason: 'expected', project: 'open-digital-planning' },
-          { dataset: 'dataset3', provision_reason: 'statutory', project: 'open-digital-planning' }
-        ]
-      }
+      const req = structuredClone(reqTemplate)
       const res = { render: vi.fn() }
 
       prepareOverviewTemplateParams(req, res, () => {})
@@ -63,16 +86,38 @@ describe('overview.middleware', () => {
             { endpoint: 'https://example.com', status: 'Error', dataset: 'dataset3', error: undefined, issue_count: 0, project: 'open-digital-planning' }
           ]),
           other: expect.arrayContaining([
-            { endpoint: null, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issue_count: 0, project: 'open-digital-planning' }
+            { endpoint: null, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issue_count: 0, project: 'open-digital-planning' },
+            { endpoint: null, status: 'Error', dataset: 'dataset4', error: 'There was a 404 error', issue_count: 0, project: 'open-digital-planning' }
           ])
         },
-        totalDatasets: 3,
+        totalDatasets: 4,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
-        datasetsWithErrors: 1
+        datasetsWithErrors: 2
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
+
+      const errorCardNodes = getRenderedErrorCards(req.templateParams)
+      expect(errorCardNodes[0].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was an error accessing the data URL')
+      expect(errorCardNodes[1].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was a 404 error')
+    })
+
+    it('should patch dataset status based on the provision_summary info', () => {
+      const req = structuredClone(reqTemplate)
+      console.assert(req.datasets[0].status === 'Live')
+      req.datasetErrorStatus = [{ dataset: 'dataset1' }]
+      const res = { render: vi.fn() }
+
+      prepareOverviewTemplateParams(req, res, () => {})
+
+      const ds1 = req.templateParams.datasets.statutory[0]
+      expect(ds1.status).toBe('Error')
+      expect(ds1.error).toBeUndefined()
+
+      const ds4 = req.templateParams.datasets.other[1]
+      expect(ds4.status).toBe('Error')
+      expect(ds4.error).toBe(req.datasets[3].error) // Error message should be left untouched
     })
   })
 
@@ -86,7 +131,7 @@ describe('overview.middleware', () => {
     })
 
     it('should set req.datasets to just the required datasets when input is empty', async () => {
-      await aggregateOverviewData(req, res, next)
+      aggregateOverviewData(req, res, next)
       expect(req.datasets).toEqual([
         { status: 'Not submitted', dataset: 'brownfield-land' }
       ])
@@ -102,7 +147,7 @@ describe('overview.middleware', () => {
 
       req.lpaOverview = exampleData
 
-      await aggregateOverviewData(req, res, next)
+      aggregateOverviewData(req, res, next)
 
       expect(req.datasets).toEqual([
         { endpoint: 'https://example.com', status: 'Live', dataset: 'dataset1', error: undefined, issue_count: 0 },
@@ -122,7 +167,7 @@ describe('overview.middleware', () => {
 
       req.lpaOverview = exampleData
 
-      await aggregateOverviewData(req, res, next)
+      aggregateOverviewData(req, res, next)
 
       expect(req.datasets[0].status).toBe('Error')
       expect(req.datasets[1].status).toBe('Needs fixing')
@@ -136,7 +181,7 @@ describe('overview.middleware', () => {
 
       req.lpaOverview = exampleData
 
-      await aggregateOverviewData(req, res, next)
+      aggregateOverviewData(req, res, next)
 
       expect(req.datasets[0].status).toBe('Needs fixing')
       expect(req.datasets[0].issue_count).toBe(2) // 2 columns affected
@@ -149,7 +194,7 @@ describe('overview.middleware', () => {
         { endpoint: 'https://example.com/2', status: 'Needs fixing', dataset: 'brownfield-land', entity_count: 5, issue_count: 5, fields: 'foo,bar' }
       ]
       req.lpaOverview = exampleData
-      await aggregateOverviewData(req, res, next)
+      aggregateOverviewData(req, res, next)
       expect(req.datasets.length).toEqual(1)
     })
   })

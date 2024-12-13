@@ -10,7 +10,7 @@
 {% set serviceType = 'Manage' %}
 
 {% macro datasetItem(dataset) %}
-<li class="govuk-task-list__item govuk-task-list__item--with-link" data-dataset="{{ dataset.dataset }}">
+<li class="govuk-task-list__item govuk-task-list__item--with-link" data-dataset="{{ dataset.dataset }}" data-dataset-status="{{ dataset.status }}">
   <div class="govuk-task-list__name-and-hint">
     <h3 class="govuk-heading-m">
       {% if dataset.status == 'Not submitted' %}
@@ -31,7 +31,11 @@
       {% elif dataset.status == 'Not submitted' %}
         <p>Data URL not submitted</p>
       {% elif dataset.status == 'Error' %}
-        <p>{{dataset.error}}</p>
+        {% if not dataset.error or dataset.error === '' %}
+          <p>There was an error accessing the data URL</p>
+        {% else %}
+          <p>{{ dataset.error }}</p>
+        {% endif %}
       {% elif dataset.status == 'Needs fixing' %}
         <p>There {{ "is" | pluralise(dataset.issue_count) }} {{ dataset.issue_count }} {{ "issue" | pluralise(dataset.issue_count) }} in this dataset</p>
       {% else %}
