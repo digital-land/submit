@@ -16,7 +16,7 @@ import * as v from 'valibot'
 import { dataSubjects } from '../utils/utils.js'
 
 const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
-  dataSubject.dataSets
+  (dataSubject.dataSets || [])
     .filter((dataset) => dataset.available)
     .map((dataset) => dataset.value)
 )
