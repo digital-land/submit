@@ -13,6 +13,7 @@ import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 import * as v from 'valibot'
+import logger from '../utils/logger.js'
 
 /**
  * Fetches the resource status
@@ -37,6 +38,8 @@ function getStatusTag (status) {
   }
 }
 
+const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
+
 /**
  * Prepares the task list for the dataset task list page
  *
@@ -55,24 +58,40 @@ export const prepareTasks = (req, res, next) => {
   const { entryIssueCounts, entityIssueCounts } = req
 
   const entityCount = entities.length
+  let issues = [...entryIssueCounts, ...entityIssueCounts]
 
-  const specialIssueTypeCases = ['reference values are not unique']
-
-  const issues = [...entryIssueCounts, ...entityIssueCounts]
+  issues = issues.filter(
+    issue => issue.issue_type !== '' &&
+    issue.issue_type !== undefined &&
+    issue.field !== '' &&
+    issue.field !== undefined
+  )
 
   req.taskList = Object.values(issues).map(({ field, issue_type: type, count }) => {
     // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
 
     let rowCount = entityCount
-    if (specialIssueTypeCases.includes(type)) {
-      rowCount = resources[0].entry_count
+    if (SPECIAL_ISSUE_TYPES.includes(type)) {
+      if (resources.length > 0) {
+        rowCount = resources[0].entry_count
+      } else {
+        rowCount = 0
+      }
+    }
+
+    let title
+    try {
+      title = performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type })
+    } catch (e) {
+      logger.warn('datasetTaskList::prepareTasks could not get task title so setting to default', { error: e, params: { num_issues: count, rowCount, field, issue_type: type } })
+      title = `${count} issue${count > 1 ? 's' : ''} of type ${type}`
     }
 
     return {
       title: {
-        text: performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type })
+        text: title
       },
-      href: `/organisations/${lpa}/${dataset}/${type}/${field}`,
+      href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(type)}/${encodeURIComponent(field)}`,
       status: getStatusTag('Needs fixing')
     }
   })

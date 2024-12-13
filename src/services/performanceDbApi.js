@@ -264,6 +264,25 @@ export default {
       REPLACE(organisation, '-eng', '') = '${lpa}'
       ${datasetClause}`
   },
+  /**
+   * Query for datasets with active endpoints with error status.
+   *
+   * @param {string} lpa
+   * @param {{datasetsFilter: string[]}} params
+   * @returns {string} SQL
+   */
+  datasetErrorStatusQuery: (lpa, params) => {
+    return /* sql */ `
+    select 
+      dataset
+    from 
+      provision_summary 
+    where 
+      coalesce("active_endpoint_count", 0) > 1 and coalesce("error_endpoint_count", 0) >= 1
+      and "organisation" = '${lpa}'
+      and "dataset" in (${params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')})
+    order by dataset asc`
+  },
 
   /**
     *

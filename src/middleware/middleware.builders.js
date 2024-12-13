@@ -16,7 +16,7 @@ import * as v from 'valibot'
 import { dataSubjects } from '../utils/utils.js'
 
 const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
-  dataSubject.dataSets
+  (dataSubject.dataSets || [])
     .filter((dataset) => dataset.available)
     .map((dataset) => dataset.value)
 )
@@ -128,7 +128,14 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
       return datasette.runQuery(query, dataset)
     })
     const result = await Promise.all(promises)
-    req[this.result] = Object.fromEntries(result.map(({ formattedData }, i) => [availableDatasets[i], formattedData[0]]))
+    req[this.result] = Object.fromEntries(
+      result.reduce((acc, { formattedData }, i) => {
+        if (formattedData.length > 0) {
+          acc.push([availableDatasets[i], formattedData[0]])
+        }
+        return acc
+      }, [])
+    )
     logger.debug({ type: types.DataFetch, message: 'fetchOneFromAllDatasets', resultKey: this.result })
     next()
   } catch (error) {
@@ -142,10 +149,16 @@ export async function fetchManyFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset)
+      return datasette.runQuery(query, dataset).catch(error => {
+        logger.error('Query failed for dataset', { dataset, error, type: types.DataFetch })
+        return { formattedData: [] }
+      })
     })
     const result = await Promise.all(promises)
-    req[this.result] = Object.fromEntries(result.map(({ formattedData }, i) => [availableDatasets[i], formattedData]))
+    req[this.result] = Object.fromEntries(
+      result.filter(({ formattedData }) => formattedData.length > 0)
+        .map(({ formattedData }, i) => [availableDatasets[i], formattedData])
+    )
     logger.debug({ type: types.DataFetch, message: 'fetchManyFromAllDatasets', resultKey: this.result })
     next()
   } catch (error) {
