@@ -153,7 +153,7 @@ describe('datasetTaskList.middleware.js', () => {
           title: {
             text: undefined
           },
-          href: '/organisations/some-lpa/some-dataset/reference values are not unique/field1',
+          href: encodeURI('/organisations/some-lpa/some-dataset/reference values are not unique/field1'),
           status: {
             tag: {
               classes: 'govuk-tag--yellow',
