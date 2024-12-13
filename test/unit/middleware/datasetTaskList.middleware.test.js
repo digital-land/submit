@@ -165,5 +165,104 @@ describe('datasetTaskList.middleware.js', () => {
 
       expect(next).toHaveBeenCalledTimes(1)
     })
+
+    it('handles empty issue counts gracefully', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        entities: ['entity1'],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [],
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([]) // No tasks should be created
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles errors from performanceDbApi gracefully', async () => {
+      // Simulating error in performanceDbApi.getTaskMessage
+      vi.spyOn(performanceDbApi, 'getTaskMessage').mockImplementation(() => {
+        throw new Error('Error generating task message')
+      })
+
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        entities: ['entity1'],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([
+        {
+          title: { text: '1 issue of type issue-type1' }, // Or some default text if error is handled that way
+          href: '/organisations/some-lpa/some-dataset/issue-type1/field1',
+          status: { tag: { classes: 'govuk-tag--yellow', text: 'Needs fixing' } }
+        }
+      ])
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles invalid issue types', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        entities: ['entity1'],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [{ field: 'field1', issue_type: '', count: 1 }], // Invalid issue type (empty string)
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([])
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles missing field param in issues', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        entities: ['entity1'],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([]) // No task created due to missing field
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
   })
 })
