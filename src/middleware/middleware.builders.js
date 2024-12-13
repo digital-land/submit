@@ -128,7 +128,14 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
       return datasette.runQuery(query, dataset)
     })
     const result = await Promise.all(promises)
-    req[this.result] = Object.fromEntries(result.map(({ formattedData }, i) => [availableDatasets[i], formattedData[0]]))
+    req[this.result] = Object.fromEntries(
+      result.reduce((acc, { formattedData }, i) => {
+        if (formattedData.length > 0) {
+          acc.push([availableDatasets[i], formattedData[0]])
+        }
+        return acc
+      }, [])
+    )
     logger.debug({ type: types.DataFetch, message: 'fetchOneFromAllDatasets', resultKey: this.result })
     next()
   } catch (error) {
