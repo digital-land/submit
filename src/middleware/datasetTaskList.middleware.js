@@ -65,7 +65,11 @@ export const prepareTasks = (req, res, next) => {
 
     let rowCount = entityCount
     if (specialIssueTypeCases.includes(type)) {
-      rowCount = resources[0].entry_count
+      if (resources.length > 0) {
+        rowCount = resources[0].entry_count
+      } else {
+        rowCount = 0
+      }
     }
 
     return {
