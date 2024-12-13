@@ -171,10 +171,10 @@ export function groupResourcesByDataset (req, res, next) {
 }
 
 export function groupIssuesCountsByDataset (req, res, next) {
-  const { entityIssueCounts, entryIssuesCounts } = req
+  const { entityIssueCounts, entryIssueCounts } = req
 
   // merge arrays and handle undefined
-  const issueCounts = [...(entityIssueCounts || []), ...(entryIssuesCounts || [])]
+  const issueCounts = [...(entityIssueCounts || []), ...(entryIssueCounts || [])]
   req.issues = issueCounts.reduce((acc, current) => {
     if (!acc[current.dataset]) {
       acc[current.dataset] = []

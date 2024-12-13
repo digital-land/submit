@@ -513,7 +513,7 @@ export const fetchEntityIssueCounts = fetchMany({
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-      AND entity != ''
+      AND (entity != '' AND entity IS NOT NULL)
       AND it.responsibility = 'external'
       AND it.severity = 'error'
       ${datasetClause}
@@ -526,12 +526,26 @@ export const fetchEntityIssueCounts = fetchMany({
 export const fetchEntryIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
+
+    const mostRecentResourcesForEachDataset = {}
+
+    req.resources.forEach(resource => {
+      const currentRecentResource = mostRecentResourcesForEachDataset[resource.dataset]
+      if (!currentRecentResource || new Date(currentRecentResource.start_date) < resource.start_date) {
+        mostRecentResourcesForEachDataset[resource.dataset] = resource
+      }
+    })
+
+    const mostRecentResources = Object.values(mostRecentResourcesForEachDataset).map(resource => resource.resource)
+
     return `
       select dataset, field, i.issue_type, COUNT(resource+line_number) as count
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-      WHERE resource =  '${req.resources[0].resource}'
+      WHERE resource in ('${mostRecentResources.join("', '")}')
       AND (entity = '' OR entity is NULL)
+      AND it.responsibility = 'external'
+      AND it.severity = 'error'
       ${datasetClause}
       GROUP BY field, i.issue_type, dataset
     `
