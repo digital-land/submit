@@ -527,26 +527,30 @@ export const fetchEntityIssueCounts = fetchMany({
   result: 'entityIssueCounts'
 })
 
+export const getMostRecentResources = (resources) => {
+  const mostRecentResourcesMap = {}
+  resources.forEach(resource => {
+    const currentRecent = mostRecentResourcesMap[resource.dataset]
+    if (!currentRecent || new Date(currentRecent.start_date) < resource.start_date) {
+      mostRecentResourcesMap[resource.dataset] = resource
+    }
+  })
+  return Object.values(mostRecentResourcesMap)
+}
+
 export const fetchEntryIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
 
-    const mostRecentResourcesForEachDataset = {}
+    const mostRecentResources = getMostRecentResources(req.resources)
 
-    req.resources.forEach(resource => {
-      const currentRecentResource = mostRecentResourcesForEachDataset[resource.dataset]
-      if (!currentRecentResource || new Date(currentRecentResource.start_date) < resource.start_date) {
-        mostRecentResourcesForEachDataset[resource.dataset] = resource
-      }
-    })
-
-    const mostRecentResources = Object.values(mostRecentResourcesForEachDataset).map(resource => resource.resource)
+    const resourceIds = Object.values(mostRecentResources).map(resource => resource.resource)
 
     return `
-      select dataset, field, i.issue_type, COUNT(resource+line_number) as count
+      select dataset, field, i.issue_type, COUNT(CONCAT(resource, line_number)) as count
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-      WHERE resource in ('${mostRecentResources.join("', '")}')
+      WHERE resource in ('${resourceIds.join("', '")}')
       AND (entity = '' OR entity is NULL)
       AND it.responsibility = 'external'
       AND it.severity = 'error'
