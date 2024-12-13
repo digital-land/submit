@@ -209,7 +209,8 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
   try {
     const datasetResources = await Promise.all(promises).catch(error => {
-      console.log(error)
+      logger.error('Failed to fetch dataset resources', { error, type: types.App })
+      throw error
     })
 
     req.resources = resources.map((resource, i) => {
@@ -218,8 +219,8 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
     next()
   } catch (error) {
-    // Any other error handling code goes here
-    console.log(error)
+    logger.error('Error in addEntityCountsToResources', { error, type: types.App })
+    next(error)
   }
 }
 
