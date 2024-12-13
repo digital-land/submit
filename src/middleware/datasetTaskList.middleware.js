@@ -57,8 +57,14 @@ export const prepareTasks = (req, res, next) => {
 
   const entityCount = entities.length
 
-  const specialIssueTypeCases = ['reference values are not unique']
+const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
 
+export const prepareTasks = (req, res, next) => {
+  const { lpa, dataset } = req.parsedParams
+  const { entities, resources } = req
+  const { entryIssueCounts, entityIssueCounts } = req
+
+  const entityCount = entities.length
   let issues = [...entryIssueCounts, ...entityIssueCounts]
 
   issues = issues.filter(
