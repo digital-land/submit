@@ -65,8 +65,8 @@ describe('datasetTaskList.middleware.js', () => {
         },
         entities: ['entity1', 'entity2'],
         resources: [{ entry_count: 10 }],
-        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1' }],
-        entityIssueCounts: [{ field: 'field2', issue_type: 'issue-type2' }]
+        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
+        entityIssueCounts: [{ field: 'field2', issue_type: 'issue-type2', count: 1 }]
       }
 
       const res = {
@@ -129,7 +129,7 @@ describe('datasetTaskList.middleware.js', () => {
         },
         entities: [],
         resources: [{ entry_count: 10 }],
-        entryIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique' }],
+        entryIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique', count: 1 }],
         entityIssueCounts: []
       }
 
