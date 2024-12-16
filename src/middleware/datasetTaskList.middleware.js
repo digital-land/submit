@@ -71,7 +71,7 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
 
   // include sources which couldn't be accessed
   for (const source of sources) {
-    if (!source.status || source.status > 300) {
+    if (!source.status || source.status >= 300) {
       taskList.push({
         title: {
           text: 'There was an error accessing the URL'
