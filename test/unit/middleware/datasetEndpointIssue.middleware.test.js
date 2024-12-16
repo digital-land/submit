@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import { prepareDatasetEndpointIssueTemplateParams } from '../../../src/middleware/datasetEndpointIssue.middleware.js'
-/** @typedef {import('../../../src/types/datasette.js').Types} Types */
+import '../types/datasette.js'
 
 /** @type {{orgInfo: Types.OrgInfo, dataset: Types.DatasetInfo, source: Types.Source}} */
 const reqTemplate = {

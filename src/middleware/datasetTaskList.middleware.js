@@ -12,8 +12,7 @@ import {
 import { fetchIf, fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
-
-/** @typedef {import('../types/datasette')} Types */
+import '../types/datasette.js'
 
 /**
  * Fetches the resource status
@@ -48,7 +47,7 @@ function getStatusTag (status) {
 /**
  * Middleware. Updates req with `templateParams`
  *
- * @param {{ orgInfo: Types.OrgInfo, sources: Source[], entityCountRow: undefined | { entity_count: number}, issues: Issue[] }} req
+ * @param {{ orgInfo: OrgInfo, sources: Source[], entityCountRow: undefined | { entity_count: number}, issues: Issue[] }} req
  * @param {*} res
  * @param {*} next
  * @returns { { templateParams: object }}
