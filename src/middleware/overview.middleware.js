@@ -1,5 +1,6 @@
-import { fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError } from './common.middleware.js'
-import { fetchMany, fetchOneFromAllDatasets, renderTemplate } from './middleware.builders.js'
+import performanceDbApi from '../services/performanceDbApi.js'
+import { fetchOrgInfo, logPageError, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchResources } from './common.middleware.js'
+import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
 import { dataSubjects, getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
@@ -11,6 +12,19 @@ const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
     .filter((dataset) => dataset.available)
     .map((dataset) => dataset.value)
 )
+
+/**
+ * Middleware. Updates req with 'datasetErrorStatus'.
+ *
+ * Fetches datasets which have active endpoints in error state.
+ */
+const fetchDatasetErrorStatus = fetchMany({
+  query: ({ params }) => {
+    return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
+  },
+  result: 'datasetErrorStatus',
+  dataset: FetchOptions.performanceDb
+})
 
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
@@ -28,6 +42,12 @@ const fetchEntityCounts = fetchOneFromAllDatasets({
     WHERE organisation_entity = '${req.orgInfo.entity}'`,
   result: 'entityCounts'
 })
+
+/**
+ * For the purpose of displaying single status label on (possibly) many issues,
+ * we want issues with 'worse' status to be weighted higher.
+ */
+const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'].map((status, i) => [status, i]))
 
 /**
  * Calculates overall "health" of the datasets (not)provided by an organisation.
@@ -59,10 +79,8 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   const currentDate = new Date()
 
   req.noticeFlags = requiredDatasets.map(dataset => {
-    let resource
-    if (resources[dataset]) {
-      resource = resources[dataset][0]
-    }
+    const datasetResources = resources[dataset.dataset]
+    let resource = datasetResources?.find(resource => resource.dataset === dataset.dataset)
 
     let datasetSuppliedForCurrentYear = false
     let datasetSuppliedForLastYear = false
@@ -96,6 +114,20 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
 
     return { dataset: dataset.dataset, dueNotice, overdueNotice, deadline: deadlineDate }
   })
+
+  next()
+}
+
+export function groupResourcesByDataset (req, res, next) {
+  const { resources } = req
+
+  req.resources = resources.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
+    }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
 
   next()
 }
@@ -156,50 +188,58 @@ export const addNoticesToDatasets = (req, res, next) => {
   next()
 }
 
-export function groupResourcesByDataset (req, res, next) {
-  const { resources } = req
-
-  req.resources = resources.reduce((acc, current) => {
-    if (!acc[current.dataset]) {
-      acc[current.dataset] = []
+/**
+ * The overview data can contain multiple rows per dataset,
+ * and we want a collection of one item per dataset,
+ * because that's how we display it on the page.
+ *
+ * @param {object[]} lpaOverview
+ * @returns {object[]}
+ */
+export function aggregateOverviewData (req, res, next) {
+  const { lpaOverview } = req
+  if (!Array.isArray(lpaOverview)) {
+    throw new Error('lpaOverview should be an array')
+  }
+  const grouped = _.groupBy(lpaOverview, 'dataset')
+  const datasets = []
+  for (const [dataset, rows] of Object.entries(grouped)) {
+    let numIssues = 0
+    for (const row of rows) {
+      if (row.status !== 'Needs fixing') {
+        continue
+      }
+      if (row.issue_count) {
+        const numFields = (row.fields ?? '').split(',').length
+        if (row.issue_count >= row.entity_count) numIssues += numFields
+        else numIssues += row.issue_count
+      }
     }
-    acc[current.dataset].push(current)
-    return acc
-  }, {})
-
-  next()
-}
-
-export function groupIssuesCountsByDataset (req, res, next) {
-  const { entityIssueCounts, entryIssueCounts } = req
-
-  // merge arrays and handle undefined
-  const issueCounts = [...(entityIssueCounts || []), ...(entryIssueCounts || [])]
-  req.issues = issueCounts.reduce((acc, current) => {
-    if (!acc[current.dataset]) {
-      acc[current.dataset] = []
+    const info = {
+      dataset,
+      issue_count: numIssues,
+      endpoint: rows[0].endpoint,
+      error: rows[0].error,
+      status: _.maxBy(rows, row => statusOrdering.get(row.status)).status
     }
-    acc[current.dataset].push(current)
-    return acc
-  }, {})
-
-  next()
+    datasets.push(info)
+  }
 }
 
 export function prepareDatasetObjects (req, res, next) {
-  const { resources, issues } = req
+  const { issues, endpoints } = req
 
   req.datasets = availableDatasets.map((dataset) => {
-    const datasetResources = resources[dataset]
+    const datasetEndpoints = endpoints[dataset]
     const datasetIssues = issues[dataset]
 
-    if (!datasetResources) {
+    if (!datasetEndpoints) {
       return { status: 'Not submitted', endpointCount: 0, dataset }
     }
 
-    const endpointCount = datasetResources.length
-    const httpStatus = datasetResources.find(resource => resource.status !== '200')?.latest_status
-    const error = httpStatus ? `There was a ${httpStatus} error accessing the data URL` : undefined
+    const endpointCount = datasetEndpoints.length
+    const httpStatus = datasetEndpoints.find(endpoint => endpoint.latest_status !== '200')?.latest_status
+    const error = httpStatus !== undefined ? `There was a ${httpStatus} error accessing the data URL` : undefined
     const issueCount = datasetIssues?.length || 0
 
     let status
@@ -224,26 +264,29 @@ export function prepareDatasetObjects (req, res, next) {
  * @param next
  */
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { orgInfo: organisation, provisions, datasets, resources } = req
+  const { orgInfo: organisation, provisions, datasets } = req
   // add in any of the missing key 8 datasets
+  const keys = new Set(datasets.map(d => d.dataset))
+  availableDatasets.forEach((dataset) => {
+    if (!keys.has(dataset)) {
+      const row = {
+        dataset,
+        endpoint: null,
+        status: 'Not submitted',
+        issue_count: 0,
+        entity_count: undefined
+      }
+      datasets.push(row)
+    }
+  })
 
   const provisionData = new Map()
   for (const provision of provisions ?? []) {
     provisionData.set(provision.dataset, provision)
   }
 
-  // we patch the datasets' project (based on provision data) and status (based on its endpoints error status)
-  for (const dataset of datasets) {
-    const datasetResources = resources[dataset.dataset]
-    dataset.project = provisionData.get(dataset.dataset)?.project
-    if (dataset.status !== 'Error' && (datasetResources === undefined || datasetResources.findIndex(resource => resource.status !== '200') > 0)) {
-      dataset.status = 'Error'
-    }
-  }
-
   const totalDatasets = datasets.length
-  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] =
-      datasets.reduce(orgStatsReducer, [0, 0, 0])
+  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
 
   const datasetsByReason = _.groupBy(datasets, (ds) => {
     const reason = provisionData.get(ds.dataset)?.provision_reason
@@ -280,20 +323,51 @@ export const getOverview = renderTemplate({
   handlerName: 'getOverview'
 })
 
+export function groupIssuesCountsByDataset (req, res, next) {
+  const { entityIssueCounts, entryIssueCounts } = req
+
+  // merge arrays and handle undefined
+  const issueCounts = [...(entityIssueCounts || []), ...(entryIssueCounts || [])]
+  req.issues = issueCounts.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
+    }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
+
+  next()
+}
+
+export function groupEndpointsByDataset (req, res, next) {
+  const { endpoints } = req
+
+  // merge arrays and handle undefined
+  req.endpoints = endpoints.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
+    }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
+
+  next()
+}
+
 export default [
   fetchOrgInfo,
   fetchResources,
+  fetchDatasetErrorStatus,
+  fetchEndpointSummary,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   fetchEntityCounts,
   groupResourcesByDataset,
   groupIssuesCountsByDataset,
+  groupEndpointsByDataset,
 
   prepareDatasetObjects,
-  // prepareOverviewData,
 
-  // fetchLpaOverview,
-  // aggregateOverviewData,
   datasetSubmissionDeadlineCheck,
   addNoticesToDatasets,
   fetchProvisions,

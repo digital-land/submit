@@ -151,7 +151,7 @@ export const OrgDatasetOverview = v.strictObject({
     numberOfExpectedFields: v.integer(),
     endpoints: v.array(v.strictObject({
       name: v.string(),
-      documentation_url: v.optional(v.string()),
+      documentation_url: v.nullable(v.optional(v.string())),
       endpoint: v.string(),
       lastAccessed: v.string(),
       lastUpdated: v.nullable(v.string()),

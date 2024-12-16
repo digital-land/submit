@@ -41,9 +41,7 @@ export const fetchDatasetInfo = fetchOne({
  * @param {*} req
  * @returns {boolean}
  */
-export const isResourceAccessible = (req) => req.resourceStatus.status === '200'
 export const isResourceIdValid = (req) => req.resourceStatus.resource.trim() !== ''
-export const isResourceNotAccessible = (req) => !isResourceAccessible(req)
 export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
 export const isResourceDataPresent = (req) => 'resource' in req
 
@@ -184,14 +182,15 @@ export const fetchResources = fetchMany({
     const lpaClause = req.params.lpa ? `AND ro.organisation = '${req.params.lpa}'` : ''
     const datasetClause = req.params.dataset ? `AND rd.dataset = '${req.params.dataset}'` : ''
     return `
-      SELECT DISTINCT r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rd.dataset, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
+      SELECT DISTINCT  s.documentation_url, r.start_date as resource_start_date, r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rd.dataset, rhe.endpoint_url, rhe.licence, rhe.status, rhe.latest_log_entry_date, rhe.endpoint_entry_date from resource r
       LEFT JOIN resource_organisation ro ON ro.resource = r.resource
       LEFT JOIN resource_dataset rd ON rd.resource = r.resource
-      LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
+      LEFT JOIN reporting_historic_endpoints rhe ON r.resource = rhe.resource
+      LEFT JOIN source s ON s.endpoint = rhe.endpoint_url
       WHERE r.end_date = ''
       ${lpaClause}
       ${datasetClause}
-      ORDER BY start_date desc`
+      ORDER BY r.start_date desc`
   },
   result: 'resources'
 })
@@ -544,7 +543,7 @@ export const fetchEntryIssueCounts = fetchMany({
     const resourceIds = Object.values(mostRecentResources).map(resource => resource.resource)
 
     return `
-      select dataset, field, i.issue_type, COUNT(CONCAT(resource, line_number)) as count
+      select dataset, field, i.issue_type, COUNT(resource + line_number) as count
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource in ('${resourceIds.join("', '")}')
@@ -674,3 +673,17 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
 
   next()
 }
+
+export const fetchEndpointSummary = fetchMany({
+  query: ({ params }) => {
+    const datasetClause = params.dataset ? `AND dataset = '${params.dataset}'` : ''
+
+    return `
+      SELECT * FROM endpoint_dataset_summary
+      WHERE organisation = '${params.lpa}'
+      ${datasetClause}
+    `
+  },
+  result: 'endpoints',
+  dataset: FetchOptions.performanceDb
+})
