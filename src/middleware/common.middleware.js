@@ -326,7 +326,7 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
   })
 
   if (numEntitiesWithNoJson > 0) {
-    logger.info(`Got ${numEntitiesWithNoJson.length} entities with no json field`,
+    logger.info(`Got ${numEntitiesWithNoJson} entities with no json field`,
       { type: types.App, endpoint: req.originalUrl })
   }
 
