@@ -641,7 +641,6 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
   schema: v.object({
     lpa: v.string(),
     dataset: v.string()
-    // resource: v.string()
   })
 })
 
