@@ -67,8 +67,6 @@
         aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
       </div>
     {% endif %}
-
-    
   </div>
 </div>
 
@@ -109,7 +107,6 @@
 {% block scripts %}
   {{ super() }}
   {% if geometries and geometries.length %}
-    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
         containerId: 'map',

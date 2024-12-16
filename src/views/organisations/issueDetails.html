@@ -99,7 +99,6 @@
 {% block scripts %}
   {{ super() }}
   {% if entry.geometries and entry.geometries.length %}
-    <link href='https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css' rel='stylesheet' />
     <script>
       window.serverContext = {
         containerId: 'map',
