@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import { prepareDatasetEndpointIssueTemplateParams } from '../../../src/middleware/datasetEndpointIssue.middleware.js'
-/** @typedef {import('../../../src/types/datasette')} Types */
+/** @typedef {import('../../../src/types/datasette.js').Types} Types */
 
 /** @type {{orgInfo: Types.OrgInfo, dataset: Types.DatasetInfo, source: Types.Source}} */
 const reqTemplate = {
@@ -21,6 +21,7 @@ const reqTemplate = {
 describe('The middleware', () => {
   it('prepares template params', ({ expect }) => {
     const req = structuredClone(reqTemplate)
+    req.now = new Date('2024-09-10')
     prepareDatasetEndpointIssueTemplateParams(req, {}, () => {})
 
     expect(req.templateParams).toStrictEqual({

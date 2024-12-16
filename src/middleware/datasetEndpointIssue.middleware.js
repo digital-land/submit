@@ -5,8 +5,7 @@ import {
   validateOrgAndDatasetQueryParams, validateQueryParams
 } from './common.middleware.js'
 import { fetchOne } from './middleware.builders.js'
-
-/** @typedef {import('../types/datasette')} Types */
+import '../types/datasette.js'
 
 const fetchOrgInfoWithStatGeo = fetchOne({
   query: ({ params }) => {
@@ -40,21 +39,19 @@ const fetchSourceByEndpoint = fetchOne({
 
 /**
  *
- * @param { { orgInfo: Types.OrgInfo, dataset: Types.DatasetInfo, source: Types.Source }} req
+ * @param { { orgInfo: OrgInfo, dataset: DatasetInfo, source: Source, now: Date }} req
  * @param res
  * @param next
  */
 export const prepareDatasetEndpointIssueTemplateParams = (req, res, next) => {
-  const { orgInfo: organisation, dataset, source } = req
-
-  const today = new Date()
+  const { orgInfo: organisation, dataset, source, now } = req
 
   /** @type {number|null} */
   const daysSince200 = source.days_since_200
   /** @type {String|null} */
   let last200Datetime = null
   if (Number.isSafeInteger(daysSince200) && daysSince200 >= 0) {
-    const last200Date = new Date(today.getTime() - daysSince200 * 24 * 60 * 60 * 1000)
+    const last200Date = new Date((now || new Date()).getTime() - daysSince200 * 24 * 60 * 60 * 1000)
     last200Datetime = last200Date.toISOString().split('T')[0]
   }
 
