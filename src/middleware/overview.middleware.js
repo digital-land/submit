@@ -224,7 +224,7 @@ export function prepareDatasetObjects (req, res, next) {
  * @param next
  */
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { orgInfo: organisation, provisions, datasets, datasetErrorStatus } = req
+  const { orgInfo: organisation, provisions, datasets, resources } = req
   // add in any of the missing key 8 datasets
 
   const provisionData = new Map()
@@ -233,10 +233,10 @@ export function prepareOverviewTemplateParams (req, res, next) {
   }
 
   // we patch the datasets' project (based on provision data) and status (based on its endpoints error status)
-  const datasetsWithEndpointErrors = new Set(datasetErrorStatus.map(item => item.dataset))
   for (const dataset of datasets) {
+    const datasetResources = resources[dataset.dataset]
     dataset.project = provisionData.get(dataset.dataset)?.project
-    if (dataset.status !== 'Error' && datasetsWithEndpointErrors.has(dataset.dataset)) {
+    if (dataset.status !== 'Error' && (datasetResources === undefined || datasetResources.findIndex(resource => resource.status !== '200') > 0)) {
       dataset.status = 'Error'
     }
   }
