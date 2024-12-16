@@ -21,7 +21,7 @@ const reqTemplate = {
 describe('The middleware', () => {
   it('prepares template params', ({ expect }) => {
     const req = structuredClone(reqTemplate)
-    req.now = new Date('2024-09-10')
+    req.now = new Date('2024-12-12')
     prepareDatasetEndpointIssueTemplateParams(req, {}, () => {})
 
     expect(req.templateParams).toStrictEqual({
