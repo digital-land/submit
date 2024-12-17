@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
 
@@ -69,6 +69,12 @@ export const prepareEntry = (req, res, next) => {
 
   const issue = entryIssues[0]
 
+  if (!issue.entry_number || !issue.issue_type || typeof issue.line_number !== 'number') {
+    const error = new Error('Invalid entry issue structure')
+    error.status = 500
+    return next(error)
+  }
+
   const errorMessage = issue.message || issue.issue_type
 
   req.entry = {
@@ -129,5 +135,6 @@ export default [
   getErrorSummaryItems,
   prepareEntry,
   prepareIssueDetailsTemplateParams,
-  getIssueDetails
+  getIssueDetails,
+  logPageError
 ]

@@ -1,10 +1,9 @@
-import { fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, getDatasetTaskListError, isResourceAccessible, isResourceIdInParams, isResourceNotAccessible, logPageError, pullOutDatasetSpecification, takeResourceIdFromParams } from './common.middleware.js'
-import { fetchOne, fetchIf, fetchMany, renderTemplate, FetchOptions, onlyIf } from './middleware.builders.js'
-import { fetchResourceStatus, prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
-import performanceDbApi from '../services/performanceDbApi.js'
+import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, getDatasetTaskListError, logPageError, pullOutDatasetSpecification } from './common.middleware.js'
+import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy, onlyIf } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -39,64 +38,64 @@ const fetchSpecification = fetchOne({
   result: 'specification'
 })
 
-const fetchSources = fetchMany({
-  query: ({ params }) => `
-    WITH RankedEndpoints AS (
-      SELECT
-        rhe.endpoint,
-        rhe.endpoint_url,
-        rhe.status,
-        rhe.exception,
-        rhe.resource,
-        rhe.latest_log_entry_date,
-        rhe.endpoint_entry_date,
-        rhe.endpoint_end_date,
-        rhe.resource_start_date as resource_start_date,
-        rhe.resource_end_date,
-        s.documentation_url,
-        ROW_NUMBER() OVER (
-          PARTITION BY rhe.endpoint_url
-          ORDER BY
-            rhe.latest_log_entry_date DESC
-        ) AS row_num
-      FROM
-        reporting_historic_endpoints rhe
-        LEFT JOIN source s ON rhe.endpoint = s.endpoint
-      WHERE
-        REPLACE(rhe.organisation, '-eng', '') = '${params.lpa}'
-        AND rhe.pipeline = '${params.dataset}'
-        AND (
-          rhe.resource_end_date >= current_timestamp
-          OR rhe.resource_end_date IS NULL
-          OR rhe.resource_end_date = ''
-        )
-        AND (
-          rhe.endpoint_end_date >= current_timestamp
-          OR rhe.endpoint_end_date IS NULL
-          OR rhe.endpoint_end_date = ''
-        )
-    )
-    SELECT
-      endpoint,
-      endpoint_url,
-      status,
-      exception,
-      resource,
-      latest_log_entry_date,
-      endpoint_entry_date,
-      endpoint_end_date,
-      resource_start_date,
-      resource_end_date,
-      documentation_url
-    FROM
-      RankedEndpoints
-    WHERE
-      row_num = 1
-    ORDER BY
-      latest_log_entry_date DESC;
-  `,
-  result: 'sources'
-})
+// const fetchSources = fetchMany({
+//   query: ({ params }) => `
+//     WITH RankedEndpoints AS (
+//       SELECT
+//         rhe.endpoint,
+//         rhe.endpoint_url,
+//         rhe.status,
+//         rhe.exception,
+//         rhe.resource,
+//         rhe.latest_log_entry_date,
+//         rhe.endpoint_entry_date,
+//         rhe.endpoint_end_date,
+//         rhe.resource_start_date as resource_start_date,
+//         rhe.resource_end_date,
+//         s.documentation_url,
+//         ROW_NUMBER() OVER (
+//           PARTITION BY rhe.endpoint_url
+//           ORDER BY
+//             rhe.latest_log_entry_date DESC
+//         ) AS row_num
+//       FROM
+//         reporting_historic_endpoints rhe
+//         LEFT JOIN source s ON rhe.endpoint = s.endpoint
+//       WHERE
+//         REPLACE(rhe.organisation, '-eng', '') = '${params.lpa}'
+//         AND rhe.pipeline = '${params.dataset}'
+//         AND (
+//           rhe.resource_end_date >= current_timestamp
+//           OR rhe.resource_end_date IS NULL
+//           OR rhe.resource_end_date = ''
+//         )
+//         AND (
+//           rhe.endpoint_end_date >= current_timestamp
+//           OR rhe.endpoint_end_date IS NULL
+//           OR rhe.endpoint_end_date = ''
+//         )
+//     )
+//     SELECT
+//       endpoint,
+//       endpoint_url,
+//       status,
+//       exception,
+//       resource,
+//       latest_log_entry_date,
+//       endpoint_entry_date,
+//       endpoint_end_date,
+//       resource_start_date,
+//       resource_end_date,
+//       documentation_url
+//     FROM
+//       RankedEndpoints
+//     WHERE
+//       row_num = 1
+//     ORDER BY
+//       latest_log_entry_date DESC;
+//   `,
+//   result: 'sources'
+// })
 
 /**
  * Sets notices from a source key in the request object.
@@ -106,7 +105,9 @@ const fetchSources = fetchMany({
  */
 export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   const { dataset } = req.params
-  const source = req[sourceKey]
+  const resources = req[sourceKey]
+
+  const source = resources[0]
 
   const deadlineObj = requiredDatasets.find(deadline => deadline.dataset === dataset)
 
@@ -126,7 +127,7 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
 
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
 
-    const startDate = new Date(source.startDate)
+    const startDate = new Date(source.start_date)
 
     if (startDate.toString() === 'Invalid Date') {
       logger.warn('Invalid start date encountered', {
@@ -169,14 +170,19 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   next()
 }
 
-const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
+export const fetchEntityCount = fetchOne({
+  query: ({ req }) => `
+    select count(entity) as entity_count
+    from entity
+    WHERE organisation_entity = '${req.orgInfo.entity}'
+  `,
   result: 'entityCount',
-  dataset: FetchOptions.fromParams
+  dataset: FetchOptions.fromParams,
+  fallbackPolicy: FetchOneFallbackPolicy.continue
 })
 
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues, notice } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, resources, dataset, entryIssueCounts, entityIssueCounts, notice } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
@@ -193,7 +199,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const numberOfExpectedFields = specFields.length
 
   // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
-  const endpoints = sources.sort((a, b) => {
+  const endpoints = resources.sort((a, b) => {
     if (a.status >= 200 && a.status < 300) return -1
     if (b.status >= 200 && b.status < 300) return 1
     return 0
@@ -220,7 +226,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   req.templateParams = {
     organisation: orgInfo,
     dataset,
-    taskCount: issues.length ?? 0,
+    taskCount: entryIssueCounts.length + entityIssueCounts.length,
     stats: {
       numberOfFieldsSupplied: numberOfFieldsSupplied ?? 0,
       numberOfFieldsMatched: numberOfFieldsMatched ?? 0,
@@ -242,19 +248,20 @@ const getDatasetOverview = renderTemplate(
   }
 )
 
+const noResourceAccessible = (req, res, next) => req.resources.length === 0
+
 export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchColumnSummary,
-  fetchResourceStatus,
-  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
-  onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
-  onlyIf(isResourceNotAccessible, getDatasetTaskListError),
+  fetchResources,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
+  onlyIf(noResourceAccessible, prepareDatasetTaskListErrorTemplateParams),
+  onlyIf(noResourceAccessible, getDatasetTaskListError),
   fetchSpecification,
   pullOutDatasetSpecification,
-  fetchSources,
-  setNoticesFromSourceKey('resource'),
+  setNoticesFromSourceKey('resources'),
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,

@@ -382,19 +382,5 @@ export default {
     const result = await datasette.runQuery(sql, dataset)
 
     return result.formattedData
-  },
-
-  /**
-   * Query for the entity count for a given organisation and dataset.
-   *
-   * @param orgEntity
-   * @returns {string}
-   */
-  entityCountQuery (orgEntity) {
-    return /* sql */ `
-      select count(entity) as entity_count
-      from entity
-      WHERE organisation_entity = '${orgEntity}'
-    `
   }
 }
