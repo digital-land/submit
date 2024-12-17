@@ -643,7 +643,7 @@ export const noIndexHeader = (req, res, next) => {
  * @param next
  */
 export const preventIndexing = (req, res, next) => {
-  if (/^\/organisations\/[\w-:]+\/.*$/.test(req.originalUrl)) {
+  if (/^\/organisations\/[\w-:]+\/.*$|^\/check\/status.*$|\/check\/results.*$/.test(req.originalUrl)) {
     return noIndexHeader(req, res, next)
   }
   next()
