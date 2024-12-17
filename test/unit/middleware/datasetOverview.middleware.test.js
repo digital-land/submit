@@ -85,10 +85,12 @@ describe('Dataset Overview Middleware', () => {
     it('should set notice for due dataset', () => {
       const reqWithDataset = {
         ...req,
-        dataset: {
-          dataset: 'mock-dataset',
-          startDate: '2020-11-01'
-        }
+        dataset: [
+          {
+            dataset: 'mock-dataset',
+            start_date: '2020-11-01'
+          }
+        ]
       }
 
       vi.setSystemTime(new Date('2022-02-01T00:00:00Z'))
@@ -104,10 +106,12 @@ describe('Dataset Overview Middleware', () => {
     it('should set notice for overdue dataset', () => {
       const reqWithDataset = {
         ...req,
-        dataset: {
-          dataset: 'mock-dataset',
-          startDate: '2020-01-01'
-        }
+        dataset: [
+          {
+            dataset: 'mock-dataset',
+            start_date: '2020-01-01'
+          }
+        ]
       }
 
       vi.setSystemTime(new Date('2021-11-01T00:00:00Z'))
@@ -125,10 +129,12 @@ describe('Dataset Overview Middleware', () => {
           lpa: 'mock-lpa',
           dataset: 'unknown-dataset'
         },
-        dataset: {
-          dataset: 'unknown-dataset',
-          startDate: '2022-01-01'
-        }
+        dataset: [
+          {
+            dataset: 'unknown-dataset',
+            start_date: '2022-01-01'
+          }
+        ]
       }
 
       setNoticesFromSourceKey('dataset')(reqWithDataset, res, () => {})
@@ -138,10 +144,12 @@ describe('Dataset Overview Middleware', () => {
     it('should set notice for due dataset at notice period boundary', () => {
       const reqWithDataset = {
         ...req,
-        dataset: {
-          dataset: 'mock-dataset',
-          startDate: '2020-11-01'
-        }
+        dataset: [
+          {
+            dataset: 'mock-dataset',
+            start_date: '2020-11-01'
+          }
+        ]
       }
 
       vi.setSystemTime(new Date('2022-02-01T15:30:00Z'))
@@ -157,10 +165,12 @@ describe('Dataset Overview Middleware', () => {
     it('should set notice for due dataset with notice period 1', () => {
       const reqWithDataset = {
         ...req,
-        dataset: {
-          dataset: 'mock-dataset-2',
-          startDate: '2020-11-01'
-        }
+        dataset: [
+          {
+            dataset: 'mock-dataset-2',
+            start_date: '2020-11-01'
+          }
+        ]
       }
 
       utils.requiredDatasets = [
@@ -184,10 +194,12 @@ describe('Dataset Overview Middleware', () => {
     it('should not set notice for due dataset with notice period 0', () => {
       const reqWithDataset = {
         ...req,
-        dataset: {
-          dataset: 'mock-dataset-3',
-          startDate: '2020-11-01'
-        }
+        dataset: [
+          {
+            dataset: 'mock-dataset-3',
+            start_date: '2020-11-01'
+          }
+        ]
       }
 
       utils.requiredDatasets = [

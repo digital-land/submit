@@ -155,7 +155,7 @@ describe('overview.middleware', () => {
         'brownfield-land': [
           {
             dataset: 'brownfield-land',
-            startDate: '1995-03-17T10:00:00.000z'
+            start_date: '1995-03-17T10:00:00.000z'
           }
         ]
       }
@@ -173,7 +173,7 @@ describe('overview.middleware', () => {
         'brownfield-land': [
           {
             dataset: 'brownfield-land',
-            startDate: '1994-03-17T10:00:00.000z'
+            start_date: '1994-03-17T10:00:00.000z'
           }
         ]
       }
@@ -190,7 +190,7 @@ describe('overview.middleware', () => {
         'brownfield-land': [
           {
             dataset: 'brownfield-land',
-            startDate: '1996-03-17T10:00:00.000z'
+            start_date: '1996-03-17T10:00:00.000z'
           }
         ]
       }
