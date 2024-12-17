@@ -69,6 +69,12 @@ export const prepareEntry = (req, res, next) => {
 
   const issue = entryIssues[0]
 
+  if (!issue.entry_number || !issue.issue_type || typeof issue.line_number !== 'number') {
+    const error = new Error('Invalid entry issue structure')
+    error.status = 500
+    return next(error)
+  }
+
   const errorMessage = issue.message || issue.issue_type
 
   req.entry = {
