@@ -105,7 +105,9 @@ const fetchSpecification = fetchOne({
  */
 export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   const { dataset } = req.params
-  const source = req[sourceKey]
+  const resources = req[sourceKey]
+
+  const source = resources[0]
 
   const deadlineObj = requiredDatasets.find(deadline => deadline.dataset === dataset)
 
@@ -125,7 +127,7 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
 
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
 
-    const startDate = new Date(source.startDate)
+    const startDate = new Date(source.start_date)
 
     if (startDate.toString() === 'Invalid Date') {
       logger.warn('Invalid start date encountered', {
@@ -259,7 +261,7 @@ export default [
   onlyIf(noResourceAccessible, getDatasetTaskListError),
   fetchSpecification,
   pullOutDatasetSpecification,
-  setNoticesFromSourceKey('resource'),
+  setNoticesFromSourceKey('resources'),
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,
