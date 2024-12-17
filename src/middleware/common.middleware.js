@@ -629,3 +629,22 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
 
   next()
 }
+
+export const noIndexHeader = (req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex')
+  next()
+}
+
+/**
+ * Middleware. Prevents indexing of certain pages
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
+export const preventIndexing = (req, res, next) => {
+  if (/^\/organisations\/[\w-:]+\/.*$/.test(req.originalUrl)) {
+    return noIndexHeader(req, res, next)
+  }
+  next()
+}

@@ -1,5 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, FilterOutIssuesToMostRecent, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams } from '../../../src/middleware/common.middleware'
+import {
+  filterOutEntitiesWithoutIssues,
+  createPaginationTemplateParams,
+  addDatabaseFieldToSpecification,
+  replaceUnderscoreInSpecification,
+  pullOutDatasetSpecification,
+  extractJsonFieldFromEntities,
+  replaceUnderscoreInEntities,
+  setDefaultParams,
+  getUniqueDatasetFieldsFromSpecification,
+  show404IfPageNumberNotInRange,
+  FilterOutIssuesToMostRecent,
+  removeIssuesThatHaveBeenFixed,
+  addFieldMappingsToIssue,
+  getSetDataRange,
+  getErrorSummaryItems,
+  getSetBaseSubPath,
+  prepareIssueDetailsTemplateParams,
+  preventIndexing
+} from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -1497,5 +1516,38 @@ describe('filterOutEntitiesWithoutIssues middleware', () => {
       { entity: 'entity2' },
       { entity: 'entity3' }
     ])
+  })
+})
+
+describe('preventIndexing middleware', () => {
+  it('should not set headers on the organisation search page', () => {
+    const req = { originalUrl: '/some-other-page' }
+    const res = { set: vi.fn() }
+    preventIndexing(req, res, vi.fn())
+    expect(res.set).not.toBeCalled()
+  })
+  it('should not set headers on the organisation search page', () => {
+    const req = { originalUrl: '/organisations' }
+    const res = { set: vi.fn() }
+    preventIndexing(req, res, vi.fn())
+    expect(res.set).not.toBeCalled()
+  })
+  it('should not set headers on the LPA page', () => {
+    const req = { originalUrl: '/organisations/foo-bar:ABC' }
+    const res = { set: vi.fn() }
+    preventIndexing(req, res, vi.fn())
+    expect(res.set).not.toBeCalled()
+  })
+  it('should set headers on the dataset page', () => {
+    const req = { originalUrl: '/organisations/foo-bar:ABC/some-dataset/overview' }
+    const res = { set: vi.fn() }
+    preventIndexing(req, res, vi.fn())
+    expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')
+  })
+  it('should set headers on the dataset page', () => {
+    const req = { originalUrl: '/organisations/foo-bar:ABC/some-dataset' }
+    const res = { set: vi.fn() }
+    preventIndexing(req, res, vi.fn())
+    expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')
   })
 })
