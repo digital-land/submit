@@ -2,6 +2,7 @@ $govuk-global-styles: true;
 
 @import "node_modules/govuk-frontend/dist/govuk/all";
 @import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
+@import "node_modules/maplibre-gl/dist/maplibre-gl";
 @import "src/assets/scss/_scrollable-container.scss";
 @import "./step-by-step-nav.scss";
 @import "./overrides";
@@ -25,8 +26,6 @@ $govuk-global-styles: true;
     white-space: normal;
     min-width: fit-content;
   }
-
-
 }
 
 .app-inset-text---warning {
@@ -42,9 +41,8 @@ $govuk-global-styles: true;
     color: govuk-colour('blue');
     font-weight: bold;
   }
-
-
 }
+
 .app-map {
   height: 500px;
   @include govuk-responsive-margin(6, $direction: "bottom");
@@ -179,7 +177,6 @@ code * {
   padding: 0px;
 }
 
-
 .dl-table {
   overflow-y: auto;
   overflow-x: hidden;
@@ -193,7 +190,6 @@ code * {
   }
 }
 
-
 .dl-table__head {
   position: sticky;
   top: 0;
@@ -204,7 +200,6 @@ code * {
     background-color: govuk-colour("light-grey");
   }
 }
-
 
 .dl-table__header {
   border: 1px solid $govuk-border-colour;
