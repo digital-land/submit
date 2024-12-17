@@ -460,6 +460,20 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   })
 }
 
+// some field mappings aren't in our database, so we should add them here
+const customFieldMappings = [
+  {
+    field: 'GeoX,GeoY',
+    replacement_field: 'point'
+  }
+]
+export const addCustomFieldMappings = (req, res, next) => {
+  const { fieldMappings } = req
+
+  req.fieldMappings = [...fieldMappings, ...customFieldMappings]
+  next()
+}
+
 export const addFieldMappingsToIssue = (req, res, next) => {
   const { issues, fieldMappings } = req
 
@@ -575,6 +589,7 @@ export const processRelevantIssuesMiddlewares = [
   // however this step is very time consuming, so in order to progress im commenting it out for now
   // removeIssuesThatHaveBeenFixed,
   fetchFieldMappings,
+  addCustomFieldMappings,
   addFieldMappingsToIssue
 ]
 
