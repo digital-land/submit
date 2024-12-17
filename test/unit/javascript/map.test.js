@@ -31,6 +31,10 @@ vi.mock('wellknown', () => ({
   parse: vi.fn().mockReturnValue({ type: 'Polygon', coordinates: [[0, 0], [1, 1]] })
 }))
 
+vi.mock('../../../src/assets/js/os-api-token.js', () => ({
+  getApiToken: vi.fn().mockReturnValue('valid-token')
+}))
+
 describe('map.js', () => {
   describe('Map class extended tests', () => {
     it('should add controls based on interactivity', () => {
