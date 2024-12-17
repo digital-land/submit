@@ -547,7 +547,7 @@ export const fetchEntryIssueCounts = fetchMany({
     const resourceIds = Object.values(mostRecentResources).map(resource => resource.resource)
 
     return `
-      select dataset, field, i.issue_type, COUNT(CONCAT(resource, line_number)) as count
+      select dataset, field, i.issue_type, COUNT(resource + line_number) as count
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource in ('${resourceIds.join("', '")}')
