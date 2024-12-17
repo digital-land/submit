@@ -61,7 +61,7 @@ export const setRecordCount = (req, res, next) => {
 export const prepareEntry = (req, res, next) => {
   const { resources, entryIssues } = req
 
-  if (!entryIssues[0] || !resources) {
+  if (!entryIssues || entryIssues.length === 0 || !resources || resources.length === 0) {
     const error = new Error('Missing required values on request object')
     error.status = 404
     return next(error)
