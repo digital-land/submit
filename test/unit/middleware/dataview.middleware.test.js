@@ -92,14 +92,14 @@ describe('dataview.middleware.test.js', () => {
         rows: [
           {
             columns: {
-              num_field: { value: 0.06, classes: 'govuk-table__cell--numeric', html: undefined },
-              date_field: { value: '2022-01-01', classes: 'govuk-table__cell--numeric', html: undefined }
+              num_field: { value: 0.06, classes: '', html: undefined },
+              date_field: { value: '2022-01-01', classes: '', html: undefined }
             }
           },
           {
             columns: {
-              num_field: { value: '10', classes: 'govuk-table__cell--numeric', html: undefined },
-              date_field: { value: '2022-01-02', classes: 'govuk-table__cell--numeric', html: undefined }
+              num_field: { value: '10', classes: '', html: undefined },
+              date_field: { value: '2022-01-02', classes: '', html: undefined }
             }
           }
         ]
