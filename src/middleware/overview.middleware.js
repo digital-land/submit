@@ -44,12 +44,6 @@ const fetchEntityCounts = fetchOneFromAllDatasets({
 })
 
 /**
- * For the purpose of displaying single status label on (possibly) many issues,
- * we want issues with 'worse' status to be weighted higher.
- */
-const statusOrdering = new Map(['Live', 'Needs fixing', 'Error', 'Not submitted'].map((status, i) => [status, i]))
-
-/**
  * Calculates overall "health" of the datasets (not)provided by an organisation.
  *
  * @param {[number, number, number]} accumulator
@@ -77,6 +71,11 @@ const orgStatsReducer = (accumulator, dataset) => {
 export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   const { resources } = req
   const currentDate = new Date()
+
+  if (!resources) {
+    const error = new Error('datasetSubmissionDeadlineCheck requires resources')
+    next(error)
+  }
 
   req.noticeFlags = requiredDatasets.map(dataset => {
     const datasetResources = resources[dataset.dataset]
@@ -186,44 +185,6 @@ export const addNoticesToDatasets = (req, res, next) => {
   })
 
   next()
-}
-
-/**
- * The overview data can contain multiple rows per dataset,
- * and we want a collection of one item per dataset,
- * because that's how we display it on the page.
- *
- * @param {object[]} lpaOverview
- * @returns {object[]}
- */
-export function aggregateOverviewData (req, res, next) {
-  const { lpaOverview } = req
-  if (!Array.isArray(lpaOverview)) {
-    throw new Error('lpaOverview should be an array')
-  }
-  const grouped = _.groupBy(lpaOverview, 'dataset')
-  const datasets = []
-  for (const [dataset, rows] of Object.entries(grouped)) {
-    let numIssues = 0
-    for (const row of rows) {
-      if (row.status !== 'Needs fixing') {
-        continue
-      }
-      if (row.issue_count) {
-        const numFields = (row.fields ?? '').split(',').length
-        if (row.issue_count >= row.entity_count) numIssues += numFields
-        else numIssues += row.issue_count
-      }
-    }
-    const info = {
-      dataset,
-      issue_count: numIssues,
-      endpoint: rows[0].endpoint,
-      error: rows[0].error,
-      status: _.maxBy(rows, row => statusOrdering.get(row.status)).status
-    }
-    datasets.push(info)
-  }
 }
 
 export function prepareDatasetObjects (req, res, next) {

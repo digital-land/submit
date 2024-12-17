@@ -25,11 +25,11 @@ describe('Dataset Overview Middleware', () => {
         datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
-        sources: [
+        resources: [
           { endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: '200', endpoint_entry_date: 'LU1', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
           { endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: '404', exception: 'exception', endpoint_entry_date: 'LU2', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
         ],
-        issues: [
+        entryIssueCounts: [
           {
             issue: 'Example issue 1',
             issue_type: 'Example issue type 1',
@@ -38,6 +38,7 @@ describe('Dataset Overview Middleware', () => {
             status: 'Error'
           }
         ],
+        entityIssueCounts: [],
         notice: undefined
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
