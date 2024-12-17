@@ -1,6 +1,7 @@
 import express from 'express'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { getBoundaryForLpa } from '../services/boundaryService.js'
+import { getOsMapAccessToken } from '../services/osMapService.js'
 
 const router = express.Router()
 
@@ -36,6 +37,14 @@ router.get('/lpa-boundary/:boundaryId', async (req, res) => {
   return res
     .status(response?.error ? 500 : 200)
     .json(response)
+})
+
+router.get('/os/get-access-token', async (req, res) => {
+  const response = await getOsMapAccessToken()
+    .then(data => res.json(data))
+    .catch(error => res.status(500).json({ error }))
+
+  return response
 })
 
 export default router

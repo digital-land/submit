@@ -1,6 +1,7 @@
 import parse from 'wellknown'
 import maplibregl from 'maplibre-gl'
 import { capitalize, startCase } from 'lodash'
+import { getApiToken } from './os-api-token.js'
 
 const lineColor = '#000000'
 const fillColor = '#008'
@@ -32,10 +33,26 @@ export class Map {
     this.bbox = opts.boundingBox ?? null
     this.map = new maplibregl.Map({
       container: opts.containerId,
-      style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
+      style: '/public/static/OS_VTS_3857_3D.json',
       zoom: 11,
       center: [-0.1298779, 51.4959698],
-      interactive: opts.interactive ?? true
+      interactive: opts.interactive ?? true,
+      transformRequest: (url, resourceType) => {
+        if (url.indexOf('api.os.uk') > -1) {
+          if (!/[?&]key=/.test(url)) url += '?key=null'
+
+          const requestToMake = {
+            url: url + '&srs=3857'
+          }
+
+          const token = getApiToken()
+          requestToMake.headers = {
+            Authorization: 'Bearer ' + token
+          }
+
+          return requestToMake
+        }
+      }
     })
 
     // Add map controls
@@ -387,6 +404,9 @@ export const createMapFromServerContext = async () => {
     interactive: mapType !== 'static',
     wktFormat: geoJsonUrl === undefined
   }
+
+  // fetch initial token
+  await getApiToken()
 
   // if the geoJsonUrl is provided, generate the paginated GeoJSON links
   if (geoJsonUrl) {

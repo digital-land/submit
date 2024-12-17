@@ -18,7 +18,7 @@
     "static-security-scan": "npm audit --json > npm-audit-report.json",
     "scan:zap": "npm run docker-security-scan && npm run static-security-scan",
     "mock:api": "node ./test/mock-api/index.js",
-    "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable && npm run build-webpack",
+    "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable && cp -R src/assets/static/. public/static && npm run build-webpack",
     "build-webpack": "webpack",
     "serve-webpack": "webpack serve",
     "scss": "sass --quiet-deps --load-path=./ src/assets/scss:public/stylesheets",
