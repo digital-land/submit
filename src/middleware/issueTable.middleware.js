@@ -10,6 +10,7 @@ import config from '../../config/index.js'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
+import { entryIssueGroups } from '../utils/utils.js'
 
 export const IssueTableQueryParams = v.object({
   lpa: v.string(),
@@ -90,22 +91,8 @@ export const prepareTemplateParams = (req, res, next) => {
 
 export const notIssueHasEntity = (req, res, next) => req.issues.length <= 0
 
-const redirectIssueGroups = [
-  {
-    type: 'missing value',
-    field: 'reference'
-  },
-  {
-    type: 'reference values are not unique',
-    field: 'reference'
-  },
-  {
-    type: 'unknown entity - missing reference',
-    field: 'entity'
-  }
-]
 export const issueTypeAndFieldShouldRedirect = (req, res, next) =>
-  redirectIssueGroups.findIndex(({ type, field }) => (type === req.params.issue_type && field === req.params.issue_field)) >= 0
+  entryIssueGroups.findIndex(({ type, field }) => (type === req.params.issue_type && field === req.params.issue_field)) >= 0
 
 export const redirectToEntityView = (req, res, next) => {
   const { lpa, dataset, issue_type: issueType, issue_field: issueField } = req.params
