@@ -1550,13 +1550,13 @@ describe('preventIndexing middleware', () => {
     preventIndexing(req, res, vi.fn())
     expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')
   })
-  it('should set headers on the check tool status page', () =>{
+  it('should set headers on the check tool status page', () => {
     const req = { originalUrl: '/check/status/PHvgmEPg4EQWGvr646vuMz' }
     const res = { set: vi.fn() }
     preventIndexing(req, res, vi.fn())
     expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')
   })
-  it('should set headers on the check tool results page', () =>{
+  it('should set headers on the check tool results page', () => {
     const req = { originalUrl: '/check/results/PHvgmEPg4EQWGvr646vuMz/0' }
     const res = { set: vi.fn() }
     preventIndexing(req, res, vi.fn())
