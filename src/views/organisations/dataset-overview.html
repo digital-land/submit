@@ -4,6 +4,29 @@
 {% from "components/deadlineNotice.html" import deadlineNotice %}
 {% extends "layouts/main.html" %}
 
+{% macro endpointErrorMessage(endpoint) %}
+  {% if endpoint.error.code %}
+    There was a {{ endpoint.error.code }} error accessing the data URL
+  {% else %}
+    There was an error accessing the data URL
+  {% endif %}
+{% endmacro %}
+
+{% macro datasetUrl(organisation, dataset, endpoint) %}
+  /organisations/{{ organisation.organisation | urlencode }}/{{ dataset.dataset | urlencode }}/endpoint-error/{{ endpoint.endpoint | urlencode }}
+{% endmacro %}
+
+{% macro lastAccessedInfo(organisation, dataset, endpoint) %}
+  {{endpoint.lastAccessed | govukDateTime}}
+  <br>
+  <p class="govuk-error-message">
+    <a href="{{ datasetUrl(organisation, dataset, endpoint) }}">{{ endpointErrorMessage(endpoint) }}</a>
+  </p>
+  <p class="app-inset-text__error"></p>
+{% endmacro %}
+
+
+
 {% set showMap = [
   "article-4-direction-area",
   "brownfield-land",
@@ -89,7 +112,7 @@
       classes: 'padding-top'
     },
     value: {
-      html: '<a  style="'+urlStyle+'" href="'+endpoint.endpoint+'">'+endpoint.endpoint+'</a>'
+      html: '<a  style="'+urlStyle+'" href="'+endpoint.endpoint_url+'">'+endpoint.endpoint_url+'</a>'
     },
     classes: 'padding-top'
   } %}
@@ -114,7 +137,7 @@
         classes: 'app-inset-text---error'
       },
       value: {
-        html: (endpoint.lastAccessed | govukDateTime) + '<br><p class="govuk-error-message">There was a '+endpoint.error.code+' error accessing the data URL</p> <p class="app-inset-text__error"></p>'
+        html: lastAccessedInfo(organisation, dataset, endpoint)
       }
     } %}
   {% else %}
@@ -136,7 +159,7 @@
       text: 'Data URL last updated'
     },
     value: {
-      text: endpoint.lastUpdated | govukDateTime
+      text: endpoint.lastUpdated and ( endpoint.lastUpdated | govukDateTime )
     }
   } %}
   {{ rows.push(lastUpdatedRow) }}
