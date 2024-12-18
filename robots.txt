@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /check/status
+Disallow: /check/results
+Disallow: /organisations/*
+Allow: /organisations/*/overview
