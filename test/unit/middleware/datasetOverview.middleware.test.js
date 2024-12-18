@@ -203,5 +203,13 @@ describe('Dataset Overview Middleware', () => {
 
       expect(reqWithDataset.notice).toBeUndefined()
     })
+
+    it('should handle missing source key gracefully', () => {
+      const reqWithoutSource = {
+        ...req
+      }
+      setNoticesFromSourceKey('foobar')(reqWithoutSource, res, () => {})
+      expect(reqWithoutSource.notice).toBeUndefined()
+    })
   })
 })
