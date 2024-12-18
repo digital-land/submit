@@ -126,12 +126,12 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
 
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
 
-    const startDate = new Date(source.startDate)
+    const startDate = source ? new Date(source.startDate) : undefined
 
-    if (startDate.toString() === 'Invalid Date') {
+    if (!startDate || startDate.toString() === 'Invalid Date') {
       logger.warn('Invalid start date encountered', {
         type: types.DataValidation,
-        startDate: source.startDate
+        startDate: source?.startDate
       })
       return next()
     }
