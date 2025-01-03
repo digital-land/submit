@@ -24,7 +24,9 @@ export default {
         formattedData: formatData(response.data.columns, response.data.rows)
       }
     } catch (error) {
-      logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl, database })
+      if (error instanceof Error) {
+        logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl, database })
+      }
       throw error
     }
   }
