@@ -1,3 +1,4 @@
+// @ts-ignore
 import HmpoConfig from 'hmpo-config'
 import { combineConfigs, validateConfig } from './util.js'
 
