@@ -5,6 +5,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import hash from '../utils/hasher.js'
 import config from '../../config/index.js'
+import { preventIndexing } from '../middleware/common.middleware.js'
 
 export function setupMiddlewares (app) {
   app.use((req, res, next) => {
@@ -24,9 +25,11 @@ export function setupMiddlewares (app) {
   app.use('/assets', express.static('./node_modules/govuk-frontend/dist/govuk/assets'))
   app.use('/assets', express.static('./node_modules/@x-govuk/govuk-prototype-components/x-govuk'))
   app.use('/public', express.static('./public'))
+  app.use('/robots.txt', express.static('./robots.txt'))
 
   app.use(cookieParser())
   app.use(bodyParser.urlencoded({ extended: true }))
+  app.use(preventIndexing)
 
   app.use((req, res, next) => {
     const serviceDown = config.maintenance.serviceUnavailable || false
