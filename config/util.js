@@ -2,14 +2,21 @@ import fs from 'fs'
 import _ from 'lodash'
 import yaml from 'js-yaml'
 import * as v from 'valibot'
+/** @typedef {import('./util-types.js').Config} Config */
 
-const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
+const NonEmptyString = v.pipe(v.string(), v.nonEmpty('must not be empty'))
+
+const PortValue = v.pipe(
+  v.number(),
+  v.integer('port must be an integer'))
+
+const UUID = v.pipe(v.string(), v.uuid())
 
 export const ConfigSchema = v.object({
-  port: v.pipe(v.integer(), v.minValue(1)),
+  port: PortValue,
   asyncRequestApi: v.object({
-    url: v.url(),
-    port: v.pipe(v.integer(), v.minValue(1)),
+    url: v.pipe(v.string(), v.url()),
+    port: PortValue,
     requestsEndpoint: NonEmptyString,
     requestTimeout: v.number()
   }),
@@ -29,8 +36,8 @@ export const ConfigSchema = v.object({
       port: v.number()
     })
   ),
-  url: v.url(),
-  mainWebsiteUrl: v.url(),
+  url: v.pipe(v.string(), v.url()),
+  mainWebsiteUrl: v.pipe(v.string(), v.url()),
   serviceName: NonEmptyString,
   serviceNames: v.object({
     check: NonEmptyString,
@@ -41,13 +48,13 @@ export const ConfigSchema = v.object({
     userAgent: NonEmptyString
   }),
   templateContent: v.object({
-    feedbackLink: v.url(),
+    feedbackLink: v.pipe(v.string(), v.url()),
     homepageUrl: NonEmptyString // relative link, e.g. '/manage
   }),
   email: v.object({
     templates: v.object({
-      RequesetTemplateId: v.uuid(),
-      AcknowledgementTemplateId: v.uuid()
+      RequesetTemplateId: UUID,
+      AcknowledgementTemplateId: UUID
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
   }),
@@ -63,7 +70,7 @@ export const ConfigSchema = v.object({
       'tree',
       'listed-building',
       'listed-building-outline'
-    ].reduce((acc, key) => {
+    ].reduce((/** @type {any} */acc, key) => {
       acc[key] = v.object({ guidanceUrl: v.string() })
       return acc
     }, {})
@@ -97,8 +104,15 @@ export const ConfigSchema = v.object({
   tablePageLength: v.number()
 })
 
+/**
+ * Reads a config file from disk.
+ *
+ * @param {String} config
+ * @returns {Object}
+ */
 const readConfig = (config) => {
   console.assert(config, 'config not specified')
+  // @ts-ignore
   return yaml.load(fs.readFileSync(`./config/${config}.yaml`, 'utf8'))
 }
 
@@ -106,6 +120,7 @@ const readConfig = (config) => {
  * Reads configs from disk, based on env variables
  * when 'environment' option not specified.
  *
+ * @param {String} environment
  * @returns {Object}
  */
 export function combineConfigs (environment) {
@@ -115,15 +130,24 @@ export function combineConfigs (environment) {
   return _.merge({}, defaultConfig, customConfig)
 }
 
+/**
+ * Validates the config object against the ConfigSchema.
+ *
+ * @param {*} config
+ * @returns {v.InferOutput<typeof ConfigSchema>}
+ * @throws {v.ValidationError}
+ */
 export const validateConfig = (config) => {
   try {
     return v.parse(ConfigSchema, config)
   } catch (error) {
-    console.error('invalid config', error.message)
-    for (const issue of error.issues) {
-      console.info(
-        `issue under path: [${issue.path.map((elem) => elem.key).join(', ')}]`
-      )
+    if (error instanceof v.ValiError) {
+      console.error('invalid config', error.message)
+      for (const issue of error.issues) {
+        console.info(
+          `issue under path: [${issue.path.map((/** @type {any} */elem) => elem.key).join(', ')}]`
+        )
+      }
     }
     throw error
   }
