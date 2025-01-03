@@ -94,6 +94,11 @@ export const dataSubjects = {
   }
 }
 
+/**
+ *
+ * @param {typeof dataSubjects} dataSubjects
+ * @returns {Map<string, {value: string, text: string, available: boolean, dataSubject: string, requiresGeometryTypeSelection?: boolean}>}
+ */
 export function makeDatasetsLookup (dataSubjects) {
   const lookup = new Map()
   for (const [key, dataSubject] of Object.entries(dataSubjects)) {
@@ -112,7 +117,7 @@ export const datasets = makeDatasetsLookup(dataSubjects)
 
 /**
  *
- * @param dataSubjects
+ * @param {typeof dataSubjects} dataSubjects
  * @returns {FlatArray<*[], 1>[]} datasets sorted by 'text' property
  */
 export function availableDatasets (dataSubjects) {
