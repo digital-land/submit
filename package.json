@@ -31,7 +31,8 @@
     "test:acceptance:local": "NODE_ENV=local playwright test --config ./test/acceptance/playwright.config.js",
     "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
-    "lint:fix": "standard --fix"
+    "lint:fix": "standard --fix",
+    "ts": "tsc"
   },
   "engines": {
     "node": ">=18.20.0"
@@ -42,7 +43,11 @@
     "@gcornut/valibot-json-schema": "^0.42.0",
     "@playwright/test": "^1.39.0",
     "@testcontainers/localstack": "^10.7.2",
+    "@types/express": "^5.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.17.13",
     "@types/node": "^20.8.9",
+    "@types/pluralize": "^0.0.33",
     "@vitest/coverage-v8": "^2.1.2",
     "@wiremock/wiremock-testcontainers-node": "^0.0.1",
     "concurrently": "^8.2.2",
@@ -104,7 +109,8 @@
   "standard": {
     "ignore": [
       "performance-test/",
-      "src/views/common/smartlook.js"
+      "src/views/common/smartlook.js",
+      "**/*.d.ts"
     ]
   }
 }
