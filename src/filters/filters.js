@@ -21,6 +21,12 @@ const statusToTagClassMapping = {
   Live: 'govuk-tag--green'
 }
 
+/**
+ * Returns a css class name
+ *
+ * @param { 'Error' | 'Not submitted' | 'Needs fixing' | 'Warning' | 'Issue' | 'Live' } status
+ * @returns {String}
+ */
 export function statusToTagClass (status) {
   console.assert(status in statusToTagClassMapping, `statusToTagClass: unknown status ${status}`)
   return statusToTagClassMapping[status]
@@ -33,7 +39,6 @@ const addFilters = (nunjucksEnv) => {
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
   nunjucksEnv.addFilter('govukDateTime', govukDateTime)
-  nunjucksEnv.addFilter('getkeys', getkeys)
   nunjucksEnv.addFilter('getContext', getContext)
   nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
   nunjucksEnv.addFilter('toErrorList', toErrorList)

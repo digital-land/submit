@@ -1,7 +1,7 @@
 /**
  * Returns the deep link to the check tool for a given dataset and organisation
  *
- * @param {{name:string}} organisation
+ * @param {{name: string, organisation: string}} organisation
  * @param {{dataset:string, name:string}} dataset
  *
  * @return {string}
