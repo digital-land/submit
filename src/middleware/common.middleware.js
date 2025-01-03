@@ -11,7 +11,7 @@ import datasette from '../services/datasette.js'
  * the function that threw the error.
  *
  * @param {Error} err
- * @param {{handlerName: string}} req
+ * @param {{handlerName: string, originalUrl: string}} req
  * @param {*} res
  * @param {*} next
  */
