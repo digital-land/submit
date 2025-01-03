@@ -33,10 +33,10 @@ export const PaginationParams = v.optional(v.strictObject({
   next: v.optional(v.strictObject({
     href: v.string()
   })),
-  items: v.array(v.variant('type', [
+  items: v.array(v.union([
     v.strictObject({
       type: v.literal('number'),
-      number: v.integer(),
+      number: v.number(),
       href: v.string(),
       current: v.boolean()
     }),
@@ -49,19 +49,19 @@ export const PaginationParams = v.optional(v.strictObject({
 }))
 
 export const dataRangeParams = v.strictObject({
-  minRow: v.integer(),
-  maxRow: v.integer(),
-  totalRows: v.integer(),
-  maxPageNumber: v.optional(v.integer()),
-  pageLength: v.optional(v.integer()),
-  offset: v.optional(v.integer())
+  minRow: v.number(),
+  maxRow: v.number(),
+  totalRows: v.number(),
+  maxPageNumber: v.optional(v.number()),
+  pageLength: v.optional(v.number()),
+  offset: v.optional(v.number())
 })
 
 export const errorSummaryParams = v.strictObject({
   heading: v.optional(v.string()),
   items: v.array(v.strictObject({
     html: v.string(),
-    href: v.url()
+    href: v.pipe(v.string(), v.url())
   }))
 })
 
@@ -103,10 +103,10 @@ export const DeadlineNoticeField = v.strictObject({
   deadline: v.string()
 })
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.pipe(v.number(), v.integer())) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 const DatasetItem = v.strictObject({
-  endpoint: v.optional(v.url()),
+  endpoint: v.optional(v.pipe(v.string(), v.url())),
   status: v.enum(datasetStatusEnum),
   dataset: NonEmptyString,
   issue_count: v.optional(v.number()),
@@ -126,10 +126,10 @@ export const OrgOverviewPage = v.strictObject({
     statutory: v.optional(v.array(DatasetItem)),
     other: v.optional(v.array(DatasetItem))
   }),
-  totalDatasets: v.integer(),
-  datasetsWithEndpoints: v.integer(),
-  datasetsWithIssues: v.integer(),
-  datasetsWithErrors: v.integer()
+  totalDatasets: v.pipe(v.number(), v.integer()),
+  datasetsWithEndpoints: v.pipe(v.number(), v.integer()),
+  datasetsWithIssues: v.pipe(v.number(), v.integer()),
+  datasetsWithErrors: v.pipe(v.number(), v.integer())
 })
 
 export const OrgFindPage = v.strictObject({
@@ -144,12 +144,12 @@ export const OrgGetStarted = v.strictObject({
 export const OrgDatasetOverview = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  taskCount: v.integer(),
+  taskCount: v.pipe(v.number(), v.integer()),
   stats: v.strictObject({
-    numberOfRecords: v.integer(),
-    numberOfFieldsSupplied: v.integer(),
-    numberOfFieldsMatched: v.integer(),
-    numberOfExpectedFields: v.integer(),
+    numberOfRecords: v.pipe(v.number(), v.integer()),
+    numberOfFieldsSupplied: v.pipe(v.number(), v.integer()),
+    numberOfFieldsMatched: v.pipe(v.number(), v.integer()),
+    numberOfExpectedFields: v.pipe(v.number(), v.integer()),
     endpoints: v.array(v.strictObject({
       name: v.string(),
       documentation_url: v.optional(v.string()),
@@ -157,7 +157,7 @@ export const OrgDatasetOverview = v.strictObject({
       lastAccessed: v.string(),
       lastUpdated: v.nullable(v.string()),
       error: v.optional(v.strictObject({
-        code: v.integer(),
+        code: v.pipe(v.number(), v.integer()),
         exception: v.string()
       }))
     }))
@@ -168,7 +168,7 @@ export const OrgDatasetOverview = v.strictObject({
 export const OrgDataView = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  taskCount: v.integer(),
+  taskCount: v.pipe(v.number(), v.integer()),
   tableParams,
   pagination: PaginationParams,
   dataRange: dataRangeParams
@@ -177,7 +177,7 @@ export const OrgDataView = v.strictObject({
 export const OrgDatasetTaskList = v.strictObject({
   taskList: v.array(v.strictObject({
     title: v.strictObject({ text: NonEmptyString }),
-    href: v.url(),
+    href: v.pipe(v.string(), v.url()),
     status: v.strictObject({
       tag: v.strictObject({
         classes: NonEmptyString,
@@ -197,10 +197,10 @@ export const OrgEndpointError = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   errorData: v.strictObject({
-    endpoint_url: v.url(),
-    http_status: v.integer(),
-    latest_log_entry_date: v.isoDateTime(),
-    latest_200_date: v.isoDateTime()
+    endpoint_url: v.pipe(v.string(), v.url()),
+    http_status: v.pipe(v.number(), v.integer()),
+    latest_log_entry_date: v.pipe(v.string(), v.isoDateTime()),
+    latest_200_date: v.pipe(v.string(), v.isoDateTime())
   })
 })
 
@@ -229,7 +229,7 @@ export const OrgIssueDetails = v.strictObject({
     geometries: v.optional(v.array(v.string()))
   }),
   pagination: PaginationParams,
-  pageNumber: v.integer(),
+  pageNumber: v.pipe(v.number(), v.integer()),
   dataRange: dataRangeParams
 })
 
@@ -239,8 +239,8 @@ export const CheckAnswers = v.strictObject({
     name: NonEmptyString,
     email: v.pipe(v.string(), v.email()),
     dataset: NonEmptyString,
-    'endpoint-url': v.url(),
-    'documentation-url': v.url(),
+    'endpoint-url': v.pipe(v.string(), v.url()),
+    'documentation-url': v.pipe(v.string(), v.url()),
     hasLicence: NonEmptyString
   })
 })
@@ -266,7 +266,10 @@ export const DatasetDetails = v.strictObject({
   }))
 })
 
-export const GuidanceNavigationItem = v.strictObject({
+/**
+ * @type {v.GenericSchema<import('./schemas-types.d.ts').GuidanceNavigationItem>}
+ */
+export const GuidanceNavigationItem = v.object({
   label: NonEmptyString,
   url: v.string(),
   items: v.optional(v.lazy(() => v.array(GuidanceNavigationItem)))
@@ -279,10 +282,7 @@ export const GuidanceNavigation = v.strictObject({
   }))
 })
 
-/**
- * This acts as a registry of template -> schema for convenience.
- */
-export const templateSchema = new Map([
+const registryItems = [
   ['dataset-details.html', DatasetDetails],
   ['check-answers.html', CheckAnswers],
   ['choose-dataset.html', ChooseDataset],
@@ -316,4 +316,19 @@ export const templateSchema = new Map([
   ['guidance/specifications/article-4-direction', GuidanceNavigation],
   ['guidance/specifications/conservation-area', GuidanceNavigation],
   ['guidance/specifications/listed-building', GuidanceNavigation]
-])
+]
+
+/**
+ * This acts as a registry of template -> schema for convenience.
+ *
+ * @returns {Map<string, v.GenericSchema>}
+ */
+const makeRegistry = () => {
+  const registry = new Map()
+  for (const [template, schema] of registryItems) {
+    registry.set(template, schema)
+  }
+  return registry
+}
+
+export const templateSchema = makeRegistry()
