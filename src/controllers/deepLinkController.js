@@ -6,6 +6,10 @@ import { types } from '../utils/logging.js'
 import * as v from 'valibot'
 import { NonEmptyString } from '../routes/schemas.js'
 
+/**
+ * @typedef {import('express').Request & {sessionModel: Map<string, any>, journeyModel: Map<string, any>, query: {dataset: string}}} Request
+ */
+
 const QueryParams = v.object({
   dataset: NonEmptyString,
   orgName: NonEmptyString,
@@ -15,8 +19,8 @@ const QueryParams = v.object({
 /**
  * Potentially updates sessionData with 'referrer'
  *
- * @param req
- * @param sessionData
+ * @param {import('express').Request} req
+ * @param {any} sessionData
  */
 function maybeSetReferrer (req, sessionData) {
   if (req.headers.referer) {
@@ -25,10 +29,14 @@ function maybeSetReferrer (req, sessionData) {
       new URL(req.headers.referer)
       sessionData.referrer = req.headers.referer
     } catch (err) {
+      let errorMessage
+      if (err instanceof Error) {
+        errorMessage = err.message
+      }
       logger.info('DeepLinkController.get(): invalid referrer URL, skipping', {
         type: types.App,
         referrer: req.headers.referer,
-        errorMessage: err.message
+        errorMessage
       })
     }
   }
@@ -42,6 +50,13 @@ function maybeSetReferrer (req, sessionData) {
  * then redirect the user to the "next" page in the wizard
  */
 class DeepLinkController extends PageController {
+  /**
+   *
+   * @param {Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   * @returns
+   */
   get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
@@ -54,7 +69,7 @@ class DeepLinkController extends PageController {
     }
 
     req.sessionModel.set('dataset', dataset)
-    const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false }
+    const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false, text: '' }
     req.sessionModel.set('data-subject', datasetInfo.dataSubject)
     const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, orgId, dataset, datasetName: datasetInfo.text }
     maybeSetReferrer(req, sessionData)
@@ -62,10 +77,16 @@ class DeepLinkController extends PageController {
 
     this.#addHistoryStep(req, '/check/dataset')
 
+    // @ts-ignore
     super.post(req, res, next)
   }
 
-  #addHistoryStep (req, path, next) {
+  /**
+   *
+   * @param {Request} req request object
+   * @param {string} path path to add to history
+   */
+  #addHistoryStep (req, path) {
     const newItem = {
       path,
       wizard: 'check-wizard',
