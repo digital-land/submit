@@ -1,5 +1,6 @@
 import parse from 'wellknown'
 import maplibregl from 'maplibre-gl'
+import { capitalize, startCase } from 'lodash'
 
 const lineColor = '#000000'
 const fillColor = '#008'
@@ -9,6 +10,8 @@ const boundaryLineOpacity = 1
 const pointOpacity = 0.8
 const pointRadius = 5
 const pointColor = '#008'
+const planningDataUrl = 'https://www.planning.data.gov.uk'
+const popupMaxListLength = 10
 
 /**
  * Creates a Map instance.
@@ -52,6 +55,9 @@ export class Map {
 
       // Move the map to the bounding box
       if (this.bbox && this.bbox.length) this.setMapViewToBoundingBox()
+
+      // Add popup to map
+      if (opts.interactive) this.addPopupToMap()
     })
   }
 
@@ -208,6 +214,71 @@ export class Map {
   setMapViewToBoundingBox () {
     this.map.fitBounds(this.bbox, { padding: 20, duration: 0, maxZoom: 11 })
   }
+
+  addPopupToMap () {
+    this.map.on('click', (e) => {
+      const features = this.map.queryRenderedFeatures(e.point).filter(f => f.layer.id.startsWith('geometry-'))
+      if (!features.length) return
+
+      const popupContent = document.createElement('div')
+      popupContent.classList.add('govuk-!-padding-2')
+
+      if (features.length > popupMaxListLength) {
+        const tooMany = document.createElement('p')
+        tooMany.classList.add('govuk-body-s')
+        tooMany.textContent = `
+          You clicked on ${features.length} features. <br/>
+          Zoom in or turn off layers to narrow down your choice.`
+        popupContent.appendChild(tooMany)
+      } else {
+        const list = document.createElement('ul')
+        list.classList.add('app-c-map__popup-list', 'govuk-list')
+
+        // add heading
+        const heading = document.createElement('h4')
+        heading.classList.add('govuk-heading-s')
+        heading.textContent = `${features.length} ${features.length > 1 ? 'features' : 'feature'} selected`
+        list.appendChild(heading)
+        features.forEach(feature => {
+          // create inset
+          const inset = document.createElement('li')
+          inset.classList.add('app-c-map__popup-list-item')
+
+          // feature text content
+          const textContent = document.createElement('p')
+          textContent.classList.add('govuk-body-s', 'govuk-!-margin-top-0', 'govuk-!-margin-bottom-0')
+          textContent.innerHTML = `${capitalize(startCase(feature.properties.dataset)) || ''}<br/>
+            <strong>Ref:</strong> ${feature.properties.reference || ''}<br/>`
+
+          // link to planning data
+          const a = document.createElement('a')
+          a.classList.add('govuk-link')
+          a.setAttribute('href', `${planningDataUrl}/entity/${feature.properties.entity}`)
+          a.textContent = feature.properties.name || feature.properties.reference || 'View entity'
+          textContent.appendChild(a)
+
+          inset.appendChild(textContent)
+          list.appendChild(inset)
+        })
+        popupContent.appendChild(list)
+      }
+
+      const popup = new maplibregl.Popup({
+        maxWidth: '300px'
+      })
+        .setLngLat(e.lngLat)
+        .setDOMContent(popupContent)
+        .addTo(this.map)
+
+      popup.getElement().onwheel = preventScroll(['.app-c-map__popup-list'])
+    })
+
+    this.map.getCanvas().style.cursor = 'pointer'
+
+    this.map.on('mouseleave', () => {
+      this.map.getCanvas().style.cursor = ''
+    })
+  }
 }
 
 export const calculateBoundingBoxFromGeometries = (geometries) => {
@@ -241,6 +312,35 @@ export const calculateBoundingBoxFromGeometries = (geometries) => {
 
   // Return the bounding box
   return [[minX, minY], [maxX, maxY]]
+}
+
+// Prevents scrolling of the page when the user triggers the wheel event on a div
+// while still allowing scrolling of any specified scrollable child elements.
+// Params:
+//  scrollableChildElements: an array of class names of potential scrollable elements
+const preventScroll = (scrollableChildElements = []) => {
+  return (e) => {
+    const closestClassName = scrollableChildElements.find((c) => {
+      return e.target.closest(c) != null
+    })
+
+    if (!closestClassName) {
+      e.preventDefault()
+      return false
+    }
+
+    const list = e.target.closest(closestClassName)
+
+    if (!list) {
+      e.preventDefault()
+      return false
+    }
+
+    const verticalScroll = list.scrollHeight > list.clientHeight
+    if (!verticalScroll) { e.preventDefault() }
+
+    return false
+  }
 }
 
 export const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
