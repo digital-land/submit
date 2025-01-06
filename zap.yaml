@@ -1,0 +1,58 @@
+env:
+  contexts:
+    - name: submit
+      urls:
+        - http://web:5000/
+
+jobs:
+  - type: passiveScan-config
+    parameters:
+      maxAlertsPerRule: 10
+      scanOnlyInScope: true
+
+  - type: spider
+    parameters:
+      context: submit
+
+  - type: activeScan
+    parameters:
+      context: submit
+    policyDefinition:
+      defaultStrength: Low
+      defaultThreshold: 'Off'
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 1
+
+  - type: report
+    parameters:
+      template: traditional-md
+      reportDir: /zap/wrk/zap-working-dir/
+      reportFile: zap-report.md
+    risks:
+      - high
+      - medium
+      - low
+      - info
+    confidences:
+      - high
+      - medium
+      - low
+      - falsepositive
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk/zap-working-dir/
+      reportFile: zap-report.json
+    risks:
+      - high
+      - medium
+      - low
+      - info
+    confidences:
+      - high
+      - medium
+      - low
+      - falsepositive

@@ -1,0 +1,87 @@
+name: dynamic-security-scan
+
+on:
+  schedule:
+    - cron: "45 8 * * 1" 
+  workflow_dispatch:
+
+env:
+  APPLICATION: submit
+  DOCKER_REPO: ${DOCKER_REPO}/submit:latest
+  ZAP_VERSION: 2.15.0
+
+jobs:
+  dynamic-audit:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_APPLICATION_TAG: latest
+    outputs:
+      alerts_info: ${{ steps.report.outputs.alerts_info }}
+      alerts_low: ${{ steps.report.outputs.alerts_low }}
+      alerts_medium: ${{ steps.report.outputs.alerts_medium }}
+      alerts_high: ${{ steps.report.outputs.alerts_high }}
+      alerts_total: ${{ steps.report.outputs.alerts_total }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup dependencies
+        run: |
+          npm install
+          sudo curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker pull ${DOCKER_REPO}/${APPLICATION}:${DOCKER_APPLICATION_TAG} 
+
+      - name: Run dynamic security scan
+        run: |
+          npm run scan:zap
+          cat zap-working-dir/zap-report.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload ZAP logs
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: zap.log
+          path: zap-working-dir/zap.log
+
+      - name: Parse ZAP scan report
+        id: report
+        run: |
+          echo "alerts_info=$(jq -rc '[ .site[0].alerts[] | select(.riskcode == "0") | .riskcode ] | length' zap-working-dir/zap-report.json)" >> $GITHUB_OUTPUT
+          echo "alerts_low=$(jq -rc '[ .site[0].alerts[] | select(.riskcode == "1") | .riskcode ] | length' zap-working-dir/zap-report.json)" >> $GITHUB_OUTPUT
+          echo "alerts_medium=$(jq -rc '[ .site[0].alerts[] | select(.riskcode == "2") | .riskcode ] | length' zap-working-dir/zap-report.json)" >> $GITHUB_OUTPUT
+          echo "alerts_high=$(jq -rc '[ .site[0].alerts[] | select(.riskcode == "3") | .riskcode ] | length' zap-working-dir/zap-report.json)" >> $GITHUB_OUTPUT
+          echo "alerts_total=$(jq -rc '[ .site[0].alerts[] ] | length' zap-working-dir/zap-report.json)" >> $GITHUB_OUTPUT
+
+  static-audit:
+    runs-on: ubuntu-latest
+    outputs:
+      alerts_undefined: ${{ steps.report.outputs.alerts_undefined }}
+      alerts_low: ${{ steps.report.outputs.alerts_low }}
+      alerts_medium: ${{ steps.report.outputs.alerts_medium }}
+      alerts_high: ${{ steps.report.outputs.alerts_high }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup dependencies
+      run: |
+        npm install
+
+    - name: Run static security scan
+      run: |
+        npm audit --json > npm-audit-report.json 
+        cat npm-audit-report.json
+
+    - name: Upload npm audit report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: npm-audit-report
+        path: npm-audit-report.json
+
+    - name: Parse npm audit report
+      id: report
+      run: |
+        # Parse the npm audit report and output the number of alerts based on severity
+        echo "alerts_low=$(jq '[..vulnerabilities[] | select(.severity == "low")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_medium=$(jq '[..vulnerabilities[] | select(.severity == "moderate")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_high=$(jq '[..vulnerabilities[] | select(.severity == "high")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT

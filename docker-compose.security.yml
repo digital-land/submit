@@ -2,24 +2,29 @@ version: "3.8"
 
 services:
   web:
+    image: submit
     ports:
-      - "8080:8080"
+      - "5000:5000"
     build:
       context: .
       dockerfile: Dockerfile
     
     environment:
-      - NODE_ENV=local 
+      - NODE_ENV=local
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - CONFIG_PATH=/app/config
+
+    volumes:
+      - ./config:/app/config
+    depends_on:
+      - redis
 
     healthcheck:
-      test: curl -sSf http://localhost:8080 || exit 1 
+      test: curl -v -i -f http://localhost:5000 
       interval: 5s
       timeout: 5s
       retries: 5
-    depends_on:
-      - redis  
 
   redis:
     image: redis:6.2
@@ -29,17 +34,12 @@ services:
 
   zap:
     image: ghcr.io/zaproxy/zaproxy:2.15.0
-    command: bash -c "zap.sh -cmd -addonupdate && zap.sh -cmd -autorun /zap/wrk/zap.yaml"
+    command: bash -c "zap.sh -cmd -addonupdate; zap.sh -cmd -autorun /zap/wrk/zap.yaml"
     volumes:
       - .:/zap/wrk
-      - ./zap-working-dir:/home/zap/.ZAP
+      - ./zap-working-dir/zap.log:/home/zap/.ZAP/zap.log
     depends_on:
-      web:
-        condition: service_healthy 
-    environment:
-      - ZAP_PORT=8080
-    ports:
-      - "8081:8080"
+      - web
 
 networks:
   default:
