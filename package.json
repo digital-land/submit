@@ -14,6 +14,9 @@
     "start:wiremock": "docker-compose up -d --force-recreate --build && NODE_ENV=wiremock node index.js",
     "start:development": "NODE_ENV=development node index.js",
     "start:local:watch": "NODE_ENV=test npm run start:watch",
+    "docker-security-scan": "docker-compose -f docker-compose.security.yml run --rm zap",
+    "static-security-scan": "npm audit --json > npm-audit-report.json",
+    "scan:zap": "npm run docker-security-scan && npm run static-security-scan",
     "mock:api": "node ./test/mock-api/index.js",
     "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable && npm run build-webpack",
     "build-webpack": "webpack",
@@ -57,7 +60,8 @@
     "vitest": "^2.0.4",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.2"
+    "webpack-dev-server": "^5.0.2",
+    "zaproxy": "^2.0.0-rc.5"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.537.0",
