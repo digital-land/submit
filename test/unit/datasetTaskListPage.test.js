@@ -35,7 +35,7 @@ describe(`Dataset Task List Page (seed: ${seed})`, () => {
     expect(links.length).toEqual(3)
     expect(activeLink.textContent).toContain('Task list')
     if (issueCount) {
-    expect(issueCount.textContent).toContain(`${params.taskList.length} issue${params.taskList.length > 1 ? 's' : ''}`)
+      expect(issueCount.textContent).toContain(`${params.taskList.length} issue${params.taskList.length > 1 ? 's' : ''}`)
     } else {
       expect(issueCount).toBeNull()
     }
