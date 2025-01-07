@@ -54,7 +54,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
       if (issueList) {
         const issueItemElements = [...issueList.children]
         expect(issueItemElements.length).toBe(params.errorSummary.items.length)
-  
+
         issueItemElements.forEach((element, index) => {
           expect(element.textContent).toContain(params.errorSummary.items[index].html)
         })

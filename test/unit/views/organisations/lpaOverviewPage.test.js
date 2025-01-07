@@ -24,7 +24,7 @@ const seed = new Date().getTime()
 const datasetGroup = ({ expect }, key, datasets, document) => {
   const datasetCardBlock = document.querySelector(`ul[data-reason="${key}"]`)
   if (!datasetCardBlock) {
-    throw new Error(`Dataset card block for "${key}" not found`);
+    throw new Error(`Dataset card block for "${key}" not found`)
   }
   const datasetCards = datasetCardBlock.children
   // const datasetCards = document.querySelectorAll(`ul[data-reason="${key}"] li`)
