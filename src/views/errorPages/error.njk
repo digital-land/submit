@@ -1,0 +1,76 @@
+{% extends "layouts/main.html" %}
+
+{% set pageNames = {
+      '400': 'Invalid parameters',
+      '404': 'Page not found',
+      '412': 'Yo momma too fat',
+      '500': 'Sorry, there’s a problem with the service',
+      '503': 'Sorry, the service is unavailable',
+      '504': 'Sorry, there’s a problem with the service'} %}
+
+{% set pageName = pageNames[err.statusCode] or 'Sorry, there’s a problem with the service' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l" data-status-code="{{ err.statusCode }}">{{ pageName }}</h1>
+
+      {% if err.statusCode === 400 %}
+        <p>If you typed the web address, check it is correct.</p>
+        <p>If you pasted the web address, check you copied the entire address.</p>
+        <p>If the web address is correct or you selected a link or button send an email to <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
+
+      {% elif err.statusCode === 404 %}
+        <p>If you typed the address, check it is correct.</p>
+        <p>If you copied the web address, check you copied the entire address.</p>
+        <p>If the web address is correct or you selected a link or button, send an email to <a href="mailto:{{supportEmail}}">{{supportEmail}}</a> for help.</p>
+
+        <p>If you used an old address, it's possible it has expired. You can start the process <a href="/">from the beginning</a></p>
+
+      {% elif err.statusCode === 503 %}
+        {% if downtime %}
+          <p>The service will be unavailable from {{downtime}}.</p>
+        {% endif %}
+        {% if uptime %}
+          <p>You’ll be able to use the service from {{uptime}}.</p>
+        {% endif %}
+
+      {% else %}
+        <p>Try again later.</p>
+        <p>You'll need to <a href="/">start from the beginning of the service</a>.</p>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+      {% if env !== 'production' and err.statusCode !== 404 %}
+        <details class="govuk-body">
+          <summary>Error details</summary>
+          <pre class="govuk-body-s" style="overflow-x: scroll; max-width: 100%; line-height: 1.5;">
+            {{ err.stack | safe }}
+          </pre>
+          {% if err.cause %}
+          <p><strong>Cause:</strong></p>
+          <pre class="govuk-body-s" style="overflow-x: scroll; max-width: 100%; line-height: 1.5;">
+            {{ err.cause.stack | safe }}
+          </pre>
+          {% endif %}
+        </details>
+
+        {% set issues = (err.cause | schemaIssues) %}
+        {% if issues.length > 0 %}
+          <details class="govuk-body">
+            <summary>Schema Issues</summary>
+          {% for issue in issues %}
+            <div class="schema-issue">
+              <p><strong>Path</strong>: [{{ issue.path.join(', ') }}]</p>
+              <p><strong>Message:</strong>: {{ issue.message }}</p>
+            </div>
+          {% endfor %}
+          </details>
+
+        {% endif %}
+      {% endif %}
+  </div>
+{% endblock %}

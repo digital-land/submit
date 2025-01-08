@@ -3,6 +3,7 @@ import { postFileRequest, postUrlRequest, getRequestData } from '../../src/servi
 import axios from 'axios'
 import RequestData from '../../src/models/requestData.js'
 import config from '../../config/index.js'
+import { MiddlewareError } from '../../src/utils/errors.js'
 
 vi.mock('axios')
 
@@ -123,10 +124,7 @@ describe('asyncRequestApi', () => {
     it('should throw an error if the GET request fails with status 500', async () => {
       const resultId = '123'
 
-      const expectedError = new Error('HTTP error! status: 500')
-      expectedError.message = 'HTTP error! status: 500'
-      expectedError.status = 500
-
+      const expectedError = new MiddlewareError('HTTP error! status: 500', 500)
       const expectedResponse = { status: 500 }
       axios.get.mockRejectedValue(expectedResponse)
 

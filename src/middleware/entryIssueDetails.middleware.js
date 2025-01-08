@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { MiddlewareError } from '../utils/errors.js'
 import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
 
@@ -77,8 +78,7 @@ export const prepareEntry = (req, res, next) => {
   const { pageNumber } = req.parsedParams
 
   if (!issues[pageNumber - 1] || !resources) {
-    const error = new Error('Missing required values on request object')
-    error.status = 404
+    const error = new MiddlewareError('Missing required values on request object', 404)
     return next(error)
   }
 
