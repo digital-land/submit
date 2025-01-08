@@ -19,7 +19,6 @@ import {
   prepareIssueDetailsTemplateParams,
   preventIndexing
 } from '../../../src/middleware/common.middleware'
-import { MiddlewareError } from '../../../src/utils/errors.js'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
