@@ -25,7 +25,7 @@ export function setupErrorHandlers (app) {
 
     const middlewareError = err instanceof MiddlewareError ? err : new MiddlewareError('Internal server error', 500, { cause: err })
     try {
-      res.status(middlewareError.statusCode).render(err.template, { ...errContext, err: middlewareError })
+      res.status(middlewareError.statusCode).render(middlewareError.template, { ...errContext, err: middlewareError })
     } catch (e) {
       logger.error('Failed to render error page.', {
         type: types.Response, errorMessage: e.message, errorStack: e.stack, originalError: err.message, endpoint: req.originalUrl
