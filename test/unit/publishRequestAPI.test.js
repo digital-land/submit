@@ -3,7 +3,6 @@ import { postFileRequest, postUrlRequest, getRequestData } from '../../src/servi
 import axios from 'axios'
 import RequestData from '../../src/models/requestData.js'
 import config from '../../config/index.js'
-import { MiddlewareError } from '../../src/utils/errors.js'
 
 vi.mock('axios')
 
@@ -112,10 +111,10 @@ describe('asyncRequestApi', () => {
       const resultId = '123'
 
       const expectedError = new Error('HTTP error! status: 404')
-      expectedError.message = 'HTTP error! status: 404'
+      expectedError.message = 'HTTP error! status: 404: Failed to do the thing'
       expectedError.status = 404
 
-      const expectedResponse = { status: 404 }
+      const expectedResponse = { status: 404, message: 'Failed to do the thing' }
       axios.get.mockRejectedValue(expectedResponse)
 
       await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
@@ -124,8 +123,8 @@ describe('asyncRequestApi', () => {
     it('should throw an error if the GET request fails with status 500', async () => {
       const resultId = '123'
 
-      const expectedError = new MiddlewareError('HTTP error! status: 500', 500)
-      const expectedResponse = { status: 500 }
+      const expectedError = new Error('HTTP error! status: 500: Failed to do the thing')
+      const expectedResponse = { status: 500, message: 'Failed to do the thing' }
       axios.get.mockRejectedValue(expectedResponse)
 
       await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
