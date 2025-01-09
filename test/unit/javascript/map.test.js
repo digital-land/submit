@@ -17,7 +17,8 @@ vi.mock('maplibre-gl', () => ({
       addLayer: vi.fn(),
       fitBounds: vi.fn(),
       flyTo: vi.fn(),
-      getStyle: vi.fn().mockReturnValue({ layers: [{ type: 'symbol', id: 'symbol-layer' }] })
+      getStyle: vi.fn().mockReturnValue({ layers: [{ type: 'symbol', id: 'symbol-layer' }] }),
+      getCanvas: vi.fn().mockReturnValue({ style: { cursor: '' } })
     })),
     ScaleControl: vi.fn(),
     NavigationControl: vi.fn(),
