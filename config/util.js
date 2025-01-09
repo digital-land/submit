@@ -97,7 +97,7 @@ export const ConfigSchema = v.object({
   tablePageLength: v.number(),
   contact: v.object({
     issues: v.object({
-      email: v.string()
+      email: v.pipe(v.string(), v.email())
     })
   })
 })
