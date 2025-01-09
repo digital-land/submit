@@ -1,19 +1,18 @@
 import {
+  and,
   fetchDatasetInfo,
-  isResourceAccessible,
-  isResourceNotAccessible,
-  fetchLatestResource,
   fetchEntityCount,
+  fetchLatestResource,
+  fetchLpaDatasetIssues, fetchSources,
+  isResourceAccessible,
+  isResourceIdValid,
   logPageError,
-  fetchLpaDatasetIssues,
-  validateQueryParams,
-  getDatasetTaskListError,
-  isResourceIdValid, and
+  validateOrgAndDatasetQueryParams
 } from './common.middleware.js'
-import { fetchOne, fetchIf, onlyIf, renderTemplate } from './middleware.builders.js'
+import { fetchIf, fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
-import * as v from 'valibot'
+import '../types/datasette.js'
 
 /**
  * Fetches the resource status
@@ -48,13 +47,13 @@ function getStatusTag (status) {
 /**
  * Middleware. Updates req with `templateParams`
  *
- * @param {*} req
+ * @param {{ orgInfo: OrgInfo, sources: Source[], entityCountRow: undefined | { entity_count: number}, issues: Issue[] }} req
  * @param {*} res
  * @param {*} next
  * @returns { { templateParams: object }}
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation } = req
+  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation, sources } = req
   const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
   const { lpa, dataset: datasetId } = params
   console.assert(typeof entityCount === 'number', 'entityCount should be a number')
@@ -68,6 +67,19 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
       status: getStatusTag(issue.status)
     }
   })
+
+  // include sources which couldn't be accessed
+  for (const source of sources) {
+    if (!source.status || source.status >= 300) {
+      taskList.push({
+        title: {
+          text: 'There was an error accessing the URL'
+        },
+        href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(datasetId)}/endpoint-error/${encodeURIComponent(source.endpoint)}`,
+        status: getStatusTag('Error')
+      })
+    }
+  }
 
   req.templateParams = {
     taskList,
@@ -84,59 +96,22 @@ const getDatasetTaskList = renderTemplate({
   handlerName: 'getDatasetTaskList'
 })
 
-/**
- * Middleware. Updates req with `templateParams`
- *
- * @param {*} req
- * @param {*} res
- * @param {} next
- * @returns {{ templateParams: object }}
- */
-export const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
-  const { orgInfo: organisation, dataset, resourceStatus: resource } = req
-
-  const daysSince200 = resource.days_since_200
-  const today = new Date()
-  const last200Date = new Date(
-    today.getTime() - daysSince200 * 24 * 60 * 60 * 1000
-  )
-  const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
-
-  req.templateParams = {
-    organisation,
-    dataset,
-    errorData: {
-      endpoint_url: resource.endpoint_url,
-      http_status: resource.status,
-      latest_log_entry_date: resource.latest_log_entry_date,
-      latest_200_date: last200Datetime
-    }
-  }
-
-  next()
-}
-
-const validateParams = validateQueryParams({
-  schema: v.object({
-    lpa: v.string(),
-    dataset: v.string()
-  })
-})
+/* eslint-disable-next-line no-return-assign */
+const emptyIssuesList = (req) => req.issues = []
 
 /* eslint-disable-next-line no-return-assign */
 const zeroEntityCount = (req) => req.entityCount = { entity_count: 0 }
 
 export default [
-  validateParams,
+  validateOrgAndDatasetQueryParams,
   fetchResourceStatus,
+  fetchSources,
   fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,
   fetchIf(isResourceAccessible, fetchLatestResource),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+  fetchIf(isResourceAccessible, fetchLpaDatasetIssues, emptyIssuesList),
   fetchIf(and(isResourceAccessible, isResourceIdValid), fetchEntityCount, zeroEntityCount),
-  onlyIf(isResourceAccessible, prepareDatasetTaskListTemplateParams),
-  onlyIf(isResourceAccessible, getDatasetTaskList),
-  onlyIf(isResourceNotAccessible, prepareDatasetTaskListErrorTemplateParams),
-  onlyIf(isResourceNotAccessible, getDatasetTaskListError),
+  prepareDatasetTaskListTemplateParams,
+  getDatasetTaskList,
   logPageError
 ]
