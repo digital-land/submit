@@ -10,7 +10,6 @@ const boundaryLineOpacity = 1
 const pointOpacity = 0.8
 const pointRadius = 5
 const pointColor = '#008'
-const planningDataUrl = 'https://www.planning.data.gov.uk'
 const popupMaxListLength = 10
 
 /**
@@ -247,15 +246,11 @@ export class Map {
           // feature text content
           const textContent = document.createElement('p')
           textContent.classList.add('govuk-body-s', 'govuk-!-margin-top-0', 'govuk-!-margin-bottom-0')
-          textContent.innerHTML = `${capitalize(startCase(feature.properties.dataset)) || ''}<br/>
-            <strong>Ref:</strong> ${feature.properties.reference || ''}<br/>`
-
-          // link to planning data
-          const a = document.createElement('a')
-          a.classList.add('govuk-link')
-          a.setAttribute('href', `${planningDataUrl}/entity/${feature.properties.entity}`)
-          a.textContent = feature.properties.name || feature.properties.reference || 'View entity'
-          textContent.appendChild(a)
+          textContent.innerHTML = `
+            ${capitalize(startCase(feature.properties.dataset)) || ''}<br/>
+            <strong>Ref:</strong> ${feature.properties.reference || ''}<br/>
+            ${feature.properties.name ?? ''}
+          `
 
           inset.appendChild(textContent)
           list.appendChild(inset)
