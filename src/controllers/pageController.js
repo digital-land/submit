@@ -12,6 +12,8 @@ const { Controller } = hmpoFormWizard
  *
  * @typedef {{ ['data-subject']: string, orgName: string, orgId: any, dataset: string, datasetName: string }} DeepLinkInfo
  * @typedef {{ options: { deepLink?: DeepLinkInfo, datasetName?: string, backLinkText?: string, lastPage?: string }}} FormOptions
+ *
+ * @typedef {Request & { sessionModel: Map<string, any>, journeyModel: Map<string, any>, form: FormOptions }} ControllerRequest
  */
 
 /**
@@ -58,7 +60,7 @@ class PageController extends Controller {
   }
 
   /**
-   * @param {Request & { sessionModel: Map<string, any>, form: FormOptions }} req
+   * @param {ControllerRequest} req
    * @param {Response} res
    * @param {NextFunction} next
    */

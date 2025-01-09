@@ -7,7 +7,7 @@ import * as v from 'valibot'
 import { NonEmptyString } from '../routes/schemas.js'
 
 /**
- * @typedef {import('express').Request & {sessionModel: Map<string, any>, journeyModel: Map<string, any>, query: {dataset: string}}} Request
+ * @typedef {import('./pageController.js').ControllerRequest} ControllerRequest
  */
 
 const QueryParams = v.object({
@@ -52,19 +52,26 @@ function maybeSetReferrer (req, sessionData) {
 class DeepLinkController extends PageController {
   /**
    *
-   * @param {Request} req
+   * @param {ControllerRequest} req
    * @param {import('express').Response} res
    * @param {import('express').NextFunction} next
    * @returns
    */
+  // @ts-ignore
   get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
-    const { dataset, orgName, orgId } = req.query
     const validationResult = v.safeParse(QueryParams, req.query)
-    if (!(validationResult.success && datasets.has(dataset))) {
+    const { orgName, orgId } = req.query
+    if (!(validationResult.success)) {
       logger.info('DeepLinkController.get(): invalid params for deep link, redirecting to start page',
         { type: types.App, query: req.query })
+      return res.redirect('/check')
+    }
+
+    const dataset = validationResult.output.dataset
+    if (!datasets.has(dataset)) {
+      logger.info('DeepLinkController.get(): dataset not supported', { type: types.DataValidation, query: req.query })
       return res.redirect('/check')
     }
 
@@ -83,7 +90,7 @@ class DeepLinkController extends PageController {
 
   /**
    *
-   * @param {Request} req request object
+   * @param {ControllerRequest} req request object
    * @param {string} path path to add to history
    */
   #addHistoryStep (req, path) {
