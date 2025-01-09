@@ -36,7 +36,7 @@ export const constructTableParams = (req, res, next) => {
   const { entities, uniqueDatasetFields } = req
 
   const leadingFields = []
-  for (const field in uniqueDatasetFields) {
+  for (const field of uniqueDatasetFields) {
     if (field === 'name' || field === 'reference') {
       leadingFields.push(field)
     }
