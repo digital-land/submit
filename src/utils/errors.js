@@ -11,7 +11,7 @@ export function errorTemplateContext () {
 
 /**
  * Use this class if you want to display specific HTTP error page.
- * 
+ *
  * Uses the `errorPages/error.njk` template, but it can be overriden via options.
  */
 export class MiddlewareError extends Error {
