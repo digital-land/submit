@@ -99,7 +99,7 @@ export function validateQueryParamsFn (req, res, next) {
     next()
   } catch (error) {
     const err = new MiddlewareError('Query params validation error', 400, { cause: error })
-    res.status(400).render(err.template, { ...errorTemplateContext(), err })
+    res.status(err.statusCode).render(err.template, { ...errorTemplateContext(), err })
   }
 }
 
