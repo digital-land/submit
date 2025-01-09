@@ -9,6 +9,7 @@ $govuk-global-styles: true;
 @import "./components/dataset-navigation";
 @import "./components/cookie-banner";
 @import "./components/sub-navigation";
+@import "./components/map";
 
 .app-inset-text---error {
   border-left: 5px solid govuk-colour('red');

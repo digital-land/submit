@@ -2,7 +2,7 @@
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate } from './middleware.builders.js'
+import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
@@ -315,10 +315,11 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
     return next(new Error('Invalid entities format'))
   }
 
+  let numEntitiesWithNoJson = 0
   req.entities = entities.map(entity => {
     const jsonField = entity.json
     if (!jsonField || jsonField === '') {
-      logger.info(`common.middleware/extractJsonField: No json field for entity ${entity.toString()}`)
+      numEntitiesWithNoJson += 1
       return entity
     }
     entity.json = undefined
@@ -326,10 +327,16 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
       const parsedJson = JSON.parse(jsonField)
       entity = Object.assign({}, parsedJson, entity)
     } catch (err) {
-      logger.warn(`common.middleware/extractJsonField: Error parsing JSON for entity ${entity.toString()}: ${err.message}`)
+      logger.warn('common.middleware/extractJsonField: Error parsing JSON',
+        { type: types.App, json: jsonField, entity: entity.entity, errorMessage: err.message })
     }
     return entity
   })
+
+  if (numEntitiesWithNoJson > 0) {
+    logger.info(`Got ${numEntitiesWithNoJson} entities with no json field`,
+      { type: types.App, endpoint: req.originalUrl })
+  }
 
   next()
 }
@@ -637,6 +644,75 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
 
   next()
 }
+
+export const validateOrgAndDatasetQueryParams = validateQueryParams({
+  schema: v.object({
+    lpa: v.string(),
+    dataset: v.string()
+  })
+})
+
+export const fetchSources = fetchMany({
+  query: ({ params }) => `
+    WITH RankedEndpoints AS (
+      SELECT
+        rhe.endpoint,
+        rhe.endpoint_url,
+        case 
+            when rhe.status = '' or rhe.status is null then null
+            else cast(rhe.status as int)
+        end as status,
+        rhe.exception,
+        rhe.resource,
+        rhe.latest_log_entry_date,
+        rhe.endpoint_entry_date,
+        rhe.endpoint_end_date,
+        rhe.resource_start_date as resource_start_date,
+        rhe.resource_end_date,
+        s.documentation_url,
+        ROW_NUMBER() OVER (
+          PARTITION BY rhe.endpoint_url
+          ORDER BY
+            rhe.latest_log_entry_date DESC
+        ) AS row_num
+      FROM
+        reporting_historic_endpoints rhe
+        LEFT JOIN source s ON rhe.endpoint = s.endpoint
+      WHERE
+        REPLACE(rhe.organisation, '-eng', '') = '${params.lpa}'
+        AND rhe.pipeline = '${params.dataset}'
+        AND (
+          rhe.resource_end_date >= current_timestamp
+          OR rhe.resource_end_date IS NULL
+          OR rhe.resource_end_date = ''
+        )
+        AND (
+          rhe.endpoint_end_date >= current_timestamp
+          OR rhe.endpoint_end_date IS NULL
+          OR rhe.endpoint_end_date = ''
+        )
+    )
+    SELECT
+      endpoint,
+      endpoint_url,
+      status,
+      exception,
+      resource,
+      latest_log_entry_date,
+      endpoint_entry_date,
+      endpoint_end_date,
+      resource_start_date,
+      resource_end_date,
+      documentation_url
+    FROM
+      RankedEndpoints
+    WHERE
+      row_num = 1
+    ORDER BY
+      latest_log_entry_date DESC;
+  `,
+  result: 'sources'
+})
 
 export const noIndexHeader = (req, res, next) => {
   res.set('X-Robots-Tag', 'noindex')
