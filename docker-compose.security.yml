@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  web:
+    image: submit
+    ports:
+      - "5000:5000"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    environment:
+      - NODE_ENV=local
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CONFIG_PATH=/app/config
+
+    volumes:
+      - ./config:/app/config
+    depends_on:
+      - redis
+
+    healthcheck:
+      test: curl -v -i -f http://localhost:5000 
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6.2
+    restart: on-failure
+    ports:
+      - "6379:6379"
+
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:2.15.0
+    command: bash -c "zap.sh -cmd -addonupdate; zap.sh -cmd -autorun /zap/wrk/zap.yaml"
+    volumes:
+      - .:/zap/wrk
+      - ./zap-working-dir/zap.log:/home/zap/.ZAP/zap.log
+    depends_on:
+      - web
+
+networks:
+  default:
+    name: lpa-validator-frontend
