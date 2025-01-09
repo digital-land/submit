@@ -51,12 +51,17 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
 
     it('should render the issue items', () => {
       const issueList = document.querySelector('.govuk-error-summary__list')
-      const issueItemElements = [...issueList.children]
-      expect(issueItemElements.length).toBe(params.errorSummary.items.length)
+      if (issueList) {
+        const issueItemElements = [...issueList.children]
+        expect(issueItemElements.length).toBe(params.errorSummary.items.length)
 
-      issueItemElements.forEach((element, index) => {
-        expect(element.textContent).toContain(params.errorSummary.items[index].html)
-      })
+        issueItemElements.forEach((element, index) => {
+          expect(element.textContent).toContain(params.errorSummary.items[index].html)
+        })
+      } else {
+        console.log('Error summary list not found')
+        expect(params.errorSummary.items.length).toBe(0)
+      }
     })
   })
 
