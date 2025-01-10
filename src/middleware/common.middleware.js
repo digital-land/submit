@@ -1,3 +1,4 @@
+// @ts-check
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import performanceDbApi from '../services/performanceDbApi.js'
@@ -11,7 +12,7 @@ import datasette from '../services/datasette.js'
  * the function that threw the error.
  *
  * @param {Error} err
- * @param {{handlerName: string}} req
+ * @param {import('express').Request & {handlerName: string}} req
  * @param {*} res
  * @param {*} next
  */
@@ -126,6 +127,7 @@ export const show404IfPageNumberNotInRange = (req, res, next) => {
 
   if (pageNumber > dataRange.maxPageNumber || pageNumber < 1) {
     const error = new Error('page number not in range')
+    // @ts-ignore
     error.status = 404
     return next(error)
   }
@@ -145,10 +147,13 @@ export const createPaginationTemplateParams = (req, res, next) => {
     return next(error)
   }
 
+  /**
+   * @type {{ previous: { href: string } | undefined, next: { href: string } | undefined, items: { type: 'ellipsis' | 'number', number?: number, href: string, ellipsis?: boolean, current?: boolean }[] }}
+   */
   const paginationObj = {
     previous: undefined,
     next: undefined,
-    items: undefined
+    items: []
   }
 
   if (pageNumber > 1) {
@@ -161,22 +166,25 @@ export const createPaginationTemplateParams = (req, res, next) => {
       href: `${baseSubpath}/${pageNumber + 1}`
     }
   }
-  paginationObj.items = pagination(dataRange.maxPageNumber, Math.min(pageNumber, dataRange.maxPageNumber)).map(item => {
+
+  for (const item of pagination(dataRange.maxPageNumber, Math.min(pageNumber, dataRange.maxPageNumber))) {
     if (item === '...') {
-      return {
+      paginationObj.items.push({
         type: 'ellipsis',
         ellipsis: true,
         href: '#'
-      }
-    } else {
-      return {
+      })
+    } else if (typeof item === 'number') {
+      paginationObj.items.push({
         type: 'number',
         number: item,
         href: `${baseSubpath}/${item}`,
-        current: pageNumber === parseInt(item)
-      }
+        current: pageNumber === item
+      })
+    } else {
+      logger.warn('unexpected pagination item', { item, dataRange, types: types.App, endpoint: req.originalUrl })
     }
-  })
+  }
 
   req.pagination = paginationObj
 
