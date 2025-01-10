@@ -78,7 +78,7 @@ export const prepareEntry = (req, res, next) => {
   const { pageNumber } = req.parsedParams
 
   if (!issues[pageNumber - 1] || !resources) {
-    const details = `issues[pageNumber-1]=${issues[pageNumber-1] ? 'present' : 'missing'} resources=${resources ? 'present' : 'missing'}`
+    const details = `issues[pageNumber-1]=${issues[pageNumber - 1] ? 'present' : 'missing'} resources=${resources ? 'present' : 'missing'}`
     const error = new MiddlewareError(`Missing required values on request object: ${details}`, 404)
     return next(error)
   }
