@@ -26,8 +26,8 @@ describe('Dataset Overview Middleware', () => {
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
         sources: [
-          { endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: '200', endpoint_entry_date: 'LU1', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
-          { endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: '404', exception: 'exception', endpoint_entry_date: 'LU2', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
+          { endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: 200, endpoint_entry_date: 'LU1', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
+          { endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: 404, exception: 'exception', endpoint_entry_date: 'LU2', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
         ],
         issues: [
           {
@@ -44,15 +44,15 @@ describe('Dataset Overview Middleware', () => {
       expect(reqWithResults.templateParams).toEqual({
         organisation: { name: 'mock-org' },
         dataset: reqWithResults.dataset,
-        taskCount: 1,
+        taskCount: 2, // 1 issue + 1 endpoint error
         stats: {
           numberOfFieldsSupplied: 1,
           numberOfFieldsMatched: 1,
           numberOfExpectedFields: 2,
           numberOfRecords: 10,
           endpoints: [
-            { name: 'Data Url 0', endpoint: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01' },
-            { name: 'Data Url 1', endpoint: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: '2023-01-02' }
+            { name: 'Data Url 0', endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01' },
+            { name: 'Data Url 1', endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: '2023-01-02' }
           ]
         },
         notice: undefined

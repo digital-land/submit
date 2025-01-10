@@ -153,7 +153,8 @@ export const OrgDatasetOverview = v.strictObject({
     endpoints: v.array(v.strictObject({
       name: v.string(),
       documentation_url: v.optional(v.string()),
-      endpoint: v.string(),
+      endpoint_url: v.string(),
+      endpoint: NonEmptyString,
       lastAccessed: v.string(),
       lastUpdated: v.nullable(v.string()),
       error: v.optional(v.strictObject({
@@ -198,9 +199,9 @@ export const OrgEndpointError = v.strictObject({
   dataset: DatasetNameField,
   errorData: v.strictObject({
     endpoint_url: v.url(),
-    http_status: v.integer(),
+    http_status: v.optional(v.integer()),
     latest_log_entry_date: v.isoDateTime(),
-    latest_200_date: v.isoDateTime()
+    latest_200_date: v.optional(v.isoDateTime())
   })
 })
 
