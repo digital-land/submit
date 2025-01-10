@@ -181,8 +181,9 @@ export const createPaginationTemplateParams = (req, res, next) => {
         href: `${baseSubpath}/${item}`,
         current: pageNumber === item
       })
+    } else {
+      logger.warn('unexpected pagination item', { item, dataRange, types: types.App, endpoint: req.originalUrl })
     }
-    logger.warn('unexpected pagination item', { item, dataRange, types: types.App, endpoint: req.originalUrl })
   }
 
   req.pagination = paginationObj
