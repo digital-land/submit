@@ -1,89 +1,125 @@
-/* eslint-disable new-cap */
-
-import { describe, it, vi, expect, beforeEach } from 'vitest'
-import notifyClient from '../../src/services/mailClient.js'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
+import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
 
-vi.mock('../../src/services/mailClient.js')
+vi.mock('../../src/services/jiraService.js')
 
-function makeRequest () {
-  return {
-    sessionModel: {
-      get: vi.fn().mockImplementation((key) => {
-        const values = {
-          name: 'John Doe',
-          email: 'JohnDoe@mail.com',
-          lpa: 'LPA',
-          dataset: 'Dataset',
-          'documentation-url': 'Documentation URL',
-          'endpoint-url': 'Endpoint URL'
-        }
-        return values[key]
-      })
+describe('CheckAnswersController', () => {
+  let req, res, next, controller
+
+  beforeEach(() => {
+    req = {
+      sessionModel: {
+        get: vi.fn(),
+        set: vi.fn()
+      },
+      body: {}
     }
-  }
-}
-
-describe('Handle email notification handlers', async () => {
-  const CheckAnswersController = await vi.importActual('../../src/controllers/CheckAnswersController.js')
-  const sendEmailMock = vi.fn(() => Promise.reject(new Error('something went wrong')))
-  notifyClient.sendEmail = sendEmailMock
-
-  const controller = new CheckAnswersController.default({ route: '/dataset' })
-  const req = makeRequest()
-  const res = {}
-  const next = vi.fn()
-
-  it('should reuturn list of errors when failed to send email', async () => {
-    const result = await controller.sendEmails(req, res, next)
-    expect(result.errors.length).toBe(2)
-  })
-})
-
-describe('Check answers controller', async () => {
-  let CheckAnswersController
-  let checkAnswersController
-  let sendEmailMock
-
-  beforeEach(async () => {
-    // Setup a mock for sendEmail function
-    sendEmailMock = vi.fn()
-    notifyClient.sendEmail = sendEmailMock
-    CheckAnswersController = await vi.importActual('../../src/controllers/CheckAnswersController.js')
-    checkAnswersController = new CheckAnswersController.default({
+    res = {
+      redirect: vi.fn()
+    }
+    next = vi.fn()
+    controller = new CheckAnswersController({
       route: '/dataset'
     })
   })
 
-  describe('send emails', () => {
-    it('should get the values from the session model and then send the request and acknowledgement emails', async () => {
-      // Mock req, res, next
-      const req = makeRequest()
-      const res = {}
-      const next = vi.fn()
+  describe('POST to CheckAnswersController', () => {
+    it('should create a Jira issue and set session data on success', async () => {
+      const issue = { issueKey: 'TEST-123' }
+      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(issue)
 
-      await checkAnswersController.sendEmails(req, res, next)
+      await controller.post(req, res, next)
 
-      const personalisation = {
-        name: 'John Doe',
-        email: 'JohnDoe@mail.com',
-        organisation: 'LPA',
-        dataset: 'Dataset',
-        'documentation-url': 'Documentation URL',
-        endpoint: 'Endpoint URL'
-      }
+      expect(req.sessionModel.set).toHaveBeenCalledWith('reference', issue.issueKey)
+      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [])
+      expect(res.redirect).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalled()
+    })
 
-      expect(sendEmailMock).toHaveBeenCalledWith(
-        config.email.templates.RequestTemplateId,
-        config.email.dataManagementEmail,
-        { personalisation }
+    it('should set session errors and redirect on failure to create Jira issue', async () => {
+      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(null)
+
+      await controller.post(req, res, next)
+
+      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'Failed to create Jira issue.' }])
+      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('should set session errors and redirect on unexpected error', async () => {
+      vi.spyOn(controller, 'createJiraServiceRequest').mockRejectedValue(new Error('Unexpected error'))
+
+      await controller.post(req, res, next)
+
+      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
+      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+      expect(next).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('createJiraServiceRequest', () => {
+    it('should create a Jira service request and attach a file', async () => {
+      config.jira.requestTypeId = '1'
+      req.sessionModel.get.mockImplementation((key) => {
+        const data = {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          lpa: 'Test Organisation',
+          dataset: 'Test Dataset',
+          'documentation-url': 'http://example.com/doc',
+          'endpoint-url': 'http://example.com/endpoint'
+        }
+        return data[key]
+      })
+
+      const response = { data: { issueKey: 'TEST-123' } }
+      createCustomerRequest.mockResolvedValue(response)
+      attachFileToIssue.mockResolvedValue({ data: {} })
+
+      const result = await controller.createJiraServiceRequest(req, res, next)
+
+      expect(createCustomerRequest).toHaveBeenCalledWith(
+        'Dataset URL request: Test Organisation for Test Dataset',
+        expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation* for the dataset *Test Dataset*.'),
+        config.jira.requestTypeId
       )
-
-      expect(sendEmailMock).toHaveBeenCalledWith(
-        config.email.templates.AcknowledgementTemplateId,
-        'JohnDoe@mail.com',
-        { personalisation }
+      expect(attachFileToIssue).toHaveBeenCalledWith(
+        'TEST-123',
+        expect.any(File)
       )
+      expect(result).toEqual(response.data)
+    })
+
+    it('should return null if Jira service request creation fails', async () => {
+      createCustomerRequest.mockResolvedValue({ error: 'Error' })
+
+      const result = await controller.createJiraServiceRequest(req, res, next)
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null if file attachment fails', async () => {
+      req.sessionModel.get.mockImplementation((key) => {
+        const data = {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          lpa: 'Test Organisation',
+          dataset: 'Test Dataset',
+          'documentation-url': 'http://example.com/doc',
+          'endpoint-url': 'http://example.com/endpoint'
+        }
+        return data[key]
+      })
+
+      const response = { data: { issueKey: 'TEST-123' } }
+      createCustomerRequest.mockResolvedValue(response)
+      attachFileToIssue.mockResolvedValue({ error: 'Error' })
+
+      const result = await controller.createJiraServiceRequest(req, res, next)
+
+      expect(result).toBeNull()
     })
   })
 })
