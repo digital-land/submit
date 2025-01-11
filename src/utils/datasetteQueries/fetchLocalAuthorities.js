@@ -40,3 +40,32 @@ export const fetchLocalAuthorities = async () => {
     throw error
   }
 }
+
+export const fetchLocalAuthoritiesWithIdAndName = async () => {
+  const sql = `select
+      distinct(provision.organisation) as id,
+      organisation.name as name
+    from
+      provision,
+      organisation
+    where
+      provision.organisation = organisation.organisation
+    order by
+      provision.organisation`
+
+  try {
+    const response = await datasette.runQuery(sql)
+
+    return response.formattedData.map(row => {
+      if (row.name == null) {
+        logger.debug('Null value found in response:', row)
+        return null
+      } else {
+        return row
+      }
+    }).filter(row => row !== null) // Filter out null values
+  } catch (error) {
+    logger.warn(`fetchLocalAuthoritiesWithIdAndName: Error fetching local authorities data: ${error.message}`, error)
+    throw error
+  }
+}

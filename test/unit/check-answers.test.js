@@ -8,7 +8,7 @@ import { stripWhitespace } from '../utils/stripWhiteSpace.js'
 describe('check-answers View', async () => {
   const params = {
     values: {
-      lpa: 'mockLpa',
+      lpa: JSON.stringify({ id: 'mockLpa', name: 'Mock Lpa' }),
       name: 'mockName',
       email: 'mockEmail@example.com',
       dataset: 'mockDataset',
@@ -25,7 +25,7 @@ describe('check-answers View', async () => {
   })
 
   it('should render the lpa selected', () => {
-    const lpaRegex = new RegExp('<div class="govuk-summary-list__row">.*Local planning authority.*mockLpa.*Change.*</div>', 'g')
+    const lpaRegex = new RegExp('<div class="govuk-summary-list__row">.*Local planning authority.*Mock Lpa.*Change.*</div>', 'g')
     expect(html).toMatch(lpaRegex)
   })
 

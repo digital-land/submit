@@ -66,7 +66,7 @@ describe('CheckAnswersController', () => {
         const data = {
           name: 'John Doe',
           email: 'john.doe@example.com',
-          lpa: 'Test Organisation',
+          lpa: JSON.stringify({ id: 'test-org', name: 'Test Organisation' }),
           dataset: 'Test Dataset',
           'documentation-url': 'http://example.com/doc',
           'endpoint-url': 'http://example.com/endpoint'
@@ -82,7 +82,7 @@ describe('CheckAnswersController', () => {
 
       expect(createCustomerRequest).toHaveBeenCalledWith(
         'Dataset URL request: Test Organisation for Test Dataset',
-        expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation* for the dataset *Test Dataset*.'),
+        expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation (test-org)* for the dataset *Test Dataset*.'),
         config.jira.requestTypeId
       )
       expect(attachFileToIssue).toHaveBeenCalledWith(
@@ -105,7 +105,7 @@ describe('CheckAnswersController', () => {
         const data = {
           name: 'John Doe',
           email: 'john.doe@example.com',
-          lpa: 'Test Organisation',
+          lpa: JSON.stringify({ id: 'test-org', name: 'Test Organisation' }),
           dataset: 'Test Dataset',
           'documentation-url': 'http://example.com/doc',
           'endpoint-url': 'http://example.com/endpoint'
