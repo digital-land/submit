@@ -18,18 +18,19 @@ Your dataset should appear on the platform within 5 working days.
 
 If there are any issues processing your data will we contact you on the email address you provided.
 
-[Add another dataset](/submit-endpoint/start)
+[Add another dataset](/submit)
 
 ## Give feedback
 
-[Give feedback about this service](/feedback) (takes 30 seconds).
+[Give feedback about this service]({{feedbackLink}}) (takes 30 seconds).
 
 {% endset %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukPanel({
-      titleHtml: pageName
+      titleHtml: pageName,
+      html: "Your reference number<br><strong>" + values['reference'] + "</strong>"
     }) }}
 
     {{content | govukMarkdown(headingsStartWith="l") | safe}}

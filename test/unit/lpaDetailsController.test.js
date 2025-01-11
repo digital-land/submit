@@ -34,16 +34,19 @@ describe('lpaDetailsController', async () => {
       const res = {}
       const next = vi.fn()
 
-      const localAuthoritiesNames = ['Authority 1', 'Authority 2']
+      const localAuthorities = [
+        { id: 'Authority-1', name: 'Authority 1' },
+        { id: 'Authority-2', name: 'Authority 2' }
+      ]
 
-      fetchLocalAuthorities.fetchLocalAuthorities = vi.fn().mockResolvedValue(localAuthoritiesNames)
+      fetchLocalAuthorities.fetchLocalAuthoritiesWithIdAndName = vi.fn().mockResolvedValue(localAuthorities)
 
       await controller.locals(req, res, next)
 
-      expect(fetchLocalAuthorities.fetchLocalAuthorities).toHaveBeenCalled()
+      expect(fetchLocalAuthorities.fetchLocalAuthoritiesWithIdAndName).toHaveBeenCalled()
       expect(req.form.options.localAuthorities).toEqual([
-        { text: 'Authority 1', value: 'Authority 1' },
-        { text: 'Authority 2', value: 'Authority 2' }
+        { text: 'Authority 1', value: JSON.stringify({ id: 'Authority-1', name: 'Authority 1' }) },
+        { text: 'Authority 2', value: JSON.stringify({ id: 'Authority-2', name: 'Authority 2' }) }
       ])
       expect(next).toHaveBeenCalled()
     })
@@ -57,7 +60,7 @@ describe('lpaDetailsController', async () => {
       const res = {}
       const next = vi.fn()
 
-      fetchLocalAuthorities.fetchLocalAuthorities = vi.fn().mockResolvedValue([])
+      fetchLocalAuthorities.fetchLocalAuthoritiesWithIdAndName = vi.fn().mockResolvedValue([])
       const superLocalsSpy = vi.spyOn(PageController.prototype, 'locals')
 
       await controller.locals(req, res, next)
