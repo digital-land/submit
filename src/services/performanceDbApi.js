@@ -216,7 +216,7 @@ export default {
     }
 
     let message
-    if (rowCount && numIssues >= rowCount) {
+    if (Number.isInteger(rowCount) && numIssues >= rowCount) {
       message = messageInfo.allRows_message
     } else if (entityLevel) {
       message = numIssues === 1
