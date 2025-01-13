@@ -217,7 +217,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
   try {
     const datasetResources = await Promise.all(promises).catch(error => {
-      logger.error('Failed to fetch dataset resources', { error, type: types.App })
+      logger.error('Failed to fetch dataset resources', { type: types.DataFetch, errorMessage: error.message, errorStack: error.stack })
       throw error
     })
 
@@ -227,7 +227,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
     next()
   } catch (error) {
-    logger.error('Error in addEntityCountsToResources', { error, type: types.App })
+    logger.error('Error in addEntityCountsToResources', { type: types.App, errorMessage: error.message, errorStack: error.stack })
     next(error)
   }
 }
