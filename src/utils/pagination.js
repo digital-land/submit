@@ -1,6 +1,13 @@
 const { min, max } = Math
 const range = (lo, hi) => Array.from({ length: hi - lo }, (_, i) => i + lo)
 
+/**
+ *
+ * @param {number} count
+ * @param {number} current
+ * @param {string} ellipsis
+ * @returns {(number | string)[]}
+ */
 export const pagination = (count, current, ellipsis = '...') => {
   if (count <= 5) {
     return range(1, count + 1)

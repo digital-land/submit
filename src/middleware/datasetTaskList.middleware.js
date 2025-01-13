@@ -1,18 +1,17 @@
 import {
+  addEntityCountsToResources,
   fetchDatasetInfo,
-  validateQueryParams,
-  fetchResources,
-  processEntitiesMiddlewares,
-  fetchOrgInfo,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
+  fetchOrgInfo, fetchResources, fetchSources,
   logPageError,
-  addEntityCountsToResources
+  processEntitiesMiddlewares,
+  validateOrgAndDatasetQueryParams
 } from './common.middleware.js'
 import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
-import * as v from 'valibot'
+import '../types/datasette.js'
 import logger from '../utils/logger.js'
 
 /**
@@ -54,7 +53,7 @@ const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
  */
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
-  const { entities, resources } = req
+  const { entities, resources, sources } = req
   const { entryIssueCounts, entityIssueCounts } = req
 
   const entityCount = entities.length
@@ -67,7 +66,7 @@ export const prepareTasks = (req, res, next) => {
     issue.field !== undefined
   )
 
-  req.taskList = Object.values(issues).map(({ field, issue_type: type, count }) => {
+  const taskList = Object.values(issues).map(({ field, issue_type: type, count }) => {
     // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
 
     let rowCount = entityCount
@@ -96,13 +95,28 @@ export const prepareTasks = (req, res, next) => {
     }
   })
 
+  // include sources which couldn't be accessed
+  for (const source of sources) {
+    if (!source.status || source.status >= 300) {
+      taskList.push({
+        title: {
+          text: 'There was an error accessing the URL'
+        },
+        href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/endpoint-error/${encodeURIComponent(source.endpoint)}`,
+        status: getStatusTag('Error')
+      })
+    }
+  }
+
+  req.taskList = taskList
+
   next()
 }
 
 /**
  * Middleware. Updates req with `templateParams`
  *
- * @param {*} req
+ * @param {{ orgInfo: OrgInfo, sources: Source[], entityCountRow: undefined | { entity_count: number}, issues: Issue[] }} req
  * @param {*} res
  * @param {*} next
  * @returns { { templateParams: object }}
@@ -115,7 +129,6 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
     organisation,
     dataset
   }
-
   next()
 }
 
@@ -125,48 +138,10 @@ const getDatasetTaskList = renderTemplate({
   handlerName: 'getDatasetTaskList'
 })
 
-/**
- * Middleware. Updates req with `templateParams`
- *
- * @param {*} req
- * @param {*} res
- * @param {} next
- * @returns {{ templateParams: object }}
- */
-export const prepareDatasetTaskListErrorTemplateParams = (req, res, next) => {
-  const { orgInfo: organisation, dataset, resourceStatus: resource } = req
-
-  const daysSince200 = resource.days_since_200
-  const today = new Date()
-  const last200Date = new Date(
-    today.getTime() - daysSince200 * 24 * 60 * 60 * 1000
-  )
-  const last200Datetime = last200Date.toISOString().slice(0, 19) + 'Z'
-
-  req.templateParams = {
-    organisation,
-    dataset,
-    errorData: {
-      endpoint_url: resource.endpoint_url,
-      http_status: resource.status,
-      latest_log_entry_date: resource.latest_log_entry_date,
-      latest_200_date: last200Datetime
-    }
-  }
-
-  next()
-}
-
-const validateParams = validateQueryParams({
-  schema: v.object({
-    lpa: v.string(),
-    dataset: v.string()
-  })
-})
-
 export default [
-  validateParams,
+  validateOrgAndDatasetQueryParams,
   fetchOrgInfo,
+  fetchSources,
   fetchDatasetInfo,
   fetchResources,
   addEntityCountsToResources,

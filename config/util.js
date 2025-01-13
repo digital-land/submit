@@ -115,6 +115,13 @@ export function combineConfigs (environment) {
   return _.merge({}, defaultConfig, customConfig)
 }
 
+/**
+ * Validates the config object against the ConfigSchema.
+ *
+ * @param {*} config
+ * @returns {v.InferOutput<typeof ConfigSchema>}
+ * @throws {v.ValibotError}
+ */
 export const validateConfig = (config) => {
   try {
     return v.parse(ConfigSchema, config)

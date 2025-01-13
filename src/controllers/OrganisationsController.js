@@ -7,6 +7,7 @@ import organisationsMiddleware from '../middleware/organisations.middleware.js'
 import getStartedMiddleware from '../middleware/getStarted.middleware.js'
 import overviewMiddleware from '../middleware/overview.middleware.js'
 import datasetDataviewMiddleware from '../middleware/dataview.middleware.js'
+import datasetEndpointIssueMiddleware from '../middleware/datasetEndpointIssue.middleware.js'
 
 const organisationsController = {
   organisationsMiddleware,
@@ -17,7 +18,8 @@ const organisationsController = {
   issueTableMiddleware,
   getStartedMiddleware,
   overviewMiddleware,
-  datasetDataviewMiddleware
+  datasetDataviewMiddleware,
+  datasetEndpointIssueMiddleware
 }
 
 export default organisationsController
