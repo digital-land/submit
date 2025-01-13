@@ -220,6 +220,7 @@ export const OrgIssueDetails = v.strictObject({
   dataset: DatasetNameField,
   errorSummary: errorSummaryParams,
   issueType: NonEmptyString,
+  issueField: NonEmptyString,
   entry: v.strictObject({
     title: NonEmptyString,
     fields: v.array(v.strictObject({

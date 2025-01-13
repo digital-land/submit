@@ -628,7 +628,7 @@ export function getErrorSummaryItems (req, res, next) {
 
 export const prepareIssueDetailsTemplateParams = (req, res, next) => {
   const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
-  const { issue_type: issueType, pageNumber } = req.parsedParams
+  const { issue_type: issueType, issue_field: issueField, pageNumber } = req.parsedParams
 
   // schema: OrgIssueDetails
   req.templateParams = {
@@ -637,6 +637,7 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
     errorSummary,
     entry,
     issueType,
+    issueField,
     pagination,
     pageNumber,
     dataRange
@@ -658,7 +659,7 @@ export const fetchSources = fetchMany({
       SELECT
         rhe.endpoint,
         rhe.endpoint_url,
-        case 
+        case
             when rhe.status = '' or rhe.status is null then null
             else cast(rhe.status as int)
         end as status,
