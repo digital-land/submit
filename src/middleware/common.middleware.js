@@ -546,7 +546,7 @@ export const getMostRecentResources = (resources) => {
   const mostRecentResourcesMap = {}
   resources.forEach(resource => {
     const currentRecent = mostRecentResourcesMap[resource.dataset]
-    if (!currentRecent || new Date(currentRecent.start_date) < resource.start_date) {
+    if (!currentRecent || new Date(currentRecent.start_date).getTime() < new Date(resource.start_date).getTime()) {
       mostRecentResourcesMap[resource.dataset] = resource
     }
   })
