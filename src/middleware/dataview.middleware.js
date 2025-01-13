@@ -37,7 +37,9 @@ export const constructTableParams = (req, res, next) => {
 
   const leadingFields = []
   for (const field of uniqueDatasetFields) {
-    if (field === 'name' || field === 'reference') {
+    if (field === 'reference') {
+      leadingFields.splice(0, 0, field)
+    } else if (field == 'name') {
       leadingFields.push(field)
     }
     if (leadingFields.length === 2) break
