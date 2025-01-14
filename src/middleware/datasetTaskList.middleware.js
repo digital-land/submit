@@ -13,6 +13,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 import '../types/datasette.js'
 import logger from '../utils/logger.js'
+import { types } from 'util'
 
 /**
  * Fetches the resource status
@@ -86,7 +87,12 @@ export const prepareTasks = (req, res, next) => {
     try {
       title = performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type })
     } catch (e) {
-      logger.warn('datasetTaskList::prepareTasks could not get task title so setting to default', { error: e, params: { num_issues: count, rowCount, field, issue_type: type } })
+      logger.warn('Failed to generate task title', {
+        type: types.App,
+        errorMessage: e.message,
+        errorStack: e.stack,
+        params: { num_issues: count, rowCount, field, issue_type: type }
+      })
       title = `${count} issue${count > 1 ? 's' : ''} of type ${type}`
     }
 
