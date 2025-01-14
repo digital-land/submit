@@ -40,16 +40,20 @@ function getStatusTag (status) {
 const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
 
 /**
- * Prepares the task list for the dataset task list page
+ * Generates a list of tasks based on the issues found in the dataset.
  *
- * This function takes the request, response, and next middleware function as arguments
- * and uses the parsed request parameters, entities, resources, and entry/ entity issue counts
- * to generate a list of tasks based on the issues found in the dataset
- *
- * @param {Object} req - The request object
- * @param {Object} res - The response object
- * @param {Function} next - The next middleware function
- * @return {undefined}
+ * @param {Object} req - The request object. It should contain the following properties:
+ *   - {Object} parsedParams: An object containing the parameters of the request. It should have the following properties:
+ *     - {string} lpa: The LPA (Local Planning Authority) associated with the request.
+ *     - {string} dataset: The name of the dataset associated with the request.
+ *   - {Array} entities: An array of entity objects.
+ *   - {Array} resources: An array of resource objects.
+ *   - {Array} sources: An array of source objects.
+ *   - {Object} entryIssueCounts: An object containing the issue counts for the entries in the dataset.
+ *   - {Object} entityIssueCounts: An object containing the issue counts for the entities in the dataset.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {undefined}
  */
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
