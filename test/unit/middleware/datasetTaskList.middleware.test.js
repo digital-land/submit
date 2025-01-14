@@ -66,7 +66,7 @@ describe('datasetTaskList.middleware.js', () => {
       expect(req.taskList).toEqual([
         {
           title: {
-            text: undefined
+            text: 'Mocked task message'
           },
           href: '/organisations/some-lpa/some-dataset/issue-type1/field1',
           status: {
