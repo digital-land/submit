@@ -33,7 +33,7 @@ export class Map {
     this.bbox = opts.boundingBox ?? null
     this.map = new maplibregl.Map({
       container: opts.containerId,
-      style: '/public/static/OS_VTS_3857_3D.json',
+      style: opts.style ?? '/public/static/OS_VTS_3857_3D.json',
       zoom: 11,
       center: [-0.1298779, 51.4959698],
       interactive: opts.interactive ?? true,
@@ -406,7 +406,12 @@ export const createMapFromServerContext = async () => {
   }
 
   // fetch initial token
-  await getApiToken()
+  try {
+    await getApiToken()
+  } catch (error) {
+    console.error('Error fetching OS Map API token', error)
+    options.style = 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw'
+  }
 
   // if the geoJsonUrl is provided, generate the paginated GeoJSON links
   if (geoJsonUrl) {
