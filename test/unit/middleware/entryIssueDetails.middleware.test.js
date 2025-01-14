@@ -83,6 +83,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
           {
             entry_number: 1,
             line_number: 2,
+            issue_type: 'issue type',
             field: 'Field Name',
             message: 'Error message',
             value: 'Error value'

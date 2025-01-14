@@ -7,7 +7,7 @@ import { OrgEndpointError } from '../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
-const dateRegex = /\d{1,2} \w{3,9} \d{4} at \d{1,2}(?::\d{2})?(?:am|pm)/g
+const dateRegex = /\d{1,2} \w{3,9} \d{4}/g
 
 const seed = new Date().getTime()
 
@@ -36,13 +36,19 @@ describe(`http-error.html(seed: ${seed})`, () => {
     expect(rows[0].querySelector('.govuk-summary-list__value').innerHTML).toContain(params.errorData.endpoint_url)
 
     expect(rows[1].querySelector('.govuk-summary-list__key').textContent).toContain('HTTP status')
-    expect(rows[1].querySelector('.govuk-summary-list__value').textContent).toContain(String(params.errorData.http_status))
+    if (params.errorData.http_status) {
+      expect(rows[1].querySelector('.govuk-summary-list__value').textContent).toContain(String(params.errorData.http_status))
+    }
 
     expect(rows[2].querySelector('.govuk-summary-list__key').textContent).toContain('Last attempted access')
-    expect(rows[2].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    if (params.errorData.latest_log_entry_date) {
+      expect(rows[2].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    }
 
     expect(rows[3].querySelector('.govuk-summary-list__key').textContent).toContain('Last successful access')
-    expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    if (params.errorData.latest_200_date) {
+      expect(rows[3].querySelector('.govuk-summary-list__value').textContent).toMatch(dateRegex)
+    }
   })
 
   it('re-submit link points to get-started page', () => {

@@ -177,7 +177,7 @@ export default {
 
   resourceStatusQuery (lpa, datasetId) {
     return /* sql */ `
-    select resource, endpoint_url, status, latest_log_entry_date, days_since_200
+    select resource, endpoint_url, endpoint, status, latest_log_entry_date, days_since_200
     from reporting_latest_endpoints
     WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
     AND pipeline = '${datasetId}'`
@@ -216,7 +216,7 @@ export default {
     }
 
     let message
-    if (rowCount && numIssues >= rowCount) {
+    if (Number.isInteger(rowCount) && numIssues >= rowCount) {
       message = messageInfo.allRows_message
     } else if (entityLevel) {
       message = numIssues === 1

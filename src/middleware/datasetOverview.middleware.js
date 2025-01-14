@@ -1,9 +1,8 @@
-import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, getDatasetTaskListError, logPageError, pullOutDatasetSpecification } from './common.middleware.js'
-import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy, onlyIf } from './middleware.builders.js'
+import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification } from './common.middleware.js'
+import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-import { prepareDatasetTaskListErrorTemplateParams } from './datasetTaskList.middleware.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -127,12 +126,12 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
 
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
 
-    const startDate = new Date(source.start_date)
+    const startDate = source ? new Date(source.startDate) : undefined
 
-    if (startDate.toString() === 'Invalid Date') {
+    if (!startDate || startDate.toString() === 'Invalid Date') {
       logger.warn('Invalid start date encountered', {
         type: types.DataValidation,
-        startDate: source.startDate
+        startDate: source?.startDate
       })
       return next()
     }
@@ -181,8 +180,14 @@ export const fetchEntityCount = fetchOne({
   fallbackPolicy: FetchOneFallbackPolicy.continue
 })
 
+/**
+ *
+ * @param req {{ orgInfo: OrgInfo, sources: Source[], issues?: Issue[] }} request object
+ * @param res {import('express').Response}
+ * @param next {import('express').NextFunction}
+ */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, datasetSpecification, columnSummary, entityCount, resources, dataset, entryIssueCounts, entityIssueCounts, notice } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
@@ -198,24 +203,26 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
 
   const numberOfExpectedFields = specFields.length
 
-  // I'm pretty sure every endpoint has a separate documentation-url, but this isn't currently represented in the performance db. need to double check this and update if so
-  const endpoints = resources.sort((a, b) => {
-    if (a.status >= 200 && a.status < 300) return -1
-    if (b.status >= 200 && b.status < 300) return 1
+  let endpointErrorIssues = 0
+  const endpoints = sources.sort((a, b) => {
+    if (a.status && a.status >= 200 && a.status < 300) return -1
+    if (b.status && b.status >= 200 && b.status < 300) return 1
     return 0
   }).map((source, index) => {
     let error
 
-    if (parseInt(source.status) < 200 || parseInt(source.status) >= 300) {
+    if (!source.status || source.status < 200 || source.status >= 300) {
       error = {
-        code: parseInt(source.status),
+        code: source.status,
         exception: source.exception
       }
+      endpointErrorIssues += 1
     }
 
     return {
       name: `Data Url ${index}`,
-      endpoint: source.endpoint_url,
+      endpoint: source.endpoint,
+      endpoint_url: source.endpoint_url,
       documentation_url: source.documentation_url,
       lastAccessed: source.latest_log_entry_date,
       lastUpdated: source.resource_start_date, // as in: when was the _resource_ updated, not data under that resource
@@ -226,7 +233,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   req.templateParams = {
     organisation: orgInfo,
     dataset,
-    taskCount: entryIssueCounts.length + entityIssueCounts.length,
+    taskCount: entryIssueCounts.length + entityIssueCounts.length + endpointErrorIssues,
     stats: {
       numberOfFieldsSupplied: numberOfFieldsSupplied ?? 0,
       numberOfFieldsMatched: numberOfFieldsMatched ?? 0,
@@ -248,17 +255,14 @@ const getDatasetOverview = renderTemplate(
   }
 )
 
-const noResourceAccessible = (req, res, next) => req.resources.length === 0
-
 export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchColumnSummary,
   fetchResources,
+  fetchSources,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
-  onlyIf(noResourceAccessible, prepareDatasetTaskListErrorTemplateParams),
-  onlyIf(noResourceAccessible, getDatasetTaskListError),
   fetchSpecification,
   pullOutDatasetSpecification,
   setNoticesFromSourceKey('resources'),

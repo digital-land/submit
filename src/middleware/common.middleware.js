@@ -1,8 +1,9 @@
+// @ts-check
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOne, FetchOptions, FetchOneFallbackPolicy, fetchMany, renderTemplate } from './middleware.builders.js'
+import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
@@ -12,7 +13,7 @@ import datasette from '../services/datasette.js'
  * the function that threw the error.
  *
  * @param {Error} err
- * @param {{handlerName: string}} req
+ * @param {import('express').Request & {handlerName: string}} req
  * @param {*} res
  * @param {*} next
  */
@@ -118,6 +119,7 @@ export const show404IfPageNumberNotInRange = (req, res, next) => {
 
   if (pageNumber > dataRange.maxPageNumber || pageNumber < 1) {
     const error = new Error('page number not in range')
+    // @ts-ignore
     error.status = 404
     return next(error)
   }
@@ -137,10 +139,13 @@ export const createPaginationTemplateParams = (req, res, next) => {
     return next(error)
   }
 
+  /**
+   * @type {{ previous: { href: string } | undefined, next: { href: string } | undefined, items: { type: 'ellipsis' | 'number', number?: number, href: string, ellipsis?: boolean, current?: boolean }[] }}
+   */
   const paginationObj = {
     previous: undefined,
     next: undefined,
-    items: undefined
+    items: []
   }
 
   if (pageNumber > 1) {
@@ -153,22 +158,25 @@ export const createPaginationTemplateParams = (req, res, next) => {
       href: `${baseSubpath}/${pageNumber + 1}`
     }
   }
-  paginationObj.items = pagination(dataRange.maxPageNumber, Math.min(pageNumber, dataRange.maxPageNumber)).map(item => {
+
+  for (const item of pagination(dataRange.maxPageNumber, Math.min(pageNumber, dataRange.maxPageNumber))) {
     if (item === '...') {
-      return {
+      paginationObj.items.push({
         type: 'ellipsis',
         ellipsis: true,
         href: '#'
-      }
-    } else {
-      return {
+      })
+    } else if (typeof item === 'number') {
+      paginationObj.items.push({
         type: 'number',
         number: item,
         href: `${baseSubpath}/${item}`,
-        current: pageNumber === parseInt(item)
-      }
+        current: pageNumber === item
+      })
+    } else {
+      logger.warn('unexpected pagination item', { item, dataRange, types: types.App, endpoint: req.originalUrl })
     }
-  })
+  }
 
   req.pagination = paginationObj
 
@@ -205,7 +213,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
   try {
     const datasetResources = await Promise.all(promises).catch(error => {
-      logger.error('Failed to fetch dataset resources', { error, type: types.App })
+      logger.error('Failed to fetch dataset resources', { type: types.DataFetch, errorMessage: error.message, errorStack: error.stack })
       throw error
     })
 
@@ -215,7 +223,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
     next()
   } catch (error) {
-    logger.error('Error in addEntityCountsToResources', { error, type: types.App })
+    logger.error('Error in addEntityCountsToResources', { type: types.App, errorMessage: error.message, errorStack: error.stack })
     next(error)
   }
 }
@@ -329,10 +337,11 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
     return next(new Error('Invalid entities format'))
   }
 
+  let numEntitiesWithNoJson = 0
   req.entities = entities.map(entity => {
     const jsonField = entity.json
     if (!jsonField || jsonField === '') {
-      logger.info(`common.middleware/extractJsonField: No json field for entity ${entity.toString()}`)
+      numEntitiesWithNoJson += 1
       return entity
     }
     entity.json = undefined
@@ -340,10 +349,16 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
       const parsedJson = JSON.parse(jsonField)
       entity = Object.assign({}, parsedJson, entity)
     } catch (err) {
-      logger.warn(`common.middleware/extractJsonField: Error parsing JSON for entity ${entity.toString()}: ${err.message}`)
+      logger.warn('common.middleware/extractJsonField: Error parsing JSON',
+        { type: types.App, json: jsonField, entity: entity.entity, errorMessage: err.message })
     }
     return entity
   })
+
+  if (numEntitiesWithNoJson > 0) {
+    logger.info(`Got ${numEntitiesWithNoJson} entities with no json field`,
+      { type: types.App, endpoint: req.originalUrl })
+  }
 
   next()
 }
@@ -393,7 +408,7 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
-        select * 
+        select i.issue_type, field, entity, message, severity, value
         from issue i
         LEFT JOIN issue_type it ON i.issue_type = it.issue_type
         WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
@@ -503,7 +518,7 @@ export const fetchEntryIssues = fetchMany({
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
-      select * 
+      select i.issue_type, field, entity, message, severity, value, line_number
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource = '${req.resources[0].resource}'
@@ -541,7 +556,7 @@ export const getMostRecentResources = (resources) => {
   const mostRecentResourcesMap = {}
   resources.forEach(resource => {
     const currentRecent = mostRecentResourcesMap[resource.dataset]
-    if (!currentRecent || new Date(currentRecent.start_date) < resource.start_date) {
+    if (!currentRecent || new Date(currentRecent.start_date).getTime() < new Date(resource.start_date).getTime()) {
       mostRecentResourcesMap[resource.dataset] = resource
     }
   })
@@ -696,9 +711,97 @@ export const fetchEndpointSummary = fetchMany({
     return `
       SELECT * FROM endpoint_dataset_summary
       WHERE organisation = '${params.lpa}'
+      AND end_date = ''
       ${datasetClause}
     `
   },
   result: 'endpoints',
   dataset: FetchOptions.performanceDb
 })
+export const validateOrgAndDatasetQueryParams = validateQueryParams({
+  schema: v.object({
+    lpa: v.string(),
+    dataset: v.string()
+  })
+})
+
+export const fetchSources = fetchMany({
+  query: ({ params }) => `
+    WITH RankedEndpoints AS (
+      SELECT
+        rhe.endpoint,
+        rhe.endpoint_url,
+        case 
+            when rhe.status = '' or rhe.status is null then null
+            else cast(rhe.status as int)
+        end as status,
+        rhe.exception,
+        rhe.resource,
+        rhe.latest_log_entry_date,
+        rhe.endpoint_entry_date,
+        rhe.endpoint_end_date,
+        rhe.resource_start_date as resource_start_date,
+        rhe.resource_end_date,
+        s.documentation_url,
+        ROW_NUMBER() OVER (
+          PARTITION BY rhe.endpoint_url
+          ORDER BY
+            rhe.latest_log_entry_date DESC
+        ) AS row_num
+      FROM
+        reporting_historic_endpoints rhe
+        LEFT JOIN source s ON rhe.endpoint = s.endpoint
+      WHERE
+        REPLACE(rhe.organisation, '-eng', '') = '${params.lpa}'
+        AND rhe.pipeline = '${params.dataset}'
+        AND (
+          rhe.resource_end_date >= current_timestamp
+          OR rhe.resource_end_date IS NULL
+          OR rhe.resource_end_date = ''
+        )
+        AND (
+          rhe.endpoint_end_date >= current_timestamp
+          OR rhe.endpoint_end_date IS NULL
+          OR rhe.endpoint_end_date = ''
+        )
+    )
+    SELECT
+      endpoint,
+      endpoint_url,
+      status,
+      exception,
+      resource,
+      latest_log_entry_date,
+      endpoint_entry_date,
+      endpoint_end_date,
+      resource_start_date,
+      resource_end_date,
+      documentation_url
+    FROM
+      RankedEndpoints
+    WHERE
+      row_num = 1
+    ORDER BY
+      latest_log_entry_date DESC;
+  `,
+  result: 'sources'
+})
+
+export const noIndexHeader = (req, res, next) => {
+  res.set('X-Robots-Tag', 'noindex')
+  next()
+}
+
+/**
+ * Middleware. Prevents indexing of certain pages
+ *
+ * @param req
+ * @param res
+ * @param next
+ */
+export const preventIndexing = (req, res, next) => {
+  if (/^\/organisations\/[\w-:]+\/.*$|^\/check\/status.*$|\/check\/results.*$/.test(req.originalUrl)) {
+    return noIndexHeader(req, res, next)
+  }
+  next()
+}
