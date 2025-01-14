@@ -106,6 +106,13 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   const { dataset } = req.params
   const resources = req[sourceKey]
 
+  if (!resources) {
+    logger.warn('No resources provided to set notices.', {
+      type: types.DataValidation
+    })
+    return next()
+  }
+
   const source = resources[0]
 
   const deadlineObj = requiredDatasets.find(deadline => deadline.dataset === dataset)
@@ -126,7 +133,7 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
 
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
 
-    const startDate = source ? new Date(source.startDate) : undefined
+    const startDate = source ? new Date(source.start_date) : undefined
 
     if (!startDate || startDate.toString() === 'Invalid Date') {
       logger.warn('Invalid start date encountered', {
