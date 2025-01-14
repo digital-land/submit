@@ -412,7 +412,7 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
-        select * 
+        select i.issue_type, field, entity, message, severity, value
         from issue i
         LEFT JOIN issue_type it ON i.issue_type = it.issue_type
         WHERE resource = '${req.resources[0].resource}'
@@ -508,7 +508,7 @@ export const fetchEntryIssues = fetchMany({
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
-      select * 
+      select i.issue_type, field, entity, message, severity, value, line_number
       from issue i
       LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource = '${req.resources[0].resource}'
