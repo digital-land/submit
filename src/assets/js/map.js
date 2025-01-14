@@ -30,13 +30,14 @@ const popupMaxListLength = 10
  */
 export class Map {
   constructor (opts) {
-    this.bbox = opts.boundingBox ?? null
+    this.opts = opts
+    this.bbox = this.opts.boundingBox ?? null
     this.map = new maplibregl.Map({
-      container: opts.containerId,
-      style: opts.style ?? '/public/static/OS_VTS_3857_3D.json',
+      container: this.opts.containerId,
+      style: this.opts.style ?? '/public/static/OS_VTS_3857_3D.json',
       zoom: 11,
       center: [-0.1298779, 51.4959698],
-      interactive: opts.interactive ?? true,
+      interactive: this.opts.interactive ?? true,
       transformRequest: (url, resourceType) => {
         if (url.indexOf('api.os.uk') > -1) {
           if (!/[?&]key=/.test(url)) url += '?key=null'
@@ -56,18 +57,18 @@ export class Map {
     })
 
     // Add map controls
-    this.addControls(opts.interactive)
+    this.addControls(this.opts.interactive)
 
     this.map.on('load', async () => {
       // Store the first symbol layer id
       this.setFirstMapLayerId()
 
       // Add the boundary GeoJSON to the map
-      if (opts.boundaryGeoJsonUrl) this.addBoundaryGeoJsonToMap(opts.boundaryGeoJsonUrl)
+      if (this.opts.boundaryGeoJsonUrl) this.addBoundaryGeoJsonToMap(this.opts.boundaryGeoJsonUrl)
 
       // Add layer data to map
-      if (opts.wktFormat) this.addWktDataToMap(opts.data)
-      else await this.addGeoJsonUrlsToMap(opts.data)
+      if (opts.wktFormat) this.addWktDataToMap(this.opts.data)
+      else await this.addGeoJsonUrlsToMap(this.opts.data)
 
       // Move the map to the bounding box
       if (this.bbox && this.bbox.length) this.setMapViewToBoundingBox()
