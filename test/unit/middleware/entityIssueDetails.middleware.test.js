@@ -170,6 +170,7 @@ describe('issueDetails.middleware.js', () => {
             geometries: ['POINT(0 0)']
           },
           issueType: 'test-issue-type',
+          issueField: 'test-issue-field',
           pagination: {
             items: [{
               current: true,

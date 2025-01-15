@@ -102,11 +102,11 @@ of [package.json](package.json)) for more examples.
     ```
 - Run the application using docker
     ```
-    docker-compose -f docker-compose-real-backend.yml up
+    docker compose -f docker-compose-real-backend.yml up
     ```
 - Run the application (without the frontend) using docker
     ```
-    docker-compose -f docker-compose-real-backend-minus-frontend.yml up
+    docker compose -f docker-compose-real-backend-minus-frontend.yml up
     ```
 - Run external services in containers and start application
     ```
