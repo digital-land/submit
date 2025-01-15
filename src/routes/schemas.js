@@ -4,14 +4,16 @@
  */
 
 import * as v from 'valibot'
+import { MiddlewareError } from '../utils/errors.js'
 
 export const EmptyParams = v.object({})
-export const UptimeParams = v.object({
-  upTime: v.string()
-})
 
-export const ErrorParams = v.strictObject({
-  err: v.object({})
+export const ErrorPageParams = v.object({
+  err: v.instance(MiddlewareError),
+  env: v.string(),
+  supportEmail: v.pipe(v.string(), v.email()),
+  uptime: v.optional(v.string()),
+  downtime: v.optional(v.string())
 })
 
 export const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
@@ -302,9 +304,7 @@ export const templateSchema = new Map([
   ['organisations/issueTable.html', OrgIssueTable],
   ['organisations/issueDetails.html', OrgIssueDetails],
 
-  ['errorPages/503', UptimeParams],
-  ['errorPages/500', ErrorParams],
-  ['errorPages/404', EmptyParams],
+  ['errorPages/error.njk', ErrorPageParams],
   ['privacy-notice.html', EmptyParams],
   ['landing.html', EmptyParams],
   ['cookies.html', EmptyParams],
