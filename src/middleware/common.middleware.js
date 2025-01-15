@@ -222,7 +222,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
     })
 
     req.resources = resources.map((resource, i) => {
-      return { ...resource, entry_count: datasetResources[i]?.formattedData[0]?.entry_count }
+      return { ...resource, entry_count: datasetResources[i]?.formattedData[0]?.entry_count ?? 0 }
     })
 
     next()
