@@ -42,6 +42,10 @@ email: {
 validations: {
     maxFileSize: 100000000
 }
+contact:
+  issues:
+    # description: should be used for general issues, e.g. if user lands on 404 doesn't know how to proceed
+    email: digitalland@communities.gov.uk
 datasetsConfig:
   article-4-direction:
     guidanceUrl: /guidance/specifications/article-4-direction

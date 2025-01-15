@@ -55,7 +55,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const res = {}
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
-      expect(err.status).toBe(404)
+      expect(err.statusCode).toBe(404)
       expect(err.message).toBe('page number not in range')
     })
     show404IfPageNumberNotInRange(req, res, next)
@@ -69,7 +69,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const res = {}
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
-      expect(err.status).toBe(404)
+      expect(err.statusCode).toBe(404)
       expect(err.message).toBe('page number not in range')
     })
     show404IfPageNumberNotInRange(req, res, next)

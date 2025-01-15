@@ -6,6 +6,7 @@ import { types } from '../utils/logging.js'
 import hash from '../utils/hasher.js'
 import config from '../../config/index.js'
 import { preventIndexing } from '../middleware/common.middleware.js'
+import { MiddlewareError, errorTemplateContext } from '../utils/errors.js'
 
 export function setupMiddlewares (app) {
   app.use((req, res, next) => {
@@ -34,7 +35,8 @@ export function setupMiddlewares (app) {
   app.use((req, res, next) => {
     const serviceDown = config.maintenance.serviceUnavailable || false
     if (serviceDown) {
-      res.status(503).render('errorPages/503', { upTime: config.maintenance.upTime })
+      const err = new MiddlewareError('Service unavailable', 503)
+      res.status(err.statusCode).render(err.template, { ...errorTemplateContext(), err, uptime: config.maintenance.upTime })
     } else {
       next()
     }

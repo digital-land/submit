@@ -47,6 +47,14 @@
 
 {% block content %}
 
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukBackLink({
+      text: "Back to task list",
+      href: '/organisations/' + organisation.organisation | urlencode + '/' + dataset.dataset | urlencode
+    }) }}
+  </div>
+</div>
 
 <div class="govuk-grid-row">
   {% include "includes/_dataset-page-header.html" %}

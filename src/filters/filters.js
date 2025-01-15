@@ -8,6 +8,7 @@ import { checkToolDeepLink } from './checkToolDeepLink.js'
 import pluralize from 'pluralize'
 import { datasetSlugToReadableName } from '../utils/datasetSlugToReadableName.js'
 import { getDatasetGuidanceUrl } from './getDatasetConfig.js'
+import { schemaIssues } from './schemaIssues.js'
 
 /** maps dataset status (as returned by `fetchLpaOverview` middleware to a
  * CSS class used by the govuk-tag component
@@ -43,6 +44,7 @@ const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('pluralise', pluralize)
   nunjucksEnv.addFilter('checkToolDeepLink', checkToolDeepLink)
   nunjucksEnv.addFilter('getDatasetGuidanceUrl', getDatasetGuidanceUrl)
+  nunjucksEnv.addFilter('schemaIssues', schemaIssues)
 }
 
 export default addFilters

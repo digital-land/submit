@@ -13,6 +13,7 @@ import { templateSchema } from '../routes/schemas.js'
 import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
 import * as v from 'valibot'
+import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 
 export const FetchOptions = {
   /**
@@ -30,7 +31,8 @@ const datasetOverride = (val, req) => {
     return 'digital-land'
   }
   if (val === FetchOptions.fromParams) {
-    console.assert(req.params.dataset, 'no "dataset" in request params')
+    logger.warn('no "dataset" in request params',
+      { types: types.App, endpoint: req.originalUrl, params: req.params })
     return req.params.dataset
   } else if (val === FetchOptions.performanceDb) {
     return 'performance'
@@ -40,7 +42,8 @@ const datasetOverride = (val, req) => {
 }
 
 const fetchOneFallbackPolicy = (req, res, next) => {
-  res.status(404).render('errorPages/404', {})
+  const err = new MiddlewareError('Not found', 404)
+  res.status(err.statusCode).render(err.template, { ...errorTemplateContext(), err })
 }
 
 /**

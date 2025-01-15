@@ -215,3 +215,11 @@ code * {
 .app-content__markdown img {
   max-width: 100%;
 }
+
+.schema-issue {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 1em;
+}
+
+.schema-issue p { padding: 0; margin: 0}
