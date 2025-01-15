@@ -125,7 +125,10 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset)
+      return datasette.runQuery(query, dataset).catch(error => {
+        logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
+        throw error
+      })
     })
     const result = await Promise.all(promises)
     req[this.result] = Object.fromEntries(
@@ -151,7 +154,7 @@ export async function fetchManyFromAllDatasetsFn (req, res, next) {
     const promises = availableDatasets.map((dataset) => {
       return datasette.runQuery(query, dataset).catch(error => {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
-        return { formattedData: [] }
+        throw error
       })
     })
     const result = await Promise.all(promises)
