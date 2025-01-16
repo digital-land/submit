@@ -1,7 +1,6 @@
 import config from '../../config/index.js'
-import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchLatestResource, fetchLpaDatasetIssues, fetchOrgInfo, isResourceAccessible, isResourceIdInParams, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, takeResourceIdFromParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath, getSetDataRange } from './common.middleware.js'
-import { fetchResourceStatus } from './datasetTaskList.middleware.js'
-import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchOrgInfo, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath, getSetDataRange, logPageError, fetchResources, fetchEntityIssueCounts, fetchEntryIssueCounts } from './common.middleware.js'
+import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 
 export const dataviewQueryParams = v.object({
@@ -68,12 +67,12 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, issues, pagination, dataRange } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts } = req
 
   req.templateParams = {
     organisation: orgInfo,
     dataset,
-    taskCount: (issues?.length) ?? 0,
+    taskCount: entityIssueCounts.length + entryIssueCounts.length,
     tableParams,
     pagination,
     dataRange
@@ -94,14 +93,15 @@ export default [
   getSetBaseSubPath(['data']),
   fetchOrgInfo,
   fetchDatasetInfo,
-  fetchResourceStatus,
+
+  fetchResources,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
+
   fetchEntitiesCount,
   setRecordCount,
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
-
-  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
 
   fetchEntities,
   extractJsonFieldFromEntities,
@@ -114,5 +114,7 @@ export default [
   createPaginationTemplateParams,
 
   prepareTemplateParams,
-  getGetDataview
+  getGetDataview,
+
+  logPageError
 ]

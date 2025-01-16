@@ -43,9 +43,7 @@ export const fetchDatasetInfo = fetchOne({
  * @param {*} req
  * @returns {boolean}
  */
-export const isResourceAccessible = (req) => req.resourceStatus.status === '200'
 export const isResourceIdValid = (req) => req.resourceStatus.resource.trim() !== ''
-export const isResourceNotAccessible = (req) => !isResourceAccessible(req)
 export const isResourceIdInParams = ({ params }) => !('resourceId' in params)
 export const isResourceDataPresent = (req) => 'resource' in req
 
@@ -69,13 +67,6 @@ export const takeResourceIdFromParams = (req) => {
   logger.debug('skipping resource fetch', { type: types.App, params: req.params })
   req.resource = { resource: req.params.resourceId }
 }
-
-export const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.resource.resource),
-  result: 'entityCount',
-  dataset: FetchOptions.fromParams,
-  fallbackPolicy: FetchOneFallbackPolicy.continue
-})
 
 export const fetchOrgInfo = fetchOne({
   query: ({ params }) => {
@@ -195,15 +186,20 @@ export const createPaginationTemplateParams = (req, res, next) => {
 // Resources
 
 export const fetchResources = fetchMany({
-  query: ({ req }) => `
-    SELECT DISTINCT rd.dataset, r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rle.endpoint_url, rle.licence, rle.status, rle.latest_log_entry_date, rle.endpoint_entry_date from resource r
-    LEFT JOIN resource_organisation ro ON ro.resource = r.resource
-    LEFT JOIN resource_dataset rd ON rd.resource = r.resource
-    LEFT JOIN reporting_latest_endpoints rle ON r.resource = rle.resource
-    WHERE ro.organisation = '${req.params.lpa}'
-    AND rd.dataset = '${req.params.dataset}'
-    AND r.end_date = ''
-    ORDER BY start_date desc`,
+  query: ({ req }) => {
+    const lpaClause = req.params.lpa ? `AND ro.organisation = '${req.params.lpa}'` : ''
+    const datasetClause = req.params.dataset ? `AND rd.dataset = '${req.params.dataset}'` : ''
+    return `
+      SELECT DISTINCT  s.documentation_url, r.start_date as resource_start_date, r.end_date, r.entry_date, r.mime_type, r.resource, r.start_date, rd.dataset, rhe.endpoint_url, rhe.licence, rhe.status, rhe.latest_log_entry_date, rhe.endpoint_entry_date from resource r
+      LEFT JOIN resource_organisation ro ON ro.resource = r.resource
+      LEFT JOIN resource_dataset rd ON rd.resource = r.resource
+      LEFT JOIN reporting_historic_endpoints rhe ON r.resource = rhe.resource
+      LEFT JOIN source s ON s.endpoint = rhe.endpoint_url
+      WHERE r.end_date = ''
+      ${lpaClause}
+      ${datasetClause}
+      ORDER BY r.start_date desc`
+  },
   result: 'resources'
 })
 
@@ -415,7 +411,7 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
         select i.issue_type, field, entity, message, severity, value
         from issue i
         LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-        WHERE resource = '${req.resources[0].resource}'
+        WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
         ${issueTypeClause}
         AND it.responsibility = 'external'
         AND it.severity = 'error'
@@ -477,6 +473,20 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
     })
     return next(error)
   })
+}
+
+// some field mappings aren't in our database, so we should add them here
+const customFieldMappings = [
+  {
+    field: 'GeoX,GeoY',
+    replacement_field: 'point'
+  }
+]
+export const addCustomFieldMappings = (req, res, next) => {
+  const { fieldMappings } = req
+
+  req.fieldMappings = [...fieldMappings, ...customFieldMappings]
+  next()
 }
 
 export const addFieldMappingsToIssue = (req, res, next) => {
@@ -594,6 +604,7 @@ export const processRelevantIssuesMiddlewares = [
   // however this step is very time consuming, so in order to progress im commenting it out for now
   // removeIssuesThatHaveBeenFixed,
   fetchFieldMappings,
+  addCustomFieldMappings,
   addFieldMappingsToIssue
 ]
 
@@ -694,6 +705,20 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
   next()
 }
 
+export const fetchEndpointSummary = fetchMany({
+  query: ({ params }) => {
+    const datasetClause = params.dataset ? `AND dataset = '${params.dataset}'` : ''
+
+    return `
+      SELECT * FROM endpoint_dataset_summary
+      WHERE organisation = '${params.lpa}'
+      AND end_date = ''
+      ${datasetClause}
+    `
+  },
+  result: 'endpoints',
+  dataset: FetchOptions.performanceDb
+})
 export const validateOrgAndDatasetQueryParams = validateQueryParams({
   schema: v.object({
     lpa: v.string(),
