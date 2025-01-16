@@ -67,13 +67,13 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   })
 
   it('The correct number of dataset cards are rendered with the correct titles in group "statutory"', () => {
-    if (params.datasets.statutory) {
+    if (params.datasets.statutory && params.datasets.statutory.length > 0) {
       datasetGroup({ expect }, 'statutory', params.datasets.statutory, document)
     }
   })
 
   it('The correct number of dataset cards are rendered with the correct titles in group "other"', () => {
-    if (params.datasets.other) {
+    if (params.datasets.other && params.datasets.other.length > 0) {
       datasetGroup({ expect }, 'other', params.datasets.other, document)
 
       const infoText = document.querySelector('.org-membership-info').textContent

@@ -129,7 +129,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
       const next = vi.fn()
       prepareEntry(req, res, next)
 
-      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object'))
+      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object: issues[pageNumber-1]=missing resources=present'))
     })
 
     it('should throw error if resources is missing', () => {
@@ -150,7 +150,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
 
       prepareEntry(req, res, next)
 
-      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object'))
+      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object: issues[pageNumber-1]=present resources=missing'))
     })
   })
 
@@ -197,6 +197,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
             geometries: ['POINT(0 0)']
           },
           issueType: 'test-issue-type',
+          issueField: 'test-issue-field',
           pagination: {
             items: [{
               current: true,
