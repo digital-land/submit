@@ -37,65 +37,6 @@ const fetchSpecification = fetchOne({
   result: 'specification'
 })
 
-// const fetchSources = fetchMany({
-//   query: ({ params }) => `
-//     WITH RankedEndpoints AS (
-//       SELECT
-//         rhe.endpoint,
-//         rhe.endpoint_url,
-//         rhe.status,
-//         rhe.exception,
-//         rhe.resource,
-//         rhe.latest_log_entry_date,
-//         rhe.endpoint_entry_date,
-//         rhe.endpoint_end_date,
-//         rhe.resource_start_date as resource_start_date,
-//         rhe.resource_end_date,
-//         s.documentation_url,
-//         ROW_NUMBER() OVER (
-//           PARTITION BY rhe.endpoint_url
-//           ORDER BY
-//             rhe.latest_log_entry_date DESC
-//         ) AS row_num
-//       FROM
-//         reporting_historic_endpoints rhe
-//         LEFT JOIN source s ON rhe.endpoint = s.endpoint
-//       WHERE
-//         REPLACE(rhe.organisation, '-eng', '') = '${params.lpa}'
-//         AND rhe.pipeline = '${params.dataset}'
-//         AND (
-//           rhe.resource_end_date >= current_timestamp
-//           OR rhe.resource_end_date IS NULL
-//           OR rhe.resource_end_date = ''
-//         )
-//         AND (
-//           rhe.endpoint_end_date >= current_timestamp
-//           OR rhe.endpoint_end_date IS NULL
-//           OR rhe.endpoint_end_date = ''
-//         )
-//     )
-//     SELECT
-//       endpoint,
-//       endpoint_url,
-//       status,
-//       exception,
-//       resource,
-//       latest_log_entry_date,
-//       endpoint_entry_date,
-//       endpoint_end_date,
-//       resource_start_date,
-//       resource_end_date,
-//       documentation_url
-//     FROM
-//       RankedEndpoints
-//     WHERE
-//       row_num = 1
-//     ORDER BY
-//       latest_log_entry_date DESC;
-//   `,
-//   result: 'sources'
-// })
-
 /**
  * Sets notices from a source key in the request object.
  *
