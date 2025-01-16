@@ -14,6 +14,7 @@ redis: {
 }
 port: 5000
 url: 'http://localhost:5000/'features:
+features:
   request-info:
     environments: ['local']
-    enabled: false
+    enabled: true
