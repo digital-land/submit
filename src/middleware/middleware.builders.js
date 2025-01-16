@@ -14,7 +14,6 @@ import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
 import * as v from 'valibot'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
-
 import { dataSubjects } from '../utils/utils.js'
 
 const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
@@ -39,8 +38,11 @@ const datasetOverride = (val, req) => {
     return 'digital-land'
   }
   if (val === FetchOptions.fromParams) {
-    logger.warn('no "dataset" in request params',
-      { types: types.App, endpoint: req.originalUrl, params: req.params })
+    const params = req.params
+    if (!params) {
+      logger.warn('no "dataset" in request params',
+        { types: types.App, endpoint: req.originalUrl, params: req.params })
+    }
     return req.params.dataset
   } else if (val === FetchOptions.performanceDb) {
     return 'performance'
@@ -86,7 +88,7 @@ async function fetchOneFn (req, res, next) {
   logger.debug({ type: types.DataFetch, message: 'fetchOne', resultKey: this.result })
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req))
+    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req })
     const fallbackPolicy = this.fallbackPolicy ?? FetchOneFallbackPolicy['not-found-error']
     if (result.formattedData.length === 0) {
       // we can make the 404 more informative by informing the use what exactly was "not found"
@@ -114,7 +116,7 @@ async function fetchOneFn (req, res, next) {
 export async function fetchManyFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req))
+    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req })
     req[this.result] = result.formattedData
     logger.debug({ type: types.DataFetch, message: 'fetchMany', resultKey: this.result, resultCount: result.formattedData.length })
     next()
@@ -149,7 +151,7 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
+      return datasette.runQuery(query, dataset, { req }).catch(error => {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
       })
@@ -189,7 +191,7 @@ export async function fetchManyFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
+      return datasette.runQuery(query, dataset, { req }).catch(error => {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
       })

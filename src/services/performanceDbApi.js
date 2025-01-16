@@ -287,11 +287,12 @@ export default {
   /**
     *
     * @param {{resource: string, dataset: string}[]} resources
+    * @param {{ req?: import('express').Request}}
     * @returns {Promise<{ resource: string, dataset: string, entityCount?: number}[]>}
     */
-  async getEntityCounts (resources) {
+  async getEntityCounts (resources, opts = {}) {
     const requests = resources.map(({ resource, dataset }) => {
-      const q = datasette.runQuery(this.entityCountQuery(resource), dataset)
+      const q = datasette.runQuery(this.entityCountQuery(resource), dataset, opts)
       return q
         .then(result => {
           if (result.formattedData.length === 0) {
@@ -347,40 +348,16 @@ export default {
   },
 
   /**
-     *
-     * @param {*} resourceId
-     * @param {*} entryNumber
-     * @param {*} dataset
-     * @returns {Promise<{field: string, value: string, entry_number: number}[]>}
-     */
-  async getEntry (resourceId, entryNumber, dataset) {
-    logger.debug({ message: 'getEntry()', resourceId, entryNumber, dataset, type: types.App })
-    // TODO: why do we order by rowid?
-    const sql = /* sql */ `
-      select
-        fr.rowid,
-        fr.end_date,
-        fr.fact,
-        fr.entry_date,
-        fr.entry_number,
-        fr.resource,
-        fr.start_date,
-        ft.entity,
-        ft.field,
-        ft.entry_date,
-        ft.start_date,
-        ft.value
-      from
-        fact_resource fr
-        left join fact ft on fr.fact = ft.fact
-      where
-        fr.resource = '${resourceId}'
-        and fr.entry_number = ${entryNumber}
-      order by
-        fr.rowid`
-
-    const result = await datasette.runQuery(sql, dataset)
-
-    return result.formattedData
+   * Query for the entity count for a given organisation and dataset.
+   *
+   * @param orgEntity
+   * @returns {string}
+   */
+  entityCountQuery (orgEntity) {
+    return /* sql */ `
+      select count(entity) as entity_count
+      from entity
+      WHERE organisation_entity = '${orgEntity}'
+    `
   }
 }

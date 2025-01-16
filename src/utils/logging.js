@@ -14,7 +14,8 @@ const types = {
   App: 'App',
   DataValidation: 'DataValidation',
   DataFetch: 'DataFetch',
-  External: 'External'
+  External: 'External',
+  Metric: 'Metric'
 }
 
 const logPageView = (route, sessionID) => {

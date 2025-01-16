@@ -1,7 +1,11 @@
 import datasette from '../../services/datasette.js'
 
-export const getDatasetSlugNameMapping = async () => {
-  const datasetSlugNameTable = await datasette.runQuery('select dataset, name from dataset')
+/**
+ * @param {{ req?: import('express').Request}} opts options (optional)
+ * @returns {Promise<Map<string, string>}
+ */
+export const getDatasetSlugNameMapping = async (opts = {}) => {
+  const datasetSlugNameTable = await datasette.runQuery('select dataset, name from dataset', 'digital-land', opts)
 
   const datasetMapping = new Map()
   datasetSlugNameTable.rows.forEach(([slug, name]) => {

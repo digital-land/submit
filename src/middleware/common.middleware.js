@@ -208,7 +208,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
   const promises = resources.map(resource => {
     const query = `SELECT entry_count FROM dataset_resource WHERE resource = "${resource.resource}"`
-    return datasette.runQuery(query, resource.dataset)
+    return datasette.runQuery(query, resource.dataset, { req })
   })
 
   try {
@@ -447,8 +447,8 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
         AND fr.resource IN ('${newerResources.map(resource => resource.resource).join("','")}')
         ORDER BY fr.start_date desc
         LIMIT 1`,
-      issue.dataset
-      )
+      issue.dataset,
+      { req })
     })
 
   Promise.allSettled(promises).then((results) => {
