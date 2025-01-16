@@ -94,7 +94,6 @@ export default [
   fetchOrgInfo,
   fetchDatasetInfo,
 
-  // fetch sources
   fetchResources,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
@@ -103,8 +102,6 @@ export default [
   setRecordCount,
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
-
-  // fetchTaskCount
 
   fetchEntities,
   extractJsonFieldFromEntities,
