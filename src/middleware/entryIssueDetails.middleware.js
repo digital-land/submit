@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
@@ -41,20 +41,6 @@ export const addResourceMetaDataToResources = (req, res, next) => {
   next()
 }
 
-// We can only get the issues without entity from the latest resource as we have no way of knowing if those in previous resources have been fixed?
-const fetchEntryIssues = fetchMany({
-  query: ({ req, params }) => `
-    select * 
-    from issue i
-    LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-    WHERE resource = '${req.resources[0].resource}'
-    AND i.issue_type = '${params.issue_type}'
-    AND it.responsibility = 'external'
-    AND field = '${params.issue_field}'
-  `,
-  result: 'issues'
-})
-
 const fetchIssueCount = fetchOne({
   query: ({ req, params }) => `
     select count(*) as count
@@ -74,16 +60,25 @@ export const setRecordCount = (req, res, next) => {
 }
 
 export const prepareEntry = (req, res, next) => {
-  const { resources, issues } = req
-  const { pageNumber } = req.parsedParams
+  const { resources, entryIssues } = req
 
-  if (!issues[pageNumber - 1] || !resources) {
-    const details = `issues[pageNumber-1]=${issues[pageNumber - 1] ? 'present' : 'missing'} resources=${resources ? 'present' : 'missing'}`
+  if (!entryIssues || entryIssues.length === 0 || !resources || resources.length === 0) {
+    const details = [
+      `entryIssues: ${entryIssues ? 'present' : 'missing'}`,
+      `entryIssues[0]: ${entryIssues[0] ? 'present' : 'missing'}`,
+      `resources: ${resources ? 'present' : 'missing'}`
+    ].join(', ')
     const error = new MiddlewareError(`Missing required values on request object: ${details}`, 404)
     return next(error)
   }
 
-  const issue = issues[pageNumber - 1]
+  const issue = entryIssues[0]
+
+  if (!(issue.entry_number || issue.entity) || !issue.issue_type || typeof issue.line_number !== 'number') {
+    const error = new Error('Invalid entry issue structure')
+    error.status = 500
+    return next(error)
+  }
 
   const errorMessage = issue.message || issue.issue_type
 
@@ -135,10 +130,10 @@ export default [
   fetchResources,
   fetchResourceMetaData,
   addResourceMetaDataToResources,
-  fetchEntryIssues,
   fetchIssueCount,
   setRecordCount,
   getSetDataRange(1),
+  fetchEntryIssues,
   show404IfPageNumberNotInRange,
   getSetBaseSubPath(['entry']),
   createPaginationTemplateParams,

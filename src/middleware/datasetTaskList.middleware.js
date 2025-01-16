@@ -1,18 +1,19 @@
 import {
-  and,
+  addEntityCountsToResources,
   fetchDatasetInfo,
-  fetchEntityCount,
-  fetchLatestResource,
-  fetchLpaDatasetIssues, fetchSources,
-  isResourceAccessible,
-  isResourceIdValid,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
+  fetchOrgInfo, fetchResources, fetchSources,
   logPageError,
+  processEntitiesMiddlewares,
   validateOrgAndDatasetQueryParams
 } from './common.middleware.js'
-import { fetchIf, fetchOne, renderTemplate } from './middleware.builders.js'
+import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { statusToTagClass } from '../filters/filters.js'
 import '../types/datasette.js'
+import logger from '../utils/logger.js'
+import { types } from 'util'
 
 /**
  * Fetches the resource status
@@ -20,13 +21,6 @@ import '../types/datasette.js'
 export const fetchResourceStatus = fetchOne({
   query: ({ params }) => performanceDbApi.resourceStatusQuery(params.lpa, params.dataset),
   result: 'resourceStatus'
-})
-
-const fetchOrgInfoWithStatGeo = fetchOne({
-  query: ({ params }) => {
-    return /* sql */ `SELECT name, organisation, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
-  },
-  result: 'orgInfo'
 })
 
 /**
@@ -44,27 +38,70 @@ function getStatusTag (status) {
   }
 }
 
-/**
- * Middleware. Updates req with `templateParams`
- *
- * @param {{ orgInfo: OrgInfo, sources: Source[], entityCountRow: undefined | { entity_count: number}, issues: Issue[] }} req
- * @param {*} res
- * @param {*} next
- * @returns { { templateParams: object }}
- */
-export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { issues, entityCount: entityCountRow, params, dataset, orgInfo: organisation, sources } = req
-  const { entity_count: entityCount } = entityCountRow ?? { entity_count: 0 }
-  const { lpa, dataset: datasetId } = params
-  console.assert(typeof entityCount === 'number', 'entityCount should be a number')
+const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
 
-  const taskList = issues.map((issue) => {
+/**
+ * Generates a list of tasks based on the issues found in the dataset.
+ *
+ * @param {Object} req - The request object. It should contain the following properties:
+ *   - {Object} parsedParams: An object containing the parameters of the request. It should have the following properties:
+ *     - {string} lpa: The LPA (Local Planning Authority) associated with the request.
+ *     - {string} dataset: The name of the dataset associated with the request.
+ *   - {Array} entities: An array of entity objects.
+ *   - {Array} resources: An array of resource objects.
+ *   - {Array} sources: An array of source objects.
+ *   - {Object} entryIssueCounts: An object containing the issue counts for the entries in the dataset.
+ *   - {Object} entityIssueCounts: An object containing the issue counts for the entities in the dataset.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {undefined}
+ */
+export const prepareTasks = (req, res, next) => {
+  const { lpa, dataset } = req.parsedParams
+  const { entities, resources, sources } = req
+  const { entryIssueCounts, entityIssueCounts } = req
+
+  const entityCount = entities.length
+  let issues = [...entryIssueCounts, ...entityIssueCounts]
+
+  issues = issues.filter(
+    issue => issue.issue_type !== '' &&
+    issue.issue_type !== undefined &&
+    issue.field !== '' &&
+    issue.field !== undefined
+  )
+
+  const taskList = Object.values(issues).map(({ field, issue_type: type, count }) => {
+    // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
+
+    let rowCount = entityCount
+    if (SPECIAL_ISSUE_TYPES.includes(type)) {
+      if (resources.length > 0) {
+        rowCount = resources[0].entry_count
+      } else {
+        rowCount = 0
+      }
+    }
+
+    let title
+    try {
+      title = performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type })
+    } catch (e) {
+      logger.warn('Failed to generate task title', {
+        type: types.App,
+        errorMessage: e.message,
+        errorStack: e.stack,
+        params: { num_issues: count, rowCount, field, issue_type: type }
+      })
+      title = `${count} issue${count > 1 ? 's' : ''} of type ${type}`
+    }
+
     return {
       title: {
-        text: performanceDbApi.getTaskMessage({ ...issue, entityCount, field: issue.field })
+        text: title
       },
-      href: `/organisations/${lpa}/${datasetId}/${issue.issue_type}/${issue.field}`,
-      status: getStatusTag(issue.status)
+      href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(type)}/${encodeURIComponent(field)}`,
+      status: getStatusTag('Needs fixing')
     }
   })
 
@@ -75,18 +112,33 @@ export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
         title: {
           text: 'There was an error accessing the URL'
         },
-        href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(datasetId)}/endpoint-error/${encodeURIComponent(source.endpoint)}`,
+        href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/endpoint-error/${encodeURIComponent(source.endpoint)}`,
         status: getStatusTag('Error')
       })
     }
   }
+
+  req.taskList = taskList
+
+  next()
+}
+
+/**
+ * Middleware. Updates req with `templateParams`
+ *
+ * @param {{ orgInfo: OrgInfo, sources: Source[], entityCountRow: undefined | { entity_count: number}, issues: Issue[] }} req
+ * @param {*} res
+ * @param {*} next
+ * @returns { { templateParams: object }}
+ */
+export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
+  const { taskList, dataset, orgInfo: organisation } = req
 
   req.templateParams = {
     taskList,
     organisation,
     dataset
   }
-
   next()
 }
 
@@ -96,21 +148,17 @@ const getDatasetTaskList = renderTemplate({
   handlerName: 'getDatasetTaskList'
 })
 
-/* eslint-disable-next-line no-return-assign */
-const emptyIssuesList = (req) => req.issues = []
-
-/* eslint-disable-next-line no-return-assign */
-const zeroEntityCount = (req) => req.entityCount = { entity_count: 0 }
-
 export default [
   validateOrgAndDatasetQueryParams,
-  fetchResourceStatus,
+  fetchOrgInfo,
   fetchSources,
-  fetchOrgInfoWithStatGeo,
   fetchDatasetInfo,
-  fetchIf(isResourceAccessible, fetchLatestResource),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues, emptyIssuesList),
-  fetchIf(and(isResourceAccessible, isResourceIdValid), fetchEntityCount, zeroEntityCount),
+  fetchResources,
+  addEntityCountsToResources,
+  ...processEntitiesMiddlewares,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
+  prepareTasks,
   prepareDatasetTaskListTemplateParams,
   getDatasetTaskList,
   logPageError

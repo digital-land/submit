@@ -188,7 +188,7 @@ export default {
   /**
      * Returns a task message based on the provided issue type, issue count, and entity count.
      *
-     * @param {{issue_type: string, num_issues: number, entityCount: number, field: string }} options
+     * @param {{issue_type: string, num_issues: number, rowCount: number, field: string }} options
      * @param {boolean?} entityLevel Whether to use entity-level or dataset level messaging
      *
      * @returns {string} The task message with the issue count inserted
@@ -198,7 +198,7 @@ export default {
   getTaskMessage ({
     issue_type: issueType,
     num_issues: numIssues,
-    entityCount,
+    rowCount,
     field
   }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
@@ -216,7 +216,7 @@ export default {
     }
 
     let message
-    if (entityCount && numIssues >= entityCount) {
+    if (Number.isInteger(rowCount) && numIssues >= rowCount) {
       message = messageInfo.allRows_message
     } else if (entityLevel) {
       message = numIssues === 1

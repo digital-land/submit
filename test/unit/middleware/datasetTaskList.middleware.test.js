@@ -1,101 +1,245 @@
 import { describe, it, vi, expect } from 'vitest'
+import { prepareDatasetTaskListTemplateParams, prepareTasks } from '../../../src/middleware/datasetTaskList.middleware.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
-import { prepareDatasetTaskListTemplateParams } from '../../../src/middleware/datasetTaskList.middleware.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
 describe('datasetTaskList.middleware.js', () => {
-  describe('prepareDatasetTaskListParams', () => {
+  describe('prepareDatasetTaskListTemplateParams', () => {
     it('sets the correct template params on the request object', async () => {
       const req = {
-        params: { lpa: 'example-lpa', dataset: 'example-dataset' },
-        resourceStatus: {
-          resource: 'mock-resource',
-          endpoint_url: 'http://example.com/resource',
-          status: '200',
-          latest_log_entry_date: '',
-          days_since_200: 0
-        },
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset' },
-        resource: { resource: 'mock-resource' },
-        sources: [
-          {
-            name: 'endpoint 1',
-            endpoint: 'FOO',
-            endpoint_url: 'http://endpoint1.co.uk',
-            documentation_url: 'http://endpoint1-docs.co.uk',
-            lastAccessed: '2024-09-09',
-            lastUpdated: '2024-09-09'
-          }],
-        issues: [
-          {
-            issue: 'Example issue 1',
-            issue_type: 'Example issue type 1',
-            field: 'Example issue field 1',
-            num_issues: 1,
-            status: 'Error'
-          },
-          {
-            issue: 'Example issue 2',
-            issue_type: 'Example issue type 2',
-            field: 'Example issue field 2',
-            num_issues: 1,
-            status: 'Needs fixing'
-          }
-        ]
+        taskList: 'taskList'
       }
       const res = { render: vi.fn() }
       const next = vi.fn()
 
-      vi.mocked(performanceDbApi.getTaskMessage).mockReturnValueOnce('task message 1').mockReturnValueOnce('task message 2')
-
       prepareDatasetTaskListTemplateParams(req, res, next)
 
       const templateParams = {
-        taskList: [
-          {
-            title: {
-              text: 'task message 1'
-            },
-            href: '/organisations/example-lpa/example-dataset/Example issue type 1/Example issue field 1',
-            status: {
-              tag: {
-                classes: 'govuk-tag--red',
-                text: 'Error'
-              }
-            }
-          },
-          {
-            title: {
-              text: 'task message 2'
-            },
-            href: '/organisations/example-lpa/example-dataset/Example issue type 2/Example issue field 2',
-            status: {
-              tag: {
-                classes: 'govuk-tag--yellow',
-                text: 'Needs fixing'
-              }
-            }
-          },
-          {
-            href: '/organisations/example-lpa/example-dataset/endpoint-error/FOO',
-            status: {
-              tag: {
-                classes: 'govuk-tag--red',
-                text: 'Error'
-              }
-            },
-            title: {
-              text: 'There was an error accessing the URL'
-            }
-          }
-        ],
+        taskList: 'taskList',
         organisation: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset' }
       }
 
       expect(req.templateParams).toEqual(templateParams)
+    })
+  })
+
+  describe('prepareTasks', () => {
+    it('prepares the task list with issues', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        sources: [],
+        entities: ['entity1', 'entity2'],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
+        entityIssueCounts: [{ field: 'field2', issue_type: 'issue-type2', count: 1 }]
+      }
+
+      const res = {
+        status: vi.fn()
+      }
+
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+        issue_type: 'issue-type1',
+        num_issues: 1,
+        rowCount: 2,
+        field: 'field1'
+      })
+
+      expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+        issue_type: 'issue-type2',
+        num_issues: 1,
+        rowCount: 2,
+        field: 'field2'
+      })
+
+      expect(req.taskList).toEqual([
+        {
+          title: {
+            text: undefined
+          },
+          href: '/organisations/some-lpa/some-dataset/issue-type1/field1',
+          status: {
+            tag: {
+              classes: 'govuk-tag--yellow',
+              text: 'Needs fixing'
+            }
+          }
+        },
+        {
+          title: {
+            text: undefined
+          },
+          href: '/organisations/some-lpa/some-dataset/issue-type2/field2',
+          status: {
+            tag: {
+              classes: 'govuk-tag--yellow',
+              text: 'Needs fixing'
+            }
+          }
+        }
+      ])
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('uses resource row count for special issue types', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        sources: [],
+        entities: [],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique', count: 1 }],
+        entityIssueCounts: []
+      }
+
+      const res = {
+        status: vi.fn()
+      }
+
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+        issue_type: 'reference values are not unique',
+        num_issues: 1,
+        rowCount: 10,
+        field: 'field1'
+      })
+
+      expect(req.taskList).toEqual([
+        {
+          title: {
+            text: undefined
+          },
+          href: encodeURI('/organisations/some-lpa/some-dataset/reference values are not unique/field1'),
+          status: {
+            tag: {
+              classes: 'govuk-tag--yellow',
+              text: 'Needs fixing'
+            }
+          }
+        }
+      ])
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles empty issue counts gracefully', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        sources: [],
+        entities: ['entity1'],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [],
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([]) // No tasks should be created
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles errors from performanceDbApi gracefully', async () => {
+      // Simulating error in performanceDbApi.getTaskMessage
+      vi.spyOn(performanceDbApi, 'getTaskMessage').mockImplementation(() => {
+        throw new Error('Error generating task message')
+      })
+
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        entities: ['entity1'],
+        sources: [],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([
+        {
+          title: { text: '1 issue of type issue-type1' }, // Or some default text if error is handled that way
+          href: '/organisations/some-lpa/some-dataset/issue-type1/field1',
+          status: { tag: { classes: 'govuk-tag--yellow', text: 'Needs fixing' } }
+        }
+      ])
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles invalid issue types', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        entities: ['entity1'],
+        sources: [],
+        resources: [{ entry_count: 10 }],
+        entryIssueCounts: [{ field: 'field1', issue_type: '', count: 1 }], // Invalid issue type (empty string)
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([])
+
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles missing field param in issues', async () => {
+      const req = {
+        parsedParams: {
+          lpa: 'some-lpa',
+          dataset: 'some-dataset'
+        },
+        entities: ['entity1'],
+        resources: [{ entry_count: 10 }],
+        sources: [],
+        entryIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
+        entityIssueCounts: []
+      }
+
+      const res = { status: vi.fn() }
+      const next = vi.fn()
+
+      prepareTasks(req, res, next)
+
+      expect(req.taskList).toEqual([]) // No task created due to missing field
+
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 })

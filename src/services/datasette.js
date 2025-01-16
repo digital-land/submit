@@ -18,6 +18,7 @@ export default {
   runQuery: async (query, database = 'digital-land') => {
     const encodedQuery = encodeURIComponent(query)
     const url = `${datasetteUrl}/${database}.json?sql=${encodedQuery}`
+
     try {
       const response = await axios.get(url)
       return {
