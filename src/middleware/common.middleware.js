@@ -7,6 +7,7 @@ import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTempla
 import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
+import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -89,7 +90,8 @@ export function validateQueryParamsFn (req, res, next) {
     req.parsedParams = v.parse(this.schema || v.any(), req.params)
     next()
   } catch (error) {
-    res.status(400).render('errorPages/400', {})
+    const err = new MiddlewareError('Query params validation error', 400, { cause: error })
+    res.status(err.statusCode).render(err.template, { ...errorTemplateContext(), err })
   }
 }
 
@@ -118,9 +120,7 @@ export const show404IfPageNumberNotInRange = (req, res, next) => {
   }
 
   if (pageNumber > dataRange.maxPageNumber || pageNumber < 1) {
-    const error = new Error('page number not in range')
-    // @ts-ignore
-    error.status = 404
+    const error = new MiddlewareError('page number not in range', 404)
     return next(error)
   }
   next()
@@ -687,7 +687,7 @@ export function getErrorSummaryItems (req, res, next) {
 
 export const prepareIssueDetailsTemplateParams = (req, res, next) => {
   const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
-  const { issue_type: issueType, pageNumber } = req.parsedParams
+  const { issue_type: issueType, issue_field: issueField, pageNumber } = req.parsedParams
 
   // schema: OrgIssueDetails
   req.templateParams = {
@@ -696,6 +696,7 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
     errorSummary,
     entry,
     issueType,
+    issueField,
     pagination,
     pageNumber,
     dataRange
@@ -731,7 +732,7 @@ export const fetchSources = fetchMany({
       SELECT
         rhe.endpoint,
         rhe.endpoint_url,
-        case 
+        case
             when rhe.status = '' or rhe.status is null then null
             else cast(rhe.status as int)
         end as status,

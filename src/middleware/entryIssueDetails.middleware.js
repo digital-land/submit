@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { MiddlewareError } from '../utils/errors.js'
 import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
 
@@ -62,14 +63,18 @@ export const prepareEntry = (req, res, next) => {
   const { resources, entryIssues } = req
 
   if (!entryIssues || entryIssues.length === 0 || !resources || resources.length === 0) {
-    const error = new Error('Missing required values on request object')
-    error.status = 404
+    const details = [
+      `entryIssues: ${entryIssues ? 'present' : 'missing'}`,
+      `entryIssues[0]: ${entryIssues[0] ? 'present' : 'missing'}`,
+      `resources: ${resources ? 'present' : 'missing'}`
+    ].join(', ')
+    const error = new MiddlewareError(`Missing required values on request object: ${details}`, 404)
     return next(error)
   }
 
   const issue = entryIssues[0]
 
-  if (!issue.entry_number || !issue.issue_type || typeof issue.line_number !== 'number') {
+  if (!(issue.entry_number || issue.entity) || !issue.issue_type || typeof issue.line_number !== 'number') {
     const error = new Error('Invalid entry issue structure')
     error.status = 500
     return next(error)

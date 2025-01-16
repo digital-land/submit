@@ -13,13 +13,7 @@ import { templateSchema } from '../routes/schemas.js'
 import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
 import * as v from 'valibot'
-import { dataSubjects } from '../utils/utils.js'
-
-const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
-  (dataSubject.dataSets || [])
-    .filter((dataset) => dataset.available)
-    .map((dataset) => dataset.value)
-)
+import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 
 export const FetchOptions = {
   /**
@@ -37,7 +31,8 @@ const datasetOverride = (val, req) => {
     return 'digital-land'
   }
   if (val === FetchOptions.fromParams) {
-    console.assert(req.params.dataset, 'no "dataset" in request params')
+    logger.warn('no "dataset" in request params',
+      { types: types.App, endpoint: req.originalUrl, params: req.params })
     return req.params.dataset
   } else if (val === FetchOptions.performanceDb) {
     return 'performance'
@@ -47,7 +42,8 @@ const datasetOverride = (val, req) => {
 }
 
 const fetchOneFallbackPolicy = (req, res, next) => {
-  res.status(404).render('errorPages/404', {})
+  const err = new MiddlewareError('Not found', 404)
+  res.status(err.statusCode).render(err.template, { ...errorTemplateContext(), err })
 }
 
 /**
@@ -121,56 +117,6 @@ export async function fetchManyFn (req, res, next) {
   }
 }
 
-export async function fetchOneFromAllDatasetsFn (req, res, next) {
-  try {
-    const query = this.query({ req, params: req.params })
-    const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
-        logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
-        throw error
-      })
-    })
-    const result = await Promise.all(promises)
-    req[this.result] = Object.fromEntries(
-      result.reduce((acc, { formattedData }, i) => {
-        if (formattedData.length > 0) {
-          acc.push([availableDatasets[i], formattedData[0]])
-        }
-        return acc
-      }, [])
-    )
-    logger.debug({ type: types.DataFetch, message: 'fetchOneFromAllDatasets', resultKey: this.result })
-    next()
-  } catch (error) {
-    logger.debug('fetchOneFromAllDatasetsFn: failed', { type: types.DataFetch, errorMessage: error.message, endpoint: req.originalUrl, resultKey: this.result })
-    req.handlerName = `fetching '${this.result}'`
-    next(error)
-  }
-}
-
-export async function fetchManyFromAllDatasetsFn (req, res, next) {
-  try {
-    const query = this.query({ req, params: req.params })
-    const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
-        logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
-        throw error
-      })
-    })
-    const result = await Promise.all(promises)
-    req[this.result] = Object.fromEntries(
-      result.filter(({ formattedData }) => formattedData.length > 0)
-        .map(({ formattedData }, i) => [availableDatasets[i], formattedData])
-    )
-    logger.debug({ type: types.DataFetch, message: 'fetchManyFromAllDatasets', resultKey: this.result })
-    next()
-  } catch (error) {
-    logger.debug('fetchManyFromAllDatasetsFn: failed', { type: types.DataFetch, errorMessage: error.message, endpoint: req.originalUrl, resultKey: this.result })
-    req.handlerName = `fetching '${this.result}'`
-    next(error)
-  }
-}
-
 /**
    * Middleware. Does a conditional fetch. Optionally invokes `else` if condition is false.
    *
@@ -233,24 +179,6 @@ export function fetchOne (context) {
    */
 export function fetchMany (context) {
   return fetchManyFn.bind(context)
-}
-
-/**
-   * Fetches a single record from each dataset databases and stores them in `req` under key specified by `result` entry.
-   *
-   * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
-   */
-export function fetchOneFromAllDatasets (context) {
-  return fetchOneFromAllDatasetsFn.bind(context)
-}
-
-/**
-   * Fetches a collection of records from all dataset databases and stores them in `req` under key specified by `result` entry.
-   *
-   * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
-   */
-export function fetchManyFromAllDatasets (context) {
-  return fetchManyFromAllDatasetsFn.bind(context)
 }
 
 /**
