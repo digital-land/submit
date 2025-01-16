@@ -102,6 +102,23 @@ describe('overview.middleware', () => {
       expect(errorCardNodes[0].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was an error accessing the data URL')
       expect(errorCardNodes[1].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was a 404 error')
     })
+
+    it('should patch dataset status based on the provision_summary info', () => {
+      const req = structuredClone(reqTemplate)
+      console.assert(req.datasets[0].status === 'Live')
+      req.datasetErrorStatus = [{ dataset: 'dataset1' }]
+      const res = { render: vi.fn() }
+
+      prepareOverviewTemplateParams(req, res, () => {})
+
+      const ds1 = req.templateParams.datasets.statutory[0]
+      expect(ds1.status).toBe('Live')
+      expect(ds1.error).toBeUndefined()
+
+      const ds4 = req.templateParams.datasets.other[1]
+      expect(ds4.status).toBe('Error')
+      expect(ds4.error).toBe(req.datasets[3].error) // Error message should be left untouched
+    })
   })
 
   describe('getOverview', () => {
