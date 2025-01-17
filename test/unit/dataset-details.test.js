@@ -79,7 +79,7 @@ describe(`dataset details View (seed: ${seed})`, () => {
           params,
           fieldId: 'endpoint-url',
           fieldType: 'format',
-          message: 'Enter a valid endpoint URL'
+          message: 'Endpoint URL must start with http:// or https://, have no spaces or unusual characters like { } [ ]'
         })
       )
 
