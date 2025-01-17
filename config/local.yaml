@@ -17,4 +17,4 @@ url: 'http://localhost:5000/'
 features:
   request-info:
     environments: ['local']
-    enabled: true
+    enabled: false
