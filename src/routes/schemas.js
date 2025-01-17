@@ -4,14 +4,16 @@
  */
 
 import * as v from 'valibot'
+import { MiddlewareError } from '../utils/errors.js'
 
 export const EmptyParams = v.object({})
-export const UptimeParams = v.object({
-  upTime: v.string()
-})
 
-export const ErrorParams = v.strictObject({
-  err: v.object({})
+export const ErrorPageParams = v.object({
+  err: v.instance(MiddlewareError),
+  env: v.string(),
+  supportEmail: v.pipe(v.string(), v.email()),
+  uptime: v.optional(v.string()),
+  downtime: v.optional(v.string())
 })
 
 export const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
@@ -106,14 +108,13 @@ export const DeadlineNoticeField = v.strictObject({
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 const DatasetItem = v.strictObject({
-  endpoint: v.optional(v.url()),
+  endpointCount: v.optional(v.number()),
   status: v.enum(datasetStatusEnum),
   dataset: NonEmptyString,
-  issue_count: v.optional(v.number()),
+  issueCount: v.optional(v.number()),
   error: v.optional(v.nullable(NonEmptyString)),
-  http_error: v.optional(NonEmptyString),
   issue: v.optional(NonEmptyString),
-  entity_count: v.optional(v.number()),
+  entityCount: v.optional(v.number()),
   project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
   numIssues: v.optional(v.number()),
@@ -152,7 +153,7 @@ export const OrgDatasetOverview = v.strictObject({
     numberOfExpectedFields: v.integer(),
     endpoints: v.array(v.strictObject({
       name: v.string(),
-      documentation_url: v.optional(v.string()),
+      documentation_url: v.nullable(v.optional(v.string())),
       endpoint_url: v.string(),
       endpoint: NonEmptyString,
       lastAccessed: v.string(),
@@ -220,6 +221,7 @@ export const OrgIssueDetails = v.strictObject({
   dataset: DatasetNameField,
   errorSummary: errorSummaryParams,
   issueType: NonEmptyString,
+  issueField: NonEmptyString,
   entry: v.strictObject({
     title: NonEmptyString,
     fields: v.array(v.strictObject({
@@ -301,9 +303,7 @@ export const templateSchema = new Map([
   ['organisations/issueTable.html', OrgIssueTable],
   ['organisations/issueDetails.html', OrgIssueDetails],
 
-  ['errorPages/503', UptimeParams],
-  ['errorPages/500', ErrorParams],
-  ['errorPages/404', EmptyParams],
+  ['errorPages/error.njk', ErrorPageParams],
   ['privacy-notice.html', EmptyParams],
   ['landing.html', EmptyParams],
   ['cookies.html', EmptyParams],

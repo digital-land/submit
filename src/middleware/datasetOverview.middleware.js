@@ -1,18 +1,5 @@
-import {
-  fetchDatasetInfo,
-  fetchLatestResource,
-  fetchLpaDatasetIssues,
-  fetchOrgInfo,
-  fetchSources,
-  isResourceAccessible,
-  isResourceIdInParams,
-  logPageError,
-  pullOutDatasetSpecification,
-  takeResourceIdFromParams
-} from './common.middleware.js'
-import { fetchIf, fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
-import { fetchResourceStatus } from './datasetTaskList.middleware.js'
-import performanceDbApi from '../services/performanceDbApi.js'
+import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification } from './common.middleware.js'
+import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
@@ -58,7 +45,16 @@ const fetchSpecification = fetchOne({
  */
 export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   const { dataset } = req.params
-  const source = req[sourceKey]
+  const resources = req[sourceKey]
+
+  if (!resources) {
+    logger.warn('No resources provided to set notices.', {
+      type: types.DataValidation
+    })
+    return next()
+  }
+
+  const source = resources[0]
 
   const deadlineObj = requiredDatasets.find(deadline => deadline.dataset === dataset)
 
@@ -78,7 +74,7 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
 
     const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(deadlineObj.deadline)
 
-    const startDate = source ? new Date(source.startDate) : undefined
+    const startDate = source ? new Date(source.start_date) : undefined
 
     if (!startDate || startDate.toString() === 'Invalid Date') {
       logger.warn('Invalid start date encountered', {
@@ -121,10 +117,15 @@ export const setNoticesFromSourceKey = (sourceKey) => (req, res, next) => {
   next()
 }
 
-const fetchEntityCount = fetchOne({
-  query: ({ req }) => performanceDbApi.entityCountQuery(req.orgInfo.entity),
+export const fetchEntityCount = fetchOne({
+  query: ({ req }) => `
+    select count(entity) as entity_count
+    from entity
+    WHERE organisation_entity = '${req.orgInfo.entity}'
+  `,
   result: 'entityCount',
-  dataset: FetchOptions.fromParams
+  dataset: FetchOptions.fromParams,
+  fallbackPolicy: FetchOneFallbackPolicy.continue
 })
 
 /**
@@ -134,7 +135,7 @@ const fetchEntityCount = fetchOne({
  * @param next {import('express').NextFunction}
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, issues, notice } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
@@ -180,7 +181,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   req.templateParams = {
     organisation: orgInfo,
     dataset,
-    taskCount: (issues ?? []).length + endpointErrorIssues,
+    taskCount: (entryIssueCounts ? entryIssueCounts.length : 0) + (entityIssueCounts ? entityIssueCounts.length : 0) + endpointErrorIssues,
     stats: {
       numberOfFieldsSupplied: numberOfFieldsSupplied ?? 0,
       numberOfFieldsMatched: numberOfFieldsMatched ?? 0,
@@ -206,13 +207,13 @@ export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchColumnSummary,
-  fetchResourceStatus,
-  fetchIf(isResourceIdInParams, fetchLatestResource, takeResourceIdFromParams),
-  fetchIf(isResourceAccessible, fetchLpaDatasetIssues),
+  fetchResources,
+  fetchSources,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
   fetchSpecification,
   pullOutDatasetSpecification,
-  fetchSources,
-  setNoticesFromSourceKey('resource'),
+  setNoticesFromSourceKey('resources'),
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,

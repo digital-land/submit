@@ -94,7 +94,12 @@ export const ConfigSchema = v.object({
       measurementId: v.string()
     })
   ),
-  tablePageLength: v.number()
+  tablePageLength: v.number(),
+  contact: v.object({
+    issues: v.object({
+      email: v.pipe(v.string(), v.email())
+    })
+  })
 })
 
 const readConfig = (config) => {

@@ -1,24 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import {
-  filterOutEntitiesWithoutIssues,
-  createPaginationTemplateParams,
-  addDatabaseFieldToSpecification,
-  replaceUnderscoreInSpecification,
-  pullOutDatasetSpecification,
-  extractJsonFieldFromEntities,
-  replaceUnderscoreInEntities,
-  setDefaultParams,
-  getUniqueDatasetFieldsFromSpecification,
-  show404IfPageNumberNotInRange,
-  FilterOutIssuesToMostRecent,
-  removeIssuesThatHaveBeenFixed,
-  addFieldMappingsToIssue,
-  getSetDataRange,
-  getErrorSummaryItems,
-  getSetBaseSubPath,
-  prepareIssueDetailsTemplateParams,
-  preventIndexing
-} from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -55,7 +36,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const res = {}
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
-      expect(err.status).toBe(404)
+      expect(err.statusCode).toBe(404)
       expect(err.message).toBe('page number not in range')
     })
     show404IfPageNumberNotInRange(req, res, next)
@@ -69,7 +50,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const res = {}
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
-      expect(err.status).toBe(404)
+      expect(err.statusCode).toBe(404)
       expect(err.message).toBe('page number not in range')
     })
     show404IfPageNumberNotInRange(req, res, next)
@@ -725,170 +706,6 @@ describe('setDefaultParams', () => {
   })
 })
 
-describe('FilterOutIssuesToMostRecent', () => {
-  it('removes issues of the same type and field and entity to only get the most recent', () => {
-    const req = {
-      resources: [
-        { resource: 'resource1', start_date: '2022-01-01' },
-        { resource: 'resource2', start_date: '2022-01-02' },
-        { resource: 'resource3', start_date: '2022-01-03' }
-      ],
-      issues: [
-        { entity: 'entity1', field: 'field1', resource: 'resource1' },
-        { entity: 'entity1', field: 'field1', resource: 'resource2' },
-        { entity: 'entity1', field: 'field2', resource: 'resource1' },
-        { entity: 'entity1', field: 'field2', resource: 'resource2' },
-        { entity: 'entity1', field: 'field2', resource: 'resource3' },
-        { entity: 'entity2', field: 'field2', resource: 'resource1' },
-        { entity: 'entity2', field: 'field2', resource: 'resource2' },
-        { entity: 'entity2', field: 'field2', resource: 'resource3' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    FilterOutIssuesToMostRecent(req, res, next)
-
-    expect(req.issues).toEqual([
-      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
-      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
-      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
-    ])
-  })
-
-  it('leaves issues with different resources', () => {
-    const req = {
-      resources: [
-        { resource: 'resource1', start_date: '2022-01-01' },
-        { resource: 'resource2', start_date: '2022-01-02' },
-        { resource: 'resource3', start_date: '2022-01-03' }
-      ],
-      issues: [
-        { entity: 'entity1', field: 'field1', resource: 'resource1' },
-        { entity: 'entity2', field: 'field2', resource: 'resource2' },
-        { entity: 'entity3', field: 'field3', resource: 'resource3' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    FilterOutIssuesToMostRecent(req, res, next)
-
-    expect(req.issues).toEqual([
-      { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: new Date('2022-01-01') },
-      { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: new Date('2022-01-02') },
-      { entity: 'entity3', field: 'field3', resource: 'resource3', start_date: new Date('2022-01-03') }
-    ])
-  })
-
-  it('handles issues with no corresponding resource', () => {
-    const req = {
-      issues: [
-        { entity: 'entity1', field: 'field1', start_date: '2022-01-01', resource: 'resource1' },
-        { entity: 'entity2', field: 'field2', start_date: '2022-01-01', resource: 'invalid-resource' },
-        { entity: 'entity3', field: 'field3', start_date: '2022-01-02', resource: 'resource3' }
-      ],
-      resources: [
-        { resource: 'resource1', start_date: '2022-01-01' },
-        { resource: 'resource3', start_date: '2022-01-02' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    FilterOutIssuesToMostRecent(req, res, next)
-
-    expect(req.issues).toEqual([
-      { entity: 'entity1', field: 'field1', start_date: new Date('2022-01-01'), resource: 'resource1' },
-      { entity: 'entity3', field: 'field3', start_date: new Date('2022-01-02'), resource: 'resource3' }
-    ])
-  })
-
-  it('handles correctly with invalid date strings in start_date', () => {
-    const req = {
-      resources: [
-        { resource: 'resource1', start_date: '2022-01-01' },
-        { resource: 'resource2', start_date: '2022-01-02' },
-        { resource: 'resource3', start_date: '2022-01-03' }
-      ],
-      issues: [
-        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: 'not-a-date' },
-        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
-        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
-        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
-        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
-        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    FilterOutIssuesToMostRecent(req, res, next)
-
-    expect(req.issues).toEqual([
-      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
-      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
-      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
-    ])
-  })
-
-  it('handles correctly with missing start_date field', () => {
-    const req = {
-      resources: [
-        { resource: 'resource1', start_date: '2022-01-01' },
-        { resource: 'resource2', start_date: '2022-01-02' },
-        { resource: 'resource3', start_date: '2022-01-03' }
-      ],
-      issues: [
-        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: undefined },
-        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
-        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
-        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
-        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
-        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    FilterOutIssuesToMostRecent(req, res, next)
-
-    expect(req.issues).toEqual([
-      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
-      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
-      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
-    ])
-  })
-
-  it('handles correctly with malformed date objects', () => {
-    const req = {
-      resources: [
-        { resource: 'resource1', start_date: '2022-01-01' },
-        { resource: 'resource2', start_date: '2022-01-02' },
-        { resource: 'resource3', start_date: '2022-01-03' }
-      ],
-      issues: [
-        { entity: 'entity1', field: 'field1', resource: 'resource1', start_date: new Date(' invalid-date') },
-        { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: '2022-01-02' },
-        { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: '2022-01-03' },
-        { entity: 'entity2', field: 'field2', resource: 'resource1', start_date: '2022-01-01' },
-        { entity: 'entity2', field: 'field2', resource: 'resource2', start_date: '2022-01-02' },
-        { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: '2022-01-03' }
-      ]
-    }
-    const res = {}
-    const next = vi.fn()
-
-    FilterOutIssuesToMostRecent(req, res, next)
-
-    expect(req.issues).toEqual([
-      { entity: 'entity1', field: 'field1', resource: 'resource2', start_date: new Date('2022-01-02') },
-      { entity: 'entity1', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') },
-      { entity: 'entity2', field: 'field2', resource: 'resource3', start_date: new Date('2022-01-03') }
-    ])
-  })
-})
-
 describe('removeIssuesThatHaveBeenFixed', () => {
   const mockDatasetteQuery = (moreRecentEntityFieldsFacts) => {
     datasette.runQuery.mockImplementation((query, dataset) => {
@@ -1337,7 +1154,7 @@ describe('getErrorSummaryItems', () => {
     expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
       issue_type: 'issue-type-value',
       num_issues: 0,
-      entityCount: 0,
+      rowCount: 0,
       field: 'issue-field-value'
     }, true)
   })
@@ -1369,7 +1186,7 @@ describe('getErrorSummaryItems', () => {
     expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
       issue_type: 'issue-type-value',
       num_issues: 2,
-      entityCount: 2,
+      rowCount: 2,
       field: 'issue-field-value'
     }, true)
   })
@@ -1403,7 +1220,12 @@ describe('getErrorSummaryItems', () => {
       }
     ])
 
-    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({ issue_type: 'issue-type-value', num_issues: 2, entityCount: 3, field: 'issue-field-value' }, true)
+    expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
+      issue_type: 'issue-type-value',
+      num_issues: 2,
+      rowCount: 3,
+      field: 'issue-field-value'
+    }, true)
   })
 })
 
