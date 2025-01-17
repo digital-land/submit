@@ -79,11 +79,12 @@ describe('entryIssueDetails.middleware.test.js', () => {
     it('should prepare entry with correct fields', () => {
       const req = {
         resources: [{ endpoint_url: 'https://example.com' }],
-        issues: [
+        entryIssues: [
           {
             entry_number: 1,
             line_number: 2,
             field: 'Field Name',
+            issue_type: 'Type',
             message: 'Error message',
             value: 'Error value'
           }
@@ -121,19 +122,19 @@ describe('entryIssueDetails.middleware.test.js', () => {
     it('should call next with error if issue is missing', () => {
       const req = {
         resources: [{ endpoint_url: 'https://example.com' }],
-        issues: [],
+        entryIssues: [],
         parsedParams: { pageNumber: 1 }
       }
       const res = {}
       const next = vi.fn()
       prepareEntry(req, res, next)
 
-      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object'))
+      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object: entryIssues: present, entryIssues[0]: missing, resources: present'))
     })
 
     it('should throw error if resources is missing', () => {
       const req = {
-        issues: [
+        entryIssues: [
           {
             entry_number: 1,
             line_number: 2,
@@ -149,7 +150,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
 
       prepareEntry(req, res, next)
 
-      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object'))
+      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object: entryIssues: present, entryIssues[0]: present, resources: missing'))
     })
   })
 
@@ -196,6 +197,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
             geometries: ['POINT(0 0)']
           },
           issueType: 'test-issue-type',
+          issueField: 'test-issue-field',
           pagination: {
             items: [{
               current: true,

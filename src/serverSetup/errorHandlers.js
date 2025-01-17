@@ -1,7 +1,9 @@
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { MiddlewareError, errorTemplateContext } from '../utils/errors.js'
 
 export function setupErrorHandlers (app) {
+  const errContext = errorTemplateContext()
   app.use((err, req, res, next) => {
     logger.error({
       type: types.Response,
@@ -17,17 +19,19 @@ export function setupErrorHandlers (app) {
       return next(err)
     }
 
-    err.template = err.template || (err.status && `errorPages/${err.status}`) || 'errorPages/500'
-
     if (err.redirect) {
       return res.redirect(err.redirect)
     }
 
-    err.status = err.status || 500
+    const middlewareError = err instanceof MiddlewareError ? err : new MiddlewareError('Internal server error', 500, { cause: err })
     try {
-      res.status(err.status).render(err.template, { err })
+      res.status(middlewareError.statusCode).render(middlewareError.template, { ...errContext, err: middlewareError })
     } catch (e) {
-      res.status(err.status).render('errorPages/500', { err })
+      logger.error('Failed to render error page.', {
+        type: types.Response, errorMessage: e.message, errorStack: e.stack, originalError: err.message, endpoint: req.originalUrl
+      })
+      const renderError = new MiddlewareError('Failed to render error page', 500, { cause: e })
+      res.status(500).render('errorPages/error.njk', { ...errContext, err: renderError })
     }
   })
 
@@ -41,6 +45,7 @@ export function setupErrorHandlers (app) {
       endpoint: req.originalUrl,
       message: 'not found'
     })
-    res.status(404).render('errorPages/404')
+    const err = new MiddlewareError('Not found', 404)
+    res.status(err.statusCode).render(err.template, { ...errContext, err })
   })
 }
