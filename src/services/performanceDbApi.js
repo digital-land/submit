@@ -1,7 +1,6 @@
 /**
  * Performance DB API service
  */
-import datasette from './datasette.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 
@@ -282,36 +281,6 @@ export default {
       and "organisation" = '${lpa}'
       and "dataset" in (${params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')})
     order by dataset asc`
-  },
-
-  /**
-    *
-    * @param {{resource: string, dataset: string}[]} resources
-    * @param {{ req?: import('express').Request}}
-    * @returns {Promise<{ resource: string, dataset: string, entityCount?: number}[]>}
-    */
-  async getEntityCounts (resources, opts = {}) {
-    const requests = resources.map(({ resource, dataset }) => {
-      const q = datasette.runQuery(this.entityCountQuery(resource), dataset, opts)
-      return q
-        .then(result => {
-          if (result.formattedData.length === 0) {
-            logger.info({ message: 'getEntityCounts(): No results for resource.', resource, dataset, type: types.App })
-            return { resource, dataset }
-          }
-          return { resource, dataset, entityCount: result.formattedData[0].entity_count }
-        })
-        .catch((error) => {
-          logger.warn('getEntityCounts(): could not obtain entity counts. Proceeding without them.',
-            { type: types.App, errorMessage: error.message, errorStack: error.stack })
-          return { resource, dataset }
-        })
-    })
-
-    const results = await Promise.allSettled(requests)
-    return results
-      .filter(p => p.status === 'fulfilled')
-      .map(p => p.value)
   },
 
   getEntitiesWithIssuesCountQuery: (req) => {
