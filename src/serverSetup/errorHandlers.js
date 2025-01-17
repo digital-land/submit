@@ -2,6 +2,8 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { MiddlewareError, errorTemplateContext } from '../utils/errors.js'
 
+const requestIdKey = Symbol.for('reqId')
+
 export function setupErrorHandlers (app) {
   const errContext = errorTemplateContext()
   app.use((err, req, res, next) => {
@@ -12,7 +14,8 @@ export function setupErrorHandlers (app) {
       message: 'error occurred',
       error: JSON.stringify(err),
       errorMessage: err.message,
-      errorStack: err.stack
+      errorStack: err.stack,
+      reqId: req[requestIdKey]
     })
 
     if (res.headersSent) {

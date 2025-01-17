@@ -4,21 +4,36 @@ import { types } from '../utils/logging.js'
 
 const datasetteUrl = 'https://datasette.planning.data.gov.uk'
 
+const requestInfo = Symbol.for('requestInfo')
+const requestId = Symbol.for('reqId')
+
+/**
+ * @param {*} req
+ * @param {string} query
+ * @param {number} duration milliseconds
+ * @returns {number | undefined}
+ */
+function saveFetchInfo (req, query, duration) {
+  return req[requestInfo].logRequest(req, query, duration)
+}
+
 export default {
   /**
  * Executes a SQL query on the Datasette instance and returns the results.
  *
  * @param {string} query - The SQL query to execute.
  * @param {string} database - The name of the database to query. Defaults to 'digital-land'.
+ * @param {{ req: import('express').Request} | undefined} opts - options
  * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to an object with the following properties:
  *   - `data`: The raw data returned by Datasette.
  *   - `formattedData`: The formatted data, with columns and rows parsed into a usable format.
  * @throws {Error} If the query fails or there is an error communicating with Datasette.
  */
-  runQuery: async (query, database = 'digital-land') => {
+  runQuery: async (query, database = 'digital-land', opts = undefined) => {
+    const req = opts?.req
     const encodedQuery = encodeURIComponent(query)
     const url = `${datasetteUrl}/${database}.json?sql=${encodedQuery}`
-
+    const start = performance.now()
     try {
       const response = await axios.get(url)
       return {
@@ -28,6 +43,15 @@ export default {
     } catch (error) {
       logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl, database })
       throw error
+    } finally {
+      if (req) {
+        const duration = performance.now() - start
+        const reqId = req[requestId]
+        if ('metric' in req.query) {
+          logger.info('runQuery()', { type: types.Metric, reqId, duration, endpoint: req.originalUrl, database })
+        }
+        saveFetchInfo(req, query, duration)
+      }
     }
   }
 }

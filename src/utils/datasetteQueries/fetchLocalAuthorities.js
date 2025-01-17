@@ -8,10 +8,11 @@ import logger from '../logger.js'
  * It performs an HTTP GET request to retrieve the data, then processes the response to return
  * only the names of the local authorities.
  *
+ * @param {{ req?: import('express').Request}} opts options (optional)
  * @returns {Promise<string[]>} A promise that resolves to an array of local authority names.
  * @throws {Error} Throws an error if the HTTP request fails or data processing encounters an issue.
  */
-export const fetchLocalAuthorities = async () => {
+export const fetchLocalAuthorities = async (opts = {}) => {
   const sql = `select
       distinct provision.organisation,
       organisation.name,
@@ -25,7 +26,7 @@ export const fetchLocalAuthorities = async () => {
       provision.organisation`
 
   try {
-    const response = await datasette.runQuery(sql)
+    const response = await datasette.runQuery(sql, 'digital-land', opts)
     const names = response.formattedData.map(row => {
       if (row.name == null) {
         logger.debug('Null value found in response:', row)

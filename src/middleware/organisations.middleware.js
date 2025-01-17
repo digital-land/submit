@@ -3,7 +3,7 @@ import { fetchMany, renderTemplate } from './middleware.builders.js'
 
 const fetchOrganisations = fetchMany({
   query: ({ req, params }) => {
-    return `
+    return /* sql */ `
       SELECT
         name,
         organisation

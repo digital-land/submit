@@ -1,7 +1,6 @@
 /**
  * Performance DB API service
  */
-import datasette from './datasette.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 
@@ -284,35 +283,6 @@ export default {
     order by dataset asc`
   },
 
-  /**
-    *
-    * @param {{resource: string, dataset: string}[]} resources
-    * @returns {Promise<{ resource: string, dataset: string, entityCount?: number}[]>}
-    */
-  async getEntityCounts (resources) {
-    const requests = resources.map(({ resource, dataset }) => {
-      const q = datasette.runQuery(this.entityCountQuery(resource), dataset)
-      return q
-        .then(result => {
-          if (result.formattedData.length === 0) {
-            logger.info({ message: 'getEntityCounts(): No results for resource.', resource, dataset, type: types.App })
-            return { resource, dataset }
-          }
-          return { resource, dataset, entityCount: result.formattedData[0].entity_count }
-        })
-        .catch((error) => {
-          logger.warn('getEntityCounts(): could not obtain entity counts. Proceeding without them.',
-            { type: types.App, errorMessage: error.message, errorStack: error.stack })
-          return { resource, dataset }
-        })
-    })
-
-    const results = await Promise.allSettled(requests)
-    return results
-      .filter(p => p.status === 'fulfilled')
-      .map(p => p.value)
-  },
-
   getEntitiesWithIssuesCountQuery: (req) => {
     const { issue_type: issueType, issue_field: issueField } = req.params
     const { resource: resourceId } = req.resource
@@ -347,40 +317,16 @@ export default {
   },
 
   /**
-     *
-     * @param {*} resourceId
-     * @param {*} entryNumber
-     * @param {*} dataset
-     * @returns {Promise<{field: string, value: string, entry_number: number}[]>}
-     */
-  async getEntry (resourceId, entryNumber, dataset) {
-    logger.debug({ message: 'getEntry()', resourceId, entryNumber, dataset, type: types.App })
-    // TODO: why do we order by rowid?
-    const sql = /* sql */ `
-      select
-        fr.rowid,
-        fr.end_date,
-        fr.fact,
-        fr.entry_date,
-        fr.entry_number,
-        fr.resource,
-        fr.start_date,
-        ft.entity,
-        ft.field,
-        ft.entry_date,
-        ft.start_date,
-        ft.value
-      from
-        fact_resource fr
-        left join fact ft on fr.fact = ft.fact
-      where
-        fr.resource = '${resourceId}'
-        and fr.entry_number = ${entryNumber}
-      order by
-        fr.rowid`
-
-    const result = await datasette.runQuery(sql, dataset)
-
-    return result.formattedData
+   * Query for the entity count for a given organisation and dataset.
+   *
+   * @param orgEntity
+   * @returns {string}
+   */
+  entityCountQuery (orgEntity) {
+    return /* sql */ `
+      select count(entity) as entity_count
+      from entity
+      WHERE organisation_entity = '${orgEntity}'
+    `
   }
 }
