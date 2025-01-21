@@ -4,10 +4,14 @@ on:
   schedule:
     - cron: "45 8 * * 1" 
   workflow_dispatch:
+  workflow_call:
+    secrets:
+        DEPLOY_DOCKER_REPOSITORY:
+          required: true
 
 env:
   APPLICATION: submit
-  DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}/submit
+  DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
   ZAP_VERSION: 2.15.0
 
 jobs:
@@ -29,7 +33,7 @@ jobs:
           npm ci
           sudo curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-          docker pull ${DOCKER_REPO}:${DOCKER_APPLICATION_TAG}
+          docker pull ${DOCKER_REPO}/${APPLICATION}:${DOCKER_APPLICATION_TAG}
 
       - name: Run dynamic security scan
         run: |
