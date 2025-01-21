@@ -40,7 +40,7 @@ describe('CheckDeepLinkController', () => {
 
       checkDeepLinkController.get(req, res, next)
 
-      expect(req.sessionModel.get(checkDeepLinkController.checkToolDeepLinkSessionKey)).toStrictEqual({
+      expect(req.sessionModel.get(checkDeepLinkController.sessionKey)).toStrictEqual({
         'data-subject': 'conservation-area',
         orgName: 'Some Org',
         orgId: 'some-org',

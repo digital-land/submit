@@ -58,7 +58,7 @@ class CheckDeepLinkController extends PageController {
     req.sessionModel.set('data-subject', datasetInfo.dataSubject)
     const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, orgId, dataset, datasetName: datasetInfo.text }
     maybeSetReferrer(req, sessionData)
-    req.sessionModel.set(this.checkToolDeepLinkSessionKey, sessionData)
+    req.sessionModel.set(this.sessionKey, sessionData)
 
     this.#addHistoryStep(req, '/check/dataset')
 
