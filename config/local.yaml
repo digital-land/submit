@@ -16,8 +16,6 @@ port: 5000
 url: 'http://localhost:5000/'
 features:
   request-info:
-    environments: ['local']
     enabled: false
   query-metrics:
-    environments: ['local']
     enabled: true

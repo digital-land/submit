@@ -10,12 +10,11 @@ import { types } from './logging.js'
  * @returns {boolean}
  */
 export const isFeatureEnabled = (config, feature) => {
-  const env = config.environment
   const features = config?.features
   if (features && feature in features) {
     const featureConfig = features[feature]
-    const enabled = (featureConfig.enabled && (featureConfig.environments ?? []).indexOf(env) >= 0)
-    logger.info('feature check', { type: types.AppLifecycle, feature: featureConfig, enabled })
+    const enabled = (featureConfig.enabled)
+    logger.info('feature check', { type: types.Feature, feature, config: featureConfig, enabled })
     return enabled
   }
   return false
