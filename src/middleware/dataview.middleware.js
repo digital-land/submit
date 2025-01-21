@@ -35,16 +35,17 @@ export const constructTableParams = (req, res, next) => {
   const { entities, uniqueDatasetFields } = req
 
   const leadingFields = []
+  const trailngFields = []
   for (const field of uniqueDatasetFields) {
     if (field === 'reference') {
       leadingFields.splice(0, 0, field)
     } else if (field === 'name') {
       leadingFields.push(field)
+    } else {
+      trailngFields.push(field)
     }
-    if (leadingFields.length === 2) break
   }
-  const orderedDatasetFields = [...leadingFields, ...uniqueDatasetFields.filter(field => !leadingFields.includes(field))]
-
+  const orderedDatasetFields = [...leadingFields, ...trailngFields]
   const columns = orderedDatasetFields
   const fields = orderedDatasetFields
   const rows = entities.map(entity => ({
