@@ -22,10 +22,11 @@ jobs:
       alerts_high: ${{ steps.report.outputs.alerts_high }}
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
-      - uses: |
-        actions/checkout@v4
-        aws-actions/amazon-ecr-login@v1
+      - uses: actions/checkout@v4
 
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        
       - name: Setup dependencies
         run: |
           npm ci
