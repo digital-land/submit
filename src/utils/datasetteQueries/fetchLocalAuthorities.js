@@ -26,7 +26,7 @@ export const fetchLocalAuthorities = async (opts = {}) => {
       provision.organisation`
 
   try {
-    const response = await datasette.runQuery(sql, 'digital-land', opts)
+    const response = await datasette.runQuery(sql, 'digital-land', { ...opts, resultKey: 'fetchLocalAuthorities' })
     const names = response.formattedData.map(row => {
       if (row.name == null) {
         logger.debug('Null value found in response:', row)

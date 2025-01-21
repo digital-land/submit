@@ -23,7 +23,7 @@ export default {
  *
  * @param {string} query - The SQL query to execute.
  * @param {string} database - The name of the database to query. Defaults to 'digital-land'.
- * @param {{ req: import('express').Request} | undefined} opts - options
+ * @param {{ req: import('express').Request} & { resultKey: string } | undefined} opts - options
  * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to an object with the following properties:
  *   - `data`: The raw data returned by Datasette.
  *   - `formattedData`: The formatted data, with columns and rows parsed into a usable format.
@@ -48,7 +48,7 @@ export default {
         const duration = performance.now() - start
         const reqId = req[requestId]
         if ('metric' in req.query) {
-          logger.info('runQuery()', { type: types.Metric, reqId, duration, endpoint: req.originalUrl, database })
+          logger.info('runQuery()', { type: types.Metric, reqId, duration, endpoint: req.originalUrl, database, resultKey: opts.resultKey })
         }
         saveFetchInfo(req, query, duration)
       }

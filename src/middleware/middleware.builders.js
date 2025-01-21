@@ -88,7 +88,7 @@ async function fetchOneFn (req, res, next) {
   logger.debug({ type: types.DataFetch, message: 'fetchOne', resultKey: this.result })
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req })
+    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req, resultKey: this.result })
     const fallbackPolicy = this.fallbackPolicy ?? FetchOneFallbackPolicy['not-found-error']
     if (result.formattedData.length === 0) {
       // we can make the 404 more informative by informing the use what exactly was "not found"
@@ -116,7 +116,7 @@ async function fetchOneFn (req, res, next) {
 export async function fetchManyFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req })
+    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req, resultKey: this.result })
     req[this.result] = result.formattedData
     logger.debug({ type: types.DataFetch, message: 'fetchMany', resultKey: this.result, resultCount: result.formattedData.length })
     next()
@@ -151,7 +151,7 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset, { req }).catch(error => {
+      return datasette.runQuery(query, dataset, { req, resultKey: this.result }).catch(error => {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
       })
@@ -191,7 +191,7 @@ export async function fetchManyFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset, { req }).catch(error => {
+      return datasette.runQuery(query, dataset, { req, resultKey: this.result }).catch(error => {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
       })
