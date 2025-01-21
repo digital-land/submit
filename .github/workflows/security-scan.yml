@@ -3,6 +3,7 @@ name: security-scan
 on:
   schedule:
     - cron: "45 8 * * 1" 
+  workflow_dispatch:
   workflow_call:
     secrets:
       DEPLOY_DOCKER_REPOSITORY:
@@ -11,17 +12,15 @@ on:
         required: true
       DEPLOY_AWS_SECRET_ACCESS_KEY:
         required: true
-
-env:
-  APPLICATION: submit
-  ZAP_VERSION: 2.15.0
-
+  
 jobs:
   dynamic-audit:
     runs-on: ubuntu-latest
     env:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
       DOCKER_APPLICATION_TAG: latest
+      APPLICATION: submit
+      ZAP_VERSION: 2.15.0
     outputs:
       alerts_info: ${{ steps.report.outputs.alerts_info }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
@@ -30,6 +29,10 @@ jobs:
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Debug Docker Repo
+        run: echo "DOCKER_REPO=${{ secrets.DEPLOY_DOCKER_REPOSITORY }}"
+        
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
