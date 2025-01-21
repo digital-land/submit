@@ -18,3 +18,6 @@ features:
   request-info:
     environments: ['local']
     enabled: false
+  query-metrics:
+    environments: ['local']
+    enabled: true

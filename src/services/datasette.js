@@ -1,6 +1,8 @@
 import axios from 'axios'
 import logger from '../utils/logger.js'
+import config from '../../config/index.js'
 import { types } from '../utils/logging.js'
+import { isFeatureEnabled } from '../utils/features.js'
 
 const datasetteUrl = 'https://datasette.planning.data.gov.uk'
 
@@ -16,6 +18,8 @@ const requestId = Symbol.for('reqId')
 function saveFetchInfo (req, query, duration) {
   return req[requestInfo].logRequest(req, query, duration)
 }
+
+const queryMetricsEnabled = isFeatureEnabled(config, 'query-metrics')
 
 export default {
   /**
@@ -47,7 +51,7 @@ export default {
       if (req) {
         const duration = performance.now() - start
         const reqId = req[requestId]
-        if ('metric' in req.query) {
+        if (queryMetricsEnabled && 'metric' in req.query) {
           logger.info('runQuery()', { type: types.Metric, reqId, duration, endpoint: req.originalUrl, database, resultKey: opts.resultKey })
         }
         saveFetchInfo(req, query, duration)
