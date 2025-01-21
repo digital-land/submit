@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: "45 8 * * 1" 
   workflow_dispatch:
+  workflow_call:
+    secrets:
+      DEPLOY_DOCKER_REPOSITORY:
+        required: true
+      DEPLOY_AWS_ACCESS_KEY_ID:
+        required: true
+      DEPLOY_AWS_SECRET_ACCESS_KEY:
+        required: true
 
 env:
   APPLICATION: submit
