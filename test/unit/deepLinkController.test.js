@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import DeepLinkController from '../../src/controllers/deepLinkController.js'
+import CheckDeepLinkController from '../../src/controllers/checkDeepLinkController.js'
 
 function mockRequestObject () {
   const sessionModel = new Map()
@@ -15,11 +15,11 @@ function mockMiddlewareArgs (reqOpts) {
   }
 }
 
-describe('DeepLinkController', () => {
-  let deepLinkController
+describe('CheckDeepLinkController', () => {
+  let checkDeepLinkController
 
   beforeEach(() => {
-    deepLinkController = new DeepLinkController({
+    checkDeepLinkController = new CheckDeepLinkController({
       route: '/deep-link'
     })
   })
@@ -27,7 +27,7 @@ describe('DeepLinkController', () => {
   describe('get()', () => {
     it('should redirect to check tool start page when params invalid', async () => {
       const { req, res, next } = mockMiddlewareArgs({ query: {} })
-      deepLinkController.get(req, res, next)
+      checkDeepLinkController.get(req, res, next)
 
       expect(res.redirect).toHaveBeenCalledWith('/check')
       expect(Array.from(req.sessionModel.keys())).toStrictEqual([])
@@ -38,9 +38,9 @@ describe('DeepLinkController', () => {
       const query = { dataset: 'conservation-area', orgName: 'Some Org', orgId: 'some-org' }
       const { req, res, next } = mockMiddlewareArgs({ query })
 
-      deepLinkController.get(req, res, next)
+      checkDeepLinkController.get(req, res, next)
 
-      expect(req.sessionModel.get(deepLinkController.checkToolDeepLinkSessionKey)).toStrictEqual({
+      expect(req.sessionModel.get(checkDeepLinkController.checkToolDeepLinkSessionKey)).toStrictEqual({
         'data-subject': 'conservation-area',
         orgName: 'Some Org',
         orgId: 'some-org',

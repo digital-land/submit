@@ -26,7 +26,7 @@ function wizardBackLink (currentUrl, deepLinkInfo) {
 }
 
 class PageController extends Controller {
-  checkToolDeepLinkSessionKey = 'check-tool-deep-link'
+  sessionKey = 'deep-link-session-key'
 
   get (req, res, next) {
     logPageView(this.options.route, req.sessionID, req.ip)
@@ -36,10 +36,11 @@ class PageController extends Controller {
   locals (req, res, next) {
     try {
       let backLink
-      const deepLinkInfo = req?.sessionModel?.get(this.checkToolDeepLinkSessionKey)
+      const deepLinkInfo = req?.sessionModel?.get(this.sessionKey)
       if (deepLinkInfo) {
         req.form.options.deepLink = deepLinkInfo
         req.form.options.datasetName = deepLinkInfo.datasetName
+        req.form.options.lpa = deepLinkInfo.lpa
         backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
       }
 

@@ -8,7 +8,7 @@ import uploadFileController from '../../../controllers/uploadFileController.js'
 import submitUrlController from '../../../controllers/submitUrlController.js'
 import statusController from '../../../controllers/statusController.js'
 import resultsController from '../../../controllers/resultsController.js'
-import deepLinkController from '../../../controllers/deepLinkController.js'
+import checkDeepLinkController from '../../../controllers/checkDeepLinkController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -101,7 +101,7 @@ export default {
   // This means it doesn't render a page, but redirects the client to the next step
   '/link': {
     ...baseSettings,
-    controller: deepLinkController,
+    controller: checkDeepLinkController,
     next: [
       { field: 'dataset', fn: requiresGeometryTypeToBeSelectedViaDeepLink, next: 'geometry-type' },
       'upload-method'
