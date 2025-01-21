@@ -24,21 +24,13 @@ jobs:
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
       - uses: actions/checkout@v4
-
-      - uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2
-
-      - uses: aws-actions/amazon-ecr-login@v1
         
       - name: Setup dependencies
         run: |
           npm ci
           sudo curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-          docker pull ${DOCKER_REPO}/${APPLICATION}:${DOCKER_APPLICATION_TAG}
+          docker pull $DOCKER_REPO/${APPLICATION}:${DOCKER_APPLICATION_TAG}
 
       - name: Run dynamic security scan
         run: |
