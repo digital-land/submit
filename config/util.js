@@ -101,7 +101,7 @@ export const ConfigSchema = v.object({
     })
   }),
   features: v.optional(v.record(
-    v.string(), v.object({
+    NonEmptyString, v.object({
       enabled: v.boolean()
     })))
 })
