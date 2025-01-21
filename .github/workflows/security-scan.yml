@@ -15,7 +15,6 @@ on:
 
 env:
   APPLICATION: submit
-  DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
   ZAP_VERSION: 2.15.0
 
 jobs:
