@@ -4,10 +4,6 @@ on:
   schedule:
     - cron: "45 8 * * 1" 
   workflow_dispatch:
-  workflow_call:
-    secrets:
-        DEPLOY_DOCKER_REPOSITORY:
-          required: true
 
 env:
   APPLICATION: submit
@@ -26,7 +22,9 @@ jobs:
       alerts_high: ${{ steps.report.outputs.alerts_high }}
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: |
+        actions/checkout@v4
+        aws-actions/amazon-ecr-login@v1
 
       - name: Setup dependencies
         run: |
