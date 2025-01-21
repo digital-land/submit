@@ -29,7 +29,7 @@ jobs:
           aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
-          
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
         
@@ -94,42 +94,3 @@ jobs:
         echo "alerts_low=$(jq '[..vulnerabilities[] | select(.severity == "low")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_medium=$(jq '[..vulnerabilities[] | select(.severity == "moderate")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_high=$(jq '[..vulnerabilities[] | select(.severity == "high")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
-
-
-    runs-on: ubuntu-latest
-    needs:
-      - dynamic-audit
-      - static-audit
-    if: always() && contains(join(needs.*.result, ','), 'failure')
-    steps:
-      - name: send failure notification
-        uses: slackapi/slack-github-action@v1
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          channel-id: 'planning-data-platform'
-          payload: |
-            {
-              "text": "Security Scan: LPA Validator Frontend Pipeline(Submit)",
-              "icon_emoji": ":alert:",
-              "username": "SecurityScanner",
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Security Scan Failed: LPA Validator Frontend Pipeline(Submit)"
-                  }
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "The report for this scan is available on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
-                  }
-                }
-              ]
-            }
