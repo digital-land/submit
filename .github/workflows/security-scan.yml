@@ -3,7 +3,6 @@ name: security-scan
 on:
   schedule:
     - cron: "45 8 * * 1" 
-  workflow_dispatch:
   workflow_call:
     secrets:
       DEPLOY_DOCKER_REPOSITORY:
