@@ -13,8 +13,8 @@ export const isFeatureEnabled = (config, feature) => {
   const features = config?.features
   if (features && feature in features) {
     const featureConfig = features[feature]
-    const enabled = (featureConfig.enabled)
-    logger.info('feature check', { type: types.Feature, feature, config: featureConfig, enabled })
+    const enabled = featureConfig.enabled
+    logger.info('feature check', { type: types.Feature, feature, config: featureConfig })
     return enabled
   }
   return false
