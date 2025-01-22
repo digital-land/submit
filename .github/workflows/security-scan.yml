@@ -13,7 +13,7 @@ env:
 jobs:
   dynamic-audit:
     runs-on: ubuntu-latest
-    environment: staging
+    environment: development
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
@@ -25,12 +25,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug Docker Repo
+        run: echo "DOCKER_REPO=${{ secrets.DEPLOY_DOCKER_REPOSITORY }}"
+        
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+      - uses: aws-actions/amazon-ecr-login@v2
       - name: Setup dependencies
         run: |
           npm ci
           sudo curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
-          docker pull ${DOCKER_REPO}/${APPLICATION}:${DOCKER_APPLICATION_TAG}
+          docker pull $DOCKER_REPO/${APPLICATION}:${DOCKER_APPLICATION_TAG}
 
       - name: Run dynamic security scan
         run: |
@@ -86,4 +95,3 @@ jobs:
         echo "alerts_low=$(jq '[..vulnerabilities[] | select(.severity == "low")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_medium=$(jq '[..vulnerabilities[] | select(.severity == "moderate")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_high=$(jq '[..vulnerabilities[] | select(.severity == "high")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
-
