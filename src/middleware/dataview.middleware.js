@@ -34,8 +34,20 @@ export const setRecordCount = (req, res, next) => {
 export const constructTableParams = (req, res, next) => {
   const { entities, uniqueDatasetFields } = req
 
-  const columns = uniqueDatasetFields
-  const fields = uniqueDatasetFields
+  const leadingFields = []
+  const trailngFields = []
+  for (const field of uniqueDatasetFields) {
+    if (field === 'reference') {
+      leadingFields.splice(0, 0, field)
+    } else if (field === 'name') {
+      leadingFields.push(field)
+    } else {
+      trailngFields.push(field)
+    }
+  }
+  const orderedDatasetFields = [...leadingFields, ...trailngFields]
+  const columns = orderedDatasetFields
+  const fields = orderedDatasetFields
   const rows = entities.map(entity => ({
     columns: Object.fromEntries(fields.map(field => {
       let value = entity[field]
