@@ -43,7 +43,8 @@ describe('EndpointSubmissionFormDeepLinkController', () => {
 
       expect(req.sessionModel.get(endpointSubmissionFormDeepLinkController.sessionKey)).toStrictEqual({
         lpa: 'Some Org',
-        dataset: 'conservation-area'
+        dataset: 'conservation-area',
+        orgId: 'some-org'
       })
       expect(next).toBeCalledTimes(1)
     })
