@@ -13,7 +13,7 @@ env:
 jobs:
   dynamic-audit:
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
