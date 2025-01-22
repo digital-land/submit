@@ -25,12 +25,17 @@
 
 {% block content %}
 
+{% set pageHeader %}
+<span class="govuk-caption-l">{{ options.lpa }} — {{ options.datasetName }}</span>
+<h1 class="govuk-heading-l">
+  {{ pageName }}
+</h1>
+{% endset %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <h1 class="govuk-heading-l">
-      {{ pageName }}
-    </h1>
+    {{ pageHeader | safe }}
 
     <form class="form" method="post">
 

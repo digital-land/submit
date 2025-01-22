@@ -23,10 +23,13 @@
 {% endset %}
 
 {% block beforeContent %}
-{{ govukBackLink({
-  text: "Back",
-  href: "javascript:window.history.back()"
-}) }}
+  {% set backLinkText %}
+    Back to {{ options.datasetName }} overview
+  {% endset %}
+  {{ govukBackLink({
+    text: backLinkText,
+    href: "javascript:window.history.back()"
+  }) }}
 {% endblock %}
 
 {% block content %}
