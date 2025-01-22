@@ -27,7 +27,7 @@ describe('check-answers View', async () => {
   it('should render the lpa selected', () => {
     const lpaRegex = new RegExp('<div class="govuk-summary-list__row govuk-summary-list__row--no-actions">.*Local planning authority.*mockLpa.*Change.*</div>', 'g')
     expect(html).toMatch(lpaRegex)
-  }) 
+  })
 
   it('should render the name entered', () => {
     const nameRegex = new RegExp('<div class="govuk-summary-list__row">.*Full name.*mockName.*Change.*</div>', 'g')
