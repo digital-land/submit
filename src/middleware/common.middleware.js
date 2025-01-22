@@ -687,6 +687,16 @@ export function getErrorSummaryItems (req, res, next) {
   next()
 }
 
+export function getIssueSpecfication (req, res, next) {
+  const { issue_field: issueField } = req.params
+  const { specification } = req
+
+  const fieldSpecification = specification.fields.find(f => f.field === issueField)
+  req.issueSpecification = fieldSpecification ?? undefined
+
+  next()
+}
+
 export const prepareIssueDetailsTemplateParams = (req, res, next) => {
   const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
   const { issue_type: issueType, issue_field: issueField, pageNumber } = req.parsedParams
