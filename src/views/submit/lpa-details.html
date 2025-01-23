@@ -26,9 +26,12 @@
   {% set backLinkText %}
     Back to {{ options.datasetName }} overview
   {% endset %}
+  {% set backLinkHref %}
+    /organisations/{{options.orgId | urlencode | safe}}/{{options.dataset | lower | urlencode | safe}}/get-started
+  {% endset %}
   {{ govukBackLink({
     text: backLinkText,
-    href: "/organisations/" + options.orgId + "/" + options.datasetName + "/get-started"
+    href: backLinkHref
   }) }}
 {% endblock %}
 

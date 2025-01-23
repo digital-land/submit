@@ -39,6 +39,7 @@ class PageController extends Controller {
       const deepLinkInfo = req?.sessionModel?.get(this.sessionKey)
       if (deepLinkInfo) {
         req.form.options.deepLink = deepLinkInfo
+        req.form.options.dataset = deepLinkInfo.dataset
         req.form.options.datasetName = deepLinkInfo.datasetName
         req.form.options.lpa = deepLinkInfo.lpa
         req.form.options.orgId = deepLinkInfo.orgId
