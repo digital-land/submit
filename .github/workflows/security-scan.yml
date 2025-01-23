@@ -13,7 +13,7 @@ env:
 jobs:
   static-audit:
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
     outputs:
       alerts_undefined: ${{ steps.report.outputs.alerts_undefined }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
