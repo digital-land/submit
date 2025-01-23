@@ -28,7 +28,7 @@
   {% endset %}
   {{ govukBackLink({
     text: backLinkText,
-    href: "javascript:window.history.back()"
+    href: "/organsations/" + options.orgId + "/" + options.datasetName + "/get-started"
   }) }}
 {% endblock %}
 
