@@ -14,6 +14,12 @@
 
 ## Preview Link
 
+<!--
+Replace [PR_NUMBER] with the actual PR number to generate the preview URL.
+For example, for PR #818, the preview link would be:
+https://submit-pr-818.herokuapp.com/
+-->
+
 https://submit-pr-[PR_NUMBER].herokuapp.com/
 
 ## What type of PR is this? (check all applicable)

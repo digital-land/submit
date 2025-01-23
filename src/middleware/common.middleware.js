@@ -687,7 +687,7 @@ export function getErrorSummaryItems (req, res, next) {
   next()
 }
 
-export function getIssueSpecfication (req, res, next) {
+export function getIssueSpecification (req, res, next) {
   const { issue_field: issueField } = req.params
   const { specification } = req
 
