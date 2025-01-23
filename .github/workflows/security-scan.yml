@@ -28,8 +28,9 @@ jobs:
 
     - name: Run static security scan
       run: |
-        npm audit -f markdown | tee npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
-        npm audit --json > npm-audit-report.json || true
+        npm audit -f markdown -o npm-audit-report.md || true
+        npm audit -f json -o npm-audit-report.json || true
+        cat npm-audit-report.md >> $GITHUB_STEP_SUMMARY
 
     - name: Upload npm audit report
       uses: actions/upload-artifact@v4
