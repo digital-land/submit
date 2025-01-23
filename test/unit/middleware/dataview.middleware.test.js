@@ -107,6 +107,36 @@ describe('dataview.middleware.test.js', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
+    it('constructs table parameters with "name" and "refernce" as leading columns', () => {
+      const req = {
+        entities: [{ id: 2, foo_field: 'foo2', baz_field: 'quux', name: 'baz' }, { id: 1, name: 'bar', foo_field: 'foo1', baz_field: 'qux' }],
+        uniqueDatasetFields: ['name', 'baz_field']
+      }
+      const res = {}
+      const next = vi.fn()
+
+      constructTableParams(req, res, next)
+
+      expect(req.tableParams.columns[0]).toBe('name')
+      expect(req.tableParams.fields[0]).toBe('name')
+    })
+
+    it('constructs table parameters "refernce" as first column', () => {
+      const req = {
+        entities: [{ id: 2, name: 'item 2', reference: '002' }, { id: 1, name: 'bar', reference: '001' }],
+        uniqueDatasetFields: ['id', 'name', 'reference']
+      }
+      const res = {}
+      const next = vi.fn()
+
+      constructTableParams(req, res, next)
+
+      expect(req.tableParams.columns[0]).toBe('reference')
+      expect(req.tableParams.fields[0]).toBe('reference')
+      expect(req.tableParams.columns[1]).toBe('name')
+      expect(req.tableParams.fields[1]).toBe('name')
+    })
+
     it('constructs table parameters with correct html field as a link for url values', () => {
       const req = {
         entities: [
