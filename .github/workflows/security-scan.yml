@@ -13,7 +13,7 @@ env:
 jobs:
   dynamic-audit:
     runs-on: ubuntu-latest
-    environment: development
+    environment: production
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
@@ -24,9 +24,6 @@ jobs:
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Debug Docker Repo
-        run: echo "DOCKER_REPO=${{ secrets.DEPLOY_DOCKER_REPOSITORY }}"
         
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -95,3 +92,135 @@ jobs:
         echo "alerts_low=$(jq '[..vulnerabilities[] | select(.severity == "low")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_medium=$(jq '[..vulnerabilities[] | select(.severity == "moderate")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_high=$(jq '[..vulnerabilities[] | select(.severity == "high")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
+
+  send-report:
+    runs-on: ubuntu-latest
+    needs:
+      - dynamic-audit
+      - static-audit
+    steps:
+      - name: send report notification
+        uses: slackapi/slack-github-action@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'planning-data-platform'
+          payload: |
+            {
+              "text": "Security Scan: LPA Validator Frontend Pipeline(Submit)",
+              "icon_emoji": ":lock:",
+              "username": "SecurityScanner",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Security Scan: LPA Validator Frontend Pipeline(Submit)"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Dynamic Audit*"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*TOTAL* ${{ needs.dynamic-audit.outputs.alerts_total }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*HIGH* ${{ needs.dynamic-audit.outputs.alerts_high }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*MEDIUM* ${{ needs.dynamic-audit.outputs.alerts_medium }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*LOW* ${{ needs.dynamic-audit.outputs.alerts_low }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*INFO* ${{ needs.dynamic-audit.outputs.alerts_info }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Static Audit*"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*HIGH* ${{ needs.static-audit.outputs.alerts_high }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*MEDIUM* ${{ needs.static-audit.outputs.alerts_medium }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*LOW* ${{ needs.static-audit.outputs.alerts_low }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*UNDEFINED* ${{ needs.static-audit.outputs.alerts_undefined }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The report for this scan is available on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
+                  }
+                }
+              ]
+            }
+
+  check-audit-errors:
+    runs-on: ubuntu-latest
+    needs:
+      - dynamic-audit
+      - static-audit
+    if: always() && contains(join(needs.*.result, ','), 'failure')
+    steps:
+      - name: send failure notification
+        uses: slackapi/slack-github-action@v1
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        with:
+          channel-id: 'planning-data-platform'
+          payload: |
+            {
+              "text": "Security Scan: LPA Validator Frontend Pipeline(Submit)",
+              "icon_emoji": ":alert:",
+              "username": "SecurityScanner",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Security Scan Failed: LPA Validator Frontend Pipeline(Submit)"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The report for this scan is available on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
+                  }
+                }
+              ]
+            }
+  
