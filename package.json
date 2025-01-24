@@ -14,7 +14,7 @@
     "start:wiremock": "docker compose up -d --force-recreate --build && NODE_ENV=wiremock node index.js",
     "start:development": "NODE_ENV=development node index.js",
     "start:local:watch": "NODE_ENV=test npm run start:watch",
-    "docker-security-scan": "docker compose -f docker-compose.security.yml run --rm zap",
+    "docker-security-scan": "mkdir -p zap-working-dir && touch zap-working-dir/zap.log && chmod -R a+rw zap-working-dir && docker compose -f docker-compose.security.yml run --rm zap",
     "static-security-scan": "npm audit --json > npm-audit-report.json",
     "scan:zap": "npm run docker-security-scan && npm run static-security-scan",
     "mock:api": "node ./test/mock-api/index.js",
