@@ -8,23 +8,25 @@ describe('ResultsController', () => {
   let asyncRequestApi
   let resultsController
 
-  const req = {
-    params: { id: 'testId' },
-    form: { options: {} },
-    session: { template: 'template' },
-    sessionModel: {
-      get: vi.fn().mockImplementation(key => {
-        const mockData = {
-          dataset: 'Dataset',
-          formFields: {}
-          // Add other potential keys
-        }
-        return mockData[key]
-      })
-    }
-  }
+  let req
 
   beforeEach(async () => {
+    req = {
+      params: { id: 'testId' },
+      form: { options: {} },
+      session: { template: 'template' },
+      sessionModel: {
+        get: vi.fn().mockImplementation(key => {
+          const mockData = {
+            dataset: 'Dataset',
+            formFields: {}
+            // Add other potential keys
+          }
+          return mockData[key]
+        })
+      }
+    }
+
     asyncRequestApi = await import('@/services/asyncRequestApi')
 
     resultsController = new ResultsController({
@@ -43,7 +45,7 @@ describe('ResultsController', () => {
         getFieldMappings: () => 'fieldMappings',
         getRowsWithVerboseColumns: () => ['verbose-columns'],
         getGeometries: () => ['geometries'],
-        getPagination: () => 'pagination'
+        getPagination: () => { return { items: [] } }
       }
 
       const mockResult = {
@@ -71,7 +73,7 @@ describe('ResultsController', () => {
         getFieldMappings: () => 'fieldMappings',
         getRowsWithVerboseColumns: () => ['verbose-columns'],
         getGeometries: () => ['geometries'],
-        getPagination: () => 'pagination'
+        getPagination: () => { return { items: {} } }
       }
 
       const mockResult = {
@@ -113,7 +115,7 @@ describe('ResultsController', () => {
           getFields: () => ['mock fields'],
           getFieldMappings: () => ({ fields: 'geometries' }),
           getGeometries: () => ['geometries'],
-          getPagination: () => 'pagination'
+          getPagination: () => { return { items: [] } }
         })
       }
 
@@ -122,7 +124,16 @@ describe('ResultsController', () => {
 
       await resultsController.locals(req, res, () => {})
 
-      expect(req.form.options.data).toBe(mockResult)
+      expect(req.form.options.data).toStrictEqual(mockResult)
+      expect(req.form.options.tableParams).toStrictEqual({
+        columns: ['Mock Columns'],
+        fields: ['mock fields'],
+        rows: [{
+          columns: {},
+          fields: ['mock field'],
+          values: ['mock value']
+        }]
+      })
       expect(req.form.options).toStrictEqual({
         data: mockResult,
         tableParams: {
@@ -135,11 +146,10 @@ describe('ResultsController', () => {
           }]
         },
         datasetName: req.sessionModel.get('dataset'),
-
         errorSummary: [{ text: 'error summary', href: '' }],
         mappings: { fields: 'geometries' },
         geometries: ['geometries'],
-        pagination: 'pagination',
+        pagination: { items: [] },
         requestParams: 'params',
         template: 'results/no-errors',
         id: req.params.id,

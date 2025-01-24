@@ -73,10 +73,8 @@ class ResultsController extends PageController {
         })
         // pagination is on the 'table' tab, so we want to ensure clicking those
         // links takes us to a page with the table tab *selected*
-        const pagination = responseDetails.getPagination(req.params.pageNumber)
-        for (const item of pagination.items) {
-          item.href = item.href + '#table-tab'
-        }
+        const pageNumer = Number.parseInt(req.params.pageNumber)
+        const pagination = responseDetails.getPagination(pageNumer, { hash: '#table-tab' })
         req.form.options.mappings = responseDetails.getFieldMappings()
         req.form.options.geometries = responseDetails.getGeometries()
         req.form.options.pagination = pagination
