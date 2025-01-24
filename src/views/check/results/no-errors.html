@@ -4,9 +4,48 @@
 {% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
 {% from '../../components/dataset-banner.html' import datasetBanner %}
 {% from "../../components/table.html" import table %}
 
+{% set mapTab %}
+  <h2 class="govuk-tabs__title">Map</h2>
+  {% if options.geometries %}
+    <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
+  {% endif %}
+{% endset -%}
+
+{% set tableTab %}
+  <h2 class="govuk-tabs__title">Table</h2>
+
+  {{ table(options.tableParams) }}
+
+  {% if options.pagination.items | length > 1 %}
+    {{ govukPagination({
+      previous: {
+        href: '/check/results/'+options.id+'/'+options.pagination.previousPage + '#table-tab'
+      } if options.pagination.previousPage else undefined,
+      next: {
+        href: '/check/results/'+options.id+'/'+options.pagination.nextPage + '#table-tab'
+      } if options.pagination.nextPage else undefined,
+      items: options.pagination.items
+    })}}
+  {% endif %}
+
+{% endset -%}
+
+{% set tabClick = "selectTab(event)" %}
+{% set tabItemsSelected = {
+  map: { label: "Map",
+         id: "map-tab",
+         panel: { html: mapTab, attributes: { } },
+         attributes: { onclick: tabClick } } } %}
+{% set tabItemsDeselected = {
+  table: { label: "Dataset table", 
+           id: "table-tab",
+           panel: { html: tableTab, attributes: { } }, 
+           attributes: { onclick: tabClick } }
+} %}
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'Check your data before you continue' %}
@@ -51,27 +90,53 @@
     </div>
   </div>
 
+  <script>
+    // when url contains the #NAME-tab fragment, focus the tab
+    // this makes pagination work correctly (e.g. clicking a page link 
+    // shows you the page with the table tab selected, and not the map)
+    const triggerTabSelection = (event) => {
+      const hash = document.location.hash
+      if (/^#(table|map)-tab$/.test(hash)) {
+        const tabLink = document.querySelector(`.tab-container [href="${hash}"]`)
+        tabLink?.dispatchEvent(new Event('click'))
+      }
+    }
+    document.addEventListener("DOMContentLoaded", triggerTabSelection)
+    window.addEventListener('hashchange', triggerTabSelection)
+    function selectTab(event) {
+      const target = event.target
+      const tab = event.target.closest('li.govuk-tabs__list-item')
+      const selectedClass = 'govuk-tabs__list-item--selected'
+      if (tab && tab.classList.contains(selectedClass)) {
+        return
+      }
+
+      for (const panel of document.querySelectorAll('.govuk-tabs__panel')) {
+        panel.classList.toggle('govuk-tabs__panel--hidden')
+      }
+      const tabs = event.target.closest('.govuk-tabs')
+      if (tabs) { 
+        for (const item of tabs.querySelectorAll('.govuk-tabs__list > li.govuk-tabs__list-item')) {
+          item.classList.remove(selectedClass)
+        }
+      }
+      if (tab) {
+        tab.classList.add(selectedClass)
+      }
+    }
+  </script>
+
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+    <div class="govuk-grid-column-full tab-container" onload="onTabsLoaded()">
 
+      {# we want to hide the tab, when we have no data for it. We present the Map tab by default #}
+      {% set items = [] %}
       {% if options.geometries %}
-        <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
+        {%set _ = items.push(tabItemsSelected.map) %}
       {% endif %}
+      {%set _ = items.push(tabItemsDeselected.table) %}
 
-      {{ table(options.tableParams) }}
-
-      {% if options.pagination.items | length > 1 %}
-        {{ govukPagination({
-          previous: {
-            href: '/check/results/'+options.id+'/'+options.pagination.previousPage
-          } if options.pagination.previousPage else undefined,
-          next: {
-            href: '/check/results/'+options.id+'/'+options.pagination.nextPage
-          } if options.pagination.nextPage else undefined,
-          items: options.pagination.items
-        })}}
-      {% endif %}
-
+      {{ govukTabs({ items: items })}}
 
     </div>
   </div>
