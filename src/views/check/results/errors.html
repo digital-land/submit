@@ -5,8 +5,48 @@
 {% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
 {% from "../../components/table.html" import table %}
 {% from '../../components/dataset-banner.html' import datasetBanner %}
+
+{% set mapTab %}
+  <h2 class="govuk-tabs__title">Map</h2>
+  {% if options.geometries %}
+    <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
+  {% endif %}
+{% endset -%}
+
+{% set tableTab %}
+  <h2 class="govuk-tabs__title">Table</h2>
+
+  {% if options.tableParams.rows|length > 0 %}
+    {{ table(options.tableParams) }}
+  {% endif %}
+
+  {% if options.pagination.items | length > 1 %}
+    {{ govukPagination({
+      previous: {
+        href: '/check/results/'+options.id+'/'+options.pagination.previousPage + '#table-tab'
+      } if options.pagination.previousPage else undefined,
+      next: {
+        href: '/check/results/'+options.id+'/'+options.pagination.nextPage + '#table-tab'
+      } if options.pagination.nextPage else undefined,
+      items: options.pagination.items
+    })}}
+  {% endif %}
+
+{% endset -%}
+
+{% set tabItemsSelected = {
+  map: { label: "Map",
+         id: "map-tab",
+         panel: { html: mapTab } } } %}
+{% set tabItemsDeselected = {
+  table: { label: "Dataset table", 
+           id: "table-tab",
+           panel: { html: tableTab } }
+} %}
+
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'Your data has errors' %}
@@ -41,33 +81,23 @@
         errorList: options.errorSummary
       }) }}
 
+    </div>
   </div>
-</div>
 
-<div class="govuk-grid-row">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full tab-container">
 
-  <div class="govuk-grid-column-full">
-    {% if options.geometries %}
-      <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
-    {% endif %}
+      {# we want to hide the tab, when we have no data for it. We present the Map tab by default #}
+      {% set items = [] %}
+      {% if options.geometries %}
+        {%set _ = items.push(tabItemsSelected.map) %}
+      {% endif %}
+      {%set _ = items.push(tabItemsDeselected.table) %}
 
-    {% if options.tableParams.rows|length > 0 %}
-      {{ table(options.tableParams) }}
-    {% endif %}
+      {{ govukTabs({ items: items })}}
 
-    {% if options.pagination.items | length > 1 %}
-      {{ govukPagination({
-        previous: {
-          href: '/check/results/'+options.id+'/'+options.pagination.previousPage
-        } if options.pagination.previousPage else undefined,
-        next: {
-          href: '/check/results/'+options.id+'/'+options.pagination.nextPage
-        } if options.pagination.nextPage else undefined,
-        items: options.pagination.items
-      })}}
-    {% endif %}
+    </div>
   </div>
-</div>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
