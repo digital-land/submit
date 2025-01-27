@@ -100,5 +100,5 @@ describe('errors page', () => {
     })
   })
 
-  paginationTemplateTests('results/errors.html', nunjucks, { hash: "#table-tab"})
+  paginationTemplateTests('results/errors.html', nunjucks, { hash: '#table-tab' })
 })
