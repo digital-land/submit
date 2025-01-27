@@ -53,7 +53,13 @@ export class Map {
       else await this.addGeoJsonUrlsToMap(opts.data)
 
       // Move the map to the bounding box
-      if (this.bbox && this.bbox.length) this.setMapViewToBoundingBox()
+      if (this.bbox && this.bbox.length === 2) {
+        try {
+          this.setMapViewToBoundingBox(this.bbox)
+        } catch (error) {
+          console.warn('Could not set map to bounding box', error?.message, this.bbox)
+        }
+      }
 
       // Add popup to map
       if (opts.interactive) this.addPopupToMap()
@@ -210,8 +216,8 @@ export class Map {
     }, this.firstMapLayerId)
   }
 
-  setMapViewToBoundingBox () {
-    this.map.fitBounds(this.bbox, { padding: 20, duration: 0, maxZoom: 11 })
+  setMapViewToBoundingBox (bbox) {
+    this.map.fitBounds(bbox, { padding: 20, duration: 0, maxZoom: 11 })
   }
 
   addPopupToMap () {
@@ -408,6 +414,9 @@ export const createMapFromServerContext = async () => {
 
 try {
   window.map = await createMapFromServerContext()
+  window.map.map.on('error', err => {
+    console.warn('map error', err)
+  })
 } catch (error) {
   console.error('Error creating map', error)
 }
