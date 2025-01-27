@@ -34,17 +34,14 @@
 
 {% endset -%}
 
-{% set tabClick = "selectTab(event)" %}
 {% set tabItemsSelected = {
   map: { label: "Map",
          id: "map-tab",
-         panel: { html: mapTab, attributes: { } },
-         attributes: { onclick: tabClick } } } %}
+         panel: { html: mapTab } } } %}
 {% set tabItemsDeselected = {
   table: { label: "Dataset table", 
            id: "table-tab",
-           panel: { html: tableTab, attributes: { } }, 
-           attributes: { onclick: tabClick } }
+           panel: { html: tableTab } }
 } %}
 
 {% set serviceType = 'Check' %}
@@ -89,42 +86,6 @@
       <p>{{options.buttonText}}</p>
     </div>
   </div>
-
-  <script>
-    // when url contains the #NAME-tab fragment, focus the tab
-    // this makes pagination work correctly (e.g. clicking a page link 
-    // shows you the page with the table tab selected, and not the map)
-    const triggerTabSelection = (event) => {
-      const hash = document.location.hash
-      if (/^#(table|map)-tab$/.test(hash)) {
-        const tabLink = document.querySelector(`.tab-container [href="${hash}"]`)
-        tabLink?.dispatchEvent(new Event('click'))
-      }
-    }
-    document.addEventListener("DOMContentLoaded", triggerTabSelection)
-    window.addEventListener('hashchange', triggerTabSelection)
-    function selectTab(event) {
-      const target = event.target
-      const tab = event.target.closest('li.govuk-tabs__list-item')
-      const selectedClass = 'govuk-tabs__list-item--selected'
-      if (tab && tab.classList.contains(selectedClass)) {
-        return
-      }
-
-      for (const panel of document.querySelectorAll('.govuk-tabs__panel')) {
-        panel.classList.toggle('govuk-tabs__panel--hidden')
-      }
-      const tabs = event.target.closest('.govuk-tabs')
-      if (tabs) { 
-        for (const item of tabs.querySelectorAll('.govuk-tabs__list > li.govuk-tabs__list-item')) {
-          item.classList.remove(selectedClass)
-        }
-      }
-      if (tab) {
-        tab.classList.add(selectedClass)
-      }
-    }
-  </script>
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full tab-container" onload="onTabsLoaded()">
