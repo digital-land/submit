@@ -16,15 +16,13 @@
   {{ resultTabs.tableTab(options) }}
 {% endset -%}
 
-{% set tabItemsSelected = {
+{% set tabItems = {
   map: { label: "Map",
          id: "map-tab",
-         panel: { html: mapTab } } } %}
-{% set tabItemsDeselected = {
+         panel: { html: mapTab } },
   table: { label: "Dataset table", 
            id: "table-tab",
-           panel: { html: tableTab } }
-} %}
+           panel: { html: tableTab } } } %}
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'Check your data before you continue' %}
@@ -72,12 +70,14 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full tab-container">
 
-      {# we want to hide the tab, when we have no data for it. We present the Map tab by default #}
+      {# we want to hide a tab, when we have no data for it. We present the Map tab by default #}
       {% set items = [] %}
       {% if options.geometries %}
-        {%set _ = items.push(tabItemsSelected.map) %}
+        {%set _ = items.push(tabItems.map) %}
       {% endif %}
-      {%set _ = items.push(tabItemsDeselected.table) %}
+      {% if options.tableParams.rows|length > 0 %}
+        {%set _ = items.push(tabItems.table) %}
+      {% endif %}
 
       {{ govukTabs({ items: items })}}
 
