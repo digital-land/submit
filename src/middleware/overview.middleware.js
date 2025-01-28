@@ -329,8 +329,8 @@ export default [
 
   prepareDatasetObjects,
 
-  datasetSubmissionDeadlineCheck,
-  addNoticesToDatasets,
+  // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
+  // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchProvisions,
   prepareOverviewTemplateParams,
   getOverview,
