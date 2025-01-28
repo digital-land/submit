@@ -7,6 +7,7 @@
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 {% from "../../components/table.html" import table %}
 {% from '../../components/dataset-banner.html' import datasetBanner %}
+{% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'Your data has errors' %}
@@ -41,55 +42,169 @@
         errorList: options.errorSummary
       }) }}
 
+    </div>
   </div>
-</div>
 
-<div class="govuk-grid-row">
+  <div class="govuk-grid-row">
 
-  <div class="govuk-grid-column-full">
-    {% if options.geometries %}
-      <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
-    {% endif %}
+    <div class="govuk-grid-column-full">
+      {% if options.geometries %}
+        <div id="map" class="app-map" aria-label="Map showing contour of the submitted data on a map"></div>
+      {% endif %}
 
-    {% if options.tableParams.rows|length > 0 %}
-      {{ table(options.tableParams) }}
-    {% endif %}
+      {% if options.tableParams.rows|length > 0 %}
+        {{ table(options.tableParams) }}
+      {% endif %}
 
-    {% if options.pagination.items | length > 1 %}
-      {{ govukPagination({
-        previous: {
-          href: '/check/results/'+options.id+'/'+options.pagination.previousPage
-        } if options.pagination.previousPage else undefined,
-        next: {
-          href: '/check/results/'+options.id+'/'+options.pagination.nextPage
-        } if options.pagination.nextPage else undefined,
-        items: options.pagination.items
-      })}}
-    {% endif %}
+      {% if options.pagination.items | length > 1 %}
+        {{ govukPagination({
+          previous: {
+            href: '/check/results/'+options.id+'/'+options.pagination.previousPage
+          } if options.pagination.previousPage else undefined,
+          next: {
+            href: '/check/results/'+options.id+'/'+options.pagination.nextPage
+          } if options.pagination.nextPage else undefined,
+          items: options.pagination.items
+        })}}
+      {% endif %}
+    </div>
   </div>
-</div>
 
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
-
-    {% if options.deepLink.orgName %}
-      <h3 class="govuk-heading-m">How to improve {{ options.deepLink.orgName }}'s data</h3>
-    {% else %}
-      <h3 class="govuk-heading-m">How to improve the data</h3>
-    {% endif %}
-
-    <ol class="govuk-list govuk-list--number">
-      <li>Fix the errors indicated. You should use the <a href="/guidance/specifications/">data specifications</a> to help you do this.</li>
-      <li>Check your updated data to make sure it meets the specifications.</li>
-    </ol>
-
-    {{ govukButton({
-      text: "Check your data",
-      href: "/check/upload-method"
-    }) }}
-
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m">Data that passed checks</h2>
+  
+      {{ govukTaskList({
+        idPrefix: "passed-checks",
+        items: [
+          {
+            title: {
+              text: "Found 50 rows"
+            },
+            status: {
+              tag: {
+                text: "Passed",
+                classes: "govuk-tag--green"
+              }
+            }
+          }
+        ]
+      }) }}
+    </div>
   </div>
-</div>
+  
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
+  
+      <p>You cannot submit your data to the platform until you fix these issues.</p>
+  
+      {{ govukTaskList({
+        idPrefix: "must-fix",
+        items: [
+          {
+            title: {
+              text: "Reference column missing"
+            },
+            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-blocking",
+            status: {
+              tag: {
+                text: "Must fix",
+                classes: "govuk-tag--red"
+              }
+            }
+          },
+          {
+            title: {
+              text: "Geometry column missing"
+            },
+            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-blocking",
+            status: {
+              tag: {
+                text: "Must fix",
+                classes: "govuk-tag--red"
+              }
+            }
+          }
+        ]
+      }) }}
+    </div>
+  </div>
+  
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
+  
+      <p>You can submit your data with these issues but should fix them over time to improve the quality and usability of
+        the
+        data.</p>
+  
+      {{ govukTaskList({
+        idPrefix: "fix-later",
+        items: [
+          {
+            title: {
+              text: "4 rows have start-date fields that must be in YYYY-MM-DD format"
+            },
+            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
+            status: {
+              tag: {
+                text: "Needs fixing",
+                classes: "govuk-tag--yellow"
+              }
+            }
+          },
+          {
+            title: {
+              text: "2 rows have entry-date fields that must be in the past"
+            },
+            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
+            status: {
+              tag: {
+                text: "Needs fixing",
+                classes: "govuk-tag--yellow"
+              }
+            }
+          },
+          {
+            title: {
+              text: "documentation-url must be a valid URL"
+            },
+            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
+            status: {
+              tag: {
+                text: "Needs fixing",
+                classes: "govuk-tag--yellow"
+              }
+            }
+          },
+          {
+            title: {
+              text: "44 rows are missing document-url"
+            },
+            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
+            status: {
+              tag: {
+                text: "Needs fixing",
+                classes: "govuk-tag--yellow"
+              }
+            }
+          }
+        ]
+      }) }}
+    </div>
+  </div>
+  
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p>Fix the issues, then upload a new version of your data to check if it is ready to submit.</p>
+      
+      {{ govukButton({
+        text: "Upload a new version",
+        href: "/check/upload-method"
+      }) }}
+    </div>
+  </div>
 {% endblock %}
 
 {% block scripts %}
