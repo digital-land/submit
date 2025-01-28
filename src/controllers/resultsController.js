@@ -36,7 +36,7 @@ class ResultsController extends PageController {
   }
 }
 
-async function getRequestDataMiddleware (req, res, next) {
+export async function getRequestDataMiddleware (req, res, next) {
   try {
     req.locals = {
       requestData: await getRequestData(req.params.id)
@@ -51,7 +51,7 @@ async function getRequestDataMiddleware (req, res, next) {
   }
 }
 
-async function setupTemplate (req, res, next) {
+export async function setupTemplate (req, res, next) {
   if (req.locals.requestData.isFailed()) {
     if (req.locals.requestData.getType() === 'check_file') {
       req.locals.template = failedFileRequestTemplate
@@ -67,7 +67,7 @@ async function setupTemplate (req, res, next) {
   next()
 }
 
-async function fetchResponseDetails (req, res, next) {
+export async function fetchResponseDetails (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.template === errorsTemplate
       ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
@@ -77,7 +77,7 @@ async function fetchResponseDetails (req, res, next) {
   next()
 }
 
-async function setupTableParams (req, res, next) {
+export async function setupTableParams (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.responseDetails
     let rows = responseDetails.getRowsWithVerboseColumns(req.locals.requestData.hasErrors())
@@ -119,7 +119,7 @@ async function setupTableParams (req, res, next) {
   next()
 }
 
-async function setupErrorSummary (req, res, next) {
+export async function setupErrorSummary (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
       return {
@@ -131,7 +131,7 @@ async function setupErrorSummary (req, res, next) {
   next()
 }
 
-async function setupError (req, res, next) {
+export async function setupError (req, res, next) {
   if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
     req.locals.error = req.locals.requestData.getError()
   }
