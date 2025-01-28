@@ -108,8 +108,8 @@ describe('getDeadlineHistory', () => {
 describe('isFeatureEnabled', () => {
   it('handles all cases', () => {
     const config = { features: { 'my-feature': { enabled: true }, 'feature-2': { enabled: false } } }
-    expect(isFeatureEnabled(config, 'my-feature')).toBe(true)
-    expect(isFeatureEnabled(config, 'feature-2')).toBe(false)
-    expect(isFeatureEnabled(config, 'other-feature')).toBe(false)
+    expect(isFeatureEnabled('my-feature', config)).toBe(true)
+    expect(isFeatureEnabled('feature-2', config)).toBe(false)
+    expect(isFeatureEnabled('other-feature', config)).toBe(false)
   })
 })
