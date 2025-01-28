@@ -18,8 +18,9 @@ export default class BasePage {
     return await this.page.getByRole('button', { name: 'Continue' }).click()
   }
 
-  async waitForPage () {
-    return await this.page.waitForURL(`**${this.url}`)
+  async waitForPage (url = undefined) {
+    const urlToCheck = url ?? `**${this.url}`
+    return await this.page.waitForURL(urlToCheck)
   }
 
   async expectOnThisPage () {
