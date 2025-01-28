@@ -93,7 +93,8 @@ describe('overview.middleware', () => {
         totalDatasets: 4,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
-        datasetsWithErrors: 2
+        datasetsWithErrors: 2,
+        isOPDMember: true
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
@@ -142,7 +143,8 @@ describe('overview.middleware', () => {
         totalDatasets: 3,
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
-        datasetsWithErrors: 1
+        datasetsWithErrors: 1,
+        isOPDMember: false
       }
 
       getOverview(req, res, next)
