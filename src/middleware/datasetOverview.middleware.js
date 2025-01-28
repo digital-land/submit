@@ -213,7 +213,7 @@ export default [
   fetchEntryIssueCounts,
   fetchSpecification,
   pullOutDatasetSpecification,
-  // setNoticesFromSourceKey('resources'),
+  // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,
