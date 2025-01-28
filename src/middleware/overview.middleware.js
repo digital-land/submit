@@ -329,8 +329,8 @@ export default [
 
   prepareDatasetObjects,
 
-  datasetSubmissionDeadlineCheck,
-  addNoticesToDatasets,
+  // datasetSubmissionDeadlineCheck,
+  // addNoticesToDatasets,
   fetchProvisions,
   prepareOverviewTemplateParams,
   getOverview,

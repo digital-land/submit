@@ -213,7 +213,7 @@ export default [
   fetchEntryIssueCounts,
   fetchSpecification,
   pullOutDatasetSpecification,
-  setNoticesFromSourceKey('resources'),
+  // setNoticesFromSourceKey('resources'),
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,
