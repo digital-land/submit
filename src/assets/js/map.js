@@ -1,7 +1,7 @@
 import parse from 'wellknown'
 import maplibregl from 'maplibre-gl'
 import { capitalize, startCase } from 'lodash'
-import { getApiToken } from './os-api-token.js'
+import { getApiToken, getFreshApiToken } from './os-api-token.js'
 
 const lineColor = '#000000'
 const fillColor = '#008'
@@ -13,6 +13,7 @@ const pointRadius = 5
 const pointColor = '#008'
 const popupMaxListLength = 10
 const defaultOsMapStyle = '/public/static/map-layers/OS_VTS_3857_Light.json'
+const fallbackMapStyle = 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw'
 
 /**
  * Creates a Map instance.
@@ -409,10 +410,10 @@ export const createMapFromServerContext = async () => {
 
   // fetch initial token
   try {
-    await getApiToken()
+    await getFreshApiToken()
   } catch (error) {
     console.error('Error fetching OS Map API token', error)
-    options.style = 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw'
+    options.style = fallbackMapStyle
   }
 
   // if the geoJsonUrl is provided, generate the paginated GeoJSON links
