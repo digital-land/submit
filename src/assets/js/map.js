@@ -12,6 +12,7 @@ const pointOpacity = 0.8
 const pointRadius = 5
 const pointColor = '#008'
 const popupMaxListLength = 10
+const defaultOsMapStyle = '/public/static/map-layers/OS_VTS_3857_Light.json'
 
 /**
  * Creates a Map instance.
@@ -34,7 +35,7 @@ export class Map {
     this.bbox = this.opts.boundingBox ?? null
     this.map = new maplibregl.Map({
       container: this.opts.containerId,
-      style: this.opts.style ?? '/public/static/OS_VTS_3857_3D.json',
+      style: this.opts.style ?? defaultOsMapStyle,
       zoom: 11,
       center: [-0.1298779, 51.4959698],
       interactive: this.opts.interactive ?? true,
