@@ -691,8 +691,10 @@ export function getIssueSpecification (req, res, next) {
   const { issue_field: issueField } = req.params
   const { specification } = req
 
-  const fieldSpecification = specification.fields.find(f => f.field === issueField)
-  req.issueSpecification = fieldSpecification ?? undefined
+  if (specification) {
+    const fieldSpecification = specification.fields.find(f => f.field === issueField)
+    req.issueSpecification = fieldSpecification ?? undefined
+  }
 
   next()
 }
