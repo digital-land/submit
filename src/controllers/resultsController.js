@@ -21,10 +21,7 @@ class ResultsController extends PageController {
 
   async locals (req, res, next) {
     try {
-      req.form.options = {
-        ...req.form.options,
-        ...req.locals
-      }
+      Object.assign(req.form.options, req.locals)
       super.locals(req, res, next)
     } catch (error) {
       next(error, req, res, next)
