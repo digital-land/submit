@@ -31,6 +31,10 @@ vi.mock('wellknown', () => ({
   parse: vi.fn().mockReturnValue({ type: 'Polygon', coordinates: [[0, 0], [1, 1]] })
 }))
 
+vi.mock('../../../src/assets/js/os-api-token.js', () => ({
+  getApiToken: vi.fn().mockReturnValue('valid-token')
+}))
+
 describe('map.js', () => {
   describe('Map class extended tests', () => {
     it('should add controls based on interactivity', () => {
@@ -182,6 +186,33 @@ describe('map.js', () => {
         'Missing required properties (containerId, geometries) on window.serverContext',
         expect.any(Object)
       )
+    })
+
+    it('should default to maptiler style if token fetch fails', async () => {
+      vi.mock('../../../src/assets/js/os-api-token.js', () => ({
+        getApiToken: vi.fn().mockRejectedValue(new Error('API token fetch failed'))
+      }))
+
+      global.window.serverContext = {
+        containerId: 'map',
+        geometries: ['POINT (1 1)', 'LINESTRING (1 1, 2 2)'],
+        mapType: 'interactive',
+        geoJsonUrl: undefined
+      }
+
+      const map = await createMapFromServerContext()
+
+      expect(map).toBeInstanceOf(Map)
+      expect(map.map).toBeDefined()
+      expect(map.opts).toEqual({
+        containerId: 'map',
+        data: ['POINT (1 1)', 'LINESTRING (1 1, 2 2)'],
+        interactive: true,
+        wktFormat: true,
+        geoJsonUrl: undefined,
+        boundaryGeoJsonUrl: undefined,
+        style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw'
+      })
     })
   })
 })
