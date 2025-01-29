@@ -73,7 +73,7 @@ describe('ResultsController', () => {
         getFieldMappings: () => 'fieldMappings',
         getRowsWithVerboseColumns: () => ['verbose-columns'],
         getGeometries: () => ['geometries'],
-        getPagination: () => { return { items: {} } }
+        getPagination: () => { return { items: [] } }
       }
 
       const mockResult = {
