@@ -1,5 +1,6 @@
 import * as util from '../../src/utils/utils.js'
 import { describe, it, expect, beforeAll, vi, afterAll } from 'vitest'
+import { isFeatureEnabled } from '../../src/utils/features.js'
 
 const dataSubjects = {
   subject1: {
@@ -101,5 +102,14 @@ describe('getDeadlineHistory', () => {
     expect(result.deadlineDate.getFullYear()).toBe(2026)
     expect(result.lastYearDeadline.getFullYear()).toBe(2025)
     expect(result.twoYearsAgoDeadline.getFullYear()).toBe(2024)
+  })
+})
+
+describe('isFeatureEnabled', () => {
+  it('handles all cases', () => {
+    const config = { features: { 'my-feature': { enabled: true }, 'feature-2': { enabled: false } } }
+    expect(isFeatureEnabled('my-feature', config)).toBe(true)
+    expect(isFeatureEnabled('feature-2', config)).toBe(false)
+    expect(isFeatureEnabled('other-feature', config)).toBe(false)
   })
 })
