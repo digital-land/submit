@@ -139,7 +139,7 @@
   {% if datasets.other.length > 0 %}
     <div data-testid="datasetsOdpMandatory">
       <h2 class="govuk-heading-m">Datasets organisations in Open Digital Planning programme must provide</h2>
-      {% if datasets.other[0].project === 'open-digital-planning' %}
+      {% if isOPDMember %}
         <p class="org-membership-info">{{ organisation.name}} is a member of the Open Digital Planning programme.</p>
       {% else %}
         <p class="org-membership-info">{{ organisation.name}} is not a member of the Open Digital Planning programme.</p>
