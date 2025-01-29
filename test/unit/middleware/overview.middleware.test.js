@@ -64,11 +64,16 @@ const reqTemplate = {
 }
 
 describe('overview.middleware', () => {
+  /**
+   * @param {Object} templateParams
+   * @returns {{ errorCards: Object[], doc: Document }}
+   */
   const getRenderedErrorCards = (templateParams) => {
     const html = nunjucks.render('organisations/overview.html', templateParams)
     const doc = new jsdom.JSDOM(html).window.document
     const errorNodes = doc.querySelectorAll('[data-dataset-status="Error"]')
-    return Array.from(errorNodes)
+    const errorCards = Array.from(errorNodes)
+    return { errorCards, doc }
   }
 
   describe('prepareOverviewTemplateParams', () => {
@@ -99,9 +104,21 @@ describe('overview.middleware', () => {
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
 
-      const errorCardNodes = getRenderedErrorCards(req.templateParams)
+      const { errorCards: errorCardNodes, doc } = getRenderedErrorCards(req.templateParams)
       expect(errorCardNodes[0].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was an error accessing the data URL')
       expect(errorCardNodes[1].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was a 404 error')
+
+      const orgMemebershipInfo = doc.querySelector('.org-membership-info').textContent.trim()
+      expect(orgMemebershipInfo).toMatch('is a member of the Open Digital Planning programme')
+
+      // verify proper label for non-OPD memebers gets rendered
+      const reqNotMember = structuredClone(reqTemplate)
+      reqNotMember.provisions.forEach((provision) => {
+        provision.project = ''
+      })
+      prepareOverviewTemplateParams(reqNotMember, res, () => {})
+      const { doc: docNotMember } = getRenderedErrorCards(reqNotMember.templateParams)
+      expect(docNotMember.querySelector('.org-membership-info').textContent.trim()).toMatch('is not a member of the Open Digital Planning programme')
     })
 
     it('should patch dataset status based on the provision_summary info', () => {
