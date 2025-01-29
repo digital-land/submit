@@ -226,6 +226,12 @@ export function prepareDatasetObjects (req, res, next) {
  */
 export function prepareOverviewTemplateParams (req, res, next) {
   const { orgInfo: organisation, provisions, datasets } = req
+
+  const provisionData = new Map()
+  for (const provision of provisions ?? []) {
+    provisionData.set(provision.dataset, provision)
+  }
+
   // add in any of the missing key 8 datasets
   const keys = new Set(datasets.map(d => d.dataset))
   availableDatasets.forEach((dataset) => {
@@ -241,10 +247,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
     }
   })
 
-  const provisionData = new Map()
-  for (const provision of provisions ?? []) {
-    provisionData.set(provision.dataset, provision)
-  }
+  const isOPDMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
 
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
@@ -269,7 +272,8 @@ export function prepareOverviewTemplateParams (req, res, next) {
     totalDatasets,
     datasetsWithEndpoints,
     datasetsWithIssues,
-    datasetsWithErrors
+    datasetsWithErrors,
+    isOPDMember
   }
 
   next()
@@ -329,8 +333,8 @@ export default [
 
   prepareDatasetObjects,
 
-  datasetSubmissionDeadlineCheck,
-  addNoticesToDatasets,
+  // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
+  // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchProvisions,
   prepareOverviewTemplateParams,
   getOverview,

@@ -99,7 +99,11 @@ export const ConfigSchema = v.object({
     issues: v.object({
       email: v.pipe(v.string(), v.email())
     })
-  })
+  }),
+  features: v.optional(v.record(
+    NonEmptyString, v.object({
+      enabled: v.boolean()
+    })))
 })
 
 const readConfig = (config) => {
