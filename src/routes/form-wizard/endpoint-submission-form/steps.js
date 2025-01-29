@@ -9,12 +9,17 @@ const defaultParams = {
 }
 
 export default {
-  '/': {
+  '/link': {
     ...defaultParams,
+    controller: EndpointSubmissionFormDeepLinkController,
+    next: [
+      'lpa-details'
+    ],
     entryPoint: true,
     resetJourney: true,
-    template: 'submit/start.html',
-    next: '/submit/lpa-details'
+    reset: true,
+    skip: true,
+    checkJourney: false
   },
   '/lpa-details': {
     ...defaultParams,
@@ -42,17 +47,5 @@ export default {
     ...defaultParams,
     checkJourney: false,
     template: 'submit/confirmation.html'
-  },
-  '/link': {
-    ...defaultParams,
-    controller: EndpointSubmissionFormDeepLinkController,
-    next: [
-      'lpa-details'
-    ],
-    entryPoint: true,
-    resetJourney: true,
-    reset: true,
-    skip: true,
-    checkJourney: false
   }
 }
