@@ -8,6 +8,7 @@ import * as v from 'valibot'
 import { pagination } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
+import { dataRangeParams } from '../routes/schemas.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -113,14 +114,10 @@ export const getDatasetTaskListError = renderTemplate({
 export const show404IfPageNumberNotInRange = (req, res, next) => {
   const { dataRange } = req
   const { pageNumber } = req.parsedParams
-
-  if (!dataRange || !dataRange.maxPageNumber || isNaN(dataRange.maxPageNumber)) {
-    const error = new Error('invalid req.dataRange object')
-    return next(error)
-  }
+  v.parse(dataRangeParams, dataRange)
 
   if (pageNumber > dataRange.maxPageNumber || pageNumber < 1) {
-    const error = new MiddlewareError('page number not in range', 404)
+    const error = new MiddlewareError(`page number ${pageNumber} not in range [1, ${dataRange.maxPageNumber}]`, 404)
     return next(error)
   }
   next()
@@ -130,13 +127,13 @@ export const createPaginationTemplateParams = (req, res, next) => {
   const { pageNumber } = req.parsedParams
   const { baseSubpath, dataRange } = req
 
-  if (dataRange.maxPageNumber <= 1) {
-    return next()
-  }
-
   if (isNaN(pageNumber) || pageNumber < 1) {
     const error = new Error('Invalid page number')
     return next(error)
+  }
+
+  if (dataRange.maxPageNumber <= 1) {
+    return next()
   }
 
   /**
@@ -638,29 +635,34 @@ export const getSetBaseSubPath = (additionalParts = []) => (req, res, next) => {
   next()
 }
 
-export const getSetDataRange = (pageLength) => (req, res, next) => {
-  const { recordCount } = req
-  const { pageNumber } = req.parsedParams
+/**
+ * @param {number} pageLength
+ * @returns {(req, res, next) => void }
+ */
+export const getSetDataRange = (pageLength) => {
+  v.parse(v.pipe(v.number(), v.integer(), v.minValue(1)), pageLength)
 
-  if (typeof recordCount !== 'number' || recordCount < 0) {
-    return next(new Error('Invalid record count'))
-  }
-  if (typeof pageNumber !== 'number' || pageNumber < 1) {
-    return next(new Error('Invalid page number'))
-  }
-  if (typeof pageLength !== 'number' || pageLength < 1) {
-    return next(new Error('Invalid page length'))
-  }
+  return (req, res, next) => {
+    const { pageNumber } = req.parsedParams
 
-  req.dataRange = {
-    minRow: (pageNumber - 1) * pageLength,
-    maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
-    totalRows: recordCount,
-    maxPageNumber: Math.ceil(recordCount / pageLength),
-    pageLength,
-    offset: (pageNumber - 1) * pageLength
+    let recordCount = req.recordCount
+    if (typeof recordCount !== 'number' || recordCount < 0) {
+      logger.warn(`Invalid record count: ${recordCount}`, { type: types.App, recordCount, endpoint: req.originalUrl })
+      recordCount = 0
+    }
+
+    req.dataRange = v.parse(dataRangeParams, {
+      minRow: (pageNumber - 1) * pageLength,
+      maxRow: Math.min((pageNumber - 1) * pageLength + pageLength, recordCount),
+      totalRows: recordCount,
+      // pageNumber starts with 1, so we maxPageNumber to start with 1
+      maxPageNumber: Math.max(Math.ceil(recordCount / pageLength), 1),
+      pageLength,
+      offset: (pageNumber - 1) * pageLength
+    })
+
+    next()
   }
-  next()
 }
 
 export function getErrorSummaryItems (req, res, next) {
