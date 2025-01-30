@@ -63,17 +63,22 @@ export async function setupTemplate (req, res, next) {
     }
     req.locals.requestParams = req.locals.requestData.getParams()
     next()
-  } catch (error) {
-    next(error, req, res, next)
+  } catch (e) {
+    next(e, req, res, next)
   }
 }
 
 export async function fetchResponseDetails (req, res, next) {
-  if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-    const responseDetails = req.locals.template === errorsTemplate
-      ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
-      : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
-    req.locals.responseDetails = responseDetails
+  try {
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const responseDetails = req.locals.template === errorsTemplate
+        ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
+        : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
+      req.locals.responseDetails = responseDetails
+    }
+  } catch (e) {
+    next(e, req, res, next)
+    return
   }
   next()
 }
