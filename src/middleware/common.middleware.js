@@ -9,6 +9,7 @@ import { pagination } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
+import { isFeatureEnabled } from '../utils/features.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -691,7 +692,7 @@ export function getIssueSpecification (req, res, next) {
   const { issue_field: issueField } = req.params
   const { specification } = req
 
-  if (specification) {
+  if (specification && isFeatureEnabled('issueSpecificationGuidance')) {
     const fieldSpecification = specification.fields.find(f => f.field === issueField)
     req.issueSpecification = fieldSpecification
   }

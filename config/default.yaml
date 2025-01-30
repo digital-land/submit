@@ -94,3 +94,6 @@ guidanceNavigation:
     - label: Keep your data up to date
       url: /guidance/keep-your-data-up-to-date
 tablePageLength: 50
+features:
+  issueSpecificationGuidance:
+    enabled: false
