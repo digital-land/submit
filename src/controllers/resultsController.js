@@ -65,11 +65,13 @@ export async function setupTemplate (req, res, next) {
 }
 
 export async function fetchResponseDetails (req, res, next) {
-  if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+  try {
     const responseDetails = req.locals.template === errorsTemplate
       ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
       : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
     req.locals.responseDetails = responseDetails
+  } catch (error) {
+    return next(error, req, res, next)
   }
   next()
 }

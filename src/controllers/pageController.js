@@ -25,7 +25,6 @@ function wizardBackLink (currentUrl, deepLinkInfo) {
   return undefined
 }
 
-
 /**
  * This class extends the Controller class from the hmpo-form-wizard library.
  * For more information, please refer to the documentation:
