@@ -3,6 +3,7 @@ import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addData
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
+import { isValiError } from 'valibot'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -14,7 +15,7 @@ vi.mock('../../../src/services/datasette.js', () => ({
 
 describe('show404IfPageNumberNotInRange middleware', () => {
   const dataRange = {
-    maxPageNumber: 3
+    maxPageNumber: 3, minRow: 0, maxRow: 0, totalRows: 0, pageLength: 2, offset: 0
   }
 
   it('should not throw an error when the page number is within the range', () => {
@@ -37,7 +38,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
       expect(err.statusCode).toBe(404)
-      expect(err.message).toBe('page number not in range')
+      expect(err.message).toBe('page number 4 not in range [1, 3]')
     })
     show404IfPageNumberNotInRange(req, res, next)
   })
@@ -51,7 +52,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
       expect(err.statusCode).toBe(404)
-      expect(err.message).toBe('page number not in range')
+      expect(err.message).toBe('page number 0 not in range [1, 3]')
     })
     show404IfPageNumberNotInRange(req, res, next)
   })
@@ -63,9 +64,10 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     }
     const res = {}
     const next = vi.fn()
-    show404IfPageNumberNotInRange(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+    try { show404IfPageNumberNotInRange(req, res, next) } catch (error) {
+      expect(isValiError(error)).toBe(true)
+    }
+    expect(next).not.toHaveBeenCalled()
   })
 
   it('should throw an error when dataRange.maxPageNumber is non numeric', () => {
@@ -77,9 +79,10 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     }
     const res = {}
     const next = vi.fn()
-    show404IfPageNumberNotInRange(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+    try { show404IfPageNumberNotInRange(req, res, next) } catch (error) {
+      expect(isValiError(error)).toBe(true)
+    }
+    expect(next).not.toHaveBeenCalled()
   })
 
   it('should throw an error when dataRange.maxPageNumber is undefined', () => {
@@ -91,9 +94,10 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     }
     const res = {}
     const next = vi.fn()
-    show404IfPageNumberNotInRange(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+    try { show404IfPageNumberNotInRange(req, res, next) } catch (error) {
+      expect(isValiError(error)).toBe(true)
+    }
+    expect(next).not.toHaveBeenCalled()
   })
 })
 
@@ -128,12 +132,13 @@ describe('createPaginationTemplateParams', () => {
   })
 
   it('handles invalid page numbers (negative)', () => {
+    const dataRange = {
+      maxPageNumber: 1, minRow: 0, maxRow: 0, totalRows: 0, pageLength: 2, offset: 0
+    }
     const req = {
       resultsCount: 100,
       urlSubPath: '/api/results/',
-      dataRange: {
-        pageLength: 10
-      },
+      dataRange,
       params: { pageNumber: -1 },
       parsedParams: { pageNumber: -1 }
     }
