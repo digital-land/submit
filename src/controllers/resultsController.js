@@ -49,19 +49,23 @@ export async function getRequestDataMiddleware (req, res, next) {
 }
 
 export async function setupTemplate (req, res, next) {
-  if (req.locals.requestData.isFailed()) {
-    if (req.locals.requestData.getType() === 'check_file') {
-      req.locals.template = failedFileRequestTemplate
+  try {
+    if (req.locals.requestData.isFailed()) {
+      if (req.locals.requestData.getType() === 'check_file') {
+        req.locals.template = failedFileRequestTemplate
+      } else {
+        req.locals.template = failedUrlRequestTemplate
+      }
+    } else if (req.locals.requestData.hasErrors()) {
+      req.locals.template = errorsTemplate
     } else {
-      req.locals.template = failedUrlRequestTemplate
+      req.locals.template = noErrorsTemplate
     }
-  } else if (req.locals.requestData.hasErrors()) {
-    req.locals.template = errorsTemplate
-  } else {
-    req.locals.template = noErrorsTemplate
+    req.locals.requestParams = req.locals.requestData.getParams()
+    next()
+  } catch (error) {
+    next(error, req, res, next)
   }
-  req.locals.requestParams = req.locals.requestData.getParams()
-  next()
 }
 
 export async function fetchResponseDetails (req, res, next) {
