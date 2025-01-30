@@ -117,6 +117,15 @@ export const prepareEntry = (req, res, next) => {
   next()
 }
 
+const show404ifNoIssues = (req, res, next) => {
+  if (req.recordCount === 0) {
+    // e.g. we got here via old link and there are no issues anymore
+    next(new MiddlewareError('Issue count is zero for dataset', 404))
+  } else {
+    next()
+  }
+}
+
 export const getIssueDetails = renderTemplate({
   templateParams: (req) => req.templateParams,
   template: 'organisations/issueDetails.html',
@@ -132,6 +141,7 @@ export default [
   addResourceMetaDataToResources,
   fetchIssueCount,
   setRecordCount,
+  show404ifNoIssues,
   getSetDataRange(1),
   fetchEntryIssues,
   show404IfPageNumberNotInRange,

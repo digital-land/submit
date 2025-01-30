@@ -50,13 +50,13 @@ export const PaginationParams = v.optional(v.strictObject({
   ]))
 }))
 
-export const dataRangeParams = v.strictObject({
-  minRow: v.integer(),
-  maxRow: v.integer(),
-  totalRows: v.integer(),
-  maxPageNumber: v.optional(v.integer()),
-  pageLength: v.optional(v.integer()),
-  offset: v.optional(v.integer())
+export const dataRangeParams = v.object({
+  minRow: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  maxRow: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  totalRows: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  maxPageNumber: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  pageLength: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  offset: v.pipe(v.number(), v.integer(), v.minValue(0))
 })
 
 export const errorSummaryParams = v.strictObject({
