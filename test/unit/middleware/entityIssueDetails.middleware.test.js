@@ -183,7 +183,10 @@ describe('issueDetails.middleware.js', () => {
           dataRange: {
             minRow: 0,
             maxRow: 50,
-            totalRows: 150
+            totalRows: 150,
+            maxPageNumber: 3,
+            pageLength: 50,
+            offset: 0
           }
         }
       }
