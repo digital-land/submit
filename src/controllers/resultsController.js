@@ -142,10 +142,15 @@ export async function setupErrorSummary (req, res, next) {
 }
 
 export async function setupError (req, res, next) {
-  if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
-    req.locals.error = req.locals.requestData.getError()
+  try {
+    if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
+      req.locals.error = req.locals.requestData.getError()
+    }
+    next()
+  } catch (error) {
+    next(error, req, res, next)
   }
-  next()
+}
 }
 
 export default ResultsController
