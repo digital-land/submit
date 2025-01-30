@@ -126,15 +126,19 @@ export async function setupTableParams (req, res, next) {
 }
 
 export async function setupErrorSummary (req, res, next) {
-  if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-    req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
-      return {
-        text: message,
-        href: ''
-      }
-    })
+  try {
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
+        return {
+          text: message,
+          href: ''
+        }
+      })
+    }
+    next()
+  } catch (error) {
+    next(error, req, res, next)
   }
-  next()
 }
 
 export async function setupError (req, res, next) {
