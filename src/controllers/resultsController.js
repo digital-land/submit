@@ -1,11 +1,11 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import prettifyColumnName from '../filters/prettifyColumnName.js'
+import { fetchMany } from '../middleware/middleware.builders.js'
 
 const failedFileRequestTemplate = 'results/failedFileRequest'
 const failedUrlRequestTemplate = 'results/failedUrlRequest'
-const errorsTemplate = 'results/errors'
-const noErrorsTemplate = 'results/no-errors'
+const resultsTemplate = 'results/results'
 
 class ResultsController extends PageController {
   /* Custom middleware */
@@ -16,6 +16,9 @@ class ResultsController extends PageController {
     this.use(fetchResponseDetails)
     this.use(setupTableParams)
     this.use(setupErrorSummary)
+    this.use(getIssueTypesWithQualityCriteriaLevels)
+    this.use(extractIssuesFromResults)
+    this.use(addQualityCriteriaLevelsToIssues)
     this.use(setupError)
   }
 
@@ -56,10 +59,8 @@ export async function setupTemplate (req, res, next) {
       } else {
         req.locals.template = failedUrlRequestTemplate
       }
-    } else if (req.locals.requestData.hasErrors()) {
-      req.locals.template = errorsTemplate
     } else {
-      req.locals.template = noErrorsTemplate
+      req.locals.template = resultsTemplate
     }
     req.locals.requestParams = req.locals.requestData.getParams()
     next()
@@ -71,7 +72,7 @@ export async function setupTemplate (req, res, next) {
 export async function fetchResponseDetails (req, res, next) {
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-      const responseDetails = req.locals.template === errorsTemplate
+      const responseDetails = req.locals.template === resultsTemplate
         ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
         : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
       req.locals.responseDetails = responseDetails
@@ -150,6 +151,41 @@ export async function setupError (req, res, next) {
   } catch (error) {
     next(error, req, res, next)
   }
+}
+
+export const getIssueTypesWithQualityCriteriaLevels = fetchMany({
+  query: ({ req }) => 'select description, issue_type, name, severity, responsibility, quality_dimension, quality_criteria, quality_criteria_level from issue_type',
+  result: 'issueTypes'
+})
+
+export function extractIssuesFromResults (req, res, next) {
+  const { responseDetails } = req.locals
+
+  const issueLogsByRow = responseDetails.response.map(row => row.issue_logs)
+  const issues = issueLogsByRow.flat()
+
+  req.issues = issues
+
+  next()
+}
+
+export function addQualityCriteriaLevelsToIssues (req, res, next) {
+  const { issues, issueTypes } = req
+
+  req.issues = issues.map(issue => {
+    const issueType = issueTypes.find(issueType => issueType.issue_type === issue['issue-type'])
+    return {
+      ...issue,
+      quality_criteria_level: issueType.quality_criteria_level
+    }
+  })
+
+  next()
+}
+
+// if
+export function makeTasks (req, res, next) {
+
 }
 
 export default ResultsController
