@@ -693,7 +693,7 @@ export function getIssueSpecification (req, res, next) {
 
   if (specification) {
     const fieldSpecification = specification.fields.find(f => f.field === issueField)
-    req.issueSpecification = fieldSpecification ?? undefined
+    req.issueSpecification = fieldSpecification
   }
 
   next()

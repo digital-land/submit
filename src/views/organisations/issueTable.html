@@ -119,7 +119,7 @@
       </h2>
 
       <p class="govuk-body">Your dataset is missing the <strong>{{ issueSpecification.field }}</strong> column.</p>
-      <p class="govuk-body">The <a href="{{ dataset.dataset | getDatasetGuidanceUrl }}" target="_blank">{{ dataset.name }}</a> guidance explains how to fix the issue:</p>
+      <p class="govuk-body">The <a href="{{ dataset.dataset | getDatasetGuidanceUrl }}" target="_blank" rel="noopener noreferrer">{{ dataset.name }}</a> guidance explains how to fix the issue:</p>
       {{ govukInsetText({
         html: issueSpecificationInsetHtml
       }) }}
