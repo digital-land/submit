@@ -49,29 +49,36 @@ export async function getRequestDataMiddleware (req, res, next) {
 }
 
 export async function setupTemplate (req, res, next) {
-  if (req.locals.requestData.isFailed()) {
-    if (req.locals.requestData.getType() === 'check_file') {
-      req.locals.template = failedFileRequestTemplate
+  try {
+    if (req.locals.requestData.isFailed()) {
+      if (req.locals.requestData.getType() === 'check_file') {
+        req.locals.template = failedFileRequestTemplate
+      } else {
+        req.locals.template = failedUrlRequestTemplate
+      }
+    } else if (req.locals.requestData.hasErrors()) {
+      req.locals.template = errorsTemplate
     } else {
-      req.locals.template = failedUrlRequestTemplate
+      req.locals.template = noErrorsTemplate
     }
-  } else if (req.locals.requestData.hasErrors()) {
-    req.locals.template = errorsTemplate
-  } else {
-    req.locals.template = noErrorsTemplate
+    req.locals.requestParams = req.locals.requestData.getParams()
+    next()
+  } catch (e) {
+    next(e, req, res, next)
   }
-  req.locals.requestParams = req.locals.requestData.getParams()
-  next()
 }
 
 export async function fetchResponseDetails (req, res, next) {
   try {
-    const responseDetails = req.locals.template === errorsTemplate
-      ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
-      : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
-    req.locals.responseDetails = responseDetails
-  } catch (error) {
-    return next(error, req, res, next)
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const responseDetails = req.locals.template === errorsTemplate
+        ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
+        : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
+      req.locals.responseDetails = responseDetails
+    }
+  } catch (e) {
+    next(e, req, res, next)
+    return
   }
   next()
 }
@@ -119,22 +126,30 @@ export async function setupTableParams (req, res, next) {
 }
 
 export async function setupErrorSummary (req, res, next) {
-  if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-    req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
-      return {
-        text: message,
-        href: ''
-      }
-    })
+  try {
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
+        return {
+          text: message,
+          href: ''
+        }
+      })
+    }
+    next()
+  } catch (error) {
+    next(error, req, res, next)
   }
-  next()
 }
 
 export async function setupError (req, res, next) {
-  if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
-    req.locals.error = req.locals.requestData.getError()
+  try {
+    if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
+      req.locals.error = req.locals.requestData.getError()
+    }
+    next()
+  } catch (error) {
+    next(error, req, res, next)
   }
-  next()
 }
 
 export default ResultsController
