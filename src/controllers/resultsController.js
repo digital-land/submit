@@ -151,6 +151,5 @@ export async function setupError (req, res, next) {
     next(error, req, res, next)
   }
 }
-}
 
 export default ResultsController
