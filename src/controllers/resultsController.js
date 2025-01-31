@@ -54,7 +54,7 @@ export async function getRequestDataMiddleware (req, res, next) {
   }
 }
 
-export async function setupTemplate (req, res, next) {
+export function setupTemplate (req, res, next) {
   try {
     if (req.locals.requestData.isFailed()) {
       if (req.locals.requestData.getType() === 'check_file') {
@@ -87,7 +87,7 @@ export async function fetchResponseDetails (req, res, next) {
   next()
 }
 
-export async function setupTableParams (req, res, next) {
+export function setupTableParams (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.responseDetails
     let rows = responseDetails.getRowsWithVerboseColumns(req.locals.requestData.hasErrors())
@@ -129,7 +129,7 @@ export async function setupTableParams (req, res, next) {
   next()
 }
 
-export async function setupErrorSummary (req, res, next) {
+export function setupErrorSummary (req, res, next) {
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
       req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
@@ -145,7 +145,7 @@ export async function setupErrorSummary (req, res, next) {
   }
 }
 
-export async function setupError (req, res, next) {
+export function setupError (req, res, next) {
   try {
     if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
       req.locals.error = req.locals.requestData.getError()
