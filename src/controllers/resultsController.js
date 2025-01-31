@@ -24,7 +24,7 @@ class ResultsController extends PageController {
       Object.assign(req.form.options, req.locals)
       super.locals(req, res, next)
     } catch (error) {
-      next(error, req, res, next)
+      next(error)
     }
   }
 
@@ -44,7 +44,7 @@ export async function getRequestDataMiddleware (req, res, next) {
     }
     next()
   } catch (error) {
-    next(error, req, res, next)
+    next(error)
   }
 }
 
@@ -64,7 +64,7 @@ export async function setupTemplate (req, res, next) {
     req.locals.requestParams = req.locals.requestData.getParams()
     next()
   } catch (e) {
-    next(e, req, res, next)
+    next(e)
   }
 }
 
@@ -77,7 +77,7 @@ export async function fetchResponseDetails (req, res, next) {
       req.locals.responseDetails = responseDetails
     }
   } catch (e) {
-    next(e, req, res, next)
+    next(e)
     return
   }
   next()
@@ -137,7 +137,7 @@ export async function setupErrorSummary (req, res, next) {
     }
     next()
   } catch (error) {
-    next(error, req, res, next)
+    next(error)
   }
 }
 
@@ -148,7 +148,7 @@ export async function setupError (req, res, next) {
     }
     next()
   } catch (error) {
-    next(error, req, res, next)
+    next(error)
   }
 }
 
