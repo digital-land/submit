@@ -30,15 +30,14 @@
         },
         value: {
           text: values['lpa']
+        }
+      },
+            {
+        key: {
+          text: "Dataset"
         },
-        actions: {
-          items: [
-          {
-            href: "/submit-endpoint/lpa-details",
-            text: "Change",
-            visuallyHiddenText: "local planning authority"
-          }
-          ]
+        value: {
+          text: values['dataset'] | datasetSlugToReadableName
         }
       },
       {
@@ -77,24 +76,7 @@
       },
       {
         key: {
-          text: "Dataset"
-        },
-        value: {
-          text: values['dataset'] | datasetSlugToReadableName
-        },
-        actions: {
-          items: [
-          {
-            href: "/submit-endpoint/choose-dataset",
-            text: "Change",
-            visuallyHiddenText: "dataset"
-          }
-          ]
-        }
-      },
-      {
-        key: {
-          text: "Dataset URL"
+          text: "Endpoint URL"
         },
         value: {
           text: values['endpoint-url']
@@ -104,14 +86,14 @@
           {
             href: "/submit-endpoint/dataset-details",
             text: "Change",
-            visuallyHiddenText: "dataset URL"
+            visuallyHiddenText: "endpoint URL"
           }
           ]
         }
       },
       {
         key: {
-          text: "Documentation URL"
+          text: "Webpage URL"
         },
         value: {
           text: values['documentation-url']
@@ -121,7 +103,7 @@
           {
             href: "/submit-endpoint/dataset-details",
             text: "Change",
-            visuallyHiddenText: "documentation URL"
+            visuallyHiddenText: "webpage URL"
           }
           ]
         }
@@ -131,7 +113,7 @@
           text: "Dataset provided under Open Government Licence?"
         },
         value: {
-          text: "True" if values['hasLicence'] == "true" else "False"
+          text: "Yes" if values['hasLicence'] == "true" else "No"
         },
         actions: {
           items: [
@@ -148,17 +130,17 @@
     }) }}
 
     <h2 class="govuk-heading-m">
-      If this looks correct you can submit your dataset
+      Now submit your dataset
     </h2>
 
     <p>
-      Check everything above is correct and click below to submit your dataset.
+      By submitting this dataset you are confirming that, to the best of your knowledge, the details you are providing are correct.
     </p>
 
     <form method="post" novalidate>
 
       {{ govukButton({
-        text: "Submit dataset"
+        text: "Accept and submit"
       }) }}
 
     </form>

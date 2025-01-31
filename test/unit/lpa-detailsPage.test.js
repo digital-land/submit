@@ -12,24 +12,10 @@ describe('Lpa-details View', () => {
   const htmlNoErrors = nunjucks.render('lpa-details.html', params)
 
   runGenericPageTests(htmlNoErrors, {
-    pageTitle: 'Enter LPA details - Submit and update your planning data'
+    pageTitle: 'What are your contact details? - Submit and update your planning data'
   })
 
   describe('validation errors', () => {
-    it('should display an error message when the lpa field is empty', () => {
-      const params = {
-        errors: {
-          lpa: {
-            type: 'required'
-          }
-        }
-      }
-
-      const html = nunjucks.render('lpa-details.html', params)
-
-      testValidationErrorMessage(html, 'lpa', 'Enter the name of your local planning authority')
-    })
-
     it('should display an error message when the name field is empty', () => {
       const params = {
         errors: {

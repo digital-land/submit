@@ -5,6 +5,9 @@ export default {
   lpa: {
     validate: ['required']
   },
+  orgId: {
+    validate: ['required']
+  },
   name: {
     validate: ['required']
   },

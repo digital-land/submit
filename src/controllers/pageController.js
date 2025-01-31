@@ -33,7 +33,7 @@ function wizardBackLink (currentUrl, deepLinkInfo) {
  * https://github.com/UKHomeOffice/passports-form-wizard/wiki/HMPO%20Forms%20Flow.pdf
  */
 class PageController extends Controller {
-  checkToolDeepLinkSessionKey = 'check-tool-deep-link'
+  sessionKey = 'deep-link-session-key'
 
   get (req, res, next) {
     logPageView(this.options.route, req.sessionID, req.ip)
@@ -43,10 +43,13 @@ class PageController extends Controller {
   locals (req, res, next) {
     try {
       let backLink
-      const deepLinkInfo = req?.sessionModel?.get(this.checkToolDeepLinkSessionKey)
+      const deepLinkInfo = req?.sessionModel?.get(this.sessionKey)
       if (deepLinkInfo) {
         req.form.options.deepLink = deepLinkInfo
+        req.form.options.dataset = deepLinkInfo.dataset
         req.form.options.datasetName = deepLinkInfo.datasetName
+        req.form.options.lpa = deepLinkInfo.lpa
+        req.form.options.orgId = deepLinkInfo.orgId
         backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
       }
 

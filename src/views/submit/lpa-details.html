@@ -5,7 +5,7 @@
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 {% set serviceType = 'Submit' %}
-{% set pageName = 'Enter LPA details' %}
+{% set pageName = "What are your contact details?" %}
 
 {% block pageTitle %}
   {% if errors | length %}
@@ -15,11 +15,24 @@
   {% endif %}
 {% endblock %}
 
+{% set pageHeader %}
+<span class="govuk-caption-l">{{ options.lpa }} — {{ options.datasetName }}</span>
+<h1 class="govuk-heading-l">
+  {{ pageName }}
+</h1>
+{% endset %}
+
 {% block beforeContent %}
-{{ govukBackLink({
-  text: "Back",
-  href: "javascript:window.history.back()"
-}) }}
+  {% set backLinkText %}
+    Back to {{ options.datasetName }} overview
+  {% endset %}
+  {% set backLinkHref %}
+    /organisations/{{options.orgId | urlencode | safe}}/{{options.dataset | lower | urlencode | safe}}/get-started
+  {% endset %}
+  {{ govukBackLink({
+    text: backLinkText,
+    href: backLinkHref
+  }) }}
 {% endblock %}
 
 {% block content %}
@@ -34,31 +47,13 @@
       }) }}
     {% endif %}
 
-    <h1 class="govuk-heading-l">
-      {{pageName}}
-    </h1>
+    {{ pageHeader | safe }}
 
     <form novalidate method="post">
 
-      {{ xGovukAutocomplete({
-        id: "lpa",
-        name: "lpa",
-        allowEmpty: false,
-        label: {
-          classes: "govuk-label--m",
-          isPageHeading: false,
-          text: "Choose your local planning authority"
-        },
-        items: options.localAuthorities,
-        errorMessage: {
-          text: 'lpa' | validationMessageLookup(errors['lpa'].type) 
-        } if 'lpa' in errors,
-        value: values.lpa
-      }) }}
-
       {{ govukInput({
         label: {
-          text: "Full name",
+          text: "Your full name",
           classes: "govuk-label--m",
           isPageHeading: false
         },
@@ -74,7 +69,7 @@
 
       {{ govukInput({
         label: {
-          text: "Email address",
+          text: "Work email address",
           classes: "govuk-label--m",
           isPageHeading: false
         },
