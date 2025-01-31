@@ -1,11 +1,11 @@
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import prettifyColumnName from '../filters/prettifyColumnName.js'
+import { fetchMany } from '../middleware/middleware.builders.js'
 
 const failedFileRequestTemplate = 'results/failedFileRequest'
 const failedUrlRequestTemplate = 'results/failedUrlRequest'
-const errorsTemplate = 'results/errors'
-const noErrorsTemplate = 'results/no-errors'
+const resultsTemplate = 'results/results'
 
 class ResultsController extends PageController {
   /* Custom middleware */
@@ -16,6 +16,12 @@ class ResultsController extends PageController {
     this.use(fetchResponseDetails)
     this.use(setupTableParams)
     this.use(setupErrorSummary)
+    this.use(getIssueTypesWithQualityCriteriaLevels)
+    this.use(extractIssuesFromResults)
+    this.use(addQualityCriteriaLevelsToIssues)
+    this.use(aggrogateIssues)
+    this.use(getBlockingTasks)
+    this.use(getNonBlockingIssues)
     this.use(setupError)
   }
 
@@ -56,10 +62,8 @@ export function setupTemplate (req, res, next) {
       } else {
         req.locals.template = failedUrlRequestTemplate
       }
-    } else if (req.locals.requestData.hasErrors()) {
-      req.locals.template = errorsTemplate
     } else {
-      req.locals.template = noErrorsTemplate
+      req.locals.template = resultsTemplate
     }
     req.locals.requestParams = req.locals.requestData.getParams()
     next()
@@ -71,7 +75,7 @@ export function setupTemplate (req, res, next) {
 export async function fetchResponseDetails (req, res, next) {
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-      const responseDetails = req.locals.template === errorsTemplate
+      const responseDetails = req.locals.template === resultsTemplate
         ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
         : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
       req.locals.responseDetails = responseDetails
@@ -150,6 +154,117 @@ export function setupError (req, res, next) {
   } catch (error) {
     next(error)
   }
+}
+
+export const getIssueTypesWithQualityCriteriaLevels = fetchMany({
+  query: ({ req }) => 'select description, issue_type, name, severity, responsibility, quality_dimension, quality_criteria, quality_criteria_level from issue_type',
+  result: 'issueTypes'
+})
+
+export function extractIssuesFromResults (req, res, next) {
+  const { responseDetails } = req.locals
+
+  const issueLogsByRow = responseDetails.response.map(row => row.issue_logs)
+  const issues = issueLogsByRow.flat()
+
+  req.issues = issues
+
+  next()
+}
+
+export function addQualityCriteriaLevelsToIssues (req, res, next) {
+  const { issues, issueTypes } = req
+
+  req.issues = issues.map(issue => {
+    const issueType = issueTypes.find(issueType => issueType.issue_type === issue['issue-type'])
+    return {
+      ...issue,
+      quality_criteria_level: issueType.quality_criteria_level
+    }
+  })
+
+  next()
+}
+
+// aggrogate issues by issue_type into tasks
+export function aggrogateIssues (req, res, next) {
+  const { issues } = req
+
+  req.tasks = issues.reduce((tasks, issue) => {
+    const task = tasks.find(task => task.issueType === issue['issue-type'])
+    if (!task) {
+      tasks.push({
+        issueType: issue['issue-type'],
+        qualityCriteriaLevel: issue.quality_criteria_level,
+        count: 1
+      })
+    } else {
+      task.count++
+    }
+    return tasks
+  }, [])
+
+  next()
+}
+
+/* blocking tasks are those with a quality criteria level of 2
+ we should extract thease tasks then return them in the format
+  {
+    title: {
+      text: "Reference column missing"
+    },
+    href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-blocking",
+    status: {
+      tag: {
+        text: "Must fix",
+        classes: "govuk-tag--red"
+      }
+    }
+  }
+  ready to go into the govuk summary list component
+*/
+export function getBlockingTasks (req, res, next) {
+  const { tasks } = req
+
+  req.locals.blockingTasks = tasks
+    .filter(task => task.qualityCriteriaLevel === 2)
+    .map(task => {
+      return {
+        title: {
+          text: `You have ${task.count} ${task.issueType} issues`
+        },
+        href: '',
+        status: {
+          tag: {
+            text: 'Must fix',
+            classes: 'govuk-tag--red'
+          }
+        }
+      }
+    })
+
+  next()
+}
+
+export function getNonBlockingIssues (req, res, next) {
+  const { tasks } = req
+  req.locals.nonBlockingTasks = tasks
+    .filter(task => task.qualityCriteriaLevel === 3)
+    .map(task => {
+      return {
+        title: {
+          text: `You have ${task.count} ${task.issueType} issues`
+        },
+        href: '',
+        status: {
+          tag: {
+            text: 'Should fix',
+            classes: 'govuk-tag--blue'
+          }
+        }
+      }
+    })
+  next()
 }
 
 export default ResultsController
