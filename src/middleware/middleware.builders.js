@@ -39,8 +39,10 @@ const datasetOverride = (val, req) => {
     return 'digital-land'
   }
   if (val === FetchOptions.fromParams) {
-    logger.warn('no "dataset" in request params',
-      { types: types.App, endpoint: req.originalUrl, params: req.params })
+    if (!('dataset' in req.params)) {
+      logger.warn('no "dataset" in request params',
+        { types: types.App, endpoint: req.originalUrl, params: req.params })
+    }
     return req.params.dataset
   } else if (val === FetchOptions.performanceDb) {
     return 'performance'

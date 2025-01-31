@@ -60,6 +60,10 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
       window.GOVUKPrototypeComponents.initAll()
     </script>
     {{ super() }}
+    <script type="module">
+      import * as frontend from '/public/js/govuk-frontend.min.js'
+      frontend.createAll(frontend.Tabs)
+    </script>
     <script src="/public/js/application.bundle.js"></script>
 
     {% if googleAnalyticsMeasurementId and (cookiesAccepted == true or cookiesAccepted == 'true') %}

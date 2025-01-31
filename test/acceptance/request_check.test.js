@@ -43,6 +43,7 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTabs()
 
       const confirmationPage = await resultsPage.clickContinue()
       await confirmationPage.waitForPage()
@@ -76,6 +77,7 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageIsErrorsPage()
 
       await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTabs()
     })
 
     test('request check of a @url', async ({ page }) => {
@@ -104,6 +106,7 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTabs()
     })
 
     test('request check of an error @url', async ({ page }) => {
@@ -133,6 +136,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsErrorsPage()
       await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTabs()
     })
   })
 
@@ -168,6 +172,7 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTabs(false)
 
       const confirmationPage = await resultsPage.clickContinue()
       await confirmationPage.waitForPage()
@@ -203,6 +208,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsErrorsPage()
       await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTabs(false)
     })
 
     test('request check of a @url', async ({ page }) => {
@@ -234,6 +240,7 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTabs(false)
     })
 
     test('request check of an error @url', async ({ page }) => {
@@ -266,6 +273,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageIsErrorsPage()
       await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTabs(false)
     })
   })
 })

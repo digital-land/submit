@@ -118,7 +118,11 @@ export function setupTableParams (req, res, next) {
 
     req.locals.mappings = responseDetails.getFieldMappings()
     req.locals.geometries = responseDetails.getGeometries()
-    req.locals.pagination = responseDetails.getPagination(req.params.pageNumber)
+    // pagination is on the 'table' tab, so we want to ensure clicking those
+    // links takes us to a page with the table tab *selected*
+    const pageNumer = Number.parseInt(req.params.pageNumber)
+    const pagination = responseDetails.getPagination(pageNumer, { hash: '#table-tab' })
+    req.locals.pagination = pagination
     req.locals.id = req.params.id
     req.locals.lastPage = `/check/status/${req.params.id}`
   }

@@ -150,10 +150,17 @@ export default class ResponseDetails {
     return geometries
   }
 
-  getPagination (pageNumber) {
+  /**
+   * @param {number} pageNumber
+   * @param {{ hash?: string }} options hash option should include the '#' character
+   * @returns {{ totalResults: number, offset: number, limit: number, currentPage: number, nextPage: number | null, previousPage: number | null, totalPages: number, items: { href: string }[] } }
+   */
+  getPagination (pageNumber, opts = {}) {
     pageNumber = parseInt(pageNumber)
+    if (Number.isNaN(pageNumber)) pageNumber = 0
     const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
 
+    const hash = opts.hash ?? ''
     const items = pagination(totalPages, pageNumber + 1).map(item => {
       if (item === '...') {
         return {
@@ -163,7 +170,7 @@ export default class ResponseDetails {
       } else {
         return {
           number: item,
-          href: `/check/results/${this.id}/${parseInt(item) - 1}`,
+          href: `/check/results/${this.id}/${parseInt(item) - 1}${hash}`,
           current: pageNumber === parseInt(item) - 1
         }
       }
