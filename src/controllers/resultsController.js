@@ -183,9 +183,25 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
   next()
 }
 
-// if
-export function makeTasks (req, res, next) {
+// aggrogate issues by issue_type into tasks
+export function aggrogateIssues (req, res, next) {
+  const { issues } = req
 
+  req.tasks = issues.reduce((tasks, issue) => {
+    const task = tasks.find(task => task.issueType === issue['issue-type'])
+    if (!task) {
+      tasks.push({
+        issueType: issue['issue-type'],
+        qualityCriteriaLevel: issue.quality_criteria_level,
+        count: 1
+      })
+    } else {
+      task.count++
+    }
+    return tasks
+  }, [])
+
+  next()
 }
 
 export default ResultsController
