@@ -25,6 +25,13 @@ function wizardBackLink (currentUrl, deepLinkInfo) {
   return undefined
 }
 
+/**
+ * This class extends the Controller class from the hmpo-form-wizard library.
+ * For more information, please refer to the documentation:
+ * https://github.com/HMPO/hmpo-form-wizard
+ * Specifically, the controller lifecycle is outlined in this PDF:
+ * https://github.com/UKHomeOffice/passports-form-wizard/wiki/HMPO%20Forms%20Flow.pdf
+ */
 class PageController extends Controller {
   checkToolDeepLinkSessionKey = 'check-tool-deep-link'
 

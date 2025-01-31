@@ -8,90 +8,151 @@ const errorsTemplate = 'results/errors'
 const noErrorsTemplate = 'results/no-errors'
 
 class ResultsController extends PageController {
+  /* Custom middleware */
+  middlewareSetup () {
+    super.middlewareSetup()
+    this.use(getRequestDataMiddleware)
+    this.use(setupTemplate)
+    this.use(fetchResponseDetails)
+    this.use(setupTableParams)
+    this.use(setupErrorSummary)
+    this.use(setupError)
+  }
+
   async locals (req, res, next) {
     try {
-      const requestData = await getRequestData(req.params.id)
-      req.form.options.data = requestData
-
-      let responseDetails
-
-      if (!requestData.isComplete()) {
-        res.redirect(`/check/status/${req.params.id}`)
-        return
-      } else if (req.form.options.data.isFailed()) {
-        if (req.form.options.data.getType() === 'check_file') {
-          req.form.options.template = failedFileRequestTemplate
-        } else {
-          req.form.options.template = failedUrlRequestTemplate
-        }
-      } else if (req.form.options.data.hasErrors()) {
-        req.form.options.template = errorsTemplate
-        responseDetails = await requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
-      } else {
-        req.form.options.template = noErrorsTemplate
-        responseDetails = await requestData.fetchResponseDetails(req.params.pageNumber)
-      }
-
-      req.form.options.requestParams = requestData.getParams()
-
-      if (req.form.options.template !== failedFileRequestTemplate && req.form.options.template !== failedUrlRequestTemplate) {
-        let rows = responseDetails.getRowsWithVerboseColumns(requestData.hasErrors())
-
-        // remove any issues that aren't of severity error
-        rows = rows.map((row) => {
-          const { columns, ...rest } = row
-
-          const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
-            let error
-            if (value.error && value.error.severity === 'error') {
-              error = value.error
-            }
-            const newValue = {
-              ...value,
-              error
-            }
-            return [key, newValue]
-          }))
-
-          return {
-            ...rest,
-            columns: columnsOnlyErrors
-          }
-        })
-
-        req.form.options.tableParams = {
-          columns: responseDetails.getColumns().map(column => prettifyColumnName(column)),
-          rows,
-          fields: responseDetails.getFields()
-        }
-
-        req.form.options.errorSummary = requestData.getErrorSummary().map(message => {
-          return {
-            text: message,
-            href: ''
-          }
-        })
-        // pagination is on the 'table' tab, so we want to ensure clicking those
-        // links takes us to a page with the table tab *selected*
-        const pageNumer = Number.parseInt(req.params.pageNumber)
-        const pagination = responseDetails.getPagination(pageNumer, { hash: '#table-tab' })
-        req.form.options.mappings = responseDetails.getFieldMappings()
-        req.form.options.geometries = responseDetails.getGeometries()
-        req.form.options.pagination = pagination
-        req.form.options.id = req.params.id
-        req.form.options.lastPage = `/check/status/${req.params.id}`
-      } else {
-        req.form.options.error = requestData.getError()
-      }
-
+      Object.assign(req.form.options, req.locals)
       super.locals(req, res, next)
     } catch (error) {
-      next(error, req, res, next)
+      next(error)
     }
   }
 
   noErrors (req, res, next) {
     return !req.form.options.data.hasErrors()
+  }
+}
+
+export async function getRequestDataMiddleware (req, res, next) {
+  try {
+    req.locals = {
+      requestData: await getRequestData(req.params.id)
+    }
+    if (!req.locals.requestData.isComplete()) {
+      res.redirect(`/check/status/${req.params.id}`)
+      return
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+export function setupTemplate (req, res, next) {
+  try {
+    if (req.locals.requestData.isFailed()) {
+      if (req.locals.requestData.getType() === 'check_file') {
+        req.locals.template = failedFileRequestTemplate
+      } else {
+        req.locals.template = failedUrlRequestTemplate
+      }
+    } else if (req.locals.requestData.hasErrors()) {
+      req.locals.template = errorsTemplate
+    } else {
+      req.locals.template = noErrorsTemplate
+    }
+    req.locals.requestParams = req.locals.requestData.getParams()
+    next()
+  } catch (e) {
+    next(e)
+  }
+}
+
+export async function fetchResponseDetails (req, res, next) {
+  try {
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const responseDetails = req.locals.template === errorsTemplate
+        ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
+        : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
+      req.locals.responseDetails = responseDetails
+    }
+  } catch (e) {
+    next(e)
+    return
+  }
+  next()
+}
+
+export function setupTableParams (req, res, next) {
+  if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+    const responseDetails = req.locals.responseDetails
+    let rows = responseDetails.getRowsWithVerboseColumns(req.locals.requestData.hasErrors())
+
+    // remove any issues that aren't of severity error
+    rows = rows.map((row) => {
+      const { columns, ...rest } = row
+
+      const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
+        let error
+        if (value.error && value.error.severity === 'error') {
+          error = value.error
+        }
+        const newValue = {
+          ...value,
+          error
+        }
+        return [key, newValue]
+      }))
+
+      return {
+        ...rest,
+        columns: columnsOnlyErrors
+      }
+    })
+
+    req.locals.tableParams = {
+      columns: responseDetails.getColumns().map(column => prettifyColumnName(column)),
+      rows,
+      fields: responseDetails.getFields()
+    }
+
+    req.locals.mappings = responseDetails.getFieldMappings()
+    req.locals.geometries = responseDetails.getGeometries()
+    // pagination is on the 'table' tab, so we want to ensure clicking those
+    // links takes us to a page with the table tab *selected*
+    const pageNumer = Number.parseInt(req.params.pageNumber)
+    const pagination = responseDetails.getPagination(pageNumer, { hash: '#table-tab' })
+    req.locals.pagination = pagination
+    req.locals.id = req.params.id
+    req.locals.lastPage = `/check/status/${req.params.id}`
+  }
+  next()
+}
+
+export function setupErrorSummary (req, res, next) {
+  try {
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
+        return {
+          text: message,
+          href: ''
+        }
+      })
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+export function setupError (req, res, next) {
+  try {
+    if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
+      req.locals.error = req.locals.requestData.getError()
+    }
+    next()
+  } catch (error) {
+    next(error)
   }
 }
 

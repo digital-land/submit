@@ -7,7 +7,7 @@
 */
 
 import config from '../../config/index.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, logPageError, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { entryIssueGroups } from '../utils/utils.js'
@@ -74,7 +74,7 @@ export const prepareTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { tableParams, orgInfo, dataset, errorSummary, pagination, dataRange } = req
+  const { tableParams, orgInfo, dataset, errorSummary, pagination, dataRange, issueSpecification } = req
   const { issue_type: issueType } = req.params
 
   req.templateParams = {
@@ -84,7 +84,8 @@ export const prepareTemplateParams = (req, res, next) => {
     errorSummary,
     issueType,
     pagination,
-    dataRange
+    dataRange,
+    issueSpecification
   }
   next()
 }
@@ -122,6 +123,7 @@ export default [
   show404IfPageNumberNotInRange,
   getSetBaseSubPath(),
   getErrorSummaryItems,
+  getIssueSpecification,
   createPaginationTemplateParams,
   prepareTableParams,
   prepareTemplateParams,
