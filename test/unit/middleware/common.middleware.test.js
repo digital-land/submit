@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing } from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
+import { isValiError } from 'valibot'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -14,7 +15,7 @@ vi.mock('../../../src/services/datasette.js', () => ({
 
 describe('show404IfPageNumberNotInRange middleware', () => {
   const dataRange = {
-    maxPageNumber: 3
+    maxPageNumber: 3, minRow: 0, maxRow: 0, totalRows: 0, pageLength: 2, offset: 0
   }
 
   it('should not throw an error when the page number is within the range', () => {
@@ -37,7 +38,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
       expect(err.statusCode).toBe(404)
-      expect(err.message).toBe('page number not in range')
+      expect(err.message).toBe('page number 4 not in range [1, 3]')
     })
     show404IfPageNumberNotInRange(req, res, next)
   })
@@ -51,7 +52,7 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     const next = vi.fn((err) => {
       expect(err instanceof Error).toBe(true)
       expect(err.statusCode).toBe(404)
-      expect(err.message).toBe('page number not in range')
+      expect(err.message).toBe('page number 0 not in range [1, 3]')
     })
     show404IfPageNumberNotInRange(req, res, next)
   })
@@ -63,9 +64,10 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     }
     const res = {}
     const next = vi.fn()
-    show404IfPageNumberNotInRange(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+    try { show404IfPageNumberNotInRange(req, res, next) } catch (error) {
+      expect(isValiError(error)).toBe(true)
+    }
+    expect(next).not.toHaveBeenCalled()
   })
 
   it('should throw an error when dataRange.maxPageNumber is non numeric', () => {
@@ -77,9 +79,10 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     }
     const res = {}
     const next = vi.fn()
-    show404IfPageNumberNotInRange(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+    try { show404IfPageNumberNotInRange(req, res, next) } catch (error) {
+      expect(isValiError(error)).toBe(true)
+    }
+    expect(next).not.toHaveBeenCalled()
   })
 
   it('should throw an error when dataRange.maxPageNumber is undefined', () => {
@@ -91,9 +94,10 @@ describe('show404IfPageNumberNotInRange middleware', () => {
     }
     const res = {}
     const next = vi.fn()
-    show404IfPageNumberNotInRange(req, res, next)
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(new Error('invalid req.dataRange object'))
+    try { show404IfPageNumberNotInRange(req, res, next) } catch (error) {
+      expect(isValiError(error)).toBe(true)
+    }
+    expect(next).not.toHaveBeenCalled()
   })
 })
 
@@ -128,12 +132,13 @@ describe('createPaginationTemplateParams', () => {
   })
 
   it('handles invalid page numbers (negative)', () => {
+    const dataRange = {
+      maxPageNumber: 1, minRow: 0, maxRow: 0, totalRows: 0, pageLength: 2, offset: 0
+    }
     const req = {
       resultsCount: 100,
       urlSubPath: '/api/results/',
-      dataRange: {
-        pageLength: 10
-      },
+      dataRange,
       params: { pageNumber: -1 },
       parsedParams: { pageNumber: -1 }
     }
@@ -1383,5 +1388,74 @@ describe('preventIndexing middleware', () => {
     const res = { set: vi.fn() }
     preventIndexing(req, res, vi.fn())
     expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')
+  })
+
+  describe('getIssueSpecification', () => {
+    it('sets req.issueSpecification with the correct field specification', () => {
+      const req = {
+        params: { issue_field: 'field1' },
+        specification: {
+          fields: [
+            { field: 'field1', description: 'string' },
+            { field: 'field2', description: 'number' }
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toEqual({ field: 'field1', description: 'string' })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.issueSpecification to undefined if field is not found', () => {
+      const req = {
+        params: { issue_field: 'nonexistentField' },
+        specification: {
+          fields: [
+            { field: 'field1', description: 'string' },
+            { field: 'field2', description: 'number' }
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toBeUndefined()
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles empty fields array in specification', () => {
+      const req = {
+        params: { issue_field: 'field1' },
+        specification: {
+          fields: []
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toBeUndefined()
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles missing specification in req', () => {
+      const req = {
+        params: { issue_field: 'field1' }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toBeUndefined()
+      expect(next).toHaveBeenCalledTimes(1)
+    })
   })
 })
