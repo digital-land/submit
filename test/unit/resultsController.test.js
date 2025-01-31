@@ -212,7 +212,7 @@ describe('ResultsController Class Tests', () => {
 
     await controller.locals(req, res, next)
 
-    expect(next).toHaveBeenCalledWith(error, req, res, next)
+    expect(next).toHaveBeenCalledWith(error)
   })
 
   it('should correctly determine if there are no errors', () => {
