@@ -71,19 +71,7 @@
   
       {{ govukTaskList({
         idPrefix: "passed-checks",
-        items: [
-          {
-            title: {
-              text: "Found 50 rows"
-            },
-            status: {
-              tag: {
-                text: "Passed",
-                classes: "govuk-tag--green"
-              }
-            }
-          }
-        ]
+        items: options.passedChecks
       }) }}
     </div>
   </div>

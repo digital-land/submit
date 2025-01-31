@@ -20,8 +20,10 @@ class ResultsController extends PageController {
     this.use(extractIssuesFromResults)
     this.use(addQualityCriteriaLevelsToIssues)
     this.use(aggrogateIssues)
+    this.use(filterOutTasksByQualityCriterialLevel)
     this.use(getBlockingTasks)
     this.use(getNonBlockingIssues)
+    this.use(getPassedChecks)
     this.use(setupError)
   }
 
@@ -207,6 +209,13 @@ export function aggrogateIssues (req, res, next) {
   next()
 }
 
+export function filterOutTasksByQualityCriterialLevel (req, res, next) {
+  const { tasks } = req
+
+  req.tasks = tasks.filter(task => [2, 3].includes(task.qualityCriteriaLevel))
+  next()
+}
+
 /* blocking tasks are those with a quality criteria level of 2
  we should extract thease tasks then return them in the format
   {
@@ -259,11 +268,58 @@ export function getNonBlockingIssues (req, res, next) {
         status: {
           tag: {
             text: 'Should fix',
-            classes: 'govuk-tag--blue'
+            classes: 'govuk-tag--yellow'
           }
         }
       }
     })
+  next()
+}
+
+const makePassedCheck = (text) => {
+  return {
+    title: {
+      text
+    },
+    href: '',
+    status: {
+      tag: {
+        text: 'Passed',
+        classes: 'govuk-tag--green'
+      }
+    }
+  }
+}
+
+export function getPassedChecks (req, res, next) {
+  const { tasks } = req
+  const { responseDetails } = req.locals
+
+  const passedChecks = []
+
+  // add task complete for how many rows are in the table
+  const rowCount = responseDetails.getRows().length
+  if (rowCount > 0) {
+    passedChecks.push(makePassedCheck(`Found ${responseDetails.getRows().length} rows`))
+  }
+
+  // add task complete for no duplicate refs
+  if (tasks.findIndex(task => task.issueType === 'reference values are not unique') < 0) {
+    passedChecks.push(makePassedCheck('All rows have unique references'))
+  }
+
+  // add task complete for valid geoms
+  if (tasks.findIndex(task => task.issueType === 'invalid WKT') < 0) {
+    passedChecks.push(makePassedCheck('All rows have valid geometry'))
+  }
+
+  // add task complete for all data is valid
+  if (tasks.length === 0) {
+    passedChecks.push(makePassedCheck('All data is valid'))
+  }
+
+  req.locals.passedChecks = passedChecks
+
   next()
 }
 
