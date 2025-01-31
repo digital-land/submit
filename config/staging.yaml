@@ -11,3 +11,6 @@ redis: {
     port: 6379
 }
 url: 'https://publish.staging.digital-land.info/'
+features:
+  issueSpecificationGuidance:
+    enabled: true
