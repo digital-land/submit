@@ -1,213 +1,243 @@
-import ResultsController from '../../src/controllers/resultsController.js'
-import { describe, it, vi, expect, beforeEach } from 'vitest'
-import { initDatasetSlugToReadableNameFilter } from '../../src/utils/datasetSlugToReadableName.js'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupErrorSummary, setupTableParams, setupTemplate } from '../../src/controllers/resultsController'
+import { getRequestData } from '../../src/services/asyncRequestApi'
+import prettifyColumnName from '../../src/filters/prettifyColumnName'
+import PageController from '../../src/controllers/pageController'
 
-describe('ResultsController', () => {
-  vi.mock('@/services/asyncRequestApi.js')
+vi.mock('../../src/services/asyncRequestApi', () => ({
+  getRequestData: vi.fn()
+}))
 
-  let asyncRequestApi
-  let resultsController
+vi.mock('../../src/filters/prettifyColumnName', () => ({
+  default: vi.fn()
+}))
 
-  const req = {
-    params: { id: 'testId' },
-    form: { options: {} },
-    session: { template: 'template' },
-    sessionModel: {
-      get: vi.fn().mockImplementation(key => {
-        const mockData = {
-          dataset: 'Dataset',
-          formFields: {}
-          // Add other potential keys
-        }
-        return mockData[key]
-      })
-    }
-  }
+const mockRequest = () => ({
+  params: { id: '123', pageNumber: '1' },
+  locals: {},
+  form: { options: {} }
+})
 
-  beforeEach(async () => {
-    asyncRequestApi = await import('@/services/asyncRequestApi')
+const mockResponse = () => ({
+  redirect: vi.fn()
+})
 
-    resultsController = new ResultsController({
-      route: '/results'
-    })
+const mockNext = vi.fn()
 
-    await initDatasetSlugToReadableNameFilter()
+describe('Middleware Tests', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  describe('locals', () => {
-    it('should set the template to the errors template if the result has errors', async () => {
-      const mockDetails = {
-        getErrorSummary: () => ['error summary'],
-        getColumns: () => ['columns'],
-        getFields: () => ['fields'],
-        getFieldMappings: () => 'fieldMappings',
-        getRowsWithVerboseColumns: () => ['verbose-columns'],
-        getGeometries: () => ['geometries'],
-        getPagination: () => 'pagination'
-      }
+  describe('getRequestDataMiddleware', () => {
+    it('should fetch request data and set it in req.locals', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+      const mockData = { isComplete: vi.fn(() => true) }
 
-      const mockResult = {
-        isFailed: () => false,
-        getError: () => 'error',
-        hasErrors: () => true,
-        isComplete: () => true,
-        getParams: () => ('params'),
-        getId: () => 'fake_id',
-        fetchResponseDetails: () => mockDetails,
-        getErrorSummary: () => ['error summary']
-      }
+      getRequestData.mockResolvedValue(mockData)
 
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      await getRequestDataMiddleware(req, res, mockNext)
 
-      await resultsController.locals(req, {}, () => {})
-      expect(req.form.options.template).toBe('results/errors')
+      expect(getRequestData).toHaveBeenCalledWith(req.params.id)
+      expect(req.locals.requestData).toEqual(mockData)
+      expect(mockNext).toHaveBeenCalled()
     })
 
-    it('should set the template to the no-errors template if the result has no errors', async () => {
-      const mockDetails = {
-        getErrorSummary: () => ['error summary'],
-        getColumns: () => ['columns'],
-        getFields: () => ['fields'],
-        getFieldMappings: () => 'fieldMappings',
-        getRowsWithVerboseColumns: () => ['verbose-columns'],
-        getGeometries: () => ['geometries'],
-        getPagination: () => 'pagination'
-      }
+    it('should redirect if request data is incomplete', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+      const mockData = { isComplete: vi.fn(() => false) }
 
-      const mockResult = {
-        isFailed: () => false,
-        getError: () => 'error',
-        hasErrors: () => false,
-        isComplete: () => true,
-        getParams: () => ('params'),
-        getId: () => 'fake_id',
-        fetchResponseDetails: () => mockDetails,
-        getErrorSummary: () => ['error summary']
-      }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+      getRequestData.mockResolvedValue(mockData)
 
-      await resultsController.locals(req, {}, () => {})
-      expect(req.form.options.template).toBe('results/no-errors')
-    })
+      await getRequestDataMiddleware(req, res, mockNext)
 
-    it('should correctly set template variables', async () => {
-      const mockResult = {
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => 'params',
-        getErrorSummary: () => (['error summary']),
-
-        getColumns: () => (['columns']),
-        getRowsWithVerboseColumns: () => (['verbose-columns']),
-        getFields: () => (['fields']),
-        hasErrors: () => false,
-        fetchResponseDetails: () => ({
-          getRowsWithVerboseColumns: () => [
-            {
-              columns: {},
-              fields: ['mock field'],
-              values: ['mock value']
-            }
-          ],
-          getColumns: () => ['mock Columns'],
-          getFields: () => ['mock fields'],
-          getFieldMappings: () => ({ fields: 'geometries' }),
-          getGeometries: () => ['geometries'],
-          getPagination: () => 'pagination'
-        })
-      }
-
-      const res = { redirect: vi.fn() }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
-
-      await resultsController.locals(req, res, () => {})
-
-      expect(req.form.options.data).toBe(mockResult)
-      expect(req.form.options).toStrictEqual({
-        data: mockResult,
-        tableParams: {
-          columns: ['Mock Columns'],
-          fields: ['mock fields'],
-          rows: [{
-            columns: {},
-            fields: ['mock field'],
-            values: ['mock value']
-          }]
-        },
-        datasetName: req.sessionModel.get('dataset'),
-
-        errorSummary: [{ text: 'error summary', href: '' }],
-        mappings: { fields: 'geometries' },
-        geometries: ['geometries'],
-        pagination: 'pagination',
-        requestParams: 'params',
-        template: 'results/no-errors',
-        id: req.params.id,
-        lastPage: `/check/status/${req.params.id}`
-      })
-    })
-
-    it('should redirect to the status page if the result is not complete', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => false }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
-
-      const res = { redirect: vi.fn() }
-      await resultsController.locals(req, res, () => {})
       expect(res.redirect).toHaveBeenCalledWith(`/check/status/${req.params.id}`)
+      expect(mockNext).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('setupTemplate', () => {
+    it('should set the appropriate template based on request data state', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+
+      req.locals.requestData = {
+        isFailed: vi.fn(() => true),
+        getType: vi.fn(() => 'check_file'),
+        hasErrors: vi.fn(() => false),
+        getParams: vi.fn(() => ({}))
+      }
+
+      await setupTemplate(req, res, mockNext)
+
+      expect(req.locals.template).toEqual('results/failedFileRequest')
+      expect(mockNext).toHaveBeenCalled()
+    })
+  })
+
+  describe('fetchResponseDetails', () => {
+    it('should fetch response details and set it in req.locals', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+
+      req.locals.template = 'results/errors'
+      req.locals.requestData = {
+        fetchResponseDetails: vi.fn().mockResolvedValue({ data: 'mockData' })
+      }
+
+      await fetchResponseDetails(req, res, mockNext)
+
+      expect(req.locals.responseDetails).toEqual({ data: 'mockData' })
+      expect(mockNext).toHaveBeenCalled()
     })
 
-    it("should call next with a 404 error if the result wasn't found", async () => {
-      asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
-        throw new Error('Request not found', { message: 'Request not found', status: 404 })
+    it('should not fetch response details if the template indicates failure', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+
+      req.locals.template = 'results/failedFileRequest'
+
+      await fetchResponseDetails(req, res, mockNext)
+
+      expect(req.locals.responseDetails).toBeUndefined()
+      expect(mockNext).toHaveBeenCalled()
+    })
+  })
+
+  describe('setupTableParams', () => {
+    it('should set table params, mappings, geometries, and pagination in req.locals', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+
+      req.locals.template = 'results/no-errors'
+      req.locals.requestData = {
+        hasErrors: vi.fn(() => false)
+      }
+      req.locals.responseDetails = {
+        getRowsWithVerboseColumns: vi.fn(() => [{ columns: {}, data: 'rowData' }]),
+        getColumns: vi.fn(() => ['column1', 'column2']),
+        getFields: vi.fn(() => ['field1', 'field2']),
+        getFieldMappings: vi.fn(() => 'mockMappings'),
+        getGeometries: vi.fn(() => 'mockGeometries'),
+        getPagination: vi.fn(() => 'mockPagination')
+      }
+
+      prettifyColumnName.mockImplementation((col) => `Pretty ${col}`)
+
+      await setupTableParams(req, res, mockNext)
+
+      expect(req.locals.tableParams).toEqual({
+        columns: ['Pretty column1', 'Pretty column2'],
+        rows: [{ columns: {}, data: 'rowData' }],
+        fields: ['field1', 'field2']
       })
+      expect(req.locals.mappings).toEqual('mockMappings')
+      expect(req.locals.geometries).toEqual('mockGeometries')
+      expect(req.locals.pagination).toEqual('mockPagination')
+      expect(mockNext).toHaveBeenCalled()
+    })
+  })
 
-      const nextMock = vi.fn()
-      await resultsController.locals(req, {}, nextMock)
-      expect(nextMock).toHaveBeenCalledWith(new Error('Request not found', { message: 'Request not found', status: 404 }), req, {}, nextMock)
+  describe('setupErrorSummary', () => {
+    it('should set error summary in req.locals', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+
+      req.locals.template = 'results/errors'
+      req.locals.requestData = {
+        getErrorSummary: vi.fn(() => ['Error1', 'Error2'])
+      }
+
+      await setupErrorSummary(req, res, mockNext)
+
+      expect(req.locals.errorSummary).toEqual([
+        { text: 'Error1', href: '' },
+        { text: 'Error2', href: '' }
+      ])
+      expect(mockNext).toHaveBeenCalled()
+    })
+  })
+
+  describe('setupError', () => {
+    it('should set error in req.locals if the template indicates failure', async () => {
+      const req = mockRequest()
+      const res = mockResponse()
+
+      req.locals.template = 'results/failedFileRequest'
+      req.locals.requestData = { getError: vi.fn(() => 'mockError') }
+
+      await setupError(req, res, mockNext)
+
+      expect(req.locals.error).toEqual('mockError')
+      expect(mockNext).toHaveBeenCalled()
+    })
+  })
+})
+
+describe('ResultsController Class Tests', () => {
+  let controller
+  let req
+  let res
+
+  beforeEach(() => {
+    controller = new ResultsController({ route: '/results' })
+    req = mockRequest()
+    res = mockResponse()
+  })
+
+  it('should extend PageController', () => {
+    expect(controller).toBeInstanceOf(PageController)
+  })
+
+  it('should call super.locals and merge req.locals into req.form.options', async () => {
+    const next = vi.fn()
+    req.locals = { key: 'value' }
+
+    await controller.locals(req, res, next)
+
+    expect(req.form.options.key).toEqual('value')
+    expect(next).toHaveBeenCalled()
+  })
+
+  it('should handle errors in the locals method', async () => {
+    const next = vi.fn()
+    const error = new Error('Test Error')
+
+    // Mock the parent class's locals method to throw an error
+    vi.spyOn(PageController.prototype, 'locals').mockImplementation(() => {
+      throw error
     })
 
-    it('should call next with a 500 error if the result processing errored', async () => {
-      asyncRequestApi.getRequestData = vi.fn().mockImplementation(() => {
-        throw new Error('Unexpected error', { message: 'Unexpected error', status: 500 })
-      })
+    await controller.locals(req, res, next)
 
-      const nextMock = vi.fn()
-      await resultsController.locals(req, {}, nextMock)
-      expect(nextMock).toHaveBeenCalledWith(new Error('Unexpected error', { message: 'Unexpected error', status: 500 }), req, {}, nextMock)
-    })
+    expect(next).toHaveBeenCalledWith(error)
+  })
 
-    it('should set the template to the errors template if the result has errors', async () => {
-      const mockResult = { hasErrors: () => true, isFailed: () => false, isComplete: () => true }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+  it('should correctly determine if there are no errors', () => {
+    req.form.options = {
+      data: {
+        hasErrors: vi.fn(() => false)
+      }
+    }
 
-      await resultsController.locals(req, {}, () => {})
-      expect(req.form.options.template).toBe('results/errors')
-      expect(resultsController.noErrors(req)).toBe(false)
-    })
+    const result = controller.noErrors(req, res, mockNext)
 
-    it('should set the template to the no-errors template if the result has no errors', async () => {
-      const mockResult = { hasErrors: () => false, isFailed: () => false, isComplete: () => true }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+    expect(result).toBe(true)
+    expect(req.form.options.data.hasErrors).toHaveBeenCalled()
+  })
 
-      await resultsController.locals(req, {}, () => {})
-      expect(req.form.options.template).toBe('results/no-errors')
-      expect(resultsController.noErrors(req)).toBe(true)
-    })
+  it('should return false if there are errors', () => {
+    req.form.options = {
+      data: {
+        hasErrors: vi.fn(() => true)
+      }
+    }
 
-    it('should set the template to the failedFileRequest template if the result is failed for a file check', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_file' }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+    const result = controller.noErrors(req, res, mockNext)
 
-      await resultsController.locals(req, {}, () => {})
-      expect(req.form.options.template).toBe('results/failedFileRequest')
-    })
-
-    it('should set the template to the failedUrlRequest template if the result is failed for a url check', async () => {
-      const mockResult = { isFailed: () => true, hasErrors: () => false, isComplete: () => true, getType: () => 'check_url' }
-      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
-
-      await resultsController.locals(req, {}, () => {})
-      expect(req.form.options.template).toBe('results/failedUrlRequest')
-    })
+    expect(result).toBe(false)
+    expect(req.form.options.data.hasErrors).toHaveBeenCalled()
   })
 })
