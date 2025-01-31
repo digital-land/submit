@@ -96,32 +96,7 @@
   
       {{ govukTaskList({
         idPrefix: "must-fix",
-        items: [
-          {
-            title: {
-              text: "Reference column missing"
-            },
-            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-blocking",
-            status: {
-              tag: {
-                text: "Must fix",
-                classes: "govuk-tag--red"
-              }
-            }
-          },
-          {
-            title: {
-              text: "Geometry column missing"
-            },
-            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-blocking",
-            status: {
-              tag: {
-                text: "Must fix",
-                classes: "govuk-tag--red"
-              }
-            }
-          }
-        ]
+        items: options.blockingTasks
       }) }}
     </div>
   </div>
@@ -136,56 +111,7 @@
   
       {{ govukTaskList({
         idPrefix: "fix-later",
-        items: [
-          {
-            title: {
-              text: "4 rows have start-date fields that must be in YYYY-MM-DD format"
-            },
-            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
-            status: {
-              tag: {
-                text: "Needs fixing",
-                classes: "govuk-tag--yellow"
-              }
-            }
-          },
-          {
-            title: {
-              text: "2 rows have entry-date fields that must be in the past"
-            },
-            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
-            status: {
-              tag: {
-                text: "Needs fixing",
-                classes: "govuk-tag--yellow"
-              }
-            }
-          },
-          {
-            title: {
-              text: "documentation-url must be a valid URL"
-            },
-            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
-            status: {
-              tag: {
-                text: "Needs fixing",
-                classes: "govuk-tag--yellow"
-              }
-            }
-          },
-          {
-            title: {
-              text: "44 rows are missing document-url"
-            },
-            href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-non-blocking",
-            status: {
-              tag: {
-                text: "Needs fixing",
-                classes: "govuk-tag--yellow"
-              }
-            }
-          }
-        ]
+        items: options.nonBlockingTasks
       }) }}
     </div>
   </div>

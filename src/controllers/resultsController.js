@@ -19,6 +19,9 @@ class ResultsController extends PageController {
     this.use(getIssueTypesWithQualityCriteriaLevels)
     this.use(extractIssuesFromResults)
     this.use(addQualityCriteriaLevelsToIssues)
+    this.use(aggrogateIssues)
+    this.use(getBlockingTasks)
+    this.use(getNonBlockingIssues)
     this.use(setupError)
   }
 
@@ -201,6 +204,66 @@ export function aggrogateIssues (req, res, next) {
     return tasks
   }, [])
 
+  next()
+}
+
+/* blocking tasks are those with a quality criteria level of 2
+ we should extract thease tasks then return them in the format
+  {
+    title: {
+      text: "Reference column missing"
+    },
+    href: version_path +"/organisations/"+organisation.organisation+"/"+dataset.dataset+"/issue-blocking",
+    status: {
+      tag: {
+        text: "Must fix",
+        classes: "govuk-tag--red"
+      }
+    }
+  }
+  ready to go into the govuk summary list component
+*/
+export function getBlockingTasks (req, res, next) {
+  const { tasks } = req
+
+  req.locals.blockingTasks = tasks
+    .filter(task => task.qualityCriteriaLevel === 2)
+    .map(task => {
+      return {
+        title: {
+          text: `You have ${task.count} ${task.issueType} issues`
+        },
+        href: '',
+        status: {
+          tag: {
+            text: 'Must fix',
+            classes: 'govuk-tag--red'
+          }
+        }
+      }
+    })
+
+  next()
+}
+
+export function getNonBlockingIssues (req, res, next) {
+  const { tasks } = req
+  req.locals.nonBlockingTasks = tasks
+    .filter(task => task.qualityCriteriaLevel === 3)
+    .map(task => {
+      return {
+        title: {
+          text: `You have ${task.count} ${task.issueType} issues`
+        },
+        href: '',
+        status: {
+          tag: {
+            text: 'Should fix',
+            classes: 'govuk-tag--blue'
+          }
+        }
+      }
+    })
   next()
 }
 
