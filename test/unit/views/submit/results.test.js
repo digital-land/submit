@@ -1,7 +1,6 @@
-import { expect } from 'chai'
 import nunjucks from 'nunjucks'
 import { JSDOM } from 'jsdom'
-import { describe, it } from 'vitest'
+import { expect, describe, it } from 'vitest'
 import addFilters from '../../../../src/filters/filters'
 
 // Configure Nunjucks
@@ -125,6 +124,79 @@ describe('results.html', () => {
       const dom = new JSDOM(html)
       expect(dom.window.document.querySelector('button[type="submit"].govuk-button')).not.toBeNull()
       expect(dom.window.document.querySelector('button[type="submit"].govuk-button')?.textContent).toContain('Continue')
+    })
+  })
+
+  describe('tabbing functionality', () => {
+    it('should show both tabs when both have data', async () => {
+      const params = {
+        options: {
+          geometries: ['geometry1'],
+          tableParams: { rows: ['row1'] }
+        }
+      }
+      const html = await nunjucksEnv.render(resultsTemplatePath, params)
+      const dom = new JSDOM(html)
+
+      const mapTab = dom.window.document.getElementById('map-tab')
+      const tableTab = dom.window.document.getElementById('table-tab')
+
+      expect(mapTab).not.toBeNull()
+      expect(tableTab).not.toBeNull()
+    })
+
+    it('should only show map tab when only geometries exist', async () => {
+      const params = {
+        options: {
+          geometries: ['geometry1'],
+          tableParams: { rows: [] }
+        }
+      }
+      const html = await nunjucksEnv.render(resultsTemplatePath, params)
+      const dom = new JSDOM(html)
+
+      const mapTab = dom.window.document.getElementById('map-tab')
+      const tableTab = dom.window.document.getElementById('table-tab')
+
+      expect(mapTab).not.toBeNull()
+      expect(tableTab).toBeNull()
+    })
+
+    it('should only show table tab when only table data exists', async () => {
+      const params = {
+        options: {
+          geometries: undefined,
+          tableParams: { rows: ['row1'] }
+        }
+      }
+      const html = await nunjucksEnv.render(resultsTemplatePath, params)
+      const dom = new JSDOM(html, {
+        url: 'http://example.com' // need this to avoid localStorage is not available for opaque origins
+      })
+
+      const mapTab = dom.window.document.getElementById('map-tab')
+      const tableTab = dom.window.document.getElementById('table-tab')
+
+      expect(mapTab).toBeNull()
+      expect(tableTab).not.toBeNull()
+    })
+
+    it('should default to map tab when both tabs are present', async () => {
+      const params = {
+        options: {
+          geometries: ['geometry1'],
+          tableParams: { rows: ['row1'] }
+        }
+      }
+      const html = await nunjucksEnv.render(resultsTemplatePath, params)
+      const dom = new JSDOM(html)
+
+      const mapTab = dom.window.document.getElementById('map-tab')
+      const tableTab = dom.window.document.getElementById('table-tab')
+
+      // Check if map tab is active by default
+      expect(mapTab.classList.contains('govuk-tabs__panel--hidden')).to.equal(false)
+      expect(tableTab.classList.contains('govuk-tabs__panel--hidden')).to.equal(true)
     })
   })
 })
