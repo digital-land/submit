@@ -1,19 +1,20 @@
 import { describe, it, expect } from 'vitest'
-import RequestData from '../../src/models/requestData.js'
+import RequestData from '../../../../src/models/requestData.js'
 
 import nunjucks from 'nunjucks'
-import addFilters from '../../src/filters/filters'
+import addFilters from '../../../../src/filters/filters.js'
 import jsdom from 'jsdom'
 
-import errorResponse from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json'
-import errorResponseDetails from '../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors-details.json'
-import ResponseDetails from '../../src/models/responseDetails.js'
-import prettifyColumnName from '../../src/filters/prettifyColumnName.js'
+import errorResponse from '../../../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors.json'
+import errorResponseDetails from '../../../../docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete-errors-details.json'
+import ResponseDetails from '../../../../src/models/responseDetails.js'
+import prettifyColumnName from '../../../../src/filters/prettifyColumnName.js'
 
 const nunjucksEnv = nunjucks.configure([
   'src/views',
   'src/views/check',
   'src/views/submit',
+  'src/views/components',
   'node_modules/govuk-frontend/dist/',
   'node_modules/@x-govuk/govuk-prototype-components/'
 ], {
@@ -24,15 +25,23 @@ const nunjucksEnv = nunjucks.configure([
 
 addFilters(nunjucksEnv, { dataSubjects: {} })
 
-describe('no Errors Page', () => {
+describe('errors page', () => {
   it('renders the correct number of errors', () => {
     const requestData = new RequestData(errorResponse)
+
     const responseDetails = new ResponseDetails('id', errorResponseDetails, { totalResults: 3, offset: 0, limit: 50 }, requestData.getColumnFieldLog())
 
     requestData.response.pagination = {
       totalResults: 100,
       offset: 0,
       limit: 50
+    }
+
+    const summaryItem = (errorMessage) => {
+      return {
+        text: errorMessage,
+        href: ''
+      }
     }
 
     const params = {
@@ -43,18 +52,27 @@ describe('no Errors Page', () => {
           fields: responseDetails.getFields()
         },
         requestParams: requestData.getParams(),
-        errorSummary: requestData.getErrorSummary(),
+        errorSummary: requestData.getErrorSummary().map(summaryItem),
         mappings: responseDetails.getFieldMappings(),
         verboseRows: responseDetails.getRowsWithVerboseColumns(),
         pagination: responseDetails.getPagination(0)
-      },
-      errors: {}
+      }
     }
 
-    const html = nunjucks.render('results/no-errors.html', params)
+    const html = nunjucks.render('results/errors.html', params)
 
     const dom = new jsdom.JSDOM(html)
     const document = dom.window.document
+
+    // error summary
+    const errorSummary = document.querySelector('.govuk-list')
+    expect(errorSummary).not.toBeNull()
+    const errorItems = errorSummary.children
+    expect(errorItems.length).toEqual(6)
+
+    params.options.errorSummary.forEach((message, i) => {
+      expect(errorItems[i].textContent).toContain(message.text)
+    })
 
     // table
     const table = document.querySelector('.govuk-table')

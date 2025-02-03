@@ -76,7 +76,7 @@
   </div>  
 
   {% if options.passedChecks.length > 0 %}
-    <div class="govuk-grid-row">
+    <div class="govuk-grid-row" id="passed-checks">
       <div class="govuk-grid-column-two-thirds">
         <h2 class="govuk-heading-m">Data that passed checks</h2>
     
@@ -89,7 +89,7 @@
   {% endif %}
   
   {% if options.blockingTasks.length > 0 %}
-    <div class="govuk-grid-row">
+    <div class="govuk-grid-row" id="required-checks">
       <div class="govuk-grid-column-two-thirds">
         <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
     
@@ -104,7 +104,7 @@
   {% endif %}
   
   {% if options.nonBlockingTasks.length > 0 %}
-    <div class="govuk-grid-row">
+    <div class="govuk-grid-row" id="optional-checks">
       <div class="govuk-grid-column-two-thirds">
         <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
     
