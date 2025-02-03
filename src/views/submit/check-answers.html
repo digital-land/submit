@@ -3,6 +3,7 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'Check your answers' %}
@@ -17,6 +18,12 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds-from-desktop">
+    {% if options['errors'] %}
+      {{ govukErrorSummary({
+          titleText: "There was a problem with your submission",
+          errorList: options['errors']
+      }) }}
+    {% endif %}
 
     <h1 class="govuk-heading-xl">
       Check your answers before submitting your dataset
@@ -32,7 +39,7 @@
           text: values['lpa']
         }
       },
-            {
+      {
         key: {
           text: "Dataset"
         },
@@ -50,7 +57,7 @@
         actions: {
           items: [
           {
-            href: "/submit-endpoint/lpa-details",
+            href: "/submit/lpa-details",
             text: "Change",
             visuallyHiddenText: "full name"
           }
@@ -67,7 +74,7 @@
         actions: {
           items: [
           {
-            href: "/submit-endpoint/lpa-details",
+            href: "/submit/lpa-details",
             text: "Change",
             visuallyHiddenText: "email address"
           }
@@ -84,7 +91,7 @@
         actions: {
           items: [
           {
-            href: "/submit-endpoint/dataset-details",
+            href: "/submit/dataset-details",
             text: "Change",
             visuallyHiddenText: "endpoint URL"
           }
@@ -118,14 +125,14 @@
         actions: {
           items: [
           {
-            href: "/submit-endpoint/choose-dataset",
+            href: "/submit-endpoint/dataset-details",
             text: "Change",
             visuallyHiddenText: "dataset"
           }
           ]
         }
       }
-      
+
       ]
     }) }}
 

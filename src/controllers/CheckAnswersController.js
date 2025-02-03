@@ -1,8 +1,7 @@
 import PageController from './pageController.js'
-import notifyClient from '../services/mailClient.js'
 import config from '../../config/index.js'
-
-const dataManagementEmail = process.env.DATA_MANAGEMENT_EMAIL || config.email.dataManagementEmail
+import { attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
+import logger from '../utils/logger.js'
 
 class CheckAnswersController extends PageController {
   /**
@@ -16,76 +15,76 @@ class CheckAnswersController extends PageController {
    * @param {Function} next - The next middleware function.
    */
   async post (req, res, next) {
-    const result = await this.sendEmails(req, res, next)
-    for (const err of (result.errors ?? [])) {
-      console.error(err)
+    try {
+      const issue = await this.createJiraServiceRequest(req, res, next)
+
+      if (issue) {
+        req.sessionModel.set('reference', issue.issueKey)
+        req.sessionModel.set('errors', [])
+      } else {
+        req.sessionModel.set('errors', [{ text: 'Failed to create Jira issue.' }])
+
+        return res.redirect('/submit/check-answers') // Redirect on error
+      }
+    } catch (error) {
+      logger.error('CheckAnswersController.post(): Failed to create Jira issue', error)
+      req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
+
+      return res.redirect('/submit/check-answers') // Redirect on error
     }
 
     super.post(req, res, next)
   }
 
-  /**
-   * Attempts to send email notifications.
-   *
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
-   * @returns {Promise<{} | {errors: string[]}>}
-   */
-  async sendEmails (req, res, next) {
-    const name = req.sessionModel.get('name')
-    const email = req.sessionModel.get('email')
-    const organisation = req.sessionModel.get('lpa')
-    const dataset = req.sessionModel.get('dataset')
-    const documentationUrl = req.sessionModel.get('documentation-url')
-    const endpoint = req.sessionModel.get('endpoint-url')
-
-    const { RequestTemplateId, AcknowledgementTemplateId } =
-      config.email.templates
-
-    const personalisation = {
-      name,
-      email,
-      organisation,
-      endpoint,
-      'documentation-url': documentationUrl,
-      dataset
+  async createJiraServiceRequest (req, res, next) {
+    const data = {
+      name: req.sessionModel.get('name'),
+      email: req.sessionModel.get('email'),
+      organisationId: req.sessionModel.get('orgId'),
+      organisationName: req.sessionModel.get('lpa'),
+      dataset: req.sessionModel.get('dataset'),
+      documentationUrl: req.sessionModel.get('documentation-url'),
+      endpoint: req.sessionModel.get('endpoint-url')
     }
 
-    const [reqResult, ackResult] = await Promise.allSettled([
-      notifyClient.sendEmail(RequestTemplateId, dataManagementEmail, {
-        personalisation
-      }),
-      notifyClient.sendEmail(AcknowledgementTemplateId, email, {
-        personalisation
-      })
-    ])
+    const summary = `Dataset URL request: ${data.organisationName} for ${data.dataset}`
+    const description = `A new dataset request has been made by *${data.name}* from *${data.organisationName} (${data.organisationId})* for the dataset *${data.dataset}*.\n\n
 
-    const errors = []
-    if (reqResult.status === 'rejected') {
-      const msg = emailFailureMessage(RequestTemplateId, personalisation)
-      errors.push(msg)
-    }
-    if (ackResult.status === 'rejected') {
-      const msg = emailFailureMessage(AcknowledgementTemplateId, personalisation)
-      errors.push(msg)
+    *Details:*\n
+
+    - Name: ${data.name}\n
+    - Email: ${data.email}\n
+    - Organisation ID: ${data.organisationId}\n
+    - Organisation Name: ${data.organisationName}\n
+    - Dataset: ${data.dataset}\n
+    - Documentation URL: ${data.documentationUrl}\n
+    - Endpoint URL: ${data.endpoint}`
+
+    // Generate Jira service request
+    const response = await createCustomerRequest(summary, description, config.jira.requestTypeId)
+
+    if (response.error || !response.data) {
+      console.error('Failed to create Jira service request', response.error)
+      return null
     }
 
-    if (errors.length !== 0) {
-      return { errors }
+    // Attach CSV file to Jira issue
+    const dateNow = new Date().toISOString().split('T')[0]
+    const csv = [
+      ['organisation', 'pipelines', 'documentation-url', 'endpoint-url', 'start-date', 'licence'],
+      [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, 'ogl3']
+    ].map(row => row.join(',')).join('\n')
+
+    const file = new File([csv], `request-${data.organisationId}-${data.dataset}-${dateNow}.csv`, { type: 'text/csv' })
+    const attachmentResponse = await attachFileToIssue(response.data.issueKey, file)
+
+    if (attachmentResponse.error || !attachmentResponse.data) {
+      console.error('Failed to attach file to Jira issue', attachmentResponse.error)
+      return null
     }
-    return {}
+
+    return response.data
   }
-}
-
-/**
- *
- * @param {string} templateId
- * @param {{organisation: string, name: string, email: string}} metadata
- * @returns
- */
-function emailFailureMessage (templateId, { organisation, name, email }) {
-  return `Failed to send email template=${templateId} to (org: ${organisation}, name: ${name}, email: ${email}):`
 }
 
 export default CheckAnswersController
