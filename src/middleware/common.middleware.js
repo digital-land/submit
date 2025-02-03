@@ -244,7 +244,7 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   if (!datasetSpecification) {
     logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
-    return next(new Error('Dataset specification not found'))
+    return next(new MiddlewareError('Dataset specification not found', 404))
   }
   req.specification = datasetSpecification
   next()

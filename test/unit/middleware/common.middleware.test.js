@@ -4,6 +4,7 @@ import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
 import { isValiError } from 'valibot'
+import { MiddlewareError } from '../../../src/utils/errors.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -535,10 +536,12 @@ describe('pullOutDatasetSpecification', () => {
         json: JSON.stringify([])
       }
     }
-    const next = vi.fn()
+    const errors = []
+    const next = vi.fn().mockImplementation((val) => errors.push(val))
     pullOutDatasetSpecification(reqWithEmptySpecification, res, next)
     expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(expect.any(Error))
+    expect(next).toHaveBeenCalledWith(expect.any(MiddlewareError))
+    expect(errors[0].statusCode).toBe(404)
   })
 })
 
