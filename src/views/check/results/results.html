@@ -65,55 +65,77 @@
     </div>
   </div>
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h2 class="govuk-heading-m">Data that passed checks</h2>
   
-      {{ govukTaskList({
-        idPrefix: "passed-checks",
-        items: options.passedChecks
-      }) }}
+
+  {% if options.passedChecks.length > 0 %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-m">Data that passed checks</h2>
+    
+        {{ govukTaskList({
+          idPrefix: "passed-checks",
+          items: options.passedChecks
+        }) }}
+      </div>
     </div>
-  </div>
+  {% endif %}
   
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
-  
-      <p>You cannot submit your data to the platform until you fix these issues.</p>
-  
-      {{ govukTaskList({
-        idPrefix: "must-fix",
-        items: options.blockingTasks
-      }) }}
+  {% if options.blockingTasks.length > 0 %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
+    
+        <p>You cannot submit your data to the platform until you fix these issues.</p>
+    
+        {{ govukTaskList({
+          idPrefix: "must-fix",
+          items: options.blockingTasks
+        }) }}
+      </div>
     </div>
-  </div>
+  {% endif %}
   
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
-  
-      <p>You can submit your data with these issues but should fix them over time to improve the quality and usability of
-        the
-        data.</p>
-  
-      {{ govukTaskList({
-        idPrefix: "fix-later",
-        items: options.nonBlockingTasks
-      }) }}
+  {% if options.nonBlockingTasks.length > 0 %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
+    
+        <p>You can submit your data with these issues but should fix them over time to improve the quality and usability of
+          the
+          data.</p>
+    
+        {{ govukTaskList({
+          idPrefix: "fix-later",
+          items: options.nonBlockingTasks
+        }) }}
+      </div>
     </div>
-  </div>
+  {% endif %}
   
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <p>Fix the issues, then upload a new version of your data to check if it is ready to submit.</p>
-      
-      {{ govukButton({
-        text: "Upload a new version",
-        href: "/check/upload-method"
-      }) }}
+  {% if options.blockingTasks.length > 0 %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <p>Fix the issues, then upload a new version of your data to check if it is ready to submit.</p>
+        
+        {{ govukButton({
+          text: "Upload a new version",
+          href: "/check/upload-method"
+        }) }}
+      </div>
     </div>
-  </div>
+  {% else %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <a href="{{path_slug}}/choose-upload">Upload a new version</a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 {% endblock %}
 
 {% block scripts %}
