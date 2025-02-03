@@ -239,7 +239,7 @@ const makeTaskParam = (text, statusText, statusClasses) => {
 }
 
 export function getTotalRows (req, res, next) {
-  const { responseDetails } = req
+  const { responseDetails } = req.locals
   req.totalRows = responseDetails.getRows().length
   next()
 }
