@@ -2,6 +2,7 @@ import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import prettifyColumnName from '../filters/prettifyColumnName.js'
 import { fetchMany } from '../middleware/middleware.builders.js'
+import performanceDbApi from '../services/performanceDbApi.js'
 
 const failedFileRequestTemplate = 'results/failedFileRequest'
 const failedUrlRequestTemplate = 'results/failedUrlRequest'
@@ -21,6 +22,7 @@ class ResultsController extends PageController {
     this.use(addQualityCriteriaLevelsToIssues)
     this.use(aggrogateIssues)
     this.use(filterOutTasksByQualityCriterialLevel)
+    this.use(getTotalRows)
     this.use(getBlockingTasks)
     this.use(getNonBlockingIssues)
     this.use(getPassedChecks)
@@ -193,10 +195,11 @@ export function aggrogateIssues (req, res, next) {
   const { issues } = req
 
   req.tasks = issues.reduce((tasks, issue) => {
-    const task = tasks.find(task => task.issueType === issue['issue-type'])
+    const task = tasks.find(task => task.issueType === issue['issue-type'] && task.field === issue.field)
     if (!task) {
       tasks.push({
         issueType: issue['issue-type'],
+        field: issue.field,
         qualityCriteriaLevel: issue.quality_criteria_level,
         count: 1
       })
@@ -231,40 +234,56 @@ const makeTaskParam = (text, statusText, statusClasses) => {
   }
 }
 
+export function getTotalRows (req, res, next) {
+  const { responseDetails } = req
+  req.totalRows = responseDetails.getRows().length
+  next()
+}
+
 export function getBlockingTasks (req, res, next) {
-  const { tasks } = req
+  const { tasks, totalRows } = req
 
   req.locals.blockingTasks = tasks
     .filter(task => task.qualityCriteriaLevel === 2)
     .map(task => {
-      return makeTaskParam(`You have ${task.count} ${task.issueType} issues`, 'Must fix', 'govuk-tag--red')
+      const taskMessage = performanceDbApi.getTaskMessage({
+        issue_type: task.issueType,
+        num_issues: task.count,
+        rowCount: totalRows,
+        field: task.field
+      })
+      return makeTaskParam(taskMessage, 'Must fix', 'govuk-tag--red')
     })
 
   next()
 }
 
 export function getNonBlockingIssues (req, res, next) {
-  const { tasks } = req
+  const { tasks, totalRows } = req
   req.locals.nonBlockingTasks = tasks
     .filter(task => task.qualityCriteriaLevel === 3)
     .map(task => {
-      return makeTaskParam(`You have ${task.count} ${task.issueType} issues`, 'Should fix', 'govuk-tag--yellow')
+      const taskMessage = performanceDbApi.getTaskMessage({
+        issue_type: task.issueType,
+        num_issues: task.count,
+        rowCount: totalRows,
+        field: task.field
+      })
+      return makeTaskParam(taskMessage, 'Should fix', 'govuk-tag--yellow')
     })
   next()
 }
 
 export function getPassedChecks (req, res, next) {
-  const { tasks } = req
-  const { responseDetails } = req.locals
+  const { tasks, totalRows } = req
 
   const passedChecks = []
 
   const makePassedCheck = (text) => makeTaskParam(text, 'Passed', 'govuk-tag--green')
 
   // add task complete for how many rows are in the table
-  const rowCount = responseDetails.getRows().length
-  if (rowCount > 0) {
-    passedChecks.push(makePassedCheck(`Found ${responseDetails.getRows().length} rows`))
+  if (totalRows > 0) {
+    passedChecks.push(makePassedCheck(`Found ${totalRows} rows`))
   }
 
   // add task complete for no duplicate refs
