@@ -1,7 +1,7 @@
-import chooseDatasetController from '../../../controllers/chooseDatasetController.js'
 import LpaDetailsController from '../../../controllers/lpaDetailsController.js'
 import PageController from '../../../controllers/pageController.js'
 import CheckAnswersController from '../../../controllers/CheckAnswersController.js'
+import EndpointSubmissionFormDeepLinkController from '../../../controllers/endpointSubmissionFormDeepLinkController.js'
 
 const defaultParams = {
   entryPoint: false,
@@ -9,41 +9,43 @@ const defaultParams = {
 }
 
 export default {
-  '/': {
+  '/link': {
     ...defaultParams,
+    controller: EndpointSubmissionFormDeepLinkController,
+    next: [
+      'lpa-details'
+    ],
     entryPoint: true,
     resetJourney: true,
-    template: 'submit/start.html',
-    next: '/submit/lpa-details'
+    reset: true,
+    skip: true,
+    checkJourney: false
   },
   '/lpa-details': {
     ...defaultParams,
-    fields: ['lpa', 'name', 'email'],
-    next: 'choose-dataset',
-    controller: LpaDetailsController,
-    backLink: '/start'
-  },
-  '/choose-dataset': {
-    ...defaultParams,
-    fields: ['dataset'],
+    fields: ['name', 'email'],
     next: 'dataset-details',
-    controller: chooseDatasetController,
-    backLink: '/lpa-details'
+    controller: LpaDetailsController,
+    backLink: '/start',
+    checkJourney: false
   },
   '/dataset-details': {
     ...defaultParams,
     fields: ['endpoint-url', 'documentation-url', 'hasLicence'],
     next: 'check-answers',
-    backLink: '/choose-dataset'
+    checkJourney: false,
+    backLink: '/lpa-details'
   },
   '/check-answers': {
     ...defaultParams,
     controller: CheckAnswersController,
     next: 'confirmation',
+    checkJourney: false,
     backLink: '/dataset-details'
   },
   '/confirmation': {
     ...defaultParams,
+    checkJourney: false,
     template: 'submit/confirmation.html'
   }
 }

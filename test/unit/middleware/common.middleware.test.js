@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing } from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -1391,5 +1391,74 @@ describe('preventIndexing middleware', () => {
     const res = { set: vi.fn() }
     preventIndexing(req, res, vi.fn())
     expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')
+  })
+
+  describe('getIssueSpecification', () => {
+    it('sets req.issueSpecification with the correct field specification', () => {
+      const req = {
+        params: { issue_field: 'field1' },
+        specification: {
+          fields: [
+            { field: 'field1', description: 'string' },
+            { field: 'field2', description: 'number' }
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toEqual({ field: 'field1', description: 'string' })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.issueSpecification to undefined if field is not found', () => {
+      const req = {
+        params: { issue_field: 'nonexistentField' },
+        specification: {
+          fields: [
+            { field: 'field1', description: 'string' },
+            { field: 'field2', description: 'number' }
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toBeUndefined()
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles empty fields array in specification', () => {
+      const req = {
+        params: { issue_field: 'field1' },
+        specification: {
+          fields: []
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toBeUndefined()
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles missing specification in req', () => {
+      const req = {
+        params: { issue_field: 'field1' }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toBeUndefined()
+      expect(next).toHaveBeenCalledTimes(1)
+    })
   })
 })

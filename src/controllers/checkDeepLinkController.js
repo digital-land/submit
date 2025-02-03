@@ -41,7 +41,7 @@ function maybeSetReferrer (req, sessionData) {
  * and partially pre-populate the session with them,
  * then redirect the user to the "next" page in the wizard
  */
-class DeepLinkController extends PageController {
+class CheckDeepLinkController extends PageController {
   get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
@@ -58,7 +58,7 @@ class DeepLinkController extends PageController {
     req.sessionModel.set('data-subject', datasetInfo.dataSubject)
     const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, orgId, dataset, datasetName: datasetInfo.text }
     maybeSetReferrer(req, sessionData)
-    req.sessionModel.set(this.checkToolDeepLinkSessionKey, sessionData)
+    req.sessionModel.set(this.sessionKey, sessionData)
 
     this.#addHistoryStep(req, '/check/dataset')
 
@@ -80,4 +80,4 @@ class DeepLinkController extends PageController {
   }
 }
 
-export default DeepLinkController
+export default CheckDeepLinkController
