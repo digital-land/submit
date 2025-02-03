@@ -20,7 +20,7 @@ class ResultsController extends PageController {
     this.use(getIssueTypesWithQualityCriteriaLevels)
     this.use(extractIssuesFromResults)
     this.use(addQualityCriteriaLevelsToIssues)
-    this.use(aggrogateIssues)
+    this.use(aggregateIssues)
     this.use(filterOutTasksByQualityCriterialLevel)
     this.use(getTotalRows)
     this.use(getBlockingTasks)
@@ -198,8 +198,8 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
   next()
 }
 
-// aggrogate issues by issue_type into tasks
-export function aggrogateIssues (req, res, next) {
+// aggregate issues by issue_type into tasks
+export function aggregateIssues (req, res, next) {
   const { issues } = req
 
   req.tasks = issues.reduce((tasks, issue) => {
