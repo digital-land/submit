@@ -25,12 +25,17 @@
 
 {% block content %}
 
+{% set pageHeader %}
+<span class="govuk-caption-l">{{ options.lpa }} — {{ options.datasetName }}</span>
+<h1 class="govuk-heading-l">
+  {{ pageName }}
+</h1>
+{% endset %}
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <h1 class="govuk-heading-l">
-      {{ pageName }}
-    </h1>
+    {{ pageHeader | safe }}
 
     <form class="form" method="post">
 
@@ -47,6 +52,9 @@
           classes: "govuk-label--m",
           isPageHeading: false
         },
+        hint: {
+          text: "The location of your data through an API or CSV file"
+        },
         id: "endpoint-url",
         name: "endpoint-url",
         classes: "govuk-!-width-three-quarters",
@@ -58,12 +66,12 @@
 
       {{ govukInput({
         label: {
-          text: "Documentation URL",
+          text: "Webpage URL",
           classes: "govuk-label--m",
           isPageHeading: false
         },
         hint: {
-          text: "Publicly accessible page on your website with information about the data"
+          text: "The URL of the page on your website where the API or CSV file is located"
         },
         id: "documentation-url",
         name: "documentation-url",

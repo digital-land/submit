@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import DeepLinkController from '../../src/controllers/deepLinkController.js'
+import EndpointSubmissionFormDeepLinkController from '../../src/controllers/endpointSubmissionFormDeepLinkController.js'
 
 function mockRequestObject () {
   const sessionModel = new Map()
@@ -15,39 +15,37 @@ function mockMiddlewareArgs (reqOpts) {
   }
 }
 
-describe('DeepLinkController', () => {
-  let deepLinkController
+describe('EndpointSubmissionFormDeepLinkController', () => {
+  let endpointSubmissionFormDeepLinkController
 
   beforeEach(() => {
-    deepLinkController = new DeepLinkController({
+    endpointSubmissionFormDeepLinkController = new EndpointSubmissionFormDeepLinkController({
       route: '/deep-link'
     })
   })
 
   describe('get()', () => {
-    it('should redirect to check tool start page when params invalid', async () => {
+    it('should throw a 400 error when params invalid', async () => {
       const { req, res, next } = mockMiddlewareArgs({ query: {} })
-      deepLinkController.get(req, res, next)
+      endpointSubmissionFormDeepLinkController.get(req, res, next)
 
-      expect(res.redirect).toHaveBeenCalledWith('/check')
-      expect(Array.from(req.sessionModel.keys())).toStrictEqual([])
-      expect(next).toBeCalledTimes(0)
+      const error = new Error('Missing dataset or orgName in query params')
+      error.status = 400
+
+      expect(next).toHaveBeenCalledWith(error)
     })
 
     it('should update session with deep link info', async () => {
       const query = { dataset: 'conservation-area', orgName: 'Some Org', orgId: 'some-org' }
       const { req, res, next } = mockMiddlewareArgs({ query })
 
-      deepLinkController.get(req, res, next)
+      endpointSubmissionFormDeepLinkController.get(req, res, next)
 
-      expect(req.sessionModel.get(deepLinkController.checkToolDeepLinkSessionKey)).toStrictEqual({
-        'data-subject': 'conservation-area',
-        orgName: 'Some Org',
-        orgId: 'some-org',
+      expect(req.sessionModel.get(endpointSubmissionFormDeepLinkController.sessionKey)).toStrictEqual({
+        lpa: 'Some Org',
         dataset: 'conservation-area',
-        datasetName: 'Conservation area'
+        orgId: 'some-org'
       })
-      expect(req.journeyModel.get('history').length).toBe(1)
       expect(next).toBeCalledTimes(1)
     })
   })
