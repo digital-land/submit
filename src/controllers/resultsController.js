@@ -185,9 +185,13 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
 
   req.issues = issues.map(issue => {
     const issueType = issueTypes.find(issueType => issueType.issue_type === issue['issue-type'])
-    return {
-      ...issue,
-      quality_criteria_level: issueType.quality_criteria_level
+    if (!issueType) {
+      return { ...issue, quality_criteria_level: null }
+    } else {
+      return {
+        ...issue,
+        quality_criteria_level: issueType.quality_criteria_level
+      }
     }
   })
 
