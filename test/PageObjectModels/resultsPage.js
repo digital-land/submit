@@ -51,6 +51,16 @@ export default class ResultsPage extends BasePage {
     expect(summarytext).toContain('3 start dates must be a real date')
   }
 
+  async expectPageHasTabs (jsEnabled = true) {
+    await expect(this.page.locator('#map-tab')).toBeVisible()
+
+    if (jsEnabled) {
+      await this.page.click('#tab_table-tab')
+    }
+    await expect(this.page.locator('#table-tab')).toBeVisible()
+    await expect(this.page.locator('#table-tab table')).toBeVisible()
+  }
+
   async selectLabel (label) {
     return await this.page.getByLabel(label).check()
   }
