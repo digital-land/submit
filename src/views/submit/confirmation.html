@@ -22,14 +22,15 @@ If there are any issues processing your data will we contact you on the email ad
 
 ## Give feedback
 
-[Give feedback about this service](/feedback) (takes 30 seconds).
+[Give feedback about this service]({{feedbackLink}}) (takes 30 seconds).
 
 {% endset %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukPanel({
-      titleHtml: pageName
+      titleHtml: pageName,
+      html: "Your reference number<br><strong>" + values['reference'] + "</strong>"
     }) }}
 
     {{content | govukMarkdown(headingsStartWith="l") | safe}}

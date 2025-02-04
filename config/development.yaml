@@ -14,3 +14,5 @@ url: 'https://publish.development.digital-land.info/'
 features:
   issueSpecificationGuidance:
     enabled: true
+  submitEndpointForm:
+    enabled: true
