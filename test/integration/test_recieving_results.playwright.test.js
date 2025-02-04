@@ -24,7 +24,7 @@ test('receiving a successful result', async ({ page }) => {
   await resultsPage.navigateToRequest('complete')
   await resultsPage.expectPageIsNoErrorsPage()
 
-  await expect(page.locator('#main-content')).toContainText(/You have \d+ row.* ready to publish/)
+  await expect(page.locator('#main-content')).toContainText('Your data has been checked')
 
   const tableValues = await getTableContents(page, 'govuk-table')
   const expectedTableValues = getTableValuesFromResponse(successResponse, successResponseDetails)
