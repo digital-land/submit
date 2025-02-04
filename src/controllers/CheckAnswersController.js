@@ -2,6 +2,7 @@ import PageController from './pageController.js'
 import config from '../../config/index.js'
 import { attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 class CheckAnswersController extends PageController {
   /**
@@ -27,7 +28,11 @@ class CheckAnswersController extends PageController {
         return res.redirect('/submit/check-answers') // Redirect on error
       }
     } catch (error) {
-      logger.error('CheckAnswersController.post(): Failed to create Jira issue', error)
+      logger.error('CheckAnswersController.post(): Failed to create Jira issue', {
+        errorMessage: error.message,
+        errorStack: error,
+        type: types.External
+      })
       req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
 
       return res.redirect('/submit/check-answers') // Redirect on error
@@ -64,7 +69,11 @@ class CheckAnswersController extends PageController {
     const response = await createCustomerRequest(summary, description, config.jira.requestTypeId)
 
     if (response.error || !response.data) {
-      console.error('Failed to create Jira service request', response.error)
+      logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to create Jira service request', {
+        errorMessage: response.error.message,
+        errorStack: response.error,
+        type: types.External
+      })
       return null
     }
 
@@ -79,7 +88,11 @@ class CheckAnswersController extends PageController {
     const attachmentResponse = await attachFileToIssue(response.data.issueKey, file)
 
     if (attachmentResponse.error || !attachmentResponse.data) {
-      console.error('Failed to attach file to Jira issue', attachmentResponse.error)
+      logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to attach file to Jira issue', {
+        errorMessage: attachmentResponse.error.message,
+        errorStack: attachmentResponse.error,
+        type: types.External
+      })
       return null
     }
 
