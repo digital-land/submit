@@ -252,7 +252,9 @@ export const CheckAnswers = v.strictObject({
     'endpoint-url': v.url(),
     'documentation-url': v.url(),
     hasLicence: NonEmptyString,
-    errors: v.optional(v.array(v.string()))
+    errors: v.optional(v.array(v.strictObject({
+      text: NonEmptyString
+    })))
   })
 })
 
