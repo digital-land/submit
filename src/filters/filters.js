@@ -10,6 +10,7 @@ import { datasetSlugToReadableName } from '../utils/datasetSlugToReadableName.js
 import { getDatasetGuidanceUrl } from './getDatasetConfig.js'
 import { schemaIssues } from './schemaIssues.js'
 import { endpointSubmissionFormToolDeepLink } from './endpointSubmissionFormDeepLink.js'
+import { isFeatureEnabled } from '../utils/features.js'
 
 /** maps dataset status (as returned by `fetchLpaOverview` middleware to a
  * CSS class used by the govuk-tag component
@@ -47,6 +48,7 @@ const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('endpointSubmissionFormToolDeepLink', endpointSubmissionFormToolDeepLink)
   nunjucksEnv.addFilter('getDatasetGuidanceUrl', getDatasetGuidanceUrl)
   nunjucksEnv.addFilter('schemaIssues', schemaIssues)
+  nunjucksEnv.addFilter('isFeatureEnabled', isFeatureEnabled)
 }
 
 export default addFilters

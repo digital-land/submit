@@ -75,6 +75,11 @@ class PageController extends Controller {
       logger.warn(`Failed to get readable dataset name from slug: ${dataset}`)
     }
 
+    const errors = req?.sessionModel?.get('errors')
+    if (errors) {
+      req.form.options.errors = errors
+    }
+
     super.locals(req, res, next)
   }
 }

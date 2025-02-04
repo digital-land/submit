@@ -8,11 +8,11 @@ import manage from '../routes/manage.js'
 import privacy from '../routes/privacy.js'
 import cookies from '../routes/cookies.js'
 import guidance from '../routes/guidance.js'
+import { isFeatureEnabled } from '../utils/features.js'
 
 export function setupRoutes (app) {
   app.use('/', manage)
   app.use('/check', checkFormWizard)
-  app.use('/submit', endpointSubmissionFormFormWisard)
   app.use('/organisations', organisations)
   app.use('/guidance', guidance)
 
@@ -22,4 +22,7 @@ export function setupRoutes (app) {
   app.use('/privacy-notice', privacy)
   app.use('/cookies', cookies)
   app.use('/health', health)
+
+  // feature flagged routes
+  if (isFeatureEnabled('submitEndpointForm')) app.use('/submit', endpointSubmissionFormFormWisard)
 }

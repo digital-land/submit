@@ -15,3 +15,5 @@ googleAnalytics: {
 features:
   issueSpecificationGuidance:
     enabled: true
+  submitEndpointForm:
+    enabled: true
