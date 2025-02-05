@@ -384,7 +384,7 @@ export const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   }
 
   // create a loop to generate the links
-  for (let offset = limit; offset < lastOffset; offset += limit) {
+  for (let offset = limit; offset <= lastOffset; offset += limit) {
     const newLink = new URL(geoJsonUrl)
     newLink.searchParams.set('offset', offset)
 
