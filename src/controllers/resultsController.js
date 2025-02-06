@@ -24,7 +24,7 @@ class ResultsController extends PageController {
     this.use(filterOutTasksByQualityCriterialLevel)
     this.use(getTotalRows)
     this.use(getBlockingTasks)
-    this.use(getNonBlockingIssues)
+    this.use(getNonBlockingTasks)
     this.use(getPassedChecks)
     this.use(setupError)
   }
@@ -267,7 +267,7 @@ export function getBlockingTasks (req, res, next) {
   getTasksByLevel(req, res, next, 2, 'red', 'Must fix')
 }
 
-export function getNonBlockingIssues (req, res, next) {
+export function getNonBlockingTasks (req, res, next) {
   getTasksByLevel(req, res, next, 3, 'yellow', 'Should fix')
 }
 
