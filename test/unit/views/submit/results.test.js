@@ -51,7 +51,7 @@ describe('results.html', () => {
     })
 
     it('should show blocking tasks when they exist', async () => {
-      const blockingTask = {
+      const task = {
         title: {
           text: 'task1'
         },
@@ -63,7 +63,7 @@ describe('results.html', () => {
           }
         }
       }
-      const params = { options: { blockingTasks: [blockingTask] } }
+      const params = { options: { tasksBlocking: [task] } }
       const html = await nunjucksEnv.render(resultsTemplatePath, params)
       const dom = new JSDOM(html)
       const blockingTasksElement = dom.window.document.getElementById('required-checks')
@@ -79,7 +79,7 @@ describe('results.html', () => {
     })
 
     it('should show non-blocking tasks when they exist', async () => {
-      const nonBlockingTasks = {
+      const nonBlockingTask = {
         title: {
           text: 'task1'
         },
@@ -92,7 +92,7 @@ describe('results.html', () => {
         }
       }
 
-      const params = { options: { nonBlockingTasks: [nonBlockingTasks] } }
+      const params = { options: { tasksNonBlocking: [nonBlockingTask] } }
       const html = await nunjucksEnv.render(resultsTemplatePath, params)
       const dom = new JSDOM(html)
       const nonBlockingTasksEl = dom.window.document.getElementById('optional-checks')
