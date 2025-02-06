@@ -173,16 +173,13 @@ export function extractIssuesFromResults (req, res, next) {
 
 export function addQualityCriteriaLevelsToIssues (req, res, next) {
   const { issues, issueTypes } = req
+  const issueTypeMap = new Map(issueTypes.map(it => [it.issue_type, it]))
 
   req.issues = issues.map(issue => {
-    const issueType = issueTypes.find(issueType => issueType.issue_type === issue['issue-type'])
-    if (!issueType) {
-      return { ...issue, quality_criteria_level: null }
-    } else {
-      return {
-        ...issue,
-        quality_criteria_level: issueType.quality_criteria_level
-      }
+    const issueType = issueTypeMap.get(issue['issue-type'])
+    return {
+      ...issue,
+      quality_criteria_level: issueType ? issueType.quality_criteria_level : null
     }
   })
 
@@ -193,10 +190,13 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
 export function aggregateIssues (req, res, next) {
   const { issues } = req
 
-  req.tasks = issues.reduce((tasks, issue) => {
-    const task = tasks.find(task => task.issueType === issue['issue-type'] && task.field === issue.field)
+  const taskMap = new Map()
+
+  issues.forEach((issue) => {
+    const key = `${issue['issue-type']}_${issue.field}`
+    const task = taskMap.get(key)
     if (!task) {
-      tasks.push({
+      taskMap.set(key, {
         issueType: issue['issue-type'],
         field: issue.field,
         qualityCriteriaLevel: issue.quality_criteria_level,
@@ -205,8 +205,9 @@ export function aggregateIssues (req, res, next) {
     } else {
       task.count++
     }
-    return tasks
-  }, [])
+  })
+
+  req.tasks = Array.from(taskMap.values())
 
   next()
 }
