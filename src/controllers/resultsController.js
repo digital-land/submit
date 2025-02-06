@@ -15,8 +15,8 @@ class ResultsController extends PageController {
     this.use(getRequestDataMiddleware)
     this.use(setupTemplate)
     this.use(fetchResponseDetails)
+    this.use(checkForErroredResponse)
     this.use(setupTableParams)
-    this.use(setupErrorSummary)
     this.use(getIssueTypesWithQualityCriteriaLevels)
     this.use(extractIssuesFromResults)
     this.use(addQualityCriteriaLevelsToIssues)
@@ -56,6 +56,13 @@ export async function getRequestDataMiddleware (req, res, next) {
   } catch (error) {
     next(error)
   }
+}
+
+export async function checkForErroredResponse (req, res, next) {
+  if (req.locals.requestData.response.error) {
+    return next(new Error(req.locals.requestData.response.error.message))
+  }
+  next()
 }
 
 export function setupTemplate (req, res, next) {
@@ -135,22 +142,6 @@ export function setupTableParams (req, res, next) {
     req.locals.lastPage = `/check/status/${req.params.id}`
   }
   next()
-}
-
-export function setupErrorSummary (req, res, next) {
-  try {
-    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-      req.locals.errorSummary = req.locals.requestData.getErrorSummary().map(message => {
-        return {
-          text: message,
-          href: ''
-        }
-      })
-    }
-    next()
-  } catch (error) {
-    next(error)
-  }
 }
 
 export function setupError (req, res, next) {
