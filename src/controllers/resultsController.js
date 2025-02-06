@@ -247,38 +247,28 @@ export function getTotalRows (req, res, next) {
   next()
 }
 
-export function getBlockingTasks (req, res, next) {
+export function getTasksByLevel (req, res, next, level, tagColor, tagText) {
   const { tasks, totalRows } = req
-
-  req.locals.blockingTasks = tasks
-    .filter(task => task.qualityCriteriaLevel === 2)
-    .map(task => {
-      const taskMessage = performanceDbApi.getTaskMessage({
-        issue_type: task.issueType,
-        num_issues: task.count,
-        rowCount: totalRows,
-        field: task.field
-      })
-      return makeTaskParam(taskMessage, 'Must fix', 'govuk-tag--red')
+  const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
+  const taskParams = filteredTasks.map(task => {
+    const taskMessage = performanceDbApi.getTaskMessage({
+      issue_type: task.issueType,
+      num_issues: task.count,
+      rowCount: totalRows,
+      field: task.field
     })
-
+    return makeTaskParam(taskMessage, tagText, `govuk-tag--${tagColor}`)
+  })
+  req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
   next()
 }
 
+export function getBlockingTasks (req, res, next) {
+  getTasksByLevel(req, res, next, 2, 'red', 'Must fix')
+}
+
 export function getNonBlockingIssues (req, res, next) {
-  const { tasks, totalRows } = req
-  req.locals.nonBlockingTasks = tasks
-    .filter(task => task.qualityCriteriaLevel === 3)
-    .map(task => {
-      const taskMessage = performanceDbApi.getTaskMessage({
-        issue_type: task.issueType,
-        num_issues: task.count,
-        rowCount: totalRows,
-        field: task.field
-      })
-      return makeTaskParam(taskMessage, 'Should fix', 'govuk-tag--yellow')
-    })
-  next()
+  getTasksByLevel(req, res, next, 3, 'yellow', 'Should fix')
 }
 
 export function getPassedChecks (req, res, next) {

@@ -88,7 +88,7 @@
     </div>
   {% endif %}
   
-  {% if options.blockingTasks.length > 0 %}
+  {% if options.tasksBlocking.length > 0 %}
     <div class="govuk-grid-row" id="required-checks">
       <div class="govuk-grid-column-two-thirds">
         <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
@@ -97,13 +97,13 @@
     
         {{ govukTaskList({
           idPrefix: "must-fix",
-          items: options.blockingTasks
+          items: options.tasksBlocking
         }) }}
       </div>
     </div>
   {% endif %}
   
-  {% if options.nonBlockingTasks.length > 0 %}
+  {% if options.tasksNonBlocking.length > 0 %}
     <div class="govuk-grid-row" id="optional-checks">
       <div class="govuk-grid-column-two-thirds">
         <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
@@ -114,7 +114,7 @@
     
         {{ govukTaskList({
           idPrefix: "fix-later",
-          items: options.nonBlockingTasks
+          items: options.tasksNonBlocking
         }) }}
       </div>
     </div>
