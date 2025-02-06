@@ -67,10 +67,22 @@ export default class ResultsPage extends BasePage {
   }
 
   async clickMapTab () {
-    await this.page.click('#tab_map-tab')
+    if (await isJsEnabled(this.page)) {
+      await this.page.click('#tab_map-tab')
+    } else {
+      await this.page.$('a.govuk-tabs__tab[href$="#map-tab"]')
+    }
   }
 
   async clickTableTab () {
-    await this.page.click('#tab_table-tab')
+    if (await isJsEnabled(this.page)) {
+      await this.page.click('#tab_table-tab')
+    } else {
+      await this.page.$('a.govuk-tabs__tab[href$="#table-tab"]')
+    }
   }
+}
+
+async function isJsEnabled (page) {
+  return await page.evaluate(() => typeof window !== 'undefined' && typeof document !== 'undefined')
 }
