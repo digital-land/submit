@@ -211,6 +211,13 @@ export function aggregateIssues (req, res, next) {
   next()
 }
 
+/*
+  Implementation detail:
+  the quality level is used to determine the severity of the issue.
+  Issues labeled as quality_level 2 are considered 'blocking'.
+  Issues labeled as quality_level 3 are considered 'non-blocking'.
+  Issues without a quality_level are excluded from the results, as these either have responsibility set to internal or severity of warning.
+*/
 export function filterOutTasksByQualityCriterialLevel (req, res, next) {
   const { tasks } = req
 
