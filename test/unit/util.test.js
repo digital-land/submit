@@ -1,6 +1,7 @@
 import * as util from '../../src/utils/utils.js'
 import { describe, it, expect, beforeAll, vi, afterAll } from 'vitest'
 import { isFeatureEnabled } from '../../src/utils/features.js'
+import * as table from '../../src/utils/table.js'
 
 const dataSubjects = {
   subject1: {
@@ -111,5 +112,14 @@ describe('isFeatureEnabled', () => {
     expect(isFeatureEnabled('my-feature', config)).toBe(true)
     expect(isFeatureEnabled('feature-2', config)).toBe(false)
     expect(isFeatureEnabled('other-feature', config)).toBe(false)
+  })
+})
+
+describe('table utils', () => {
+  it('puts the "name" and "reference" columns first', () => {
+    expect(table.splitByLeading({ fields: [] })).toStrictEqual({ leading: [], trailing: [] })
+    expect(table.splitByLeading({ fields: ['foo', 'bar'] })).toStrictEqual({ leading: [], trailing: ['foo', 'bar'] })
+    expect(table.splitByLeading({ fields: ['foo', 'name', 'bar'] })).toStrictEqual({ leading: ['name'], trailing: ['foo', 'bar'] })
+    expect(table.splitByLeading({ fields: ['foo', 'name', 'reference'] })).toStrictEqual({ leading: ['reference', 'name'], trailing: ['foo'] })
   })
 })

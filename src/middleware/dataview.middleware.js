@@ -2,6 +2,7 @@ import config from '../../config/index.js'
 import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchOrgInfo, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath, getSetDataRange, logPageError, fetchResources, fetchEntityIssueCounts, fetchEntryIssueCounts } from './common.middleware.js'
 import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
+import { splitByLeading } from '../utils/table.js'
 
 export const dataviewQueryParams = v.object({
   lpa: v.string(),
@@ -33,18 +34,7 @@ export const setRecordCount = (req, res, next) => {
 
 export const constructTableParams = (req, res, next) => {
   const { entities, uniqueDatasetFields } = req
-
-  const leadingFields = []
-  const trailngFields = []
-  for (const field of uniqueDatasetFields) {
-    if (field === 'reference') {
-      leadingFields.splice(0, 0, field)
-    } else if (field === 'name') {
-      leadingFields.push(field)
-    } else {
-      trailngFields.push(field)
-    }
-  }
+  const { leading: leadingFields, trailing: trailngFields } = splitByLeading({ fields: uniqueDatasetFields })
   const orderedDatasetFields = [...leadingFields, ...trailngFields]
   const columns = orderedDatasetFields
   const fields = orderedDatasetFields
