@@ -113,14 +113,16 @@ describe('map.js', () => {
 
     it('should correctly generate links when only partial pagination is present', async () => {
       global.fetch.mockResolvedValueOnce({
-        json: () => Promise.resolve({ links: { last: 'http://example.com/geojson?offset=50&limit=25' } })
+        json: () => Promise.resolve({ links: { last: 'http://example.com/geojson?limit=500&offset=1500' } })
       })
 
       const result = await generatePaginatedGeoJsonLinks('http://example.com/geojson')
 
       expect(result).toEqual([
         'http://example.com/geojson',
-        'http://example.com/geojson?offset=25'
+        'http://example.com/geojson?offset=500',
+        'http://example.com/geojson?offset=1000',
+        'http://example.com/geojson?offset=1500'
       ])
     })
   })
