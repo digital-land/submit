@@ -69,7 +69,7 @@ export default class ResultsPage extends BasePage {
   async clickMapTab () {
     await this.page.waitForTimeout(5000)
     if (await isJsEnabled(this.page)) {
-      await this.page.click('#map-tab')
+      await this.page.click('[id^="map-tab"]') // sometimes the id can be prefixed with tab_ so we use a starts with selector
     } else {
       await this.page.$('a.govuk-tabs__tab[href$="#map-tab"]')
     }
@@ -78,7 +78,7 @@ export default class ResultsPage extends BasePage {
   async clickTableTab () {
     await this.page.waitForTimeout(5000)
     if (await isJsEnabled(this.page)) {
-      await this.page.click('#table-tab')
+      await this.page.click('[id^="table-tab"]')
     } else {
       await this.page.$('a.govuk-tabs__tab[href$="#table-tab"]')
     }
