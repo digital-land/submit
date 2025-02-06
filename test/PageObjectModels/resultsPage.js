@@ -67,6 +67,7 @@ export default class ResultsPage extends BasePage {
   }
 
   async clickMapTab () {
+    await this.page.waitForTimeout(5000)
     if (await isJsEnabled(this.page)) {
       await this.page.click('#tab_map-tab')
     } else {
@@ -75,6 +76,7 @@ export default class ResultsPage extends BasePage {
   }
 
   async clickTableTab () {
+    await this.page.waitForTimeout(5000)
     if (await isJsEnabled(this.page)) {
       await this.page.click('#tab_table-tab')
     } else {
