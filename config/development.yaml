@@ -10,7 +10,7 @@ redis: {
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
     port: 6379
 }
-url: 'https://publish.development.digital-land.info/'
+url: 'https://submit.development.planning.data.gov.uk/'
 features:
   issueSpecificationGuidance:
     enabled: true

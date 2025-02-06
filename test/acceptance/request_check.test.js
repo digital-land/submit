@@ -7,25 +7,19 @@
 */
 
 import { test } from '@playwright/test'
-
-import StartPage from '../PageObjectModels/startPage'
-
-import { datasets } from '../PageObjectModels/datasetPage'
-import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
+import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
 test.setTimeout(300000)
+
+const navigateToCheck = async (page) => {
+  await page.goto('/check/link?dataset=article-4-direction&orgName=Adur%20District%20Council&orgId=local-authority%3AADU')
+  return new UploadMethodPage(page)
+}
 
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
     test('request check of a @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
@@ -50,14 +44,7 @@ test.describe('Request Check', () => {
     })
 
     test('request check of an error @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
@@ -81,14 +68,7 @@ test.describe('Request Check', () => {
     })
 
     test('request check of a @url', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
@@ -110,14 +90,7 @@ test.describe('Request Check', () => {
     })
 
     test('request check of an error @url', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
@@ -144,14 +117,7 @@ test.describe('Request Check', () => {
     test.use({ javaScriptEnabled: false })
 
     test('request check of a @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
@@ -179,14 +145,7 @@ test.describe('Request Check', () => {
     })
 
     test('request check of an error @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
@@ -212,14 +171,7 @@ test.describe('Request Check', () => {
     })
 
     test('request check of a @url', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
@@ -244,14 +196,7 @@ test.describe('Request Check', () => {
     })
 
     test('request check of an error @url', async ({ page }) => {
-      const startPage = new StartPage(page)
-
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
+      const uploadMethodPage = navigateToCheck(page)
 
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
