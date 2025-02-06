@@ -22,9 +22,11 @@ test('receiving a successful result', async ({ page }) => {
   const resultsPage = new ResultsPage(page)
 
   await resultsPage.navigateToRequest('complete')
-  await resultsPage.expectPageIsNoErrorsPage()
+  await resultsPage.expectPageHasTitle()
 
   await expect(page.locator('#main-content')).toContainText('Your data has been checked')
+
+  await resultsPage.clickTableTab()
 
   const tableValues = await getTableContents(page, 'govuk-table')
   const expectedTableValues = getTableValuesFromResponse(successResponse, successResponseDetails)
@@ -38,11 +40,9 @@ test('receiving a result with errors', async ({ page }) => {
   const resultsPage = new ResultsPage(page)
 
   await resultsPage.navigateToRequest('complete-errors')
-  await resultsPage.expectPageIsErrorsPage()
+  await resultsPage.expectPageHasTitle()
 
-  for (const error of errorResponse.response.data['error-summary']) {
-    await expect(page.locator('ul.govuk-list')).toContainText(error)
-  }
+  await resultsPage.clickTableTab()
 
   const tableValues = await getTableContents(page, 'govuk-table')
   const expectedTableValues = getTableValuesFromResponse(errorResponse, errorResponseDetails)
@@ -57,15 +57,6 @@ test('receiving a result with errors', async ({ page }) => {
       await expect(page.locator('.govuk-table').locator('tr').nth(parseInt(index) + 1)).toContainText(prettifyColumnName(issue))
     }
   }
-})
-
-test('receiving a result with a 404', async ({ page }) => {
-  const resultsPage = new ResultsPage(page)
-
-  await resultsPage.navigateToRequest('404')
-  await resultsPage.expectIsFailedPage()
-
-  // ToDo: Complete the rest of this once Alex's new page gets added
 })
 
 test('receiving a non existing result', async ({ page }) => {

@@ -11,12 +11,8 @@ export default class ResultsPage extends BasePage {
     super(page, '/check/results')
   }
 
-  async expectPageIsErrorsPage () {
-    expect(await this.page.locator('h1').innerText()).toEqual('Your data has errors')
-  }
-
-  async expectPageIsNoErrorsPage () {
-    expect(await this.page.locator('h1').innerText()).toMatch(/You have \d+ row.* ready to publish/)
+  async expectPageHasTitle () {
+    expect(await this.page.locator('h1').innerText()).toEqual('Your data has been checked')
   }
 
   async expectIsFailedPage () {
@@ -68,5 +64,13 @@ export default class ResultsPage extends BasePage {
   async clickContinue (skipVerification) {
     await super.clickContinue()
     return await super.verifyAndReturnPage(ConfirmationPage, skipVerification)
+  }
+
+  async clickMapTab () {
+    await this.page.click('#tab_map-tab')
+  }
+
+  async clickTableTab () {
+    await this.page.click('#tab_table-tab')
   }
 }

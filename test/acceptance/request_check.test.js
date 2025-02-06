@@ -42,7 +42,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs()
 
       const confirmationPage = await resultsPage.clickContinue()
@@ -74,7 +74,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTitle()
 
       await resultsPage.expectPageHasTableAndSummary()
       await resultsPage.expectPageHasTabs()
@@ -105,7 +105,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs()
     })
 
@@ -134,7 +134,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTableAndSummary()
       await resultsPage.expectPageHasTabs()
     })
@@ -171,7 +171,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs(false)
 
       const confirmationPage = await resultsPage.clickContinue()
@@ -206,7 +206,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTableAndSummary()
       await resultsPage.expectPageHasTabs(false)
     })
@@ -239,7 +239,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs(false)
     })
 
@@ -271,7 +271,7 @@ test.describe('Request Check', () => {
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTableAndSummary()
       await resultsPage.expectPageHasTabs(false)
     })
