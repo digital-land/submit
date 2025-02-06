@@ -34,8 +34,8 @@ export const setRecordCount = (req, res, next) => {
 
 export const constructTableParams = (req, res, next) => {
   const { entities, uniqueDatasetFields } = req
-  const { leading: leadingFields, trailing: trailngFields } = splitByLeading({ fields: uniqueDatasetFields })
-  const orderedDatasetFields = [...leadingFields, ...trailngFields]
+  const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: uniqueDatasetFields })
+  const orderedDatasetFields = [...leadingFields, ...trailingFields]
   const columns = orderedDatasetFields
   const fields = orderedDatasetFields
   const rows = entities.map(entity => ({
