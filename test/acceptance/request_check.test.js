@@ -9,7 +9,7 @@
 import { test } from '@playwright/test'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
-test.setTimeout(300000)
+// test.setTimeout(300000)
 
 const navigateToCheck = async (page) => {
   await page.goto('/check/link?dataset=article-4-direction&orgName=Adur%20District%20Council&orgId=local-authority%3AADU')
