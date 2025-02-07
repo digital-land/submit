@@ -69,29 +69,29 @@ test.describe('Request Check', () => {
       log('Confirmation page loaded')
     })
 
-    // test('request check of an error @datafile', async ({ page }) => {
-    //   const uploadMethodPage = await navigateToCheck(page)
+    test('request check of an error @datafile', async ({ page }) => {
+      const uploadMethodPage = await navigateToCheck(page)
 
-    //   await uploadMethodPage.waitForPage()
-    //   await uploadMethodPage.selectUploadMethod(uploadMethods.File)
-    //   const uploadFilePage = await uploadMethodPage.clickContinue()
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
 
-    //   await uploadFilePage.waitForPage()
-    //   await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
-    //   const statusPage = await uploadFilePage.clickContinue()
+      await uploadFilePage.waitForPage()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
+      const statusPage = await uploadFilePage.clickContinue()
 
-    //   await statusPage.waitForPage()
-    //   await statusPage.expectPageToBeProcessing()
-    //   await statusPage.expectPageToHaveFinishedProcessing()
-    //   const id = await statusPage.getIdFromUrl()
-    //   const resultsPage = await statusPage.clickContinue()
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
+      const resultsPage = await statusPage.clickContinue()
 
-    //   await resultsPage.waitForPage(id)
-    //   await resultsPage.expectPageHasTitle()
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageHasTitle()
 
-    //   await resultsPage.expectPageHasBlockingTasks()
-    //   await resultsPage.expectPageHasTabs()
-    // })
+      await resultsPage.expectPageHasBlockingTasks()
+      await resultsPage.expectPageHasTabs()
+    })
 
     // test/acceptance/request_check.test.js (72-92)
     test('request check of a @url', async ({ page }) => {
@@ -134,139 +134,139 @@ test.describe('Request Check', () => {
       console.log('Test completed')
     })
 
-    // test('request check of an error @url', async ({ page }) => {
-    //   const uploadMethodPage = await navigateToCheck(page)
+    test('request check of an error @url', async ({ page }) => {
+      const uploadMethodPage = await navigateToCheck(page)
 
-    //   await uploadMethodPage.waitForPage()
-    //   await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
-    //   const submitURLPage = await uploadMethodPage.clickContinue()
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
 
-    //   await submitURLPage.waitForPage()
-    //   await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv')
-    //   const statusPage = await submitURLPage.clickContinue()
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv')
+      const statusPage = await submitURLPage.clickContinue()
 
-    //   await statusPage.waitForPage()
-    //   await statusPage.expectPageToBeProcessing()
-    //   await statusPage.expectPageToHaveFinishedProcessing()
-    //   const id = await statusPage.getIdFromUrl()
-    //   const resultsPage = await statusPage.clickContinue()
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectPageToHaveFinishedProcessing()
+      const id = await statusPage.getIdFromUrl()
+      const resultsPage = await statusPage.clickContinue()
 
-    //   await resultsPage.waitForPage(id)
-    //   await resultsPage.expectPageHasTitle()
-    //   await resultsPage.expectPageHasBlockingTasks()
-    //   await resultsPage.expectPageHasTabs()
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
+      await resultsPage.expectPageHasTabs()
 
-    //   const confirmationPage = await resultsPage.clickContinue()
-    //   await confirmationPage.waitForPage()
-    // })
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
+    })
   })
 
-  // test.describe('With javascript disabled', () => {
-  //   test.use({ javaScriptEnabled: false })
+  test.describe('With javascript disabled', () => {
+    test.use({ javaScriptEnabled: false })
 
-  //   test('request check of a @datafile', async ({ page }) => {
-  //     const uploadMethodPage = await navigateToCheck(page)
+    test('request check of a @datafile', async ({ page }) => {
+      const uploadMethodPage = await navigateToCheck(page)
 
-  //     await uploadMethodPage.waitForPage()
-  //     await uploadMethodPage.selectUploadMethod(uploadMethods.File)
-  //     const uploadFilePage = await uploadMethodPage.clickContinue()
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
 
-  //     await uploadFilePage.waitForPage()
-  //     await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
-  //     const statusPage = await uploadFilePage.clickContinue()
+      await uploadFilePage.waitForPage()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
+      const statusPage = await uploadFilePage.clickContinue()
 
-  //     await statusPage.waitForPage()
-  //     await statusPage.expectPageToBeProcessing()
-  //     await statusPage.expectCheckStatusButtonToBeVisible()
-  //     const id = await statusPage.getIdFromUrl()
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-  //     await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
 
-  //     const resultsPage = await statusPage.clickCheckStatusButton()
+      const resultsPage = await statusPage.clickCheckStatusButton()
 
-  //     await resultsPage.waitForPage(id)
-  //     await resultsPage.expectPageHasTitle()
-  //     await resultsPage.expectPageHasTabs(false)
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasTabs(false)
 
-  //     const confirmationPage = await resultsPage.clickContinue()
-  //     await confirmationPage.waitForPage()
-  //   })
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
+    })
 
-  //   test('request check of an error @datafile', async ({ page }) => {
-  //     const uploadMethodPage = await navigateToCheck(page)
+    test('request check of an error @datafile', async ({ page }) => {
+      const uploadMethodPage = await navigateToCheck(page)
 
-  //     await uploadMethodPage.waitForPage()
-  //     await uploadMethodPage.selectUploadMethod(uploadMethods.File)
-  //     const uploadFilePage = await uploadMethodPage.clickContinue()
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.File)
+      const uploadFilePage = await uploadMethodPage.clickContinue()
 
-  //     await uploadFilePage.waitForPage()
-  //     await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
-  //     const statusPage = await uploadFilePage.clickContinue()
+      await uploadFilePage.waitForPage()
+      await uploadFilePage.uploadFile('test/datafiles/article4directionareas-error.csv')
+      const statusPage = await uploadFilePage.clickContinue()
 
-  //     await statusPage.waitForPage()
-  //     await statusPage.expectPageToBeProcessing()
-  //     await statusPage.expectCheckStatusButtonToBeVisible()
-  //     const id = await statusPage.getIdFromUrl()
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-  //     await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
 
-  //     const resultsPage = await statusPage.clickCheckStatusButton()
+      const resultsPage = await statusPage.clickCheckStatusButton()
 
-  //     await resultsPage.waitForPage(id)
-  //     await resultsPage.expectPageHasTitle()
-  //     await resultsPage.expectPageHasBlockingTasks()
-  //     await resultsPage.expectPageHasTabs(false)
-  //   })
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
+      await resultsPage.expectPageHasTabs(false)
+    })
 
-  //   test('request check of a @url', async ({ page }) => {
-  //     const uploadMethodPage = await navigateToCheck(page)
+    test('request check of a @url', async ({ page }) => {
+      const uploadMethodPage = await navigateToCheck(page)
 
-  //     await uploadMethodPage.waitForPage()
-  //     await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
-  //     const submitURLPage = await uploadMethodPage.clickContinue()
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
 
-  //     await submitURLPage.waitForPage()
-  //     await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
-  //     const statusPage = await submitURLPage.clickContinue()
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
+      const statusPage = await submitURLPage.clickContinue()
 
-  //     await statusPage.waitForPage()
-  //     await statusPage.expectPageToBeProcessing()
-  //     await statusPage.expectCheckStatusButtonToBeVisible()
-  //     const id = await statusPage.getIdFromUrl()
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-  //     await page.waitForTimeout(5000) // wait for 10 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+      await page.waitForTimeout(5000) // wait for 10 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
 
-  //     const resultsPage = await statusPage.clickCheckStatusButton()
+      const resultsPage = await statusPage.clickCheckStatusButton()
 
-  //     await resultsPage.waitForPage(id)
-  //     await resultsPage.expectPageHasTitle()
-  //     await resultsPage.expectPageHasTabs(false)
-  //   })
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasTabs(false)
+    })
 
-  //   test('request check of an error @url', async ({ page }) => {
-  //     const uploadMethodPage = await navigateToCheck(page)
+    test('request check of an error @url', async ({ page }) => {
+      const uploadMethodPage = await navigateToCheck(page)
 
-  //     await uploadMethodPage.waitForPage()
-  //     await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
-  //     const submitURLPage = await uploadMethodPage.clickContinue()
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
 
-  //     await submitURLPage.waitForPage()
-  //     await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
-  //     const statusPage = await submitURLPage.clickContinue()
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      const statusPage = await submitURLPage.clickContinue()
 
-  //     await statusPage.waitForPage()
-  //     await statusPage.expectPageToBeProcessing()
-  //     await statusPage.expectCheckStatusButtonToBeVisible()
-  //     const id = await statusPage.getIdFromUrl()
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      const id = await statusPage.getIdFromUrl()
 
-  //     await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
+      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
 
-  //     const resultsPage = await statusPage.clickCheckStatusButton()
+      const resultsPage = await statusPage.clickCheckStatusButton()
 
-  //     await resultsPage.waitForPage(id)
-  //     await resultsPage.expectPageHasTitle()
-  //     await resultsPage.expectPageHasBlockingTasks()
-  //     await resultsPage.expectPageHasTabs(false)
-  //   })
-  // })
+      await resultsPage.waitForPage(id)
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
+      await resultsPage.expectPageHasTabs(false)
+    })
+  })
 })
