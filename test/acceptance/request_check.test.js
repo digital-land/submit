@@ -237,7 +237,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv')
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
