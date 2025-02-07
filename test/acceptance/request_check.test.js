@@ -63,7 +63,7 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageHasTitle()
 
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageToHaveBlockingErrors()
       await resultsPage.expectPageHasTabs()
     })
 
@@ -75,7 +75,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-(Permitted-development-rights%20column%20missing).csv')
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
@@ -97,7 +97,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv')
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
@@ -108,8 +108,11 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageHasTitle()
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs()
+
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
     })
   })
 

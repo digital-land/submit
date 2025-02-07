@@ -31,20 +31,8 @@ export default class ResultsPage extends BasePage {
     }
   }
 
-  async expectPageHasTableAndSummary () {
-    // Check if there's a table
-    expect(await this.page.locator('table').isVisible())
-
-    await this.page.waitForSelector('.govuk-error-summary .govuk-list')
-    // Get the text content of the bullet points
-    const summarytext = await this.page.evaluate(() => {
-      const bulletPoints = Array.from(document.querySelectorAll('.govuk-error-summary .govuk-list li'))
-      return bulletPoints.map(li => li.textContent.trim())
-    })
-
-    // Assert that the summary is generated
-    expect(summarytext).toContain('2 geometries must be in Well-Known Text (WKT) format')
-    expect(summarytext).toContain('3 start dates must be a real date')
+  async expectPageHasBlockingTasks () {
+    await this.page.waitForSelector('.govuk-tag.govuk-tag--red:text("Must fix")')
   }
 
   async expectPageHasTabs (jsEnabled = true) {
@@ -64,6 +52,10 @@ export default class ResultsPage extends BasePage {
   async clickContinue (skipVerification) {
     await super.clickContinue()
     return await super.verifyAndReturnPage(ConfirmationPage, skipVerification)
+  }
+
+  async clickUploadNewVersion () {
+    return await this.page.getByRole('button', { name: 'Continue' }).click()
   }
 
   async clickMapTab () {
