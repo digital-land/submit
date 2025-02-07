@@ -107,6 +107,10 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs()
+
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
+      log('Navigated to confirmation page')
     })
 
     test('request check of an error @url', async ({ page }) => {
@@ -132,9 +136,6 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs()
-      const confirmationPage = await resultsPage.clickContinue()
-      await confirmationPage.waitForPage()
-      log('Navigated to confirmation page')
     })
   })
 
@@ -221,6 +222,10 @@ test.describe('Request Check', () => {
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs(false)
+
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
+      log('Navigated to confirmation page')
     })
 
     test('request check of an error @url', async ({ page }) => {
