@@ -1,0 +1,18 @@
+asyncRequestApi: {
+    url: http://development-pub-async-api-lb-69142969.eu-west-2.elb.amazonaws.com
+}
+aws: {
+    region: eu-west-2,
+    bucket: 'development-pub-async-request-files',
+}
+redis: {
+    secure: false,
+    host: 'localhost',
+    port: 6379
+}
+url: 'http://localhost:5000/'
+features:
+  issueSpecificationGuidance:
+    enabled: true
+  submitEndpointForm:
+    enabled: true
