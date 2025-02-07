@@ -111,15 +111,18 @@ describe('results.html', () => {
 
   describe('buttons', () => {
     it('should show upload button when blocking tasks exist', async () => {
-      const params = { options: { blockingTasks: ['task1'] } }
+      const params = { options: { tasksBlocking: ['task1'] } }
       const html = await nunjucksEnv.render(resultsTemplatePath, params)
-      const dom = new JSDOM(html)
+      const dom = new JSDOM(html, {
+        url: 'http://example.com', // use a valid URL to avoid opaque origin error
+        runScripts: 'dangerously' // only do this if you trust the scripts you're running
+      })
       expect(dom.window.document.querySelector('a[href="/check/upload-method"]')).not.toBeNull()
       expect(dom.window.document.querySelector('button[type="submit"].govuk-button')).toBeNull()
     })
 
     it('should show continue button and upload link when no blocking tasks exist', async () => {
-      const params = { options: { blockingTasks: [] } }
+      const params = { options: { tasksBlocking: [] } }
       const html = await nunjucksEnv.render(resultsTemplatePath, params)
       const dom = new JSDOM(html)
       expect(dom.window.document.querySelector('button[type="submit"].govuk-button')).not.toBeNull()

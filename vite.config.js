@@ -17,6 +17,11 @@ export default defineConfig({
       reportOnFailure: true,
       // ignore these files
       exclude: ['**/node_modules/**', '**/test/**', '**/public/**', '**/coverage/**', '**/vite.config.js']
+    },
+    environmentOptions: {
+      jsdom: {
+        url: 'http://localhost/'
+      }
     }
   }
 })
