@@ -20,7 +20,7 @@ let lastTimestamp = 0
 
 function log (message) {
   const currentTimestamp = new Date().getTime()
-  const elapsed = lastTimestamp === 0 ? 'N/A' : (currentTimestamp - lastTimestamp) / 1000
+  const elapsed = (currentTimestamp - lastTimestamp) / 1000
   console.log(`${message} (Elapsed: ${elapsed.toFixed(2)}s)`)
   lastTimestamp = currentTimestamp
 }
