@@ -260,15 +260,27 @@ export function getTasksByLevel (req, res, next, level, tagColor, tagText) {
     return makeTaskParam(taskMessage, tagText, `govuk-tag--${tagColor}`)
   })
   req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
-  next()
 }
 
 export function getBlockingTasks (req, res, next) {
   getTasksByLevel(req, res, next, 2, 'red', 'Must fix')
+  next()
 }
 
 export function getNonBlockingTasks (req, res, next) {
+  const { responseDetails } = req.locals
   getTasksByLevel(req, res, next, 3, 'yellow', 'Should fix')
+
+  const columnFieldLog = responseDetails.getColumnFieldLog()
+
+  const missingColumnTasks = columnFieldLog
+    .filter(column => column.missing)
+    .map(({ field }) => makeTaskParam(`${field} Column is missing`, 'Must fix', 'govuk-tag--red'))
+
+  req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
+
+  // add tasks from missing columns
+  next()
 }
 
 export function getPassedChecks (req, res, next) {
