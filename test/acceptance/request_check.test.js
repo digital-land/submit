@@ -169,7 +169,7 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageHasTitle()
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs(false)
     })
 
@@ -220,7 +220,7 @@ test.describe('Request Check', () => {
 
       await resultsPage.waitForPage(id)
       await resultsPage.expectPageHasTitle()
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs(false)
     })
   })
