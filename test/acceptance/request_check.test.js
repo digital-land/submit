@@ -16,6 +16,9 @@ const navigateToCheck = async (page) => {
   return new UploadMethodPage(page)
 }
 
+const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
+const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
+
 let lastTimestamp = 0
 
 function log (message, start = false) {
@@ -94,7 +97,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv')
+      await submitURLPage.enterURL(okFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
@@ -122,7 +125,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv')
+      await submitURLPage.enterURL(errorFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
@@ -207,7 +210,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
+      await submitURLPage.enterURL(okFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
@@ -237,7 +240,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv')
+      await submitURLPage.enterURL(errorFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
