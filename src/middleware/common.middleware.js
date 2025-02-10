@@ -727,7 +727,7 @@ export const fetchEndpointSummary = fetchMany({
     return `
       SELECT * FROM endpoint_dataset_summary
       WHERE organisation = '${params.lpa}'
-      AND end_date = ''
+      AND endpoint_end_date = ''
       ${datasetClause}
     `
   },
