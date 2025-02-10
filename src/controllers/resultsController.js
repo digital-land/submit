@@ -275,7 +275,7 @@ export function getNonBlockingTasks (req, res, next) {
 
   const missingColumnTasks = columnFieldLog
     .filter(column => column.missing)
-    .map(({ field }) => makeTaskParam(`${field} Column is missing`, 'Must fix', 'govuk-tag--red'))
+    .map(({ field }) => makeTaskParam(`${field} column is missing`, 'Must fix', 'govuk-tag--red'))
 
   req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
 

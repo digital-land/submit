@@ -125,24 +125,29 @@
       <div class="govuk-grid-column-two-thirds">
         <p>Fix the issues, then upload a new version of your data to check if it is ready to submit.</p>
         
-        {{ govukButton({
-          text: "Upload a new version",
-          href: "/check/upload-method"
-        }) }}
+        <form>
+          <div class="govuk-button-group">
+            {{ govukButton({
+              text: "Upload a new version",
+              href: "/check/upload-method"
+            }) }}
+          </div>
+          </div>
+      </form>
       </div>
     </div>
   {% else %}
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds">
-        <div class="govuk-button-group">
-          <form method="post">
+        <form method="post">
+          <div class="govuk-button-group">
             {{ govukButton({
               text: "Continue"
             }) }}
-          </form>
-
-          <a href="/check/upload-method">Upload a new version</a>
-        </div>
+            
+            <a href="/check/upload-method">Upload a new version</a>
+          </div>
+        </form>
       </div>
     </div>
   {% endif %}
