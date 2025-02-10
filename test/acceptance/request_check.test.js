@@ -94,7 +94,7 @@ test.describe('Request Check', () => {
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-(Permitted-development-rights%20column%20missing).csv')
+      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv')
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
