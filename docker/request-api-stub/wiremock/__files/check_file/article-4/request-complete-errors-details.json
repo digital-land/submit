@@ -48,6 +48,18 @@
                 "description": "Organisation data obtained during processing is invalid.",
                 "line-number": "2",
                 "entry_number": "1"
+            },
+            {
+                "field": "id",
+                "value": "",
+                "dataset": "conservation-area",
+                "message": "",
+                "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c",
+                "severity": "warning",
+                "issue-type": "reference values are not unique",
+                "description": "There are multiple entries in this resource with this reference and entry date.",
+                "line-number": "2",
+                "entry_number": "1"
             }
         ],
         "entry_number": 1,

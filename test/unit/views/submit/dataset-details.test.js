@@ -1,15 +1,15 @@
 /* eslint-disable prefer-regex-literals */
 
 import { describe, expect, it } from 'vitest'
-import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
-import { runGenericPageTests } from './generic-page.js'
-import { stripWhitespace } from '../utils/stripWhiteSpace.js'
-import { testValidationErrorMessage } from './validation-tests.js'
-import { render } from '../../src/utils/custom-renderer.js'
+import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
+import { runGenericPageTests } from '../../generic-page.js'
+import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
+import { testValidationErrorMessage } from '../../validation-tests.js'
+import { render } from '../../../../src/utils/custom-renderer.js'
 import * as v from 'valibot'
 
-import mock from '../utils/mocker.js'
-import { DatasetDetails } from '../../src/routes/schemas.js'
+import mock from '../../../utils/mocker.js'
+import { DatasetDetails } from '../../../../src/routes/schemas.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 

@@ -83,11 +83,7 @@ export default {
     checkJourney: false,
     entryPoint: true,
     forwardQuery: true,
-    fields: ['dataLooksCorrect'],
-    next: [
-      { field: 'dataLooksCorrect', op: '===', value: 'yes', next: 'confirmation' },
-      '/'
-    ]
+    next: 'confirmation'
   },
   '/confirmation': {
     ...baseSettings,

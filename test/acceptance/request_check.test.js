@@ -7,26 +7,38 @@
 */
 
 import { test } from '@playwright/test'
-
-import StartPage from '../PageObjectModels/startPage'
-
-import { datasets } from '../PageObjectModels/datasetPage'
-import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
+import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
 test.setTimeout(300000)
+
+const navigateToCheck = async (page) => {
+  await page.goto('/check/link?dataset=article-4-direction&orgName=Adur%20District%20Council&orgId=local-authority%3AADU')
+  return new UploadMethodPage(page)
+}
+
+const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
+const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
+
+let lastTimestamp = 0
+
+function log (message, start = false) {
+  if (start) {
+    lastTimestamp = new Date().getTime()
+    console.log(message)
+    return
+  }
+  const currentTimestamp = new Date().getTime()
+  const elapsed = (currentTimestamp - lastTimestamp) / 1000
+  console.log(`${message} (Elapsed: ${elapsed.toFixed(2)}s)`)
+  lastTimestamp = currentTimestamp
+}
 
 test.describe('Request Check', () => {
   test.describe('with javascript enabled', () => {
     test('request check of a @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of a @datafile', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
       const uploadFilePage = await uploadMethodPage.clickContinue()
@@ -39,26 +51,22 @@ test.describe('Request Check', () => {
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectPageToHaveFinishedProcessing()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs()
-
       const confirmationPage = await resultsPage.clickContinue()
+      log('Navigated to confirmation page')
       await confirmationPage.waitForPage()
+      log('Confirmation page loaded')
     })
 
     test('request check of an error @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of an error @datafile', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
       const uploadFilePage = await uploadMethodPage.clickContinue()
@@ -71,88 +79,76 @@ test.describe('Request Check', () => {
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectPageToHaveFinishedProcessing()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
-
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs()
     })
 
     test('request check of a @url', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of a @url', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
+      await submitURLPage.enterURL(okFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectPageToHaveFinishedProcessing()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs()
+
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
+      log('Navigated to confirmation page')
     })
 
     test('request check of an error @url', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of an error @url', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      await submitURLPage.enterURL(errorFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectPageToHaveFinishedProcessing()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
       const resultsPage = await statusPage.clickContinue()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs()
     })
   })
 
-  test.describe('With javascript disabled', () => {
+  test.describe('with javascript disabled', () => {
     test.use({ javaScriptEnabled: false })
 
     test('request check of a @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of a @datafile with javascript disabled', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
       const uploadFilePage = await uploadMethodPage.clickContinue()
@@ -165,29 +161,23 @@ test.describe('Request Check', () => {
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectCheckStatusButtonToBeVisible()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
 
-      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
-
+      await page.waitForTimeout(5000)
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs(false)
-
       const confirmationPage = await resultsPage.clickContinue()
       await confirmationPage.waitForPage()
+      log('Navigated to confirmation page')
     })
 
     test('request check of an error @datafile', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of an error @datafile with javascript disabled', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.File)
       const uploadFilePage = await uploadMethodPage.clickContinue()
@@ -200,79 +190,71 @@ test.describe('Request Check', () => {
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectCheckStatusButtonToBeVisible()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
 
-      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait for the timeout to expire.
-
+      await page.waitForTimeout(5000)
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs(false)
     })
 
     test('request check of a @url', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of a @url with javascript disabled', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/main/test/datafiles/article4directionareas-ok.csv')
+      await submitURLPage.enterURL(okFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectCheckStatusButtonToBeVisible()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
 
-      await page.waitForTimeout(5000) // wait for 10 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
-
+      await page.waitForTimeout(5000)
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsNoErrorsPage()
+      await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs(false)
+
+      const confirmationPage = await resultsPage.clickContinue()
+      await confirmationPage.waitForPage()
+      log('Navigated to confirmation page')
     })
 
     test('request check of an error @url', async ({ page }) => {
-      const startPage = new StartPage(page)
+      log('Starting test: request check of an error @url with javascript disabled', true)
 
-      await startPage.navigateHere()
-      const datasetPage = await startPage.clickStartNow()
-
-      await datasetPage.waitForPage()
-      await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
-      const uploadMethodPage = await datasetPage.clickContinue()
-
+      const uploadMethodPage = await navigateToCheck(page)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
 
       await submitURLPage.waitForPage()
-      await submitURLPage.enterURL('https://raw.githubusercontent.com/digital-land/lpa-data-validator-frontend/pagination_acceptance_tests/test/datafiles/article4directionareas-error.csv')
+      await submitURLPage.enterURL(errorFile)
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectCheckStatusButtonToBeVisible()
       const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
 
-      await page.waitForTimeout(5000) // wait for 5 seconds for processing. could be smarter about this so we dont have to wait 3 seconds
-
+      await page.waitForTimeout(5000)
       const resultsPage = await statusPage.clickCheckStatusButton()
 
       await resultsPage.waitForPage(id)
-      await resultsPage.expectPageIsErrorsPage()
-      await resultsPage.expectPageHasTableAndSummary()
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs(false)
     })
   })
