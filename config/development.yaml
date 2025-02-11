@@ -5,6 +5,7 @@ aws: {
     region: eu-west-2,
     bucket: 'development-pub-async-request-files',
 }
+datasetteUrl: https://datasette.development.planning.data.gov.uk
 redis: {
     secure: true,
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
