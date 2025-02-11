@@ -1,17 +1,29 @@
-{% extends "layouts/main.html" %}
-
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
+{% set navigationItems = [
+  {
+    href: "/organisations",
+    text: "Find your organisation",
+    active: currentPath and currentPath.startsWith('/organisations')
+  },
+  {
+    href: "/guidance",
+    text: "Guidance",
+    active: currentPath and currentPath.startsWith('/guidance')
+  }
+]%}
 {% set serviceType = 'Submit'%}
-
 {% if issueEntitiesCount > 1 %}
   {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}
 {% else %}
   {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
 {%endif%}
+
+{% extends "layouts/main.html" %}
+
 
 {% block beforeContent %}
 

@@ -1,11 +1,23 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% extends "layouts/main.html" %}
-
+{% set navigationItems = [
+  {
+    href: "/organisations",
+    text: "Find your organisation",
+    active: currentPath and currentPath.startsWith('/organisations')
+  },
+  {
+    href: "/guidance",
+    text: "Guidance",
+    active: currentPath and currentPath.startsWith('/guidance')
+  }
+]%}
 {% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
 {% set serviceType = 'manage' %}
 {% set resubmitUrl %}/organisations/{{ organisation.organisation | urlencode }}/{{ dataset.dataset | urlencode }}/get-started{% endset %}
+
+{% extends "layouts/main.html" %}
 
 {% block beforeContent %}
 

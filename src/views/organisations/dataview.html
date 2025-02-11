@@ -1,13 +1,25 @@
-{% extends "layouts/main.html" %}
-
 {% from "../components/table.html" import table %}
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
+{% set navigationItems = [
+  {
+    href: "/organisations",
+    text: "Find your organisation",
+    active: currentPath and currentPath.startsWith('/organisations')
+  },
+  {
+    href: "/guidance",
+    text: "Guidance",
+    active: currentPath and currentPath.startsWith('/guidance')
+  }
+]%}
 {% set serviceType = 'Submit'%}
-
 {% set pageName %}{{organisation.name}} - {{dataset.name}} - Dataset table{% endset %}
+
+{% extends "layouts/main.html" %}
+
 
 {% block beforeContent %}
 

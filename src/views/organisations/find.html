@@ -1,9 +1,22 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% extends "layouts/main.html" %}
-
+{% set navigationItems = [
+  {
+    href: "/organisations",
+    text: "Find your organisation",
+    active: currentPath and currentPath.startsWith('/organisations')
+  },
+  {
+    href: "/guidance",
+    text: "Guidance",
+    active: currentPath and currentPath.startsWith('/guidance')
+  }
+]%}
 {% set serviceType = 'Submit' %}
 {% set pageName = "Find your organisation" %}
+
+{% extends "layouts/main.html" %}
+
 
 {% block beforeContent %}
 
