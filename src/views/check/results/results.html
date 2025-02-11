@@ -44,12 +44,7 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-
-      {% if options.datasetName %}
-        {{ datasetBanner(options.datasetName) }}
-      {% else %}
-        <span class="govuk-caption-l">{{options.requestParams.dataset}}</span>
-      {% endif %}
+      {{ datasetBanner(options.orgId, options.datasetName or options.requestParams.dataset) }}
 
       <h1 class="govuk-heading-l">
         {{pageName}}

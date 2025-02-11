@@ -39,10 +39,7 @@
         }) }}
       {% endif %}
       <form novalidate method="post">
-
-        {% if options.datasetName %}
-          {{ datasetBanner(options.datasetName) }}
-        {% endif %}
+        {{ datasetBanner(options.orgId, options.datasetName) }}
 
         {{ govukRadios({
           name: "geomType",
