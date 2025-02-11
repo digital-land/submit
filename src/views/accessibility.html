@@ -1,6 +1,19 @@
 {% extends "layouts/main.html" %}
 
 {% set pageName = 'Accessibility statement for Submit and update planning and housing data for England' %}
+{% set navigationItems = [
+    {
+      href: "/organisations",
+      text: "Find your organisation",
+      active: currentPath and currentPath.startsWith('/organisations')
+    },
+    {
+      href: "/guidance",
+      text: "Guidance",
+      active: currentPath and currentPath.startsWith('/guidance')
+    }
+  ]%}
+
 
 {% set markdownContent %}
 
