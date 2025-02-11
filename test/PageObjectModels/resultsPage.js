@@ -11,12 +11,8 @@ export default class ResultsPage extends BasePage {
     super(page, '/check/results')
   }
 
-  async expectPageIsErrorsPage () {
-    expect(await this.page.locator('h1').innerText()).toEqual('Your data has errors')
-  }
-
-  async expectPageIsNoErrorsPage () {
-    expect(await this.page.locator('h1').innerText()).toMatch(/You have \d+ row.* ready to publish/)
+  async expectPageHasTitle () {
+    expect(await this.page.locator('h1').innerText()).toEqual('Your data has been checked')
   }
 
   async expectIsFailedPage () {
@@ -35,20 +31,8 @@ export default class ResultsPage extends BasePage {
     }
   }
 
-  async expectPageHasTableAndSummary () {
-    // Check if there's a table
-    expect(await this.page.locator('table').isVisible())
-
-    await this.page.waitForSelector('.govuk-error-summary .govuk-list')
-    // Get the text content of the bullet points
-    const summarytext = await this.page.evaluate(() => {
-      const bulletPoints = Array.from(document.querySelectorAll('.govuk-error-summary .govuk-list li'))
-      return bulletPoints.map(li => li.textContent.trim())
-    })
-
-    // Assert that the summary is generated
-    expect(summarytext).toContain('2 geometries must be in Well-Known Text (WKT) format')
-    expect(summarytext).toContain('3 start dates must be a real date')
+  async expectPageHasBlockingTasks () {
+    await this.page.waitForSelector('.govuk-tag.govuk-tag--red:text("Must fix")')
   }
 
   async expectPageHasTabs (jsEnabled = true) {
@@ -69,4 +53,28 @@ export default class ResultsPage extends BasePage {
     await super.clickContinue()
     return await super.verifyAndReturnPage(ConfirmationPage, skipVerification)
   }
+
+  async clickUploadNewVersion () {
+    return await this.page.getByRole('button', { name: 'Continue' }).click()
+  }
+
+  async clickMapTab () {
+    if (await isJsEnabled(this.page)) {
+      await this.page.locator('a:text("Map")').click() // sometimes the id can be prefixed with tab_ so we use a starts with selector
+    } else {
+      await this.page.$('a.govuk-tabs__tab[href$="#map-tab"]')
+    }
+  }
+
+  async clickTableTab () {
+    if (await isJsEnabled(this.page)) {
+      await this.page.locator('a:text("Dataset table")').click()
+    } else {
+      await this.page.$('a.govuk-tabs__tab[href$="#table-tab"]')
+    }
+  }
+}
+
+async function isJsEnabled (page) {
+  return await page.evaluate(() => typeof window !== 'undefined' && typeof document !== 'undefined')
 }

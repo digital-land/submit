@@ -1,9 +1,9 @@
 /* eslint-disable prefer-regex-literals */
 
 import { describe, expect, it } from 'vitest'
-import { setupNunjucks } from '../../src/serverSetup/nunjucks.js'
-import { runGenericPageTests } from './generic-page.js'
-import { stripWhitespace } from '../utils/stripWhiteSpace.js'
+import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
+import { runGenericPageTests } from '../../generic-page.js'
+import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
 
 describe('check-answers View', async () => {
   const params = {

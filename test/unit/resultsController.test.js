@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupErrorSummary, setupTableParams, setupTemplate } from '../../src/controllers/resultsController'
+import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate } from '../../src/controllers/resultsController'
 import { getRequestData } from '../../src/services/asyncRequestApi'
 import prettifyColumnName from '../../src/filters/prettifyColumnName'
 import PageController from '../../src/controllers/pageController'
@@ -136,26 +136,6 @@ describe('Middleware Tests', () => {
       expect(req.locals.mappings).toEqual('mockMappings')
       expect(req.locals.geometries).toEqual('mockGeometries')
       expect(req.locals.pagination).toEqual('mockPagination')
-      expect(mockNext).toHaveBeenCalled()
-    })
-  })
-
-  describe('setupErrorSummary', () => {
-    it('should set error summary in req.locals', async () => {
-      const req = mockRequest()
-      const res = mockResponse()
-
-      req.locals.template = 'results/errors'
-      req.locals.requestData = {
-        getErrorSummary: vi.fn(() => ['Error1', 'Error2'])
-      }
-
-      await setupErrorSummary(req, res, mockNext)
-
-      expect(req.locals.errorSummary).toEqual([
-        { text: 'Error1', href: '' },
-        { text: 'Error2', href: '' }
-      ])
       expect(mockNext).toHaveBeenCalled()
     })
   })

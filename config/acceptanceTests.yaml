@@ -6,11 +6,11 @@ aws: {
     bucket: 'development-pub-async-request-files',
 }
 redis: {
-    secure: true,
-    host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
+    secure: false,
+    host: 'localhost',
     port: 6379
 }
-url: 'https://submit.development.planning.data.gov.uk/'
+url: 'http://localhost:5000/'
 features:
   issueSpecificationGuidance:
     enabled: true
