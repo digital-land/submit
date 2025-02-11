@@ -140,14 +140,15 @@
       Now submit your dataset
     </h2>
 
-    <p>
-      By submitting this dataset you are confirming that, to the best of your knowledge, the details you are providing are correct.
+    <p class="govuk-body">
+      By submitting this dataset you agree to the <a href="/privacy-notice" class="govuk-link" target="_blank">privacy notice</a> and are confirming that, to the best of your knowledge, the details you are providing are correct.
     </p>
 
     <form method="post" novalidate>
 
       {{ govukButton({
-        text: "Accept and submit"
+        text: "Accept and submit",
+        preventDoubleClick: true
       }) }}
 
     </form>
