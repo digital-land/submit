@@ -1,4 +1,3 @@
-import logger from '../utils/logger.js'
 import PageController from './pageController.js'
 import * as results from './resultsController.js'
 import performanceDbApi from '../services/performanceDbApi.js'
@@ -15,7 +14,6 @@ import { isFeatureEnabled } from '../utils/features.js'
 export const prepareTask = (req, res, next) => {
   const { issueType, field } = req.params
 
-  logger.debug('issue lookup keys', { keys: [...req.aggreatedTasks.keys()] })
   const task = req.aggreatedTasks.get(`${issueType}|${field}`)
   if (!task) {
     return next(new MiddlewareError(`No isssue of type '${issueType}' for field ${field}`, 404))
