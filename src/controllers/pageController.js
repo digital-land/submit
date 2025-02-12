@@ -48,7 +48,7 @@ class PageController extends Controller {
         req.form.options.deepLink = deepLinkInfo
         req.form.options.dataset = deepLinkInfo.dataset
         req.form.options.datasetName = deepLinkInfo.datasetName
-        req.form.options.lpa = deepLinkInfo.lpa
+        req.form.options.lpa = deepLinkInfo.lpa || deepLinkInfo.orgName
         req.form.options.orgId = deepLinkInfo.orgId
         backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
       }
