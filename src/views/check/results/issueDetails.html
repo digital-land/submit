@@ -1,0 +1,98 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "../../components/table.html" import table %}
+
+{% set serviceType = 'Submit'%}
+
+{% set pageName = ('Issue details for ' + options.deepLink.datasetName) if options.deepLink.datasetName else 'Issue details' %}
+
+{% block beforeContent %}
+
+  {% if options.lastPage %}
+    {{ govukBackLink({
+      text: options.backLinkText | default("Back"),
+      href: '/check/results/' + (options.id | urlencode) + '/0'
+    }) }}
+  {% endif %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  {% include "includes/_dataset-issue-page-header.html" %}
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% set criteriaLabels = { '2': 'You cannot submit your data until you fix the issues', '3': 'You can submit your data and fix these issues later' } %}
+    {{ govukErrorSummary({
+      titleText: criteriaLabels[options.task.qualityCriteriaLevel] or 'There is a problem',
+      errorList: [ { html: options.task.message, href: ""}]
+    }) }}
+
+    {% if entry.fields.length  %}
+      {{ govukSummaryList({
+        card: {
+          title: {
+            text: entry.title
+          }
+        },
+        rows: entry.fields
+      }) }}
+    {% endif %}
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+
+    {% if options.tableParams.rows|length > 0 %}
+        {{ table(options.tableParams) }}
+    {% endif %}
+
+    {% if options.pagination.items | length > 1 %}
+        {{ govukPagination({
+        previous: {
+            href: '/check/results/'+options.id+'/'+options.pagination.previousPage + '#table-tab'
+        } if options.pagination.previousPage else undefined,
+        next: {
+            href: '/check/results/'+options.id+'/'+options.pagination.nextPage + '#table-tab'
+        } if options.pagination.nextPage else undefined,
+        items: options.pagination.items
+        })}}
+    {% endif %}
+
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h3 class="govuk-heading-m">
+      How to improve {{ options.deepLink.orgName | default('your organisation') }}’s data
+    </h3>
+
+    <ol class="govuk-list govuk-list--number">
+      <li>Fix the errors indicated</li>
+      <li>Use the <a href="/check">check service</a> to make sure the data meets
+        the standard</li>
+      <li>Publish the updated data on the data URL</li>
+    </ol>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukBackLink({
+      text: "Back to results",
+      href: '/check/results/' +  (options.id | urlencode) + '/0'
+    }) }}
+  </div>
+</div>
+
+{% endblock %}

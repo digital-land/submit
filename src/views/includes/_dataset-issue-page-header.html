@@ -1,0 +1,8 @@
+<div class="govuk-grid-column-two-thirds">
+  {% if options.deepLink.orgName and options.deepLink.datasetName %}
+      <span class="govuk-caption-l">{{ options.deepLink.orgName }} — {{ options.deepLink.datasetName }}</span>
+  {% elif organisation.name and dataset.name %}
+    <span class="govuk-caption-l">{{ organisation.name }} — {{ dataset.name }}</span>
+  {% endif %}
+  <h1 class="govuk-heading-l">Your data has issues</h1>
+</div>

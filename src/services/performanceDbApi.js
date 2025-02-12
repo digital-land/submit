@@ -188,7 +188,10 @@ export default {
   /**
      * Returns a task message based on the provided issue type, issue count, and entity count.
      *
-     * @param {{issue_type: string, num_issues: number, rowCount: number, field: string }} options
+     * Pass format = 'html' if you want the fields in the message to be marked up with span.column-name. Otherwise
+     * plain text message is returned.
+     *
+     * @param {{issue_type: string, num_issues: number, rowCount: number, field: string, format?: 'html' }} options
      * @param {boolean?} entityLevel Whether to use entity-level or dataset level messaging
      *
      * @returns {string} The task message with the issue count inserted
@@ -199,7 +202,8 @@ export default {
     issue_type: issueType,
     num_issues: numIssues,
     rowCount,
-    field
+    field,
+    ...rest
   }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
@@ -227,7 +231,8 @@ export default {
         ? messageInfo.singular
         : messageInfo.plural
     }
-    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field)
+    const fieldText = rest.format === 'html' ? `<span class="column-name">${field}</span>` : field
+    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', fieldText)
   },
 
   latestResourceQuery: (lpa, dataset) => {
