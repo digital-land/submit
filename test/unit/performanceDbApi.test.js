@@ -70,7 +70,7 @@ describe('performanceDbApi', () => {
     it('returns a message with the correct field replacement', () => {
       const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'my_field' })
       expect(message).toContain('my_field')
-      expect(message).not.toContain('<span class="column-name>')
+      expect(message).not.toContain('<span class="column-name">')
     })
 
     it('returns a message with HTML markup, when format=html option passed', () => {
