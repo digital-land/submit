@@ -34,7 +34,6 @@ const middlewares = [
   isFeatureEnabled('checkIssueDetailsPage')
     ? results.getRequestDataMiddleware
     : (req, res, next) => { return next(new MiddlewareError('Not found', 404)) },
-  results.getRequestDataMiddleware,
   results.fetchResponseDetails,
   results.checkForErroredResponse,
   results.setupTableParams,
