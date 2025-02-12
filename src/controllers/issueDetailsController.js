@@ -3,6 +3,8 @@ import * as results from './resultsController.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 /**
  * Middleware. Updates req with `task`
@@ -19,13 +21,18 @@ export const prepareTask = (req, res, next) => {
     return next(new MiddlewareError(`No isssue of type '${issueType}' for field ${field}`, 404))
   }
 
-  const message = performanceDbApi.getTaskMessage({
-    issue_type: task.issueType,
-    num_issues: task.count,
-    rowCount: req.totalRows,
-    field: task.field,
-    format: 'html'
-  })
+  let message = issueType // fallback
+  try {
+    message = performanceDbApi.getTaskMessage({
+      issue_type: task.issueType,
+      num_issues: task.count,
+      rowCount: req.totalRows,
+      field: task.field,
+      format: 'html'
+    })
+  } catch (error) {
+    logger.warn('prepareTask/getTaskMessage failure', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+  }
   req.locals.task = { ...task, message }
   next()
 }
