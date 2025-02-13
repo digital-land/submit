@@ -9,6 +9,7 @@ import submitUrlController from '../../../controllers/submitUrlController.js'
 import statusController from '../../../controllers/statusController.js'
 import resultsController from '../../../controllers/resultsController.js'
 import checkDeepLinkController from '../../../controllers/checkDeepLinkController.js'
+import issueDetailsController from '../../../controllers/issueDetailsController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -84,6 +85,15 @@ export default {
     entryPoint: true,
     forwardQuery: true,
     next: 'confirmation'
+  },
+  '/results/:id/issue/:issueType/:field': {
+    ...baseSettings,
+    controller: issueDetailsController,
+    noPost: true,
+    checkJourney: false,
+    entryPoint: true,
+    forwardQuery: true,
+    template: 'check/results/issueDetails.html'
   },
   '/confirmation': {
     ...baseSettings,

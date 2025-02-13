@@ -152,7 +152,7 @@ export default class ResponseDetails {
 
   /**
    * @param {number} pageNumber
-   * @param {{ hash?: string }} options hash option should include the '#' character
+   * @param {{ hash?: string }} opts hash option should include the '#' character
    * @returns {{ totalResults: number, offset: number, limit: number, currentPage: number, nextPage: number | null, previousPage: number | null, totalPages: number, items: { href: string }[] } }
    */
   getPagination (pageNumber, opts = {}) {
