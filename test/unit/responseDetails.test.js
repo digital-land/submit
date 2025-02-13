@@ -44,7 +44,7 @@ describe('ResponseDetails', () => {
   ]
 
   const mockResponsWithGeoXGeoY = mockResponse.map(({ converted_row: row, ...entry }, i) => {
-    const { geometry, ...other } = row
+    const { geometry, wkt, ...other } = row
     return { ...entry, converted_row: { ...other, GeoX: `123.4${i}`, GeoY: `123.4${i}` } }
   })
 
