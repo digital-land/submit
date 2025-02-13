@@ -25,6 +25,7 @@ serviceNames: {
     check: 'Check your planning data',
     manage: 'Submit and update your planning data'
 }
+datasetteUrl: 'https://datasette.planning.data.gov.uk'
 checkService:
     # used as User-Agent header when checking the accessibility
     # of user supplied URLs

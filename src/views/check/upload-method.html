@@ -39,9 +39,7 @@
         }) }}
       {% endif %}
       <form novalidate method="post">
-        {% if options.datasetName %}
-          {{ datasetBanner(options.datasetName) }}
-        {% endif %}
+        {{ datasetBanner(options.lpa, options.datasetName) }}
 
         {{ govukRadios({
           name: "upload-method",
