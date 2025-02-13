@@ -61,7 +61,7 @@
         name: "name",
         classes: "govuk-!-width-three-quarters",
         errorMessage: {
-          text: 'name' | validationMessageLookup(errors['name'].type) 
+          text: 'name' | validationMessageLookup(errors['name'].type)
         } if 'name' in errors,
         value: values.name
       }) }}
@@ -75,9 +75,12 @@
         },
         id: "email",
         name: "email",
+        hint: {
+          text: "This can be an individual email or a group email"
+        },
         classes: "govuk-!-width-three-quarters",
         errorMessage: {
-          text: 'email' | validationMessageLookup(errors['email'].type) 
+          text: 'email' | validationMessageLookup(errors['email'].type)
         } if 'email' in errors,
         value: values.email
       }) }}
