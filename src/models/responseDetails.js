@@ -198,15 +198,23 @@ export default class ResponseDetails {
    * @returns { ((item) => string ) | undefined}
    */
   #makeGeometryGetter (item) {
+    /*
+      The api seems to sometimes respond with weird casing, it can be camal case, all lower or all upper
+      I'll implement a fix here, but hopefully infa will be addressing it on the backend to
+    */
+    const keys = Object.fromEntries(Object.keys(item.converted_row).map(key => [key.toLowerCase(), key]))
     let getGeometryValue
-    if ('point' in item.converted_row) {
-      getGeometryValue = row => row.converted_row.point
-    } else if ('geometry' in item.converted_row) {
-      getGeometryValue = row => row.converted_row.geometry
-    } else if ('GeoX' in item.converted_row) {
+    if ('point' in keys) {
+      getGeometryValue = row => row.converted_row[keys.point]
+    } else if ('geometry' in keys) {
+      getGeometryValue = row => row.converted_row[keys.geometry]
+    } else if ('wkt' in keys) {
+      getGeometryValue = row => row.converted_row[keys.wkt]
+    } else if ('geox' in keys) {
       logger.debug('converted_row', { type: types.App, transformedRow: item.transformed_row })
       getGeometryValue = row => {
-        const { GeoX, GeoY } = row.converted_row
+        const GeoX = row.converted_row[keys.geox]
+        const GeoY = row.converted_row[keys.geoy]
         if (GeoX === '' || GeoY === '') return ''
         return `POINT (${GeoX} ${GeoY})`
       }
