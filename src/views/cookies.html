@@ -5,7 +5,19 @@
 {% extends "layouts/main.html" %}
 
 {% set pageName = 'Cookie notice for Submit and update planning and housing data for England' %}
-
+{% set serviceType = 'manage' %}
+{% set navigationItems = [
+  {
+    href: "/organisations",
+    text: "Find your organisation",
+    active: currentPath and currentPath.startsWith('/organisations')
+  },
+  {
+    href: "/guidance",
+    text: "Guidance",
+    active: currentPath and currentPath.startsWith('/guidance')
+  }
+]%}
 {% set markdownContent %}
 
 # Submit and update planning and housing data for England cookies notice

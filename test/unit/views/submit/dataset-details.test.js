@@ -49,7 +49,7 @@ describe(`dataset details View (seed: ${seed})`, () => {
   const datasetName = params.values.dataset.toLowerCase()
 
   runGenericPageTests(html, {
-    pageTitle: `Enter ${datasetName} details - Submit and update your planning data`
+    pageTitle: `Enter ${datasetName} details - Submit your planning data`
   })
 
   it('should render the correct header', () => {

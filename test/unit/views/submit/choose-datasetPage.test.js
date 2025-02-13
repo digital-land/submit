@@ -12,7 +12,7 @@ describe('choose dataset View', () => {
   const html = nunjucks.render('choose-dataset.html', params)
 
   runGenericPageTests(html, {
-    pageTitle: 'Choose dataset - Submit and update your planning data'
+    pageTitle: 'Choose dataset - Submit your planning data'
   })
 
   it('should display an error message when the dataset field is empty', () => {
