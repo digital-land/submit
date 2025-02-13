@@ -1,10 +1,8 @@
+{% from '../components/dataset-banner.html' import datasetBanner %}
+
 <div class="govuk-grid-column-two-thirds">
-  {% if options.deepLink.orgName and options.deepLink.datasetName %}
-      <span class="govuk-caption-l">{{ options.deepLink.orgName }} — {{ options.deepLink.datasetName }}</span>
-  {% elif organisation.name and dataset.name %}
-    <span class="govuk-caption-l">{{ organisation.name }} — {{ dataset.name }}</span>
-  {% elif options.datasetName %}
-    <span class="govuk-caption-l">{{ options.datasetName }}</span>
-  {% endif %}
+  {{ datasetBanner(options.lpa, options.datasetName or options.requestParams.dataset) }}
+
   <h1 class="govuk-heading-l">Your data has issues</h1>
+
 </div>
