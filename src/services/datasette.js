@@ -1,8 +1,7 @@
 import axios from 'axios'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-
-const datasetteUrl = 'https://datasette.planning.data.gov.uk'
+import config from '../../config/index.js'
 
 export default {
   /**
@@ -17,7 +16,7 @@ export default {
  */
   runQuery: async (query, database = 'digital-land') => {
     const encodedQuery = encodeURIComponent(query)
-    const url = `${datasetteUrl}/${database}.json?sql=${encodedQuery}`
+    const url = `${config.datasetteUrl}/${database}.json?sql=${encodedQuery}`
 
     try {
       const response = await axios.get(url)
@@ -26,7 +25,7 @@ export default {
         formattedData: formatData(response.data.columns, response.data.rows)
       }
     } catch (error) {
-      logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl, database })
+      logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl: config.datasetteUrl, database })
       throw error
     }
   }
