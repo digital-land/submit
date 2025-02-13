@@ -46,10 +46,7 @@
         }) }}
       {% endif %}
       <form novalidate method="post" enctype="multipart/form-data">
-
-        {% if options.datasetName %}
-          {{ datasetBanner(options.datasetName) }}
-        {% endif %}
+        {{ datasetBanner(options.lpa, options.datasetName) }}
 
         {{ govukFileUpload({
           id: "datafile",
