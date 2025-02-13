@@ -50,7 +50,7 @@ async function checkDataFile ({ page, jsEnabled }) {
   let resultsPage
   if (jsEnabled) {
     resultsPage = await statusPage.clickContinue()
-    resultsPage.expectPageHasTabs(false)
+    resultsPage.expectPageHasTabs(jsEnabled)
   } else {
     await page.waitForTimeout(5000)
     resultsPage = await statusPage.clickCheckStatusButton()
