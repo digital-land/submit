@@ -3,18 +3,7 @@
 {% from "components/deadlineNotice.html" import deadlineNotice %}
 {% from "components/deadlineNoticeContent.html" import noticeHeading, noticeCardHint %}
 
-{% set navigationItems = [
-  {
-    href: "/organisations",
-    text: "Find your organisation",
-    active: currentPath and currentPath.startsWith('/organisations')
-  },
-  {
-    href: "/guidance",
-    text: "Guidance",
-    active: currentPath and currentPath.startsWith('/guidance')
-  }
-]%}
+{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
 {% set pageName = organisation.name + " overview" %}
 {% set serviceType = 'Manage' %}
 

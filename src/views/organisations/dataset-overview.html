@@ -24,18 +24,7 @@
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
 {% from "components/deadlineNotice.html" import deadlineNotice %}
 
-{% set navigationItems = [
-  {
-    href: "/organisations",
-    text: "Find your organisation",
-    active: currentPath and currentPath.startsWith('/organisations')
-  },
-  {
-    href: "/guidance",
-    text: "Guidance",
-    active: currentPath and currentPath.startsWith('/guidance')
-  }
-]%}
+{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
 {% set showMap = [
   "article-4-direction-area",
   "brownfield-land",
