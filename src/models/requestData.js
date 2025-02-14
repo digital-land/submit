@@ -13,9 +13,15 @@ export default class ResultData {
     Object.assign(this, responseData)
   }
 
-  async fetchResponseDetails (pageNumber = 0, limit = 50, severity = undefined) {
+  /**
+   * @param {number} pageOffset zero based
+   * @param {number} limit limit
+   * @param {string?} severity severity
+   * @returns {ResponseDetails}
+   */
+  async fetchResponseDetails (pageOffset = 0, limit = 50, severity = undefined) {
     const urlParams = new URLSearchParams()
-    urlParams.append('offset', pageNumber * limit)
+    urlParams.append('offset', pageOffset * limit)
     urlParams.append('limit', limit)
     if (severity) {
       urlParams.append('jsonpath', `$.issue_logs[*].severity=="${severity}"`)
