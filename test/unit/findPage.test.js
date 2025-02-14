@@ -19,7 +19,7 @@ describe(`Organisations Find Page (seed: ${seed})`, () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `Find your organisation - ${config.serviceNames.submit}`,
+    pageTitle: `Find your organisation - ${config.serviceNames.manage}`,
     breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations' }]
   })
 
