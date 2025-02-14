@@ -10,7 +10,7 @@ import { types } from '../utils/logging.js'
 
 const validateParams = validateQueryParams({
   schema: v.object({
-    pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(0)), '0')
+    pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1')
   })
 })
 

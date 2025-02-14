@@ -1,7 +1,9 @@
+import * as v from 'valibot'
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import prettifyColumnName from '../filters/prettifyColumnName.js'
 import { fetchMany } from '../middleware/middleware.builders.js'
+import { validateQueryParams } from '../middleware/common.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { isFeatureEnabled } from '../utils/features.js'
 
@@ -15,6 +17,7 @@ class ResultsController extends PageController {
   /* Custom middleware */
   middlewareSetup () {
     super.middlewareSetup()
+    this.use(validateParams)
     this.use(getRequestDataMiddleware)
     this.use(setupTemplate)
     this.use(fetchResponseDetails)
@@ -86,11 +89,13 @@ export function setupTemplate (req, res, next) {
 }
 
 export async function fetchResponseDetails (req, res, next) {
+  const { pageNumber } = req.parsedParams
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
       const responseDetails = req.locals.template === resultsTemplate
-        ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
-        : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
+        // pageNumber starts with: 1, fetchResponseDetails parameter `pageOffset` starts with 0
+        ? await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, 'error')
+        : await req.locals.requestData.fetchResponseDetails(pageNumber - 1)
       req.locals.responseDetails = responseDetails
     }
   } catch (e) {
@@ -377,5 +382,11 @@ export function getPassedChecks (req, res, next) {
 
   next()
 }
+
+const validateParams = validateQueryParams({
+  schema: v.object({
+    pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1')
+  })
+})
 
 export default ResultsController

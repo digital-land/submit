@@ -157,12 +157,12 @@ export default class ResponseDetails {
    */
   getPagination (pageNumber, opts = {}) {
     pageNumber = parseInt(pageNumber)
-    if (Number.isNaN(pageNumber)) pageNumber = 0
+    if (Number.isNaN(pageNumber)) pageNumber = 1
     const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
 
     const hash = opts.hash ?? ''
     const hrefFn = opts.href ?? ((item) => `/check/results/${this.id}/${item}${hash}`)
-    const items = pagination(totalPages, pageNumber + 1).map(item => {
+    const items = pagination(totalPages, pageNumber).map(item => {
       if (item === '...') {
         return {
           ellipsis: true,
@@ -171,8 +171,8 @@ export default class ResponseDetails {
       } else {
         return {
           number: item,
-          href: hrefFn(item - 1),
-          current: pageNumber === item - 1
+          href: hrefFn(item),
+          current: pageNumber === item
         }
       }
     })
@@ -181,9 +181,9 @@ export default class ResponseDetails {
       totalResults: parseInt(this.pagination.totalResults),
       offset: parseInt(this.pagination.offset),
       limit: parseInt(this.pagination.limit),
-      currentPage: pageNumber + 1,
-      nextPage: pageNumber < totalPages - 1 ? pageNumber + 1 : null,
-      previousPage: pageNumber > 0 ? pageNumber - 1 : null,
+      currentPage: pageNumber,
+      nextPage: pageNumber < totalPages ? pageNumber + 1 : null,
+      previousPage: pageNumber > 1 ? pageNumber - 1 : null,
       totalPages,
       items
     }
