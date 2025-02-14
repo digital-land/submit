@@ -224,7 +224,7 @@ export function aggregateIssues (req, res, next) {
     }
   }
 
-  req.aggreatedTasks = taskMap
+  req.aggregatedTasks = taskMap
   req.tasks = Array.from(taskMap.values())
 
   next()
@@ -330,7 +330,7 @@ export function getMissingColumnTasks (req) {
  * Middleware. Updates `req.locals` with `tasksBlocking` and potentially updates
  * `req.aggregatedTasks` map with entrires for missing columns.
  *
- * @param {import('express').Request & { aggreatedTasks: Map<string, Object>}} req request
+ * @param {import('express').Request & { aggregatedTasks: Map<string, Object>}} req request
  * @param {*} res response
  * @param {*} next next function
  */
@@ -341,7 +341,7 @@ export function getBlockingTasks (req, res, next) {
   const { tasks: missingColumnTasks, taskMap } = getMissingColumnTasks(req)
   req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
   for (const [k, v] of taskMap.entries()) {
-    req.aggreatedTasks.set(k, v)
+    req.aggregatedTasks.set(k, v)
   }
   next()
 }

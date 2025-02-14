@@ -24,7 +24,7 @@ const validateParams = validateQueryParams({
 export const prepareTask = (req, res, next) => {
   const { issueType, field } = req.params
 
-  const task = req.aggreatedTasks.get(`${issueType}|${field}`)
+  const task = req.aggregatedTasks.get(`${issueType}|${field}`)
   if (!task) {
     return next(new MiddlewareError(`No isssue of type '${issueType}' for field ${field}`, 404))
   }
