@@ -86,7 +86,7 @@ export default {
     forwardQuery: true,
     next: 'confirmation'
   },
-  '/results/:id/issue/:issueType/:field': {
+  '/results/:id/issue/:issueType/:field/:pageNumber?': {
     ...baseSettings,
     controller: issueDetailsController,
     noPost: true,

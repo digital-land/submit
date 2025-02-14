@@ -1,10 +1,18 @@
+import * as v from 'valibot'
 import PageController from './pageController.js'
 import * as results from './resultsController.js'
 import performanceDbApi from '../services/performanceDbApi.js'
+import { validateQueryParams } from '../middleware/common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+
+const validateParams = validateQueryParams({
+  schema: v.object({
+    pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(0)), '0')
+  })
+})
 
 /**
  * Middleware. Updates req with `task`
@@ -33,17 +41,35 @@ export const prepareTask = (req, res, next) => {
   } catch (error) {
     logger.warn('prepareTask/getTaskMessage failure', { type: types.App, errorMessage: error.message, errorStack: error.stack })
   }
+
+  req.locals.issueType = issueType
+  req.locals.field = field
   req.locals.task = { ...task, message }
+  next()
+}
+
+/**
+ */
+const setPagination = (req, res, next) => {
+  const { id, issueType, field } = req.params
+  /** @type { {responseDetails: import('../models/responseDetails.js').default} } */
+  const { responseDetails } = req.locals
+  const pagination = responseDetails.getPagination(req.parsedParams.pageNumber, {
+    href: (item) => `/check/results/${id}/issue/${issueType}/${field}/${item}`
+  })
+  req.locals.pagination = pagination
   next()
 }
 
 const middlewares = [
   isFeatureEnabled('checkIssueDetailsPage')
-    ? results.getRequestDataMiddleware
+    ? validateParams
     : (req, res, next) => { return next(new MiddlewareError('Not found', 404)) },
+  results.getRequestDataMiddleware,
   results.fetchResponseDetails,
   results.checkForErroredResponse,
   results.setupTableParams,
+  setPagination,
   results.getIssueTypesWithQualityCriteriaLevels,
   results.extractIssuesFromResults,
   results.addQualityCriteriaLevelsToIssues,

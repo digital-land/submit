@@ -59,10 +59,10 @@
     {% if options.pagination.items | length > 1 %}
         {{ govukPagination({
         previous: {
-            href: '/check/results/'+options.id+'/'+options.pagination.previousPage + '#table-tab'
+            href: '/check/results/'+options.id+'/issue/'+ options.issueType + '/' + options.field + '/' + options.pagination.previousPage
         } if options.pagination.previousPage else undefined,
         next: {
-            href: '/check/results/'+options.id+'/'+options.pagination.nextPage + '#table-tab'
+             href: '/check/results/'+options.id+'/issue/'+ options.issueType + '/' + options.field + '/' + options.pagination.nextPage
         } if options.pagination.nextPage else undefined,
         items: options.pagination.items
         })}}
