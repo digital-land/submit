@@ -2,7 +2,7 @@
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
 {% set serviceType = 'Manage' %}
 
@@ -14,23 +14,23 @@
 {{ super() }}
 
 {{ govukBreadcrumbs({
-  items: [
-    {
-      text: "Home",
-      href: "/"
-    },
-    {
-      text: "Organisations",
-      href: '/organisations'
-    },
-    {
-      text: organisation.name,
-      href: '/organisations/' + organisation.organisation
-    },
-    {
-      text: dataset.name
-    }
-  ]
+items: [
+{
+text: "Home",
+href: "/"
+},
+{
+text: "Organisations",
+href: '/organisations'
+},
+{
+text: organisation.name,
+href: '/organisations/' + organisation.organisation
+},
+{
+text: dataset.name
+}
+]
 }) }}
 
 {% endblock %}
@@ -44,10 +44,10 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     {{ datasetNavigation({
-      active: "task-list",
-      dataset: dataset,
-      organisation: organisation,
-      task_count: taskList.length
+    active: "task-list",
+    dataset: dataset,
+    organisation: organisation,
+    task_count: taskList.length
     }) }}
   </div>
 </div>
@@ -59,13 +59,13 @@
     </h2>
 
     {% if taskList.length == 0 %}
-      <p class="govuk-body">There are no issues with {{ organisation.name }}'s {{ dataset.name }} dataset.</p>
+    <p class="govuk-body">There are no issues with {{ organisation.name }}'s {{ dataset.name }} dataset.</p>
     {% else %}
 
 
     {{ govukTaskList({
-      idPrefix: "dataset-tasklist",
-      items: taskList
+    idPrefix: "dataset-tasklist",
+    items: taskList
     }) }}
 
     <h3 class="govuk-heading-m">
@@ -74,7 +74,8 @@
 
     <ol class="govuk-list govuk-list--number">
       <li>Fix the errors indicated</li>
-      <li>Use the <a href="{{ organisation | checkToolDeepLink(dataset) }}">check service</a> to make sure the data meets
+      <li>Use the <a href="{{ organisation | checkToolDeepLink(dataset) }}">check service</a> to make sure the data
+        meets
         the standard</li>
       <li>Publish the updated data on the data URL</li>
     </ol>

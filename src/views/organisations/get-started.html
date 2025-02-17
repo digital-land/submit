@@ -1,9 +1,9 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Manage' %}
 {% set pageName %}
-    {{organisation.name}} - {{dataset.name}} - Get started
+{{organisation.name}} - {{dataset.name}} - Get started
 {% endset %}
 
 {% extends "layouts/main.html" %}
@@ -13,23 +13,23 @@
 {{ super() }}
 
 {{ govukBreadcrumbs({
-  items: [
-    {
-      text: "Home",
-      href: "/"
-    },
-    {
-      text: "Organisations",
-      href: '/organisations'
-    },
-    {
-      text: organisation.name,
-      href: '/organisations/' + organisation.organisation
-    },
-    {
-      text: 'Get started'
-    }
-  ]
+items: [
+{
+text: "Home",
+href: "/"
+},
+{
+text: "Organisations",
+href: '/organisations'
+},
+{
+text: organisation.name,
+href: '/organisations/' + organisation.organisation
+},
+{
+text: 'Get started'
+}
+]
 }) }}
 
 {% endblock %}
@@ -37,10 +37,10 @@
 {% block content %}
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <span class="govuk-caption-xl">{{ organisation.name }}</span>
-        <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
-    </div>
+  <div class="govuk-grid-column-two-thirds">
+    <span class="govuk-caption-xl">{{ organisation.name }}</span>
+    <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
+  </div>
 </div>
 
 <div class="govuk-grid-row">
@@ -71,9 +71,9 @@
           </div>
 
           <div class="gem-c-step-nav__panel js-panel" id="step-panel-prepare-your-data-1">
-            <p class="gem-c-step-nav__paragraph"><a
-                href="/guidance/specifications/">Read the guidance to understand what
-              data is required</a>. Start with
+            <p class="gem-c-step-nav__paragraph"><a href="/guidance/specifications/">Read the guidance to understand
+                what
+                data is required</a>. Start with
               the fields you already have, you can update and
               improve your data over time.</p>
           </div>
@@ -102,12 +102,14 @@
             <ol class="gem-c-step-nav__list " data-length="1">
               <li class="gem-c-step-nav__list-item js-list-item ">
                 <p class="gem-c-step-nav__paragraph">
-                  The <a href="{{ organisation | checkToolDeepLink(dataset) }}">check service</a> can help you understand
+                  The <a href="{{ organisation | checkToolDeepLink(dataset) }}">check service</a> can help you
+                  understand
                   if
                   your data is ready to submit or if you need to change anything before you publish it on your website.
                 </p>
 
-                <p class="gem-c-step-nav__paragraph">You need to choose to provide your data in one of these file formats:
+                <p class="gem-c-step-nav__paragraph">You need to choose to provide your data in one of these file
+                  formats:
                 </p>
 
                 <ul class="govuk-list govuk-list--bullet">
@@ -185,38 +187,41 @@
 
           <div class="gem-c-step-nav__panel js-panel" id="step-panel-submit-your-data-4">
             {% if 'submitEndpointForm' | isFeatureEnabled %}
-              <p class="gem-c-step-nav__paragraph"><a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Submit your data</a> to the Planning
-                Data Platform. You need to provide your:</p>
+            <p class="gem-c-step-nav__paragraph"><a
+                href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Submit your data</a> to the
+              Planning
+              Data Platform. You need to provide your:</p>
 
-              <ul class="govuk-list govuk-list--bullet">
-                <li>full name</li>
-                <li>work email address</li>
-                <li>endpoint URL</li>
-                <li>website URL</li>
-              </ul>
+            <ul class="govuk-list govuk-list--bullet">
+              <li>full name</li>
+              <li>work email address</li>
+              <li>endpoint URL</li>
+              <li>website URL</li>
+            </ul>
 
-              <p class="gem-c-step-nav__paragraph">We’ll confirm by email when we’ve received your data.</p>
+            <p class="gem-c-step-nav__paragraph">We’ll confirm by email when we’ve received your data.</p>
             {% else %}
-              <p class="gem-c-step-nav__paragraph">To submit your data URL, send an email to <a href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
-              The email must include:
-              <ul class="govuk-list govuk-list--bullet">
-                <li>
-                  your full name
-                </li>
-                <li>
-                  the name of your planning authority
-                </li>
-                <li>
-                  a link to the webpage on your official planning authority website
-                </li>
-                <li>
-                  a link to the data URL
-                </li>
-              </ul>
+            <p class="gem-c-step-nav__paragraph">To submit your data URL, send an email to <a
+                href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
+            The email must include:
+            <ul class="govuk-list govuk-list--bullet">
+              <li>
+                your full name
+              </li>
+              <li>
+                the name of your planning authority
+              </li>
+              <li>
+                a link to the webpage on your official planning authority website
+              </li>
+              <li>
+                a link to the data URL
+              </li>
+            </ul>
 
-              <p class="gem-c-step-nav__paragraph">
-                We'll process your submission and add your dataset to the planning data platform.
-              </p>
+            <p class="gem-c-step-nav__paragraph">
+              We'll process your submission and add your dataset to the planning data platform.
+            </p>
             {% endif %}
           </div>
         </li>
@@ -262,10 +267,10 @@
 {% endblock %}
 
 {% block scripts %}
-    {{super()}}
-    <script src="/public/js/step-by-step-nav.bundle.js"></script>
-    <script type="text/javascript">
-    var $element = document.querySelector('#step-by-step-navigation')
-    var stepByStepNavigation = new GOVUK.Modules.Gemstepnav($element).init()
-    </script>
+{{super()}}
+<script src="/public/js/step-by-step-nav.bundle.js"></script>
+<script type="text/javascript">
+  var $element = document.querySelector('#step-by-step-navigation')
+  var stepByStepNavigation = new GOVUK.Modules.Gemstepnav($element).init()
+</script>
 {% endblock %}

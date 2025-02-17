@@ -3,12 +3,13 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Submit'%}
 {% if issueEntitiesCount > 1 %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){%
+endset %}
 {% else %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
 {%endif%}
 
 {% extends "layouts/main.html" %}
@@ -19,31 +20,32 @@
 {{ super() }}
 
 {{ govukBreadcrumbs({
-  items: [
-    {
-      text: "Home",
-      href: "/"
-    },
-    {
-      text: "Organisations",
-      href: '/organisations'
-    },
-    {
-      text: organisation.name,
-      href: '/organisations/' + organisation.organisation
-    },
-    {
-      text: dataset.name | capitalize,
-      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
-    },
-    {
-      text: issueType | capitalize,
-      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField | urlencode
-    },
-    {
-      text: entry.title
-    }
-  ]
+items: [
+{
+text: "Home",
+href: "/"
+},
+{
+text: "Organisations",
+href: '/organisations'
+},
+{
+text: organisation.name,
+href: '/organisations/' + organisation.organisation
+},
+{
+text: dataset.name | capitalize,
+href: '/organisations/' + organisation.organisation + '/' + dataset.dataset
+},
+{
+text: issueType | capitalize,
+href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField |
+urlencode
+},
+{
+text: entry.title
+}
+]
 }) }}
 
 {% endblock %}
@@ -53,8 +55,9 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukBackLink({
-      text: "Back to dataset table",
-      href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField | urlencode
+    text: "Back to dataset table",
+    href: '/organisations/' + organisation.organisation + '/' + dataset.dataset + '/' + issueType + '/' + issueField |
+    urlencode
     }) }}
   </div>
 </div>
@@ -66,30 +69,27 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukErrorSummary({
-      titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',
-      errorList: errorSummary.items
+    titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',
+    errorList: errorSummary.items
     }) }}
 
     {% if entry.geometries and entry.geometries.length %}
-      <div
-        id="map"
-        class="app-map"
-        role="region"
-        aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
-      </div>
+    <div id="map" class="app-map" role="region"
+      aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
+    </div>
     {% endif %}
 
     {{ govukSummaryList({
-      card: {
-        title: {
-          text: entry.title
-        }
-      },
-      rows: entry.fields
+    card: {
+    title: {
+    text: entry.title
+    }
+    },
+    rows: entry.fields
     }) }}
 
     {% if pagination.items | length > 1 %}
-      {{ govukPagination(pagination) }}
+    {{ govukPagination(pagination) }}
     {% endif %}
   </div>
 </div>
@@ -111,15 +111,15 @@
 {% endblock %}
 
 {% block scripts %}
-  {{ super() }}
-  {% if entry.geometries and entry.geometries.length %}
-    <script>
-      window.serverContext = {
-        containerId: 'map',
-        geometries: {{ entry.geometries | dump | safe }},
-        mapType: "static"
+{{ super() }}
+{% if entry.geometries and entry.geometries.length %}
+<script>
+  window.serverContext = {
+    containerId: 'map',
+    geometries: {{ entry.geometries | dump | safe }},
+  mapType: "static"
       }
-    </script>
-    <script src="/public/js/map.bundle.js"></script>
-  {% endif %}
+</script>
+<script src="/public/js/map.bundle.js"></script>
+{% endif %}
 {% endblock %}

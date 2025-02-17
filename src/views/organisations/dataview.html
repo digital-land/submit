@@ -3,7 +3,7 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Submit'%}
 {% set pageName %}{{organisation.name}} - {{dataset.name}} - Dataset table{% endset %}
 
@@ -15,23 +15,23 @@
 {{ super() }}
 
 {{ govukBreadcrumbs({
-  items: [
-    {
-      text: "Home",
-      href: "/"
-    },
-    {
-      text: "Organisations",
-      href: '/organisations'
-    },
-    {
-      text: organisation.name,
-      href: '/organisations/' + organisation.organisation
-    },
-    {
-      text: dataset.name | capitalize
-    }
-  ]
+items: [
+{
+text: "Home",
+href: "/"
+},
+{
+text: "Organisations",
+href: '/organisations'
+},
+{
+text: organisation.name,
+href: '/organisations/' + organisation.organisation
+},
+{
+text: dataset.name | capitalize
+}
+]
 }) }}
 
 {% endblock %}
@@ -45,10 +45,10 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     {{ datasetNavigation({
-      active: "data",
-      dataset: dataset,
-      organisation: organisation,
-      task_count: taskCount
+    active: "data",
+    dataset: dataset,
+    organisation: organisation,
+    task_count: taskCount
     }) }}
   </div>
 </div>

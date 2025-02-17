@@ -5,12 +5,13 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Submit'%}
 {% if issueEntitiesCount > 1 %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){%
+endset %}
 {% else %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
 {%endif%}
 
 {% extends "layouts/main.html" %}
@@ -21,27 +22,27 @@
 {{ super() }}
 
 {{ govukBreadcrumbs({
-  items: [
-    {
-      text: "Home",
-      href: "/"
-    },
-    {
-      text: "Organisations",
-      href: '/organisations'
-    },
-    {
-      text: organisation.name,
-      href: '/organisations/' + organisation.organisation | urlencode
-    },
-    {
-      text: dataset.name | capitalize,
-      href: '/organisations/' + organisation.organisation | urlencode + '/' + dataset.dataset | urlencode
-    },
-    {
-      text: issueType | capitalize
-    }
-  ]
+items: [
+{
+text: "Home",
+href: "/"
+},
+{
+text: "Organisations",
+href: '/organisations'
+},
+{
+text: organisation.name,
+href: '/organisations/' + organisation.organisation | urlencode
+},
+{
+text: dataset.name | capitalize,
+href: '/organisations/' + organisation.organisation | urlencode + '/' + dataset.dataset | urlencode
+},
+{
+text: issueType | capitalize
+}
+]
 }) }}
 
 {% endblock %}
@@ -51,8 +52,8 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukBackLink({
-      text: "Back to task list",
-      href: '/organisations/' + organisation.organisation | urlencode + '/' + dataset.dataset | urlencode
+    text: "Back to task list",
+    href: '/organisations/' + organisation.organisation | urlencode + '/' + dataset.dataset | urlencode
     }) }}
   </div>
 </div>
@@ -64,17 +65,14 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {{ govukErrorSummary({
-      titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',
-      errorList: errorSummary.items
+    titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',
+    errorList: errorSummary.items
     }) }}
 
     {% if geometries and geometries.length %}
-      <div
-        id="map"
-        class="app-map"
-        role="region"
-        aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
-      </div>
+    <div id="map" class="app-map" role="region"
+      aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
+    </div>
     {% endif %}
   </div>
 </div>
@@ -82,7 +80,7 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     {% if tableParams.rows.length > 0 %}
-      {{ table(tableParams) }}
+    {{ table(tableParams) }}
     {% endif %}
   </div>
 </div>
@@ -98,33 +96,34 @@
 {% endif %}
 
 {% if issueSpecification %}
-  {% set issueSpecificationInsetHtml %}
-    <div>
-      <h3 class="govuk-heading-m">{{ issueSpecification.field }}</h3>
+{% set issueSpecificationInsetHtml %}
+<div>
+  <h3 class="govuk-heading-m">{{ issueSpecification.field }}</h3>
 
-      {% if issueSpecification.description %}
-        {{ issueSpecification.description | govukMarkdown | safe }}
-      {% endif %}
+  {% if issueSpecification.description %}
+  {{ issueSpecification.description | govukMarkdown | safe }}
+  {% endif %}
 
-      {% if issueSpecification.guidance %}
-        {{ issueSpecification.guidance | govukMarkdown | safe }}
-      {% endif %}
-    </div>
-  {% endset %}
+  {% if issueSpecification.guidance %}
+  {{ issueSpecification.guidance | govukMarkdown | safe }}
+  {% endif %}
+</div>
+{% endset %}
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h2 class="govuk-heading-l">
-        How to fix this issue
-      </h2>
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h2 class="govuk-heading-l">
+      How to fix this issue
+    </h2>
 
-      <p class="govuk-body">Your dataset is missing the <strong>{{ issueSpecification.field }}</strong> column.</p>
-      <p class="govuk-body">The <a href="{{ dataset.dataset | getDatasetGuidanceUrl }}" target="_blank" rel="noopener noreferrer">{{ dataset.name }}</a> guidance explains how to fix the issue:</p>
-      {{ govukInsetText({
-        html: issueSpecificationInsetHtml
-      }) }}
-    </div>
+    <p class="govuk-body">Your dataset is missing the <strong>{{ issueSpecification.field }}</strong> column.</p>
+    <p class="govuk-body">The <a href="{{ dataset.dataset | getDatasetGuidanceUrl }}" target="_blank"
+        rel="noopener noreferrer">{{ dataset.name }}</a> guidance explains how to fix the issue:</p>
+    {{ govukInsetText({
+    html: issueSpecificationInsetHtml
+    }) }}
   </div>
+</div>
 {% endif %}
 
 <div class="govuk-grid-row">
@@ -144,15 +143,15 @@
 {% endblock %}
 
 {% block scripts %}
-  {{ super() }}
-  {% if geometries and geometries.length %}
-    <script>
-      window.serverContext = {
-        containerId: 'map',
-        geometries: {{ geometries | dump | safe }},
-        mapType: "static"
+{{ super() }}
+{% if geometries and geometries.length %}
+<script>
+  window.serverContext = {
+    containerId: 'map',
+    geometries: {{ geometries | dump | safe }},
+  mapType: "static"
       }
-    </script>
-    <script src="/public/js/map.bundle.js"></script>
-  {% endif %}
+</script>
+<script src="/public/js/map.bundle.js"></script>
+{% endif %}
 {% endblock %}
