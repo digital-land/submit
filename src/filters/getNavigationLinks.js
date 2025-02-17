@@ -1,5 +1,5 @@
 const navigationLinks = {
-  organistions: {
+  organisations: {
     href: '/organisations',
     text: 'Find your organisation'
   },
