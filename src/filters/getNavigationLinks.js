@@ -16,7 +16,7 @@ const navigationLinks = {
  * @param {string[]} links - An array of page names for the links.
  * @returns {object[]} An array of navigation link objects.
  */
-export function getNavigationLinks(currentUrl, links) {
+export function getNavigationLinks (currentUrl, links) {
   // Filter the navigationLinks object based on the provided links array
   return links
     .map(link => {
