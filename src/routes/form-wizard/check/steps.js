@@ -9,7 +9,7 @@ import submitUrlController from '../../../controllers/submitUrlController.js'
 import statusController from '../../../controllers/statusController.js'
 import resultsController from '../../../controllers/resultsController.js'
 import checkDeepLinkController from '../../../controllers/checkDeepLinkController.js'
-
+import shareResultsController from '../../../controllers/ShareResultsController.js'
 const baseSettings = {
   controller: PageController,
   editable: true,
@@ -75,6 +75,13 @@ export default {
     checkJourney: false,
     entryPoint: true,
     next: (req, res) => `results/${req.params.id}/0`
+  },
+  '/results/:id/share': {
+    ...baseSettings,
+    template: 'check/results/shareResults.html',
+    controller: shareResultsController,
+    checkJourney: false,
+    entryPoint: true,
   },
   '/results/:id/:pageNumber': {
     ...baseSettings,
