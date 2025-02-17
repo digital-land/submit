@@ -74,37 +74,42 @@ panel: { html: tableTab } } } %}
   <div class="govuk-grid-column-two-thirds">
 
     {% if options.passedChecks.length > 0 %}
-    <h2 class="govuk-heading-m">Data that passed checks</h2>
+    <div id="passed-checks">
+      <h2 class="govuk-heading-m">Data that passed checks</h2>
 
-    {{ govukTaskList({
-    idPrefix: "passed-checks",
-    items: options.passedChecks
-    }) }}
+      {{ govukTaskList({
+      idPrefix: "passed-checks",
+      items: options.passedChecks
+      }) }}
+    </div>
     {% endif %}
 
     {% if options.tasksBlocking.length > 0 %}
-    <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
+    <div id="required-checks">
+      <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
 
-    <p>You cannot submit your data to the platform until you fix these issues.</p>
+      <p>You cannot submit your data to the platform until you fix these issues.</p>
 
-    {{ govukTaskList({
-    idPrefix: "must-fix",
-    items: options.tasksBlocking
-    }) }}
+      {{ govukTaskList({
+      idPrefix: "must-fix",
+      items: options.tasksBlocking
+      }) }}
+    </div>
     {% endif %}
 
     {% if options.tasksNonBlocking.length > 0 %}
-    <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
+    <div id="optional-checks">
+      <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
 
-    <p>You can submit your data with these issues but should fix them over time to improve the quality and usability
-      of
-      the
-      data.</p>
+      <p>You can submit your data with these issues but should fix them over time to improve the quality and usability
+        of
+        the data.</p>
 
-    {{ govukTaskList({
-    idPrefix: "fix-later",
-    items: options.tasksNonBlocking
-    }) }}
+      {{ govukTaskList({
+      idPrefix: "fix-later",
+      items: options.tasksNonBlocking
+      }) }}
+    </div>
     {% endif %}
 
     {% if options.tasksBlocking.length > 0 %}
