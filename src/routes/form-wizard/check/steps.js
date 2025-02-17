@@ -81,7 +81,7 @@ export default {
     template: 'check/results/shareResults.html',
     controller: shareResultsController,
     checkJourney: false,
-    entryPoint: true,
+    entryPoint: true
   },
   '/results/:id/:pageNumber': {
     ...baseSettings,
