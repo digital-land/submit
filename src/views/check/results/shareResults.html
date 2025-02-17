@@ -24,9 +24,26 @@
 
         {{ govukButton({
         text: "Copy link",
-        classes: "app-c-button--secondary-quiet"
+        classes: "app-c-button--secondary-quiet js-enabled",
+        attributes: {
+        onclick: "copyShareLink()"
+        }
         }) }}
     </div>
+
+    <script>
+        function copyShareLink() {
+            const shareUrl = "{{share_url}}";
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const button = document.querySelector('.app-c-button--secondary-quiet');
+                const originalText = button.innerText;
+                button.innerText = 'Copied!';
+                setTimeout(() => {
+                    button.innerText = originalText;
+                }, 2000);
+            });
+        }
+    </script>
 </div>
 
 {% endblock %}
