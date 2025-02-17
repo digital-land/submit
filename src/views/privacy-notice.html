@@ -1,7 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% set pageName = 'Privacy notice for Submit and update planning and housing data for England' %}
-{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
 {% set markdownContent %}
 
 # Submit and update planning and housing data for England privacy notice
@@ -9,9 +9,7 @@
 
 ## Who we are
 
-Submit and update planning and housing data for England
-([submit.planning.data.gov.uk](https://submit.planning.data.gov.uk)) is provided by the Ministry of Housing, Communities
-and Local Government (MHCLG).
+Submit and update planning and housing data for England ([submit.planning.data.gov.uk](https://submit.planning.data.gov.uk)) is provided by the Ministry of Housing, Communities and Local Government (MHCLG).
 
 MHCLG is the data controller for the service.
 
@@ -28,8 +26,7 @@ The personal data we collect from you includes:
 
 ## Other data we collect
 
-We also record how you use the service, including which pages you visit and what you click on. This helps us to improve
-the service experience and make sure it’s meeting your needs. No personal data is recorded.
+We also record how you use the service, including which pages you visit and what you click on. This helps us to improve the service experience and make sure it’s meeting your needs. No personal data is recorded.
 
 
 ## Why we need your personal data
@@ -54,11 +51,9 @@ The legal basis for processing all personal data is that it’s necessary:
 
 ## How we use your personal data
 
-The personal data we collect may be shared with other government departments, agencies and public bodies. It may also be
-shared with our technology suppliers, for example our hosting provider.
+The personal data we collect may be shared with other government departments, agencies and public bodies. It may also be shared with our technology suppliers, for example our hosting provider.
 
-We will share your personal data if we are required to do so by law - for example, by court order, or to prevent fraud
-or other crime.
+We will share your personal data if we are required to do so by law - for example, by court order, or to prevent fraud or other crime.
 
 We will not:
 
@@ -70,35 +65,26 @@ We will not:
 
 ## How long we keep your personal data
 
-Personal data collected when you submit planning and housing data or a feedback form on the service is kept for as long
-as we need the personal data for the purposes of research, security or delivery of the service.
+Personal data collected when you submit planning and housing data or a feedback form on the service is kept for as long as we need the personal data for the purposes of research, security or delivery of the service.
 
 
 ## Children’s privacy protection
 
-Our services are not designed for, or intentionally targeted at, children 13 years of age or younger. We do not
-intentionally collect or maintain personal data about anyone under the age of 13.
+Our services are not designed for, or intentionally targeted at, children 13 years of age or younger. We do not intentionally collect or maintain personal data about anyone under the age of 13.
 
 
 ## Where your personal data is processed and stored
 
-We design, build and run our systems to make sure that your personal data is as safe as possible at all stages, both
-while it’s processed and when it’s stored.
+We design, build and run our systems to make sure that your personal data is as safe as possible at all stages, both while it’s processed and when it’s stored.
 
 All personal data is stored in the [European Economic Area](https://www.gov.uk/eu-eea) (EEA).
 
-Where personal data processing happens in the US, suppliers need to meet the certification standards set out in the
-[UK-US data
-bridge](https://www.gov.uk/government/publications/uk-us-data-bridge-supporting-documents/uk-us-data-bridge-explainer)
-agreement. This facilitates flows of personal data to certified US companies that have opted in to the EU-US Data
-Privacy Framework.
+Where personal data processing happens in the US, suppliers need to meet the certification standards set out in the [UK-US data bridge](https://www.gov.uk/government/publications/uk-us-data-bridge-supporting-documents/uk-us-data-bridge-explainer) agreement. This facilitates flows of personal data to certified US companies that have opted in to the EU-US Data Privacy Framework.
 
 
 ## How we protect your personal data and keep it secure
 
-We are committed to doing all that we can to keep your personal data secure. We have set up systems and processes to
-prevent unauthorised access or disclosure of your personal data - for example, we protect your personal data using
-varying levels of encryption.
+We are committed to doing all that we can to keep your personal data secure. We have set up systems and processes to prevent unauthorised access or disclosure of your personal data - for example, we protect your personal data using varying levels of encryption.
 
 We also make sure that any third parties that we deal with keep all personal data they process on our behalf secure.
 
@@ -123,8 +109,7 @@ You can also:
 
 If you have any of these requests, get in contact with our Knowledge and Information Access Team.
 
-[Read the MHCLG personal information
-charter](https://www.gov.uk/government/organisations/ministry-of-housing-communities-local-government/about/personal-information-charter).
+[Read the MHCLG personal information charter](https://www.gov.uk/government/organisations/ministry-of-housing-communities-local-government/about/personal-information-charter).
 
 
 ## Contact us or make a complaint
@@ -145,14 +130,12 @@ London \
 SW1P 4DF \
 United Kingdom
 
-You can also make a complaint to the independent regulator the Information Commissioner's Office (ICO) at
-[https://ico.org.uk/make-a-complaint/](https://ico.org.uk/make-a-complaint/)
+You can also make a complaint to the independent regulator the Information Commissioner's Office (ICO) at [https://ico.org.uk/make-a-complaint/](https://ico.org.uk/make-a-complaint/)
 
 
 ## Keeping our privacy notice up to date
 
-We may change this privacy notice. Any changes will apply to you and your personal data immediately. You should
-regularly review this notice.
+We may change this privacy notice. Any changes will apply to you and your personal data immediately. You should regularly review this notice.
 
 This notice was last updated on 21 June 2024.
 
@@ -161,6 +144,6 @@ This notice was last updated on 21 June 2024.
 
 {% block content %}
 
-{{markdownContent | govukMarkdown(headingsStartWith="xl") | safe}}
+    {{markdownContent | govukMarkdown(headingsStartWith="xl") | safe}}
 
 {% endblock content %}

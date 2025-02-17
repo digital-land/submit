@@ -1,11 +1,10 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organistions', 'guidance']) %}
 {% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
 {% set serviceType = 'manage' %}
-{% set resubmitUrl %}/organisations/{{ organisation.organisation | urlencode }}/{{ dataset.dataset | urlencode
-}}/get-started{% endset %}
+{% set resubmitUrl %}/organisations/{{ organisation.organisation | urlencode }}/{{ dataset.dataset | urlencode }}/get-started{% endset %}
 
 {% extends "layouts/main.html" %}
 
@@ -14,23 +13,23 @@
 {{ super() }}
 
 {{ govukBreadcrumbs({
-items: [
-{
-text: "Home",
-href: "/"
-},
-{
-text: "Organisations",
-href: '/organisations'
-},
-{
-text: organisation.name,
-href: '/organisations/' + organisation.organisation
-},
-{
-text: dataset.name | capitalize
-}
-]
+  items: [
+    {
+      text: "Home",
+      href: "/"
+    },
+    {
+      text: "Organisations",
+      href: '/organisations'
+    },
+    {
+      text: organisation.name,
+      href: '/organisations/' + organisation.organisation
+    },
+    {
+      text: dataset.name | capitalize
+    }
+  ]
 }) }}
 
 {% endblock %}
@@ -53,44 +52,43 @@ text: dataset.name | capitalize
     <h3 class="govuk-heading-m">Error details</h3>
 
     {{ govukSummaryList({
-    rows: [
-    {
-    key: {
-    text: "Data URL"
-    },
-    value: {
-    html: '<code>' + errorData.endpoint_url + '</code>'
-    }
-    },
-    {
-    key: {
-    text: "HTTP status"
-    },
-    value: {
-    text: errorData.http_status
-    }
-    },
-    {
-    key: {
-    text: "Last attempted access"
-    },
-    value: {
-    text: errorData.latest_log_entry_date | govukDateTime
-    }
-    },
-    {
-    key: {
-    text: "Last successful access"
-    },
-    value: {
-    text: errorData.latest_200_date | govukDateTime
-    }
-    }
-    ]
+      rows: [
+        {
+          key: {
+            text: "Data URL"
+          },
+          value: {
+            html: '<code>' + errorData.endpoint_url + '</code>'
+          }
+        },
+        {
+          key: {
+            text: "HTTP status"
+          },
+          value: {
+            text: errorData.http_status
+          }
+        },
+        {
+          key: {
+            text: "Last attempted access"
+          },
+          value: {
+            text: errorData.latest_log_entry_date | govukDateTime
+          }
+        },
+        {
+          key: {
+            text: "Last successful access"
+          },
+          value: {
+            text: errorData.latest_200_date | govukDateTime
+          }
+        }
+      ]
     }) }}
 
-    <p>If your data URL has changed you can <a class="resubmit-link" href="{{ resubmitUrl }}">resubmit your data
-        URL</a>.</p>
+    <p>If your data URL has changed you can <a class="resubmit-link" href="{{ resubmitUrl }}">resubmit your data URL</a>.</p>
 
     <p>You should try to make sure your data URLs stay the same when you update your data so we can collect your data
       each night.</p>
