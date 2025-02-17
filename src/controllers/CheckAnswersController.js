@@ -66,7 +66,11 @@ class CheckAnswersController extends PageController {
     - Endpoint URL: ${data.endpoint}`
 
     // Generate Jira service request
-    const response = await createCustomerRequest(summary, description, config.jira.requestTypeId)
+    const response = await createCustomerRequest({
+      summary,
+      description,
+      raiseOnBehalfOf: data.email
+    }, config.jira.requestTypeId)
 
     if (response.error || !response.data) {
       logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to create Jira service request', {
