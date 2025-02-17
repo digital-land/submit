@@ -123,16 +123,8 @@ panel: { html: tableTab } } } %}
         }) }}
       </div>
     </form>
-  </div>
-  <div class="govuk-grid-column-one-third">
-    <h3 class="govuk-heading-s">Dataset actions</h3>
 
-    <p><a href="./share">Share these results</a></p>
-  </div>
-</div>
-{% else %}
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+    {% else %}
     <form method="post">
       <div class="govuk-button-group">
         {{ govukButton({
@@ -141,9 +133,15 @@ panel: { html: tableTab } } } %}
         <a href="/check/upload-method">Upload a new version</a>
       </div>
     </form>
+    {% endif %}
+
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <h3 class="govuk-heading-s">Dataset actions</h3>
+
+    <p><a href="./share">Share these results</a></p>
   </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
