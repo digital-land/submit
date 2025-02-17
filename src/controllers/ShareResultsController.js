@@ -2,12 +2,7 @@ import PageController from './pageController.js'
 import config from '../../config/index.js'
 
 class ShareResultsController extends PageController {
-  /* Custom middleware */
-  middlewareSetup () {
-    super.middlewareSetup()
-  }
-
-  async locals (req, res, next) {
+  async locals(req, res, next) {
     try {
       const { id } = req.params
       const shareLink = this.generateResultsLink(id)
@@ -27,7 +22,7 @@ class ShareResultsController extends PageController {
     }
   }
 
-  generateResultsLink (id) {
+  generateResultsLink(id) {
     return `${config.url}check/results/${id}/0`
   }
 }
