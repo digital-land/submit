@@ -3,6 +3,7 @@ import config from '../../config/index.js'
 import { attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { stringify } from 'csv-stringify/sync'
 
 class CheckAnswersController extends PageController {
   /**
@@ -81,12 +82,13 @@ class CheckAnswersController extends PageController {
       return null
     }
 
-    // Attach CSV file to Jira issue
+    // Create CSV to attach to Jira issue
     const dateNow = new Date().toISOString().split('T')[0]
-    const csv = [
+    const csvData = [
       ['organisation', 'pipelines', 'documentation-url', 'endpoint-url', 'start-date', 'licence'],
       [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, 'ogl3']
-    ].map(row => row.join(',')).join('\n')
+    ]
+    const csv = stringify(csvData)
 
     const file = new File([csv], `request-${data.organisationId}-${data.dataset}-${dateNow}.csv`, { type: 'text/csv' })
     const attachmentResponse = await attachFileToIssue(response.data.issueKey, file)
