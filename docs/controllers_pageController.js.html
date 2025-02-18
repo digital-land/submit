@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/pageController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/pageController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import hmpoFormWizard from 'hmpo-form-wizard'
+import { logPageView, types } from '../utils/logging.js'
+import logger from '../utils/logger.js'
+import { datasetSlugToReadableName } from '../utils/datasetSlugToReadableName.js'
+const { Controller } = hmpoFormWizard
+
+/**
+ * If we arrived at the page via deep from another page, we'll use that page as the back link.
+ *
+ * @param {string} url current page URL
+ * @param {Object} deepLinkInfo - deep link info from the session
+ * @param {string=} deepLinkInfo.referrer - optional referrer URL
+ * @param {string} deepLinkInfo.dataset - dataset name
+ * @returns {string|undefined} back link URL
+ */
+function wizardBackLink (currentUrl, deepLinkInfo) {
+  if (deepLinkInfo &amp;&amp; 'referrer' in deepLinkInfo) {
+    const { referrer, dataset } = deepLinkInfo
+    if (dataset === 'tree' &amp;&amp; currentUrl === '/check/geometry-type') {
+      return referrer
+    }
+    if (dataset !== 'tree' &amp;&amp; currentUrl === '/check/upload-method') {
+      return referrer
+    }
+  }
+
+  return undefined
+}
+
+/**
+ * This class extends the Controller class from the hmpo-form-wizard library.
+ * For more information, please refer to the documentation:
+ * https://github.com/HMPO/hmpo-form-wizard
+ * Specifically, the controller lifecycle is outlined in this PDF:
+ * https://github.com/UKHomeOffice/passports-form-wizard/wiki/HMPO%20Forms%20Flow.pdf
+ */
+class PageController extends Controller {
+  sessionKey = 'deep-link-session-key'
+
+  get (req, res, next) {
+    logPageView(this.options.route, req.sessionID, req.ip)
+    super.get(req, res, next)
+  }
+
+  locals (req, res, next) {
+    try {
+      let backLink
+      const deepLinkInfo = req?.sessionModel?.get(this.sessionKey)
+      if (deepLinkInfo) {
+        req.form.options.deepLink = deepLinkInfo
+        req.form.options.dataset = deepLinkInfo.dataset
+        req.form.options.datasetName = deepLinkInfo.datasetName
+        req.form.options.lpa = deepLinkInfo.lpa || deepLinkInfo.orgName
+        req.form.options.orgId = deepLinkInfo.orgId
+        backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
+      }
+
+      if (backLink) {
+        req.form.options.backLinkText = `Back to ${deepLinkInfo.datasetName} overview`
+      }
+
+      backLink = backLink ?? this.options.backLink
+      if (backLink) {
+        req.form.options.lastPage = backLink
+      }
+    } catch (e) {
+      logger.warn('PageController.locals(): error setting back link', {
+        type: types.App,
+        errorMessage: e.message
+      })
+    }
+
+    const dataset = req?.sessionModel?.get('dataset')
+    try {
+      req.form.options.datasetName = datasetSlugToReadableName(dataset)
+    } catch (e) {
+      logger.warn(`Failed to get readable dataset name from slug: ${dataset}`)
+    }
+
+    const errors = req?.sessionModel?.get('errors')
+    if (errors) {
+      req.form.options.errors = errors
+    }
+
+    super.locals(req, res, next)
+  }
+}
+
+export default PageController
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CheckDeepLinkController.html">CheckDeepLinkController</a></li><li><a href="EndpointSubmissionFormDeepLinkController.html">EndpointSubmissionFormDeepLinkController</a></li><li><a href="MiddlewareError.html">MiddlewareError</a></li><li><a href="PageController.html">PageController</a></li><li><a href="module.html#.exports">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#FetchOneFallbackPolicy">FetchOneFallbackPolicy</a></li><li><a href="global.html#addNoticesToDatasets">addNoticesToDatasets</a></li><li><a href="global.html#attachFileToIssue">attachFileToIssue</a></li><li><a href="global.html#availableDatasets">availableDatasets</a></li><li><a href="global.html#checkToolDeepLink">checkToolDeepLink</a></li><li><a href="global.html#createCustomerRequest">createCustomerRequest</a></li><li><a href="global.html#datasetStatusEnum">datasetStatusEnum</a></li><li><a href="global.html#datasetSubmissionDeadlineCheck">datasetSubmissionDeadlineCheck</a></li><li><a href="global.html#datasets">datasets</a></li><li><a href="global.html#endpointSubmissionFormToolDeepLink">endpointSubmissionFormToolDeepLink</a></li><li><a href="global.html#fetchDatasetErrorStatus">fetchDatasetErrorStatus</a></li><li><a href="global.html#fetchIf">fetchIf</a></li><li><a href="global.html#fetchIfFn">fetchIfFn</a></li><li><a href="global.html#fetchLatestResource">fetchLatestResource</a></li><li><a href="global.html#fetchLocalAuthorities">fetchLocalAuthorities</a></li><li><a href="global.html#fetchMany">fetchMany</a></li><li><a href="global.html#fetchManyFn">fetchManyFn</a></li><li><a href="global.html#fetchManyFromAllDatasets">fetchManyFromAllDatasets</a></li><li><a href="global.html#fetchManyFromAllDatasetsFn">fetchManyFromAllDatasetsFn</a></li><li><a href="global.html#fetchOne">fetchOne</a></li><li><a href="global.html#fetchOneFn">fetchOneFn</a></li><li><a href="global.html#fetchOneFromAllDatasets">fetchOneFromAllDatasets</a></li><li><a href="global.html#fetchResourceStatus">fetchResourceStatus</a></li><li><a href="global.html#formatData">formatData</a></li><li><a href="global.html#getColumnFieldLog">getColumnFieldLog</a></li><li><a href="global.html#getDeadlineHistory">getDeadlineHistory</a></li><li><a href="global.html#getErrorSummary">getErrorSummary</a></li><li><a href="global.html#getGeometries">getGeometries</a></li><li><a href="global.html#getIssueDetails">getIssueDetails</a></li><li><a href="global.html#getIssueField">getIssueField</a></li><li><a href="global.html#getLastPage">getLastPage</a></li><li><a href="global.html#getPagination">getPagination</a></li><li><a href="global.html#getRowsWithVerboseColumns">getRowsWithVerboseColumns</a></li><li><a href="global.html#getSetDataRange">getSetDataRange</a></li><li><a href="global.html#getStatusTag">getStatusTag</a></li><li><a href="global.html#getVerboseColumns">getVerboseColumns</a></li><li><a href="global.html#handleRejections">handleRejections</a></li><li><a href="global.html#initiateJsHiddenChecks">initiateJsHiddenChecks</a></li><li><a href="global.html#invalidSchemaPaths">invalidSchemaPaths</a></li><li><a href="global.html#isFeatureEnabled">isFeatureEnabled</a></li><li><a href="global.html#isResourceIdValid">isResourceIdValid</a></li><li><a href="global.html#logPageError">logPageError</a></li><li><a href="global.html#lpaOverviewQuery">lpaOverviewQuery</a></li><li><a href="global.html#makeDatasetSlugToReadableNameFilter">makeDatasetSlugToReadableNameFilter</a></li><li><a href="global.html#maybeSetReferrer">maybeSetReferrer</a></li><li><a href="global.html#orgStatsReducer">orgStatsReducer</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#parallel">parallel</a></li><li><a href="global.html#parallelFn">parallelFn</a></li><li><a href="global.html#postRequest">postRequest</a></li><li><a href="global.html#prepareDatasetEndpointIssueTemplateParams">prepareDatasetEndpointIssueTemplateParams</a></li><li><a href="global.html#prepareDatasetOverviewTemplateParams">prepareDatasetOverviewTemplateParams</a></li><li><a href="global.html#prepareDatasetTaskListTemplateParams">prepareDatasetTaskListTemplateParams</a></li><li><a href="global.html#prepareGetOrganisationsTemplateParams">prepareGetOrganisationsTemplateParams</a></li><li><a href="global.html#prepareOverviewTemplateParams">prepareOverviewTemplateParams</a></li><li><a href="global.html#prepareTasks">prepareTasks</a></li><li><a href="global.html#preventIndexing">preventIndexing</a></li><li><a href="global.html#processEntitiesMiddleware">processEntitiesMiddleware</a></li><li><a href="global.html#processSpecificationMiddleware">processSpecificationMiddleware</a></li><li><a href="global.html#proto">proto</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderTemplate">renderTemplate</a></li><li><a href="global.html#renderTemplateFn">renderTemplateFn</a></li><li><a href="global.html#requiredDatasets">requiredDatasets</a></li><li><a href="global.html#requiresGeometryTypeToBeSelected">requiresGeometryTypeToBeSelected</a></li><li><a href="global.html#requiresGeometryTypeToBeSelectedViaDeepLink">requiresGeometryTypeToBeSelectedViaDeepLink</a></li><li><a href="global.html#schemaIssues">schemaIssues</a></li><li><a href="global.html#setNoticesFromSourceKey">setNoticesFromSourceKey</a></li><li><a href="global.html#setupNunjucks">setupNunjucks</a></li><li><a href="global.html#splitByLeading">splitByLeading</a></li><li><a href="global.html#statusToTagClassMapping">statusToTagClassMapping</a></li><li><a href="global.html#templateSchema">templateSchema</a></li><li><a href="global.html#types">types</a></li><li><a href="global.html#validateAndRender">validateAndRender</a></li><li><a href="global.html#validateQueryParamsFn">validateQueryParamsFn</a></li><li><a href="global.html#validationErrorMessage">validationErrorMessage</a></li><li><a href="global.html#wizardBackLink">wizardBackLink</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

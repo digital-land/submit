@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: middleware/overview.middleware.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: middleware/overview.middleware.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import performanceDbApi from '../services/performanceDbApi.js'
+import { fetchOrgInfo, logPageError, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchResources } from './common.middleware.js'
+import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
+import { dataSubjects, getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
+import config from '../../config/index.js'
+import _ from 'lodash'
+import logger from '../utils/logger.js'
+
+// get a list of available datasets
+const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
+  dataSubject.dataSets
+    .filter((dataset) => dataset.available)
+    .map((dataset) => dataset.value)
+)
+
+/**
+ * Middleware. Updates req with 'datasetErrorStatus'.
+ *
+ * Fetches datasets which have active endpoints in error state.
+ */
+const fetchDatasetErrorStatus = fetchMany({
+  query: ({ params }) => {
+    return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
+  },
+  result: 'datasetErrorStatus',
+  dataset: FetchOptions.performanceDb
+})
+
+const fetchProvisions = fetchMany({
+  query: ({ params }) => {
+    const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
+    return /* sql */ `select dataset, project, provision_reason
+       from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
+  },
+  result: 'provisions'
+})
+
+const fetchEntityCounts = fetchOneFromAllDatasets({
+  query: ({ req }) => `
+    select count(entity) as entity_count
+    from entity
+    WHERE organisation_entity = '${req.orgInfo.entity}'`,
+  result: 'entityCounts'
+})
+
+/**
+ * Calculates overall "health" of the datasets (not)provided by an organisation.
+ *
+ * @param {number[]} accumulator - Array containing counts [withEndpoints, needsFixing, hasErrors]
+ * @param {Object} dataset - Dataset information
+ * @param {string} [dataset.endpoint] - Optional endpoint URL
+ * @param {string} dataset.status - Dataset status
+ * @param {number} dataset.endpointCount - Number of endpoints
+ * @returns {number[]} Updated accumulator
+ */
+const orgStatsReducer = (accumulator, dataset) => {
+  if (dataset.endpointCount > 0) accumulator[0]++
+  if (dataset.status === 'Needs fixing') accumulator[1]++
+  if (dataset.status === 'Error') accumulator[2]++
+  return accumulator
+}
+
+/**
+ * Dataset submission deadline check middleware.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ *
+ * @description
+ * This middleware function checks if a dataset has been submitted within a certain timeframe
+ * and sets flags for due and overdue notices accordingly.
+ */
+export const datasetSubmissionDeadlineCheck = (req, res, next) => {
+  const { resources } = req
+  const currentDate = new Date()
+
+  if (!resources) {
+    const error = new Error('datasetSubmissionDeadlineCheck requires resources')
+    next(error)
+  }
+
+  req.noticeFlags = requiredDatasets.map(dataset => {
+    const datasetResources = resources[dataset.dataset]
+    let resource = datasetResources?.find(resource => resource.dataset === dataset.dataset)
+
+    let datasetSuppliedForCurrentYear = false
+    let datasetSuppliedForLastYear = false
+
+    const { deadlineDate, lastYearDeadline, twoYearsAgoDeadline } = getDeadlineHistory(dataset.deadline)
+
+    if (!deadlineDate || !lastYearDeadline || !twoYearsAgoDeadline) {
+      logger.error(`Invalid deadline dates for dataset: ${dataset.dataset}`)
+      return { dataset: dataset.dataset, dueNotice: false, overdueNotice: false, deadline: undefined }
+    }
+
+    if (resource) {
+      const startDate = new Date(resource.start_date)
+
+      if (!startDate || Number.isNaN(startDate.getTime())) {
+        logger.error(`Invalid start date for resource: ${dataset.dataset}`)
+        return { dataset: dataset.dataset, dueNotice: false, overdueNotice: false, deadline: undefined }
+      }
+
+      datasetSuppliedForCurrentYear = startDate >= lastYearDeadline &amp;&amp; startDate &lt; deadlineDate
+      datasetSuppliedForLastYear = startDate >= twoYearsAgoDeadline &amp;&amp; startDate &lt; lastYearDeadline
+    } else {
+      resource = { dataset: dataset.dataset }
+    }
+
+    const warningDate = new Date(deadlineDate.getTime())
+    warningDate.setMonth(warningDate.getMonth() - dataset.noticePeriod)
+
+    const dueNotice = !datasetSuppliedForCurrentYear &amp;&amp; currentDate > warningDate
+    const overdueNotice = !dueNotice &amp;&amp; !datasetSuppliedForCurrentYear &amp;&amp; !datasetSuppliedForLastYear
+
+    return { dataset: dataset.dataset, dueNotice, overdueNotice, deadline: deadlineDate }
+  })
+
+  next()
+}
+
+export function groupResourcesByDataset (req, res, next) {
+  const { resources } = req
+
+  req.resources = resources.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
+    }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
+
+  next()
+}
+
+/**
+ * Adds notices to datasets based on notice flags
+ *
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next function in the middleware chain
+ *
+ * @description
+ * This middleware function adds notices to datasets based on the notice flags.
+ * It modifies the `req.datasets` and `req.notices` properties.
+ */
+export const addNoticesToDatasets = (req, res, next) => {
+  const { noticeFlags, datasets } = req
+
+  if (!Array.isArray(noticeFlags) || !Array.isArray(datasets)) {
+    logger.error('Invalid noticeFlags or datasets structure')
+    next()
+  }
+
+  req.datasets = datasets.map(dataset => {
+    const notice = noticeFlags.find(notice => notice.dataset === dataset.dataset)
+
+    if (!notice || (!notice.dueNotice &amp;&amp; !notice.overdueNotice)) {
+      return dataset
+    }
+
+    if (!(notice.deadline instanceof Date) || Number.isNaN(notice.deadline.getTime())) {
+      logger.error(`Invalid deadline for dataset: ${dataset.dataset}`)
+      return dataset
+    }
+
+    const deadline = notice.deadline.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+
+    let type
+    if (notice.dueNotice) {
+      type = 'due'
+    } else if (notice.overdueNotice) {
+      type = 'overdue'
+    }
+
+    return {
+      ...dataset,
+      notice: {
+        deadline,
+        type
+      }
+    }
+  })
+
+  next()
+}
+
+export function prepareDatasetObjects (req, res, next) {
+  const { issues, endpoints } = req
+
+  req.datasets = availableDatasets.map((dataset) => {
+    const datasetEndpoints = endpoints[dataset]
+    const datasetIssues = issues[dataset]
+
+    if (!datasetEndpoints) {
+      return { status: 'Not submitted', endpointCount: 0, dataset }
+    }
+
+    const endpointCount = datasetEndpoints.length
+    const httpStatus = datasetEndpoints.find(endpoint => endpoint.latest_status !== '200')?.latest_status
+    const error = httpStatus !== undefined ? `There was a ${httpStatus} error accessing the data URL` : undefined
+    const issueCount = datasetIssues?.length || 0
+
+    let status
+    if (error) {
+      status = 'Error'
+    } else if (issueCount > 0) {
+      status = 'Needs fixing'
+    } else {
+      status = 'Live'
+    }
+
+    return { dataset, error, issueCount, status, endpointCount }
+  })
+
+  next()
+}
+
+/**
+ * Prepares overview template parameters.
+ *
+ * @param {Object} req - Express request object
+ * @param {Object} req.orgInfo - Organization information
+ * @param {Array&lt;Object>} req.provisions - Array of provision objects
+ * @param {string} req.provisions[].dataset - Dataset name
+ * @param {string} req.provisions[].provision_reason - Reason for provision
+ * @param {string} req.provisions[].project - Project name
+ * @param {Array&lt;Object>} req.datasets - Array of dataset objects
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ * @returns {void}
+ */
+export function prepareOverviewTemplateParams (req, res, next) {
+  const { orgInfo: organisation, provisions, datasets } = req
+
+  const provisionData = new Map()
+  for (const provision of provisions ?? []) {
+    provisionData.set(provision.dataset, provision)
+  }
+
+  // add in any of the missing key 8 datasets
+  const keys = new Set(datasets.map(d => d.dataset))
+  availableDatasets.forEach((dataset) => {
+    if (!keys.has(dataset)) {
+      const row = {
+        dataset,
+        endpoint: null,
+        status: 'Not submitted',
+        issue_count: 0,
+        entity_count: undefined
+      }
+      datasets.push(row)
+    }
+  })
+
+  const isOPDMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
+
+  const totalDatasets = datasets.length
+  const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
+
+  const datasetsByReason = _.groupBy(datasets, (ds) => {
+    const reason = provisionData.get(ds.dataset)?.provision_reason
+    switch (reason) {
+      case 'statutory':
+        return 'statutory'
+      default:
+        return 'other'
+    }
+  })
+
+  for (const coll of Object.values(datasetsByReason)) {
+    coll.sort((a, b) => a.dataset.localeCompare(b.dataset))
+  }
+
+  req.templateParams = {
+    organisation,
+    datasets: datasetsByReason,
+    totalDatasets,
+    datasetsWithEndpoints,
+    datasetsWithIssues,
+    datasetsWithErrors,
+    isOPDMember
+  }
+
+  next()
+}
+
+export const getOverview = renderTemplate({
+  templateParams (req) {
+    if (!req.templateParams) throw new Error('missing templateParams')
+    return req.templateParams
+  },
+  template: 'organisations/overview.html',
+  handlerName: 'getOverview'
+})
+
+export function groupIssuesCountsByDataset (req, res, next) {
+  const { entityIssueCounts, entryIssueCounts } = req
+
+  // merge arrays and handle undefined
+  const issueCounts = [...(entityIssueCounts || []), ...(entryIssueCounts || [])]
+  req.issues = issueCounts.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
+    }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
+
+  next()
+}
+
+export function groupEndpointsByDataset (req, res, next) {
+  const { endpoints } = req
+
+  // merge arrays and handle undefined
+  req.endpoints = endpoints.reduce((acc, current) => {
+    if (!acc[current.dataset]) {
+      acc[current.dataset] = []
+    }
+    acc[current.dataset].push(current)
+    return acc
+  }, {})
+
+  next()
+}
+
+export default [
+  fetchOrgInfo,
+  fetchResources,
+  fetchDatasetErrorStatus,
+  fetchEndpointSummary,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
+  fetchEntityCounts,
+  groupResourcesByDataset,
+  groupIssuesCountsByDataset,
+  groupEndpointsByDataset,
+
+  prepareDatasetObjects,
+
+  // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
+  // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
+  fetchProvisions,
+  prepareOverviewTemplateParams,
+  getOverview,
+  logPageError
+]
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CheckDeepLinkController.html">CheckDeepLinkController</a></li><li><a href="EndpointSubmissionFormDeepLinkController.html">EndpointSubmissionFormDeepLinkController</a></li><li><a href="MiddlewareError.html">MiddlewareError</a></li><li><a href="PageController.html">PageController</a></li><li><a href="module.html#.exports">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#FetchOneFallbackPolicy">FetchOneFallbackPolicy</a></li><li><a href="global.html#addNoticesToDatasets">addNoticesToDatasets</a></li><li><a href="global.html#attachFileToIssue">attachFileToIssue</a></li><li><a href="global.html#availableDatasets">availableDatasets</a></li><li><a href="global.html#checkToolDeepLink">checkToolDeepLink</a></li><li><a href="global.html#createCustomerRequest">createCustomerRequest</a></li><li><a href="global.html#datasetStatusEnum">datasetStatusEnum</a></li><li><a href="global.html#datasetSubmissionDeadlineCheck">datasetSubmissionDeadlineCheck</a></li><li><a href="global.html#datasets">datasets</a></li><li><a href="global.html#endpointSubmissionFormToolDeepLink">endpointSubmissionFormToolDeepLink</a></li><li><a href="global.html#fetchDatasetErrorStatus">fetchDatasetErrorStatus</a></li><li><a href="global.html#fetchIf">fetchIf</a></li><li><a href="global.html#fetchIfFn">fetchIfFn</a></li><li><a href="global.html#fetchLatestResource">fetchLatestResource</a></li><li><a href="global.html#fetchLocalAuthorities">fetchLocalAuthorities</a></li><li><a href="global.html#fetchMany">fetchMany</a></li><li><a href="global.html#fetchManyFn">fetchManyFn</a></li><li><a href="global.html#fetchManyFromAllDatasets">fetchManyFromAllDatasets</a></li><li><a href="global.html#fetchManyFromAllDatasetsFn">fetchManyFromAllDatasetsFn</a></li><li><a href="global.html#fetchOne">fetchOne</a></li><li><a href="global.html#fetchOneFn">fetchOneFn</a></li><li><a href="global.html#fetchOneFromAllDatasets">fetchOneFromAllDatasets</a></li><li><a href="global.html#fetchResourceStatus">fetchResourceStatus</a></li><li><a href="global.html#formatData">formatData</a></li><li><a href="global.html#getColumnFieldLog">getColumnFieldLog</a></li><li><a href="global.html#getDeadlineHistory">getDeadlineHistory</a></li><li><a href="global.html#getErrorSummary">getErrorSummary</a></li><li><a href="global.html#getGeometries">getGeometries</a></li><li><a href="global.html#getIssueDetails">getIssueDetails</a></li><li><a href="global.html#getIssueField">getIssueField</a></li><li><a href="global.html#getLastPage">getLastPage</a></li><li><a href="global.html#getPagination">getPagination</a></li><li><a href="global.html#getRowsWithVerboseColumns">getRowsWithVerboseColumns</a></li><li><a href="global.html#getSetDataRange">getSetDataRange</a></li><li><a href="global.html#getStatusTag">getStatusTag</a></li><li><a href="global.html#getVerboseColumns">getVerboseColumns</a></li><li><a href="global.html#handleRejections">handleRejections</a></li><li><a href="global.html#initiateJsHiddenChecks">initiateJsHiddenChecks</a></li><li><a href="global.html#invalidSchemaPaths">invalidSchemaPaths</a></li><li><a href="global.html#isFeatureEnabled">isFeatureEnabled</a></li><li><a href="global.html#isResourceIdValid">isResourceIdValid</a></li><li><a href="global.html#logPageError">logPageError</a></li><li><a href="global.html#lpaOverviewQuery">lpaOverviewQuery</a></li><li><a href="global.html#makeDatasetSlugToReadableNameFilter">makeDatasetSlugToReadableNameFilter</a></li><li><a href="global.html#maybeSetReferrer">maybeSetReferrer</a></li><li><a href="global.html#orgStatsReducer">orgStatsReducer</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#parallel">parallel</a></li><li><a href="global.html#parallelFn">parallelFn</a></li><li><a href="global.html#postRequest">postRequest</a></li><li><a href="global.html#prepareDatasetEndpointIssueTemplateParams">prepareDatasetEndpointIssueTemplateParams</a></li><li><a href="global.html#prepareDatasetOverviewTemplateParams">prepareDatasetOverviewTemplateParams</a></li><li><a href="global.html#prepareDatasetTaskListTemplateParams">prepareDatasetTaskListTemplateParams</a></li><li><a href="global.html#prepareGetOrganisationsTemplateParams">prepareGetOrganisationsTemplateParams</a></li><li><a href="global.html#prepareOverviewTemplateParams">prepareOverviewTemplateParams</a></li><li><a href="global.html#prepareTasks">prepareTasks</a></li><li><a href="global.html#preventIndexing">preventIndexing</a></li><li><a href="global.html#processEntitiesMiddleware">processEntitiesMiddleware</a></li><li><a href="global.html#processSpecificationMiddleware">processSpecificationMiddleware</a></li><li><a href="global.html#proto">proto</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderTemplate">renderTemplate</a></li><li><a href="global.html#renderTemplateFn">renderTemplateFn</a></li><li><a href="global.html#requiredDatasets">requiredDatasets</a></li><li><a href="global.html#requiresGeometryTypeToBeSelected">requiresGeometryTypeToBeSelected</a></li><li><a href="global.html#requiresGeometryTypeToBeSelectedViaDeepLink">requiresGeometryTypeToBeSelectedViaDeepLink</a></li><li><a href="global.html#schemaIssues">schemaIssues</a></li><li><a href="global.html#setNoticesFromSourceKey">setNoticesFromSourceKey</a></li><li><a href="global.html#setupNunjucks">setupNunjucks</a></li><li><a href="global.html#splitByLeading">splitByLeading</a></li><li><a href="global.html#statusToTagClassMapping">statusToTagClassMapping</a></li><li><a href="global.html#templateSchema">templateSchema</a></li><li><a href="global.html#types">types</a></li><li><a href="global.html#validateAndRender">validateAndRender</a></li><li><a href="global.html#validateQueryParamsFn">validateQueryParamsFn</a></li><li><a href="global.html#validationErrorMessage">validationErrorMessage</a></li><li><a href="global.html#wizardBackLink">wizardBackLink</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
