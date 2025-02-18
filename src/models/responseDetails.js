@@ -4,6 +4,29 @@ import { types } from '../utils/logging.js'
 import { pagination } from '../utils/pagination.js'
 
 /**
+ * @typedef {Object} PaginationOptions
+ * @property {string} [hash] - Hash option (should include the '#' character)
+ */
+
+/**
+ * @typedef {Object} PaginationItem
+ * @property {string} href - Link URL
+ * @property {boolean} [ellipsis] - Whether this is an ellipsis item
+ */
+
+/**
+ * @typedef {Object} PaginationResult
+ * @property {number} totalResults - Total number of results
+ * @property {number} offset - Current offset
+ * @property {number} limit - Items per page
+ * @property {number} currentPage - Current page number
+ * @property {number|null} nextPage - Next page number or null
+ * @property {number|null} previousPage - Previous page number or null
+ * @property {number} totalPages - Total number of pages
+ * @property {PaginationItem[]} items - Pagination items
+ */
+
+/**
  * Holds response data of 'http://ASYNC-REQUEST-API-HOST/requests/:result-id/response-details' endpoint.
  */
 export default class ResponseDetails {
@@ -151,9 +174,11 @@ export default class ResponseDetails {
   }
 
   /**
-   * @param {number} pageNumber
-   * @param {{ hash?: string }} options hash option should include the '#' character
-   * @returns {{ totalResults: number, offset: number, limit: number, currentPage: number, nextPage: number | null, previousPage: number | null, totalPages: number, items: { href: string }[] } }
+   * Get pagination details for the current response
+   *
+   * @param {number} pageNumber - Current page number
+   * @param {PaginationOptions} [opts] - Pagination options
+   * @returns {PaginationResult} Pagination details
    */
   getPagination (pageNumber, opts = {}) {
     pageNumber = parseInt(pageNumber)
@@ -189,13 +214,12 @@ export default class ResponseDetails {
   }
 
   /**
-   * Detects where geometry is stored in the item and returns a function of
-   * item to geometry value. It's caller responsibility to handle situations
-   * where the getter couldn't be returned (for most common use case, we can
-   * omit diplaying the map).
+   * Detects where geometry is stored in the item and returns a function to extract geometry value.
+   * It's caller's responsibility to handle situations where the getter couldn't be returned.
+   * For most common use cases, we can omit displaying the map.
    *
-   * @param {any} item
-   * @returns { ((item) => string ) | undefined}
+   * @param {Object} item - Data item containing geometry information
+   * @returns {Function|undefined} Function that takes an item and returns a geometry string, or undefined if no geometry found
    */
   #makeGeometryGetter (item) {
     /*

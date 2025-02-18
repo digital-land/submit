@@ -77,25 +77,31 @@ const datasetIssuesQuery = (resource, datasetId) => {
 }
 
 /**
- * @typedef {object} Dataset
- * @property {'Not submitted' | 'Error' | 'Needs fixing' | 'Warning' | 'Live' } status
+ * @typedef {Object} Dataset
+ * @property {string} status - One of: 'Not submitted', 'Error', 'Needs fixing', 'Warning', 'Live'
  * @property {string} endpoint
  * @property {number} issue_count
  * @property {?string} error
  */
 
 /**
- * @typedef {object} LpaOverview // this needs to be updated
- * @property {{ [dataset: string]: Dataset }} datasets
+ * @typedef {Object} LpaOverview
+ * @property {Object.<string, Dataset>} datasets - Map of dataset names to Dataset objects
  */
 
 const entityCountSelectFragment = (dataset, resource, entityCount) => `select '${dataset}' as d, '${resource}' as r, ${entityCount} as e`
 
 /**
+ * Generates a query for LPA overview data
  *
- * @param {string} lpa
- * @param {{datasetsFilter: string[], entityCounts: { dataset: string, resource: string, entityCount?: number}[]}} params
- * @returns
+ * @param {string} lpa - The LPA identifier
+ * @param {Object} params - Query parameters
+ * @param {string[]} params.datasetsFilter - List of dataset names to filter by
+ * @param {Object[]} params.entityCounts - Array of entity count objects
+ * @param {string} params.entityCounts[].dataset - Dataset name
+ * @param {string} params.entityCounts[].resource - Resource identifier
+ * @param {number=} params.entityCounts[].entityCount - Optional entity count
+ * @returns {string} The generated SQL query
  */
 export function lpaOverviewQuery (lpa, params) {
   let datasetClause = ''
@@ -273,11 +279,11 @@ export default {
    */
   datasetErrorStatusQuery: (lpa, params) => {
     return /* sql */ `
-    select 
+    select
       dataset
-    from 
-      provision_summary 
-    where 
+    from
+      provision_summary
+    where
       coalesce("active_endpoint_count", 0) > 1 and coalesce("error_endpoint_count", 0) >= 1
       and "organisation" = '${lpa}'
       and "dataset" in (${params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')})
@@ -285,9 +291,11 @@ export default {
   },
 
   /**
-    *
-    * @param {{resource: string, dataset: string}[]} resources
-    * @returns {Promise<{ resource: string, dataset: string, entityCount?: number}[]>}
+    * Get entity counts for a list of resources
+    * @param {Array<Object>} resources - Array of resource objects
+    * @param {string} resources[].resource - Resource identifier
+    * @param {string} resources[].dataset - Dataset identifier
+    * @returns {Promise<Array<Object>>} Array of objects containing resource, dataset and optional entityCount
     */
   async getEntityCounts (resources) {
     const requests = resources.map(({ resource, dataset }) => {
@@ -347,11 +355,11 @@ export default {
   },
 
   /**
-     *
-     * @param {*} resourceId
-     * @param {*} entryNumber
-     * @param {*} dataset
-     * @returns {Promise<{field: string, value: string, entry_number: number}[]>}
+     * Get entry details for a specific resource
+     * @param {string} resourceId - Resource identifier
+     * @param {number} entryNumber - Entry number
+     * @param {string} dataset - Dataset identifier
+     * @returns {Promise<Array<Object>>} Array of entry objects containing field and value information
      */
   async getEntry (resourceId, entryNumber, dataset) {
     logger.debug({ message: 'getEntry()', resourceId, entryNumber, dataset, type: types.App })
