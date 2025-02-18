@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controllers/submitUrlController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controllers/submitUrlController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as Sentry from '@sentry/node'
+import UploadController from './uploadController.js'
+import { postUrlRequest } from '../services/asyncRequestApi.js'
+import { URL } from 'url'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
+import axios from 'axios'
+import { allowedFileTypes } from '../utils/utils.js'
+import config from '../../config/index.js'
+
+const HTTP_STATUS_METHOD_NOT_ALLOWED = 405
+
+class SubmitUrlController extends UploadController {
+  async post (req, res, next) {
+    const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url)
+
+    if (localValidationErrorType) {
+      const error = {
+        key: 'url',
+        type: localValidationErrorType
+      }
+      const errors = {
+        url: new SubmitUrlController.Error(error.key, error, req, res)
+      }
+      logger.info({
+        message: 'SubmitUrlController: local validation failed during url submission',
+        endpoint: req.originalUrl,
+        error: JSON.stringify(error),
+        submittedUrl: `${req.body.url ?? '&lt;no url provided>'}`,
+        type: types.DataValidation
+      })
+      return next(errors)
+    }
+
+    try {
+      const id = await postUrlRequest({ ...this.getBaseFormData(req), url: req.body.url })
+      req.body.request_id = id
+    } catch (error) {
+      next(error)
+      return
+    }
+    super.post(req, res, next)
+  }
+
+  /**
+   *
+   * @param {string?} url
+   * @returns { Promise&lt;string | undefined> }
+   */
+  static async localUrlValidation (url) {
+    const validators = [
+      { type: 'required', fn: () => SubmitUrlController.urlIsDefined(url) },
+      { type: 'format', fn: () => SubmitUrlController.urlIsValid(url) },
+      { type: 'length', fn: () => SubmitUrlController.urlIsNotTooLong(url) }
+    ]
+    const preCheckFailure = validators.find(validator => !validator.fn())
+    if (preCheckFailure) {
+      return preCheckFailure.type
+    }
+
+    const postValidators = (resp) => ([
+      { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) },
+      { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
+      { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
+    ])
+    const headResponse = await SubmitUrlController.headRequest(url)
+
+    if (!headResponse) {
+      logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head, skipping post validators', {
+        type: types.DataFetch
+      })
+      return null
+    }
+
+    if (headResponse?.status === HTTP_STATUS_METHOD_NOT_ALLOWED) {
+      // HEAD request not allowed, return null or a specific error message
+      logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head as it was not allowed (405) skipping post validators', {
+        type: types.DataFetch
+      })
+      return null
+    }
+
+    return postValidators(headResponse).find(validator => !validator.fn())?.type
+  }
+
+  static urlIsDefined (url) {
+    return url !== '' &amp;&amp; url !== undefined
+  }
+
+  static urlIsValid (url) {
+    try {
+      // eslint-disable-next-line no-new
+      new URL(url)
+      return true
+    } catch (err) {
+      return false
+    }
+  }
+
+  /**
+   * @param {string} url
+   * @returns {boolean}
+   */
+  static urlIsNotTooLong (url) {
+    return url.length &lt;= 2048
+  }
+
+  /**
+   * Performs a HEAD request and returns the response object or null (when the URL couldn't be accessed).
+   *
+   * @param {string} url
+   * @returns {Promise&lt;AxiosResponse?>}
+   */
+  static async headRequest (url) {
+    try {
+      return await axios.head(url, { headers: { 'User-Agent': config.checkService.userAgent } })
+    } catch (err) {
+      const response = err?.response
+      const tags = { code: err.code, url }
+      if (response) {
+        tags.responseStatus = response.status
+        Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
+        return response
+      }
+      Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
+      logger.info({ message: `SubmitUrlController.headRequest(): err.code=${err.code}`, type: types.App, url })
+      return null
+    }
+  }
+
+  /**
+   * @param {AxiosResponse?} response
+   * @returns {boolean}
+   */
+  static urlResponseIsNotTooLarge (response) {
+    const contentLength = (response?.headers ?? {})['content-length']
+
+    try {
+      // if the content length header is not provided, return true
+      if (!contentLength) {
+        console.info('urlResponseIsNotTooLarge(): Content-Length header not provided', { type: types.App })
+        return true
+      }
+
+      return contentLength &lt;= config.validations.maxFileSize
+    } catch (err) {
+      console.warn('urlResponseIsNotTooLarge()', { type: types.App, errorMessage: err.message, errorStack: err.stack, contentLength })
+      return true // for now we will allow this file as we can't be sure
+    }
+  }
+
+  /**
+   * @param {AxiosResponse?} response
+   * @returns {boolean}
+   */
+  static isUrlAccessible (response) {
+    if (!response) {
+      return false
+    }
+
+    try {
+      return response.status !== 404 // Allow everything except 404, we cannot be sure what the server will return for HEAD requests
+    } catch (err) {
+      logger.warn(err)
+      return true
+    }
+  }
+
+  /**
+   *
+   * @param {AxiosResponse?} response
+   * @returns {boolean}
+   */
+  static validateAcceptedFileType (response) {
+    if (!response) { return false }
+    try {
+      const contentType = response.headers['content-type'].split(';')[0]
+      const acceptedTypes = Object.values(allowedFileTypes).flat()
+      return acceptedTypes.includes(contentType)
+    } catch (err) {
+      logger.warn(err)
+      return false
+    }
+  }
+}
+
+export default SubmitUrlController
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CheckDeepLinkController.html">CheckDeepLinkController</a></li><li><a href="EndpointSubmissionFormDeepLinkController.html">EndpointSubmissionFormDeepLinkController</a></li><li><a href="MiddlewareError.html">MiddlewareError</a></li><li><a href="PageController.html">PageController</a></li><li><a href="module.html#.exports">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#FetchOneFallbackPolicy">FetchOneFallbackPolicy</a></li><li><a href="global.html#addNoticesToDatasets">addNoticesToDatasets</a></li><li><a href="global.html#attachFileToIssue">attachFileToIssue</a></li><li><a href="global.html#availableDatasets">availableDatasets</a></li><li><a href="global.html#checkToolDeepLink">checkToolDeepLink</a></li><li><a href="global.html#createCustomerRequest">createCustomerRequest</a></li><li><a href="global.html#datasetStatusEnum">datasetStatusEnum</a></li><li><a href="global.html#datasetSubmissionDeadlineCheck">datasetSubmissionDeadlineCheck</a></li><li><a href="global.html#datasets">datasets</a></li><li><a href="global.html#endpointSubmissionFormToolDeepLink">endpointSubmissionFormToolDeepLink</a></li><li><a href="global.html#fetchDatasetErrorStatus">fetchDatasetErrorStatus</a></li><li><a href="global.html#fetchIf">fetchIf</a></li><li><a href="global.html#fetchIfFn">fetchIfFn</a></li><li><a href="global.html#fetchLatestResource">fetchLatestResource</a></li><li><a href="global.html#fetchLocalAuthorities">fetchLocalAuthorities</a></li><li><a href="global.html#fetchMany">fetchMany</a></li><li><a href="global.html#fetchManyFn">fetchManyFn</a></li><li><a href="global.html#fetchManyFromAllDatasets">fetchManyFromAllDatasets</a></li><li><a href="global.html#fetchManyFromAllDatasetsFn">fetchManyFromAllDatasetsFn</a></li><li><a href="global.html#fetchOne">fetchOne</a></li><li><a href="global.html#fetchOneFn">fetchOneFn</a></li><li><a href="global.html#fetchOneFromAllDatasets">fetchOneFromAllDatasets</a></li><li><a href="global.html#fetchResourceStatus">fetchResourceStatus</a></li><li><a href="global.html#formatData">formatData</a></li><li><a href="global.html#getColumnFieldLog">getColumnFieldLog</a></li><li><a href="global.html#getDeadlineHistory">getDeadlineHistory</a></li><li><a href="global.html#getErrorSummary">getErrorSummary</a></li><li><a href="global.html#getGeometries">getGeometries</a></li><li><a href="global.html#getIssueDetails">getIssueDetails</a></li><li><a href="global.html#getIssueField">getIssueField</a></li><li><a href="global.html#getLastPage">getLastPage</a></li><li><a href="global.html#getPagination">getPagination</a></li><li><a href="global.html#getRowsWithVerboseColumns">getRowsWithVerboseColumns</a></li><li><a href="global.html#getSetDataRange">getSetDataRange</a></li><li><a href="global.html#getStatusTag">getStatusTag</a></li><li><a href="global.html#getVerboseColumns">getVerboseColumns</a></li><li><a href="global.html#handleRejections">handleRejections</a></li><li><a href="global.html#initiateJsHiddenChecks">initiateJsHiddenChecks</a></li><li><a href="global.html#invalidSchemaPaths">invalidSchemaPaths</a></li><li><a href="global.html#isFeatureEnabled">isFeatureEnabled</a></li><li><a href="global.html#isResourceIdValid">isResourceIdValid</a></li><li><a href="global.html#logPageError">logPageError</a></li><li><a href="global.html#lpaOverviewQuery">lpaOverviewQuery</a></li><li><a href="global.html#makeDatasetSlugToReadableNameFilter">makeDatasetSlugToReadableNameFilter</a></li><li><a href="global.html#maybeSetReferrer">maybeSetReferrer</a></li><li><a href="global.html#orgStatsReducer">orgStatsReducer</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#parallel">parallel</a></li><li><a href="global.html#parallelFn">parallelFn</a></li><li><a href="global.html#postRequest">postRequest</a></li><li><a href="global.html#prepareDatasetEndpointIssueTemplateParams">prepareDatasetEndpointIssueTemplateParams</a></li><li><a href="global.html#prepareDatasetOverviewTemplateParams">prepareDatasetOverviewTemplateParams</a></li><li><a href="global.html#prepareDatasetTaskListTemplateParams">prepareDatasetTaskListTemplateParams</a></li><li><a href="global.html#prepareGetOrganisationsTemplateParams">prepareGetOrganisationsTemplateParams</a></li><li><a href="global.html#prepareOverviewTemplateParams">prepareOverviewTemplateParams</a></li><li><a href="global.html#prepareTasks">prepareTasks</a></li><li><a href="global.html#preventIndexing">preventIndexing</a></li><li><a href="global.html#processEntitiesMiddleware">processEntitiesMiddleware</a></li><li><a href="global.html#processSpecificationMiddleware">processSpecificationMiddleware</a></li><li><a href="global.html#proto">proto</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderTemplate">renderTemplate</a></li><li><a href="global.html#renderTemplateFn">renderTemplateFn</a></li><li><a href="global.html#requiredDatasets">requiredDatasets</a></li><li><a href="global.html#requiresGeometryTypeToBeSelected">requiresGeometryTypeToBeSelected</a></li><li><a href="global.html#requiresGeometryTypeToBeSelectedViaDeepLink">requiresGeometryTypeToBeSelectedViaDeepLink</a></li><li><a href="global.html#schemaIssues">schemaIssues</a></li><li><a href="global.html#setNoticesFromSourceKey">setNoticesFromSourceKey</a></li><li><a href="global.html#setupNunjucks">setupNunjucks</a></li><li><a href="global.html#splitByLeading">splitByLeading</a></li><li><a href="global.html#statusToTagClassMapping">statusToTagClassMapping</a></li><li><a href="global.html#templateSchema">templateSchema</a></li><li><a href="global.html#types">types</a></li><li><a href="global.html#validateAndRender">validateAndRender</a></li><li><a href="global.html#validateQueryParamsFn">validateQueryParamsFn</a></li><li><a href="global.html#validationErrorMessage">validationErrorMessage</a></li><li><a href="global.html#wizardBackLink">wizardBackLink</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
