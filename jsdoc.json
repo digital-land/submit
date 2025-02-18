@@ -14,8 +14,7 @@
     "cleverLinks": true,
     "monospaceLinks": true,
     "default": {
-      "outputSourceFiles": true,
-      "dateFormat": "YYYY-MM-DD"
+      "includeDate": false
     }
   },
   "tags": {
