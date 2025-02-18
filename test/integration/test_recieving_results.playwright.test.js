@@ -14,6 +14,7 @@ import ResultsPage from '../PageObjectModels/resultsPage'
 import prettifyColumnName from '../../src/filters/prettifyColumnName'
 
 import fs from 'fs'
+import { splitByLeading } from '../../src/utils/table'
 
 test('receiving a successful result', async ({ page }) => {
   const successResponse = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete.json')
@@ -115,8 +116,9 @@ const getTableValuesFromResponse = (response, details) => {
   })
 
   const uniqueHeaders = [...new Set(notUniqueHeaders)]
+  const { leading, trailing } = splitByLeading({ fields: uniqueHeaders })
 
-  const prettifiedUniqueHeaders = uniqueHeaders.map(header => prettifyColumnName(header))
+  const prettifiedUniqueHeaders = [...leading, ...trailing].map(header => prettifyColumnName(header))
 
   tableValues.unshift(prettifiedUniqueHeaders)
 
