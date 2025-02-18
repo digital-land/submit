@@ -1,11 +1,11 @@
 import * as v from 'valibot'
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
-import prettifyColumnName from '../filters/prettifyColumnName.js'
 import { fetchMany } from '../middleware/middleware.builders.js'
 import { validateQueryParams } from '../middleware/common.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import { splitByLeading } from '../utils/table.js'
 
 const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
 
@@ -132,10 +132,12 @@ export function setupTableParams (req, res, next) {
       }
     })
 
+    const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
+    const orderedFields = [...leadingFields, ...trailingFields]
     req.locals.tableParams = {
-      columns: responseDetails.getColumns().map(column => prettifyColumnName(column)),
+      columns: orderedFields,
       rows,
-      fields: responseDetails.getFields()
+      fields: orderedFields
     }
 
     req.locals.mappings = responseDetails.getFieldMappings()
