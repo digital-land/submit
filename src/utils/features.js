@@ -2,7 +2,7 @@ import logger from './logger.js'
 import { types } from './logging.js'
 import config from '../../config/index.js'
 
-/** @typedef {import('../../config/util.js').ConfigSchema} ConfigSchema */
+/** @typedef {Object} ConfigSchema */
 
 /**
  * @param {string} feature feature

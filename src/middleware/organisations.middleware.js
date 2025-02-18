@@ -29,9 +29,11 @@ const fetchOrganisations = fetchMany({
 /**
  * Middleware. Updates req with `templateParams`.
  *
- * @param {{ organisations: {}[] }} req
- * @param {*} res
- * @param {*} next
+ * @param {Object} req - Express request object
+ * @param {Array<Object>} req.organisations - Array of organisation objects
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ * @returns {void}
  */
 export const prepareGetOrganisationsTemplateParams = (req, res, next) => {
   const sortedResults = req.organisations.sort((a, b) => {
