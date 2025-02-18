@@ -5,8 +5,10 @@ import * as v from 'valibot'
  *
  * Useful to show the schema issues in a consise way.
  *
- * @param {Error} error
- * @returns { { path: string[], message: string}[] }
+ * @param {Error} error - The error to check for schema issues
+ * @returns {Array<Object>} Array of issue objects with path and message properties
+ * @returns {Array<string>} returns[].path - The path to the issue
+ * @returns {string} returns[].message - The error message
  */
 export function schemaIssues (error) {
   const issues = []
