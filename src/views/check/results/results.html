@@ -9,6 +9,7 @@
 {% from '../../components/dataset-banner.html' import datasetBanner %}
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
 {% from "govuk/components/tabs/macro.njk" import govukTabs %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
 {% import "./tabs.njk" as resultTabs %}
 
@@ -72,6 +73,44 @@ panel: { html: tableTab } } } %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
+    {% set fileNameOrUrlText = 'File name' if options.type == 'check_file' else 'Endpoint URL' %}
+
+    {% set fileNameOrUrlHtml %}
+      <code>
+        {% if options.type == 'check_file' and options.fileName %}
+          {{ options.fileName }}
+        {% elseif options.url %}
+          {{ options.url }}
+        {% else %}
+          "No valid data available"
+        {% endif %}
+      </code>
+    {% endset -%}
+
+
+    {% set rows = [
+      {
+        key: {
+          text: fileNameOrUrlText
+        },
+        value: {
+          html: fileNameOrUrlHtml
+        }
+      },
+      {
+        key: {
+          text: "Data checked"
+        },
+        value: {
+          text: options.checkedTime | govukDateTime
+        }
+      }
+    ] %}
+    
+    {{ govukSummaryList({
+      rows: rows
+    }) }}
 
     {% if options.passedChecks.length > 0 %}
     <div id="passed-checks">

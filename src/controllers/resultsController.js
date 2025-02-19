@@ -27,6 +27,7 @@ class ResultsController extends PageController {
     this.use(getNonBlockingTasks)
     this.use(getPassedChecks)
     this.use(setupError)
+    this.use(getFileNameOrUrlAndCheckedTime)
   }
 
   async locals (req, res, next) {
@@ -312,6 +313,15 @@ export function getPassedChecks (req, res, next) {
 
   req.locals.passedChecks = passedChecks
 
+  next()
+}
+
+export function getFileNameOrUrlAndCheckedTime(req, res, next) {
+  const { requestData } = req.locals
+  req.locals.type = requestData.params.type
+  req.locals.fileName = requestData.params.fileName
+  req.locals.url = requestData.params.url
+  req.locals.checkedTime = requestData.modified
   next()
 }
 
