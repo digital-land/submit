@@ -46,6 +46,11 @@ export default class ResponseDetails {
     return [...new Set(ColumnsWithDuplicates)]
   }
 
+  /**
+   * returned fields are `converted_row.column | columnFieldLog.field`
+   *
+   * @returns {string[]}
+   */
   getFields () {
     const columnKeys = [...new Set(this.getRows().map(row => row.converted_row).flatMap(row => Object.keys(row)))]
 
