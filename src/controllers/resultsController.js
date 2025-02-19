@@ -6,6 +6,7 @@ import { validateQueryParams } from '../middleware/common.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import { splitByLeading } from '../utils/table.js'
+import { MiddlewareError } from '../utils/errors.js'
 
 const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
 
@@ -59,6 +60,9 @@ export async function getRequestDataMiddleware (req, res, next) {
     }
     next()
   } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return next(new MiddlewareError(`No async request with id=${req.params.id}`, 404))
+    }
     next(error)
   }
 }
