@@ -38,6 +38,12 @@ const initiateJsHiddenChecks = () => {
     el.style.display = 'none'
     el.style.visibility = 'none'
   })
+
+  document.querySelectorAll('.js-enabled').forEach((el, i) => {
+    console.log('Showing element', el)
+    el.style.display = 'block'
+    el.style.visibility = 'visible'
+  })
 }
 
 export default initiateJsHiddenChecks
