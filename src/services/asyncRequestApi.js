@@ -60,6 +60,9 @@ export const getRequestData = async (resultId) => {
 
     return new ResultData(response.data)
   } catch (error) {
+    if (error?.response?.status === 404) {
+      throw error
+    }
     throw new Error(`HTTP error! status: ${error.status}: ${error.message}`, { cause: error })
   }
 }
