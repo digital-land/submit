@@ -10,7 +10,7 @@ import axios from 'axios'
  * @returns {Promise} - A promise that resolves to the response of the JIRA API.
  * @throws {Error} - Throws an error if JIRA_URL, JIRA_BASIC_AUTH, or JIRA_SERVICE_DESK_ID are not set.
  */
-export async function createCustomerRequest (summary, description, requestTypeId) {
+export async function createCustomerRequest ({ summary, description, raiseOnBehalfOf }, requestTypeId) {
   const JIRA_URL = process.env.JIRA_URL
   const JIRA_BASIC_AUTH = process.env.JIRA_BASIC_AUTH
   const JIRA_SERVICE_DESK_ID = process.env.JIRA_SERVICE_DESK_ID
@@ -25,10 +25,11 @@ export async function createCustomerRequest (summary, description, requestTypeId
       description
     },
     serviceDeskId: JIRA_SERVICE_DESK_ID,
-    requestTypeId
+    requestTypeId,
+    raiseOnBehalfOf
   })
 
-  return axios.post(`${JIRA_URL}/rest/servicedeskapi/request`, data, {
+  return await axios.post(`${JIRA_URL}/rest/servicedeskapi/request`, data, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Basic ${JIRA_BASIC_AUTH}`

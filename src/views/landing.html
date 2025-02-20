@@ -3,7 +3,7 @@
 
 {% set serviceType = 'Manage' %}
 {% set pageName = '' %}
-
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% block main %}
 <div class="app-masthead">
   <div class="govuk-width-container">
