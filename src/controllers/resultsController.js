@@ -10,7 +10,7 @@ const resultsTemplate = 'results/results'
 
 class ResultsController extends PageController {
   /* Custom middleware */
-  middlewareSetup() {
+  middlewareSetup () {
     super.middlewareSetup()
     this.use(getRequestDataMiddleware)
     this.use(setupTemplate)
@@ -30,7 +30,7 @@ class ResultsController extends PageController {
     this.use(getFileNameOrUrlAndCheckedTime)
   }
 
-  async locals(req, res, next) {
+  async locals (req, res, next) {
     try {
       Object.assign(req.form.options, req.locals)
       super.locals(req, res, next)
@@ -39,12 +39,12 @@ class ResultsController extends PageController {
     }
   }
 
-  noErrors(req, res, next) {
+  noErrors (req, res, next) {
     return !req.form.options.data.hasErrors()
   }
 }
 
-export async function getRequestDataMiddleware(req, res, next) {
+export async function getRequestDataMiddleware (req, res, next) {
   try {
     req.locals = {
       requestData: await getRequestData(req.params.id)
@@ -59,14 +59,14 @@ export async function getRequestDataMiddleware(req, res, next) {
   }
 }
 
-export async function checkForErroredResponse(req, res, next) {
+export async function checkForErroredResponse (req, res, next) {
   if (req.locals.requestData.response.error) {
     return next(new Error(req.locals.requestData.response.error.message))
   }
   next()
 }
 
-export function setupTemplate(req, res, next) {
+export function setupTemplate (req, res, next) {
   try {
     if (req.locals.requestData.isFailed()) {
       if (req.locals.requestData.getType() === 'check_file') {
@@ -84,7 +84,7 @@ export function setupTemplate(req, res, next) {
   }
 }
 
-export async function fetchResponseDetails(req, res, next) {
+export async function fetchResponseDetails (req, res, next) {
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
       const responseDetails = req.locals.template === resultsTemplate
@@ -99,7 +99,7 @@ export async function fetchResponseDetails(req, res, next) {
   next()
 }
 
-export function setupTableParams(req, res, next) {
+export function setupTableParams (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.responseDetails
     let rows = responseDetails.getRowsWithVerboseColumns(req.locals.requestData.hasErrors())
@@ -145,7 +145,7 @@ export function setupTableParams(req, res, next) {
   next()
 }
 
-export function setupError(req, res, next) {
+export function setupError (req, res, next) {
   try {
     if (req.locals.template === failedFileRequestTemplate || req.locals.template === failedUrlRequestTemplate) {
       req.locals.error = req.locals.requestData.getError()
@@ -161,7 +161,7 @@ export const getIssueTypesWithQualityCriteriaLevels = fetchMany({
   result: 'issueTypes'
 })
 
-export function extractIssuesFromResults(req, res, next) {
+export function extractIssuesFromResults (req, res, next) {
   const { responseDetails } = req.locals
 
   const issueLogsByRow = responseDetails.response.map(row => row.issue_logs)
@@ -172,7 +172,7 @@ export function extractIssuesFromResults(req, res, next) {
   next()
 }
 
-export function addQualityCriteriaLevelsToIssues(req, res, next) {
+export function addQualityCriteriaLevelsToIssues (req, res, next) {
   const { issues, issueTypes } = req
   const issueTypeMap = new Map(issueTypes.map(it => [it.issue_type, it]))
 
@@ -188,7 +188,7 @@ export function addQualityCriteriaLevelsToIssues(req, res, next) {
 }
 
 // aggregate issues by issue_type into tasks
-export function aggregateIssues(req, res, next) {
+export function aggregateIssues (req, res, next) {
   const { issues } = req
 
   const taskMap = new Map()
@@ -220,7 +220,7 @@ export function aggregateIssues(req, res, next) {
   Issues labeled as quality_level 3 are considered 'non-blocking'.
   Issues without a quality_level are excluded from the results, as these either have responsibility set to internal or severity of warning.
 */
-export function filterOutTasksByQualityCriterialLevel(req, res, next) {
+export function filterOutTasksByQualityCriterialLevel (req, res, next) {
   const { tasks } = req
 
   req.tasks = tasks.filter(task => [2, 3].includes(task.qualityCriteriaLevel))
@@ -242,13 +242,13 @@ const makeTaskParam = (text, statusText, statusClasses) => {
   }
 }
 
-export function getTotalRows(req, res, next) {
+export function getTotalRows (req, res, next) {
   const { responseDetails } = req.locals
   req.totalRows = responseDetails.getRows().length
   next()
 }
 
-export function getTasksByLevel(req, res, next, level, tagColor, tagText) {
+export function getTasksByLevel (req, res, next, level, tagColor, tagText) {
   const { tasks, totalRows } = req
   const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
   const taskParams = filteredTasks.map(task => {
@@ -263,12 +263,12 @@ export function getTasksByLevel(req, res, next, level, tagColor, tagText) {
   req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
 }
 
-export function getBlockingTasks(req, res, next) {
+export function getBlockingTasks (req, res, next) {
   getTasksByLevel(req, res, next, 2, 'red', 'Must fix')
   next()
 }
 
-export function getNonBlockingTasks(req, res, next) {
+export function getNonBlockingTasks (req, res, next) {
   const { responseDetails } = req.locals
   getTasksByLevel(req, res, next, 3, 'yellow', 'Should fix')
 
@@ -284,7 +284,7 @@ export function getNonBlockingTasks(req, res, next) {
   next()
 }
 
-export function getPassedChecks(req, res, next) {
+export function getPassedChecks (req, res, next) {
   const { tasks, totalRows } = req
 
   const passedChecks = []
@@ -316,7 +316,7 @@ export function getPassedChecks(req, res, next) {
   next()
 }
 
-export function getFileNameOrUrlAndCheckedTime(req, res, next) {
+export function getFileNameOrUrlAndCheckedTime (req, res, next) {
   const { requestData } = req.locals
   req.locals.type = requestData?.params?.type
   req.locals.fileName = requestData?.params?.fileName

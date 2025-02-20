@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate } from '../../src/controllers/resultsController'
+import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate, getFileNameOrUrlAndCheckedTime } from '../../src/controllers/resultsController'
 import { getRequestData } from '../../src/services/asyncRequestApi'
 import prettifyColumnName from '../../src/filters/prettifyColumnName'
 import PageController from '../../src/controllers/pageController'
-import { getFileNameOrUrlAndCheckedTime } from '../../src/controllers/resultsController.js'
 
 vi.mock('../../src/services/asyncRequestApi', () => ({
   getRequestData: vi.fn()
@@ -236,32 +235,32 @@ describe('getFileNameOrUrlAndCheckedTime', () => {
           modified: '2023-10-01T12:00:00Z'
         }
       }
-    };
-    const res = {};
-    const next = vi.fn();
+    }
+    const res = {}
+    const next = vi.fn()
 
-    getFileNameOrUrlAndCheckedTime(req, res, next);
+    getFileNameOrUrlAndCheckedTime(req, res, next)
 
-    expect(req.locals.type).toBe('file');
-    expect(req.locals.fileName).toBe('example.txt');
-    expect(req.locals.url).toBe('http://example.com/file');
-    expect(req.locals.checkedTime).toBe('2023-10-01T12:00:00Z');
-    expect(next).toHaveBeenCalled();
-  });
+    expect(req.locals.type).toBe('file')
+    expect(req.locals.fileName).toBe('example.txt')
+    expect(req.locals.url).toBe('http://example.com/file')
+    expect(req.locals.checkedTime).toBe('2023-10-01T12:00:00Z')
+    expect(next).toHaveBeenCalled()
+  })
 
   it('should call next even if requestData is missing', () => {
     const req = {
       locals: {}
-    };
-    const res = {};
-    const next = vi.fn();
+    }
+    const res = {}
+    const next = vi.fn()
 
-    getFileNameOrUrlAndCheckedTime(req, res, next);
+    getFileNameOrUrlAndCheckedTime(req, res, next)
 
-    expect(req.locals.type).toBeUndefined();
-    expect(req.locals.fileName).toBeUndefined();
-    expect(req.locals.url).toBeUndefined();
-    expect(req.locals.checkedTime).toBeUndefined();
-    expect(next).toHaveBeenCalled();
-  });
-});
+    expect(req.locals.type).toBeUndefined()
+    expect(req.locals.fileName).toBeUndefined()
+    expect(req.locals.url).toBeUndefined()
+    expect(req.locals.checkedTime).toBeUndefined()
+    expect(next).toHaveBeenCalled()
+  })
+})
