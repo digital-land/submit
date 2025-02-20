@@ -15,7 +15,7 @@
   {% if options.lastPage %}
     {{ govukBackLink({
       text: options.backLinkText | default("Back"),
-      href: '/check/results/' + (options.id | urlencode) + '/0'
+      href: '/check/results/' + (options.id | urlencode) + '/1'
     }) }}
   {% endif %}
 
@@ -90,7 +90,7 @@
   <div class="govuk-grid-column-two-thirds">
     {{ govukBackLink({
       text: "Back to results",
-      href: '/check/results/' +  (options.id | urlencode) + '/0'
+      href: '/check/results/' +  (options.id | urlencode) + '/1'
     }) }}
   </div>
 </div>
