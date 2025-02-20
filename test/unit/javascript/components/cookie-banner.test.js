@@ -7,7 +7,7 @@ import jsdom from 'jsdom'
 describe('Cookie banner component', () => {
   const htmlString = '{% include "components/cookie-banner.html" %}'
   const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
-  const html = nunjucks.renderString(htmlString, {})
+  const html = nunjucks.renderString(htmlString, { serviceType: 'Manage' })
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
 

@@ -5,7 +5,8 @@
 {% extends "layouts/main.html" %}
 
 {% set pageName = 'Cookie notice for Submit and update planning and housing data for England' %}
-
+{% set serviceType = 'manage' %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set markdownContent %}
 
 # Submit and update planning and housing data for England cookies notice

@@ -1,9 +1,11 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
+{% set serviceType = 'Manage' %}
+{% set pageName = "Find your organisation" %}
+
 {% extends "layouts/main.html" %}
 
-{% set serviceType = 'Submit' %}
-{% set pageName = "Find your organisation" %}
 
 {% block beforeContent %}
 

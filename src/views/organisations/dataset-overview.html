@@ -1,9 +1,3 @@
-{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
-{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
-{% from "../components/dataset-navigation.html" import datasetNavigation %}
-{% from "components/deadlineNotice.html" import deadlineNotice %}
-{% extends "layouts/main.html" %}
-
 {% macro endpointErrorMessage(endpoint) %}
   {% if endpoint.error.code %}
     There was a {{ endpoint.error.code }} error accessing the data URL
@@ -25,8 +19,12 @@
   <p class="app-inset-text__error"></p>
 {% endmacro %}
 
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "../components/dataset-navigation.html" import datasetNavigation %}
+{% from "components/deadlineNotice.html" import deadlineNotice %}
 
-
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set showMap = [
   "article-4-direction-area",
   "brownfield-land",
@@ -37,12 +35,15 @@
   "tree-preservation-zone"
 ].includes(dataset.dataset) %}
 
-{% set serviceType = 'Submit' %}
+{% set serviceType = 'Manage' %}
 {% set pageName %}
     {{organisation.name}} - {{dataset.name}} - Dataset overview
 {% endset %}
-
 {% set urlStyle = 'text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 400px; display: block;' %}
+
+{% extends "layouts/main.html" %}
+
+
 
 {% block beforeContent %}
 
