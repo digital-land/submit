@@ -15,9 +15,9 @@ const validateParams = validateQueryParams({
 })
 
 /**
- * Middleware. Updates req with `task`
+ * Middleware. Updates req.locals with `task`, `field` and `issueType`
  *
- * @param {*} req request
+ * @param {import('express').Request & { aggregatedTasks: Map<string, { field: string, issueType: string, count: number }}} req request
  * @param {*} res response
  * @param {*} next next function
  */
@@ -30,16 +30,20 @@ export const prepareTask = (req, res, next) => {
   }
 
   let message = issueType // fallback
-  try {
-    message = performanceDbApi.getTaskMessage({
-      issue_type: task.issueType,
-      num_issues: task.count,
-      rowCount: req.totalRows,
-      field: task.field,
-      format: 'html'
-    })
-  } catch (error) {
-    logger.warn('prepareTask/getTaskMessage failure', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+  if (issueType === 'missing column') {
+    message = results.missingColumnTaskMessage(`<span class="column-name">${task.field}</span>`)
+  } else {
+    try {
+      message = performanceDbApi.getTaskMessage({
+        issue_type: task.issueType,
+        num_issues: task.count,
+        rowCount: req.totalRows,
+        field: task.field,
+        format: 'html'
+      })
+    } catch (error) {
+      logger.warn('prepareTask/getTaskMessage failure', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+    }
   }
 
   req.locals.issueType = issueType

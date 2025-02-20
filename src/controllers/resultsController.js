@@ -302,6 +302,10 @@ export function getTasksByLevel (req, level, status) {
   req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
 }
 
+export const missingColumnTaskMessage = (field) => {
+  return `${field} column is missing`
+}
+
 export function getMissingColumnTasks (req) {
   const { responseDetails } = req.locals
   const taskMap = new Map()
@@ -315,7 +319,7 @@ export function getMissingColumnTasks (req) {
         count: 1
       })
       tasks.push(makeTaskParam(req, {
-        taskMessage: `${column.field} column is missing`,
+        taskMessage: missingColumnTaskMessage(column.field),
         status: taskStatus.mustFix,
         field: column.field,
         issueType: 'missing column'
