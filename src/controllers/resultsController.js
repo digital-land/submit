@@ -278,13 +278,14 @@ export function getNonBlockingTasks (req, res, next) {
     .map(({ field }) => makeTaskParam(`${field} column is missing`, 'Must fix', 'govuk-tag--red'))
 
   req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
+  req.missingColumnTasks = missingColumnTasks
 
   // add tasks from missing columns
   next()
 }
 
 export function getPassedChecks (req, res, next) {
-  const { tasks, totalRows } = req
+  const { tasks, totalRows, missingColumnTasks } = req
 
   const passedChecks = []
 
@@ -296,12 +297,12 @@ export function getPassedChecks (req, res, next) {
   }
 
   // add task complete for no duplicate refs
-  if (tasks.findIndex(task => task.issueType === 'reference values are not unique') < 0) {
+  if (missingColumnTasks.findIndex(task => task.title.text === 'reference column is missing') < 0 && tasks.findIndex(task => task.issueType === 'reference values are not unique') < 0) {
     passedChecks.push(makePassedCheck('All rows have unique references'))
   }
 
   // add task complete for valid geoms
-  if (tasks.findIndex(task => task.issueType === 'invalid WKT') < 0) {
+  if (missingColumnTasks.findIndex(task => task.title.text === 'geometry column is missing') < 0 && tasks.findIndex(task => task.issueType === 'invalid WKT') < 0) {
     passedChecks.push(makePassedCheck('All rows have valid geometry'))
   }
 
