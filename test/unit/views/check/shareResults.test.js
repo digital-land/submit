@@ -22,7 +22,7 @@ describe('Share Results Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'Share these results - Submit and update your planning data'
+    pageTitle: 'Share these results - Check your planning data'
   })
 
   it('Renders the correct page heading', () => {
