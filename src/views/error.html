@@ -1,7 +1,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set pageName = "Error" %}
-
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% extends "layouts/main.html" %}
 {% block content %}
     <h1 class="govuk-heading-xl">Error</h1>

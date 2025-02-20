@@ -5,7 +5,7 @@ import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 describe('Cookie banner component', () => {
   const htmlString = '{% include "components/cookie-banner.html" %}'
   const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
-  const html = nunjucks.renderString(htmlString, {})
+  const html = nunjucks.renderString(htmlString, { serviceType: 'manage' })
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
 

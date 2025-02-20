@@ -8,6 +8,7 @@ describe('createCustomerRequest', () => {
   const summary = 'Test Summary'
   const description = 'Test Description'
   const requestTypeId = '123'
+  const raiseOnBehalfOf = 'john.doe@example.com'
 
   beforeEach(() => {
     process.env.JIRA_URL = 'https://jira.example.com'
@@ -55,7 +56,7 @@ describe('createCustomerRequest', () => {
     }
     axios.post.mockResolvedValue(mockResponse)
 
-    const response = await createCustomerRequest(summary, description, requestTypeId)
+    const response = await createCustomerRequest({ summary, description, raiseOnBehalfOf }, requestTypeId)
 
     expect(axios.post).toHaveBeenCalledWith(
       'https://jira.example.com/rest/servicedeskapi/request',
@@ -65,7 +66,8 @@ describe('createCustomerRequest', () => {
           description
         },
         serviceDeskId: 'serviceDeskId',
-        requestTypeId
+        requestTypeId,
+        raiseOnBehalfOf
       }),
       {
         headers: {
