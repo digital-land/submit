@@ -46,7 +46,7 @@ const fetchIssueCount = fetchOne({
     select count(*) as count
     from issue i
     LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-    WHERE resource = '${req.resources[0].resource}'
+    WHERE resource = '${req.resources[0]?.resource || ''}'
     AND i.issue_type = '${params.issue_type}'
     AND it.responsibility = 'external'
     AND field = '${params.issue_field}'
