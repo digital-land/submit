@@ -24,12 +24,12 @@ const validateParams = validateQueryParams({
 export const prepareTask = (req, res, next) => {
   const { issueType: issueTypeSlug, field } = req.params
 
-  const task = req.aggregatedTasks.get(`${issueType}|${field}`)
+  const task = req.aggregatedTasks.get(`${issueTypeSlug}|${field}`)
   if (!task) {
-    return next(new MiddlewareError(`No isssue of type '${issueType}' for field ${field}`, 404))
+    return next(new MiddlewareError(`No isssue of type '${issueTypeSlug}' for field ${field}`, 404))
   }
 
-  let message = issueType // fallback
+  let message = issueTypeSlug // fallback
   if (issueTypeSlug === 'missing column') {
     message = results.missingColumnTaskMessage(`<span class="column-name">${task.field}</span>`)
   } else {
@@ -46,7 +46,7 @@ export const prepareTask = (req, res, next) => {
     }
   }
 
-  req.locals.issueType = issueType
+  req.locals.issueType = issueTypeSlug
   req.locals.field = field
   req.locals.task = { ...task, message }
   next()
