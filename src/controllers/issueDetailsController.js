@@ -22,7 +22,7 @@ const validateParams = validateQueryParams({
  * @param {*} next next function
  */
 export const prepareTask = (req, res, next) => {
-  const { issueType, field } = req.params
+  const { issueType: issueTypeSlug, field } = req.params
 
   const task = req.aggregatedTasks.get(`${issueType}|${field}`)
   if (!task) {
@@ -30,7 +30,7 @@ export const prepareTask = (req, res, next) => {
   }
 
   let message = issueType // fallback
-  if (issueType === 'missing column') {
+  if (issueTypeSlug === 'missing column') {
     message = results.missingColumnTaskMessage(`<span class="column-name">${task.field}</span>`)
   } else {
     try {
@@ -65,11 +65,17 @@ const setPagination = (req, res, next) => {
   next()
 }
 
+async function setDetailsOptions (req, res, next) {
+  req.locals.detailsOptions = { issue: { ...req.params } }
+  next()
+}
+
 const middlewares = [
   isFeatureEnabled('checkIssueDetailsPage')
     ? validateParams
     : (req, res, next) => { return next(new MiddlewareError('Not found', 404)) },
   results.getRequestDataMiddleware,
+  setDetailsOptions,
   results.fetchResponseDetails,
   results.checkForErroredResponse,
   results.setupTableParams,

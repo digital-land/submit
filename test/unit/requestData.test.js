@@ -69,7 +69,7 @@ describe('RequestData', () => {
       }
       const requestData = new RequestData(response)
 
-      await requestData.fetchResponseDetails(0, 50, 'error')
+      await requestData.fetchResponseDetails(0, 50, { severity: 'error' })
 
       expect(axios.get).toHaveBeenCalledWith(`http://localhost:8001/requests/1/response-details?offset=0&limit=50&jsonpath=${encodeURIComponent('$.issue_logs[*].severity=="error"')}`, { timeout: 30000 })
     })

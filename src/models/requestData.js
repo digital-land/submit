@@ -1,7 +1,16 @@
+import * as v from 'valibot'
 import logger from '../utils/logger.js'
 import axios from 'axios'
 import config from '../../config/index.js'
 import ResponseDetails from './responseDetails.js'
+
+const ResponseDetailsOptions = v.optional(v.object({
+  severity: v.optional(v.pipe(v.string(), v.minLength(2))),
+  issue: v.optional(v.object({
+    issueType: v.pipe(v.string(), v.minLength(1)),
+    field: v.pipe(v.string(), v.minLength(1))
+  }))
+}))
 
 /**
  * Holds response data of 'http://ASYNC-REQUEST-API-HOST/requests/:result-id' endpoint.
@@ -14,20 +23,30 @@ export default class ResultData {
   }
 
   /**
+   * Fetches check results details, optionally filtered by issue (type and field), or severity (but not both).
+   *
    * @param {number} pageOffset zero based
    * @param {number} limit limit
-   * @param {string?} severity severity
+   * @param {{ severity?: string, issue?: { issueType?: string, field?: string? } }?} opts options
    * @returns {ResponseDetails}
    */
-  async fetchResponseDetails (pageOffset = 0, limit = 50, severity = undefined) {
-    const urlParams = new URLSearchParams()
-    urlParams.append('offset', pageOffset * limit)
-    urlParams.append('limit', limit)
-    if (severity) {
-      urlParams.append('jsonpath', `$.issue_logs[*].severity=="${severity}"`)
+  async fetchResponseDetails (pageOffset = 0, limit = 50, opts = { severity: undefined }) {
+    v.parse(ResponseDetailsOptions, opts)
+
+    const url = new URL(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details`)
+    url.searchParams.append('offset', pageOffset * limit)
+    url.searchParams.append('limit', limit)
+    if ('issue' in opts) {
+      const { issueType, field } = opts.issue
+      // 'missing column' is an issue type we made up: the Request API does not use it, so we can't filter by that value
+      if (issueType !== 'missing column') {
+        url.searchParams.append('jsonpath', `$.issue_logs[*]."issue-type"=="${issueType}" && $.issue_logs[*]."field"=="${field}"`)
+      }
+    } else if (opts.severity) {
+      url.searchParams.append('jsonpath', `$.issue_logs[*].severity=="${opts.severity}"`)
     }
 
-    const response = await axios.get(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/response-details?${urlParams.toString()}`, { timeout: 30000 })
+    const response = await axios.get(url, { timeout: 30000 })
 
     const pagination = {
       totalResults: response.headers['x-pagination-total-results'],

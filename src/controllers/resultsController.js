@@ -88,14 +88,21 @@ export function setupTemplate (req, res, next) {
   }
 }
 
+/**
+ * @param {import('express').Request & { locals: { detailsOptions?: { severity?: string, issue?: { issueType: string, field: string }}}}} req request
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 export async function fetchResponseDetails (req, res, next) {
   const { pageNumber } = req.parsedParams
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const detailsOpts = req.locals.detailsOptions ?? {}
       const responseDetails = req.locals.template === resultsTemplate
         // pageNumber starts with: 1, fetchResponseDetails parameter `pageOffset` starts with 0
-        ? await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, 'error')
-        : await req.locals.requestData.fetchResponseDetails(pageNumber - 1)
+        ? await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { severity: 'error', ...detailsOpts })
+        : await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { ...detailsOpts })
       req.locals.responseDetails = responseDetails
     }
   } catch (e) {
