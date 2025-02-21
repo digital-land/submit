@@ -77,6 +77,7 @@
     "connect-redis": "^7.1.1",
     "cookie-parser": "^1.4.6",
     "csv-parser": "^3.0.0",
+    "csv-stringify": "^6.5.2",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",

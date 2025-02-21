@@ -21,8 +21,8 @@ mainWebsiteUrl: https://www.planning.data.gov.uk
 serviceName: 'Submit and update your planning data'
 # NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
 serviceNames: {
-    submit: 'Submit and update your planning data',
-    check: 'Submit and update your planning data',
+    submit: 'Submit your planning data',
+    check: 'Check your planning data',
     manage: 'Submit and update your planning data'
 }
 datasetteUrl: 'https://datasette.planning.data.gov.uk'
