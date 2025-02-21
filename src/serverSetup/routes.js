@@ -9,21 +9,6 @@ import privacy from '../routes/privacy.js'
 import cookies from '../routes/cookies.js'
 import guidance from '../routes/guidance.js'
 import { isFeatureEnabled } from '../utils/features.js'
-import { renderTemplate } from '../middleware/middleware.builders.js'
-
-const renderWhatever = renderTemplate({
-  templateParams: (req) => {
-    return {
-      organisation: { name: 'Lincolshire' },
-      dataset: { name: 'Tree Outline or whatever' },
-      task: {
-        qualityCriteriaLevel: 2
-      }
-    }
-  },
-  template: 'check/results/issueDetails.html',
-  handlerName: 'whatever'
-})
 
 export function setupRoutes (app) {
   app.use('/', manage)
@@ -37,7 +22,6 @@ export function setupRoutes (app) {
   app.use('/privacy-notice', privacy)
   app.use('/cookies', cookies)
   app.use('/health', health)
-  app.use('/whatever', renderWhatever)
 
   // feature flagged routes
   if (isFeatureEnabled('submitEndpointForm')) app.use('/submit', endpointSubmissionFormFormWisard)
