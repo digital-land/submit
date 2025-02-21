@@ -1,0 +1,50 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from '../../components/dataset-banner.html' import datasetBanner %}
+
+{% set pageName = "Share these results" %}
+{% set serviceType = 'Check' %}
+
+
+{% block content %}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        {{ datasetBanner(options.lpa, options.datasetName or options.requestParams.dataset) }}
+        <h1 class="govuk-heading-l">
+            {{ pageName }}
+        </h1>
+
+        <p>Copy and send this link to someone and they will be able to view the results.</p>
+
+        {% set share_url = options.shareLink %}
+        <p><code><a href="{{share_url}}">{{share_url}}</a></code></p>
+
+        {{ govukButton({
+        text: "Copy link",
+        classes: "app-c-button--secondary-quiet js-enabled",
+        attributes: {
+            onclick: "copyShareLink()",
+            style: "display: none; visibility: hidden;"
+        }
+        }) }}
+    </div>
+
+    <script>
+        function copyShareLink() {
+            const shareUrl = "{{share_url}}";
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const button = document.querySelector('.app-c-button--secondary-quiet');
+                const originalText = button.innerText;
+                button.innerText = 'Copied!';
+                setTimeout(() => {
+                    button.innerText = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</div>
+
+{% endblock %}
