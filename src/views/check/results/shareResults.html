@@ -35,14 +35,67 @@
     <script>
         function copyShareLink() {
             const shareUrl = "{{share_url}}";
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                const button = document.querySelector('.app-c-button--secondary-quiet');
-                const originalText = button.innerText;
-                button.innerText = 'Copied!';
-                setTimeout(() => {
-                    button.innerText = originalText;
-                }, 2000);
-            });
+            const button = document.querySelector('.app-c-button--secondary-quiet');
+            const originalText = button.innerText;
+
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => {
+                        updateButtonText('Copied!', originalText, button);
+                    })
+                    .catch((err) => {
+                        console.warn('Failed to copy using Clipboard API:', err);
+                        fallbackCopyText(shareUrl, button, originalText);
+                    });
+            } else {
+                // Fallback for older browsers or non-HTTPS
+                fallbackCopyText(shareUrl, button, originalText);
+            }
+        }
+
+        function fallbackCopyText(text, button, originalText) {
+            try {
+                // Create temporary textarea
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                
+                // Make it invisible but keep it in the viewport
+                textArea.style.position = 'fixed';
+                textArea.style.top = '0';
+                textArea.style.left = '0';
+                textArea.style.opacity = '0';
+                
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    // Execute copy command
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        updateButtonText('Copied!', originalText, button);
+                    } else {
+                        updateButtonText('Failed to copy', originalText, button);
+                    }
+                } catch (err) {
+                    console.warn('execCommand error:', err);
+                    updateButtonText('Failed to copy', originalText, button);
+                }
+
+                // Cleanup
+                document.body.removeChild(textArea);
+            } catch (err) {
+                console.error('Fallback copy error:', err);
+                updateButtonText('Failed to copy', originalText, button);
+            }
+        }
+
+        function updateButtonText(temporaryText, originalText, button) {
+            button.innerText = temporaryText;
+            setTimeout(() => {
+                button.innerText = originalText;
+            }, 2000);
         }
     </script>
 </div>
