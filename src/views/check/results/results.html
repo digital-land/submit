@@ -10,154 +10,150 @@
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
 {% from "govuk/components/tabs/macro.njk" import govukTabs %}
 
-{% import  "./tabs.njk" as resultTabs %}
+{% import "./tabs.njk" as resultTabs %}
 
 {% set mapTab %}
-  {{ resultTabs.mapTab(options) }}
+{{ resultTabs.mapTab(options) }}
 {% endset -%}
 {% set tableTab %}
-  {{ resultTabs.tableTab(options) }}
+{{ resultTabs.tableTab(options) }}
 {% endset -%}
 
 {% set tabItems = {
-  map: { label: "Map",
-         id: "map-tab",
-         panel: { html: mapTab } },
-  table: { label: "Dataset table", 
-           id: "table-tab",
-           panel: { html: tableTab } } } %}
+map: { label: "Map",
+id: "map-tab",
+panel: { html: mapTab } },
+table: { label: "Dataset table",
+id: "table-tab",
+panel: { html: tableTab } } } %}
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'Your data has been checked' %}
 
 {% block pageTitle %}
-  {% set pageTitle = super() %}
-  {% if options.pagination.totalPages > 1 %}
-    {% set pageTitleString = ' (page ' + options.pagination.currentPage + ' of ' + options.pagination.totalPages + ')'%}
-    {% set pageTitle = pageTitle + pageTitleString %}
-  {% endif %}
+{% set pageTitle = super() %}
+{% if options.pagination.totalPages > 1 %}
+{% set pageTitleString = ' (page ' + options.pagination.currentPage + ' of ' + options.pagination.totalPages + ')'%}
+{% set pageTitle = pageTitle + pageTitleString %}
+{% endif %}
 
-  {{pageTitle}}
+{{pageTitle}}
 {% endblock %}
 
 {% block content %}
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      {{ datasetBanner(options.lpa, options.datasetName or options.requestParams.dataset) }}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ datasetBanner(options.lpa, options.datasetName or options.requestParams.dataset) }}
 
-      <h1 class="govuk-heading-l">
-        {{pageName}}
-      </h1>
+    <h1 class="govuk-heading-l">
+      {{pageName}}
+    </h1>
 
-    </div>
   </div>
+</div>
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full tab-container">
 
-      {# we want to hide a tab, when we have no data for it. We present the Map tab by default #}
-      {% set items = [] %}
-      {% if options.geometries %}
-        {%set _ = items.push(tabItems.map) %}
-      {% endif %}
-      {% if options.tableParams.rows|length > 0 %}
-        {%set _ = items.push(tabItems.table) %}
-      {% endif %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full tab-container">
+    {# we want to hide a tab, when we have no data for it. We present the Map tab by default #}
+    {% set items = [] %}
+    {% if options.geometries %}
+    {%set _ = items.push(tabItems.map) %}
+    {% endif %}
+    {% if options.tableParams.rows|length > 0 %}
+    {%set _ = items.push(tabItems.table) %}
+    {% endif %}
 
-      {{ govukTabs({ items: items })}}
+    {{ govukTabs({ items: items })}}
 
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if options.passedChecks.length > 0 %}
+    <div id="passed-checks">
+      <h2 class="govuk-heading-m">Data that passed checks</h2>
+
+      {{ govukTaskList({
+      idPrefix: "passed-checks",
+      items: options.passedChecks
+      }) }}
     </div>
-  </div>  
+    {% endif %}
 
-  {% if options.passedChecks.length > 0 %}
-    <div class="govuk-grid-row" id="passed-checks">
-      <div class="govuk-grid-column-two-thirds">
-        <h2 class="govuk-heading-m">Data that passed checks</h2>
-    
-        {{ govukTaskList({
-          idPrefix: "passed-checks",
-          items: options.passedChecks
+    {% if options.tasksBlocking.length > 0 %}
+    <div id="required-checks">
+      <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
+
+      <p>You cannot submit your data to the platform until you fix these issues.</p>
+
+      {{ govukTaskList({
+      idPrefix: "must-fix",
+      items: options.tasksBlocking
+      }) }}
+    </div>
+    {% endif %}
+
+    {% if options.tasksNonBlocking.length > 0 %}
+    <div id="optional-checks">
+      <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
+
+      <p>You can submit your data with these issues but should fix them over time to improve the quality and usability
+        of
+        the data.</p>
+
+      {{ govukTaskList({
+      idPrefix: "fix-later",
+      items: options.tasksNonBlocking
+      }) }}
+    </div>
+    {% endif %}
+
+    {% if options.tasksBlocking.length > 0 %}
+    <p>Fix the issues, then upload a new version of your data to check if it is ready to submit.</p>
+
+    <form>
+      <div class="govuk-button-group">
+        {{ govukButton({
+        text: "Upload a new version",
+        href: "/check/upload-method"
         }) }}
       </div>
-    </div>
-  {% endif %}
-  
-  {% if options.tasksBlocking.length > 0 %}
-    <div class="govuk-grid-row" id="required-checks">
-      <div class="govuk-grid-column-two-thirds">
-        <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
-    
-        <p>You cannot submit your data to the platform until you fix these issues.</p>
-    
-        {{ govukTaskList({
-          idPrefix: "must-fix",
-          items: options.tasksBlocking
+    </form>
+
+    {% else %}
+    <form method="post">
+      <div class="govuk-button-group">
+        {{ govukButton({
+        text: "Continue"
         }) }}
+        <a href="/check/upload-method">Upload a new version</a>
       </div>
-    </div>
-  {% endif %}
-  
-  {% if options.tasksNonBlocking.length > 0 %}
-    <div class="govuk-grid-row" id="optional-checks">
-      <div class="govuk-grid-column-two-thirds">
-        <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
-    
-        <p>You can submit your data with these issues but should fix them over time to improve the quality and usability of
-          the
-          data.</p>
-    
-        {{ govukTaskList({
-          idPrefix: "fix-later",
-          items: options.tasksNonBlocking
-        }) }}
-      </div>
-    </div>
-  {% endif %}
-  
-  {% if options.tasksBlocking.length > 0 %}
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <p>Fix the issues, then upload a new version of your data to check if it is ready to submit.</p>
-        
-        <form>
-          <div class="govuk-button-group">
-            {{ govukButton({
-              text: "Upload a new version",
-              href: "/check/upload-method"
-            }) }}
-          </div>
-          </div>
-      </form>
-      </div>
-    </div>
-  {% else %}
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-two-thirds">
-        <form method="post">
-          <div class="govuk-button-group">
-            {{ govukButton({
-              text: "Continue"
-            }) }}
-            
-            <a class='govuk-link' href="/check/upload-method">Upload a new version</a>
-          </div>
-        </form>
-      </div>
-    </div>
-  {% endif %}
+    </form>
+    {% endif %}
+
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <h3 class="govuk-heading-s">Dataset actions</h3>
+
+    <p><a href="./share">Share these results</a></p>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-  {{ super() }}
-  {% if options.geometries %}
-    <script>
-      window.serverContext = {
-        containerId: 'map',
-        geometries: {{ options.geometries | dump | safe }},
-        {% if options.deepLink.orgId %}boundaryGeoJsonUrl: "/api/lpa-boundary/{{ options.deepLink.orgId }}"{% endif %}
-      }
-    </script>
-    <script src="/public/js/map.bundle.js"></script>
-  {% endif %}
+{{ super() }}
+{% if options.geometries %}
+<script>
+  window.serverContext = {
+    containerId: 'map',
+    geometries: {{ options.geometries | dump | safe }},
+  {% if options.deepLink.orgId %} boundaryGeoJsonUrl: "/api/lpa-boundary/{{ options.deepLink.orgId }}"{% endif %}
+    }
+</script>
+<script src="/public/js/map.bundle.js"></script>
+{% endif %}
 {% endblock %}
