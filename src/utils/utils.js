@@ -121,14 +121,25 @@ export function makeDatasetsLookup (dataSubjects) {
 }
 
 /**
- * @type {Map<string, {value: string, text: string, available: boolean, dataSubject: string, requiresGeometryTypeSelection?: boolean}>}
+ * @typedef {Object} Dataset
+ * @property {string} value - Dataset value/identifier
+ * @property {string} text - Display text for the dataset
+ * @property {boolean} available - Whether the dataset is available
+ * @property {string} dataSubject - The data subject this dataset belongs to
+ * @property {boolean} [requiresGeometryTypeSelection] - Whether geometry type selection is required
+ */
+
+/**
+ * Map of dataset identifiers to their configuration objects
+ * @type {Map<string, Dataset>}
  */
 export const datasets = makeDatasetsLookup(dataSubjects)
 
 /**
+ * Gets the list of available datasets sorted by display text
  *
- * @param dataSubjects
- * @returns {FlatArray<*[], 1>[]} datasets sorted by 'text' property
+ * @param {Object} dataSubjects - Data subjects configuration object
+ * @returns {Dataset[]} Array of available datasets sorted by text property
  */
 export function availableDatasets (dataSubjects) {
   const availableDataSubjects = Object.values(dataSubjects).filter(dataSubject => dataSubject.available)

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: routes/schemas.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: routes/schemas.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * This module provides code a set of schemas for params passed to
+ * the nunjuck templates in `./src/views`
+ */
+
+import * as v from 'valibot'
+import { MiddlewareError } from '../utils/errors.js'
+
+export const EmptyParams = v.object({})
+
+export const ErrorPageParams = v.object({
+  err: v.instance(MiddlewareError),
+  env: v.string(),
+  supportEmail: v.pipe(v.string(), v.email()),
+  uptime: v.optional(v.string()),
+  downtime: v.optional(v.string())
+})
+
+export const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
+
+export const Base = v.object({
+  // serviceName: NonEmptyString,
+  // pageTitle: NonEmptyString,
+  pageName: v.optional(NonEmptyString)
+})
+
+export const StartPage = v.object({
+  ...Base.entries
+})
+
+export const PaginationParams = v.optional(v.strictObject({
+  previous: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  next: v.optional(v.strictObject({
+    href: v.string()
+  })),
+  items: v.array(v.variant('type', [
+    v.strictObject({
+      type: v.literal('number'),
+      number: v.integer(),
+      href: v.string(),
+      current: v.boolean()
+    }),
+    v.strictObject({
+      type: v.literal('ellipsis'),
+      ellipsis: v.literal(true),
+      href: v.string()
+    })
+  ]))
+}))
+
+export const dataRangeParams = v.object({
+  minRow: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  maxRow: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  totalRows: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  maxPageNumber: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  pageLength: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  offset: v.pipe(v.number(), v.integer(), v.minValue(0))
+})
+
+export const errorSummaryParams = v.strictObject({
+  heading: v.optional(v.string()),
+  items: v.array(v.strictObject({
+    html: v.string(),
+    href: v.url()
+  }))
+})
+
+export const tableParams = v.strictObject({
+  columns: v.array(NonEmptyString),
+  rows: v.array(v.strictObject({
+    columns: v.objectWithRest(
+      {},
+      v.strictObject({
+        error: v.optional(v.object({
+          message: v.string()
+        })),
+        value: v.optional(v.string()),
+        html: v.optional(v.string()),
+        classes: v.optional(v.string())
+      })
+    )
+  })),
+  fields: v.array(NonEmptyString)
+})
+
+/**
+ * The values of this enum should match values of the 'status' column
+ * in the query in `fetchLpaOverview` middleware
+ */
+export const datasetStatusEnum = {
+  Live: 'Live',
+  'Needs fixing': 'Needs fixing',
+  Warning: 'Warning',
+  Error: 'Error',
+  'Not submitted': 'Not submitted'
+}
+
+export const DeadlineNoticeField = v.strictObject({
+  type: v.union([
+    v.literal('due'),
+    v.literal('overdue')
+  ]),
+  deadline: v.string()
+})
+
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
+const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
+const DatasetItem = v.strictObject({
+  endpointCount: v.optional(v.number()),
+  status: v.enum(datasetStatusEnum),
+  dataset: NonEmptyString,
+  issueCount: v.optional(v.number()),
+  error: v.optional(v.nullable(NonEmptyString)),
+  issue: v.optional(NonEmptyString),
+  entityCount: v.optional(v.number()),
+  project: v.optional(v.string()),
+  // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
+  numIssues: v.optional(v.number()),
+  notice: v.optional(DeadlineNoticeField)
+})
+
+export const OrgOverviewPage = v.strictObject({
+  organisation: OrgField,
+  datasets: v.object({
+    statutory: v.optional(v.array(DatasetItem)),
+    other: v.optional(v.array(DatasetItem))
+  }),
+  totalDatasets: v.integer(),
+  datasetsWithEndpoints: v.integer(),
+  datasetsWithIssues: v.integer(),
+  datasetsWithErrors: v.integer(),
+  isOPDMember: v.boolean()
+})
+
+export const OrgFindPage = v.strictObject({
+  alphabetisedOrgs: v.record(NonEmptyString, v.array(OrgField))
+})
+
+export const OrgGetStarted = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField
+})
+
+export const OrgDatasetOverview = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  taskCount: v.integer(),
+  stats: v.strictObject({
+    numberOfRecords: v.integer(),
+    numberOfFieldsSupplied: v.integer(),
+    numberOfFieldsMatched: v.integer(),
+    numberOfExpectedFields: v.integer(),
+    endpoints: v.array(v.strictObject({
+      name: v.string(),
+      documentation_url: v.nullable(v.optional(v.string())),
+      endpoint_url: v.string(),
+      endpoint: NonEmptyString,
+      lastAccessed: v.string(),
+      lastUpdated: v.nullable(v.string()),
+      error: v.optional(v.strictObject({
+        code: v.integer(),
+        exception: v.string()
+      }))
+    }))
+  }),
+  notice: v.optional(DeadlineNoticeField)
+})
+
+export const OrgDataView = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  taskCount: v.integer(),
+  tableParams,
+  pagination: PaginationParams,
+  dataRange: dataRangeParams
+})
+
+export const OrgDatasetTaskList = v.strictObject({
+  taskList: v.array(v.strictObject({
+    title: v.strictObject({ text: NonEmptyString }),
+    href: v.url(),
+    status: v.strictObject({
+      tag: v.strictObject({
+        classes: NonEmptyString,
+        text: NonEmptyString
+      })
+    })
+  })),
+  organisation: OrgField,
+  dataset: v.strictObject({
+    dataset: v.optional(NonEmptyString),
+    name: NonEmptyString,
+    collection: NonEmptyString
+  })
+})
+
+export const OrgEndpointError = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  errorData: v.strictObject({
+    endpoint_url: v.url(),
+    http_status: v.optional(v.integer()),
+    latest_log_entry_date: v.isoDateTime(),
+    latest_200_date: v.optional(v.isoDateTime())
+  })
+})
+
+export const OrgIssueTable = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  errorSummary: errorSummaryParams,
+  issueType: v.string(),
+  issueSpecification: v.optional(v.strictObject({
+    datasetField: NonEmptyString,
+    field: NonEmptyString,
+    description: v.optional(NonEmptyString),
+    dataset: v.optional(NonEmptyString)
+  })),
+  tableParams,
+  pagination: PaginationParams,
+  dataRange: dataRangeParams
+})
+
+export const OrgIssueDetails = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  errorSummary: errorSummaryParams,
+  issueType: NonEmptyString,
+  issueField: NonEmptyString,
+  entry: v.strictObject({
+    title: NonEmptyString,
+    fields: v.array(v.strictObject({
+      key: v.strictObject({ text: NonEmptyString }),
+      value: v.strictObject({ html: v.string() }),
+      classes: v.string()
+    })),
+    geometries: v.optional(v.array(v.string()))
+  }),
+  pagination: PaginationParams,
+  pageNumber: v.integer(),
+  dataRange: dataRangeParams
+})
+
+export const CheckAnswers = v.strictObject({
+  values: v.strictObject({
+    lpa: NonEmptyString,
+    name: NonEmptyString,
+    email: v.pipe(v.string(), v.email()),
+    dataset: NonEmptyString,
+    'endpoint-url': v.url(),
+    'documentation-url': v.url(),
+    hasLicence: NonEmptyString,
+    errors: v.optional(v.array(v.strictObject({
+      text: NonEmptyString
+    })))
+  })
+})
+
+export const ChooseDataset = v.strictObject({
+  errors: v.strictObject({
+    dataset: v.optional(v.strictObject({
+      type: v.enum({
+        required: 'required'
+      })
+    }))
+  })
+})
+
+export const DatasetDetails = v.strictObject({
+  organisation: OrgField,
+  dataset: DatasetNameField,
+  values: v.strictObject({
+    dataset: NonEmptyString
+  }),
+  errors: v.record(NonEmptyString, v.strictObject({
+    type: NonEmptyString
+  }))
+})
+
+export const GuidanceNavigationItem = v.strictObject({
+  label: NonEmptyString,
+  url: v.string(),
+  items: v.optional(v.lazy(() => v.array(GuidanceNavigationItem)))
+})
+
+export const GuidanceNavigation = v.strictObject({
+  navigation: v.array(v.strictObject({
+    title: NonEmptyString,
+    items: v.array(GuidanceNavigationItem)
+  }))
+})
+
+/**
+ * This acts as a registry of template -> schema for convenience.
+ */
+export const templateSchema = new Map([
+  ['dataset-details.html', DatasetDetails],
+  ['check-answers.html', CheckAnswers],
+  ['choose-dataset.html', ChooseDataset],
+  ['lpa-details.html', v.any()],
+
+  ['submit/confirmation.html', v.any()],
+
+  ['organisations/overview.html', OrgOverviewPage],
+  ['organisations/find.html', OrgFindPage],
+  ['organisations/get-started.html', OrgGetStarted],
+  ['organisations/dataset-overview.html', OrgDatasetOverview],
+  ['organisations/dataview.html', OrgDataView],
+  ['organisations/datasetTaskList.html', OrgDatasetTaskList],
+  ['organisations/http-error.html', OrgEndpointError],
+  ['organisations/issueTable.html', OrgIssueTable],
+  ['organisations/issueDetails.html', OrgIssueDetails],
+
+  ['errorPages/error.njk', ErrorPageParams],
+  ['privacy-notice.html', EmptyParams],
+  ['landing.html', EmptyParams],
+  ['cookies.html', EmptyParams],
+  ['accessibility.html', EmptyParams],
+
+  ['guidance/index.md', GuidanceNavigation],
+  ['guidance/try-check-publish-service', GuidanceNavigation],
+  ['guidance/publish-data-on-your-website', GuidanceNavigation],
+  ['guidance/keep-your-data-up-to-date', GuidanceNavigation],
+  ['guidance/specifications/index.md', GuidanceNavigation],
+  ['guidance/specifications/article-4-direction', GuidanceNavigation],
+  ['guidance/specifications/conservation-area', GuidanceNavigation],
+  ['guidance/specifications/listed-building', GuidanceNavigation]
+])
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CheckDeepLinkController.html">CheckDeepLinkController</a></li><li><a href="EndpointSubmissionFormDeepLinkController.html">EndpointSubmissionFormDeepLinkController</a></li><li><a href="MiddlewareError.html">MiddlewareError</a></li><li><a href="PageController.html">PageController</a></li><li><a href="module.html#.exports">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#FetchOneFallbackPolicy">FetchOneFallbackPolicy</a></li><li><a href="global.html#addNoticesToDatasets">addNoticesToDatasets</a></li><li><a href="global.html#attachFileToIssue">attachFileToIssue</a></li><li><a href="global.html#availableDatasets">availableDatasets</a></li><li><a href="global.html#checkToolDeepLink">checkToolDeepLink</a></li><li><a href="global.html#createCustomerRequest">createCustomerRequest</a></li><li><a href="global.html#datasetStatusEnum">datasetStatusEnum</a></li><li><a href="global.html#datasetSubmissionDeadlineCheck">datasetSubmissionDeadlineCheck</a></li><li><a href="global.html#datasets">datasets</a></li><li><a href="global.html#endpointSubmissionFormToolDeepLink">endpointSubmissionFormToolDeepLink</a></li><li><a href="global.html#fetchDatasetErrorStatus">fetchDatasetErrorStatus</a></li><li><a href="global.html#fetchIf">fetchIf</a></li><li><a href="global.html#fetchIfFn">fetchIfFn</a></li><li><a href="global.html#fetchLatestResource">fetchLatestResource</a></li><li><a href="global.html#fetchLocalAuthorities">fetchLocalAuthorities</a></li><li><a href="global.html#fetchMany">fetchMany</a></li><li><a href="global.html#fetchManyFn">fetchManyFn</a></li><li><a href="global.html#fetchManyFromAllDatasets">fetchManyFromAllDatasets</a></li><li><a href="global.html#fetchManyFromAllDatasetsFn">fetchManyFromAllDatasetsFn</a></li><li><a href="global.html#fetchOne">fetchOne</a></li><li><a href="global.html#fetchOneFn">fetchOneFn</a></li><li><a href="global.html#fetchOneFromAllDatasets">fetchOneFromAllDatasets</a></li><li><a href="global.html#fetchResourceStatus">fetchResourceStatus</a></li><li><a href="global.html#formatData">formatData</a></li><li><a href="global.html#getColumnFieldLog">getColumnFieldLog</a></li><li><a href="global.html#getDeadlineHistory">getDeadlineHistory</a></li><li><a href="global.html#getErrorSummary">getErrorSummary</a></li><li><a href="global.html#getGeometries">getGeometries</a></li><li><a href="global.html#getIssueDetails">getIssueDetails</a></li><li><a href="global.html#getIssueField">getIssueField</a></li><li><a href="global.html#getLastPage">getLastPage</a></li><li><a href="global.html#getPagination">getPagination</a></li><li><a href="global.html#getRowsWithVerboseColumns">getRowsWithVerboseColumns</a></li><li><a href="global.html#getSetDataRange">getSetDataRange</a></li><li><a href="global.html#getStatusTag">getStatusTag</a></li><li><a href="global.html#getVerboseColumns">getVerboseColumns</a></li><li><a href="global.html#handleRejections">handleRejections</a></li><li><a href="global.html#initiateJsHiddenChecks">initiateJsHiddenChecks</a></li><li><a href="global.html#invalidSchemaPaths">invalidSchemaPaths</a></li><li><a href="global.html#isFeatureEnabled">isFeatureEnabled</a></li><li><a href="global.html#isResourceIdValid">isResourceIdValid</a></li><li><a href="global.html#logPageError">logPageError</a></li><li><a href="global.html#lpaOverviewQuery">lpaOverviewQuery</a></li><li><a href="global.html#makeDatasetSlugToReadableNameFilter">makeDatasetSlugToReadableNameFilter</a></li><li><a href="global.html#maybeSetReferrer">maybeSetReferrer</a></li><li><a href="global.html#orgStatsReducer">orgStatsReducer</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#parallel">parallel</a></li><li><a href="global.html#parallelFn">parallelFn</a></li><li><a href="global.html#postRequest">postRequest</a></li><li><a href="global.html#prepareDatasetEndpointIssueTemplateParams">prepareDatasetEndpointIssueTemplateParams</a></li><li><a href="global.html#prepareDatasetOverviewTemplateParams">prepareDatasetOverviewTemplateParams</a></li><li><a href="global.html#prepareDatasetTaskListTemplateParams">prepareDatasetTaskListTemplateParams</a></li><li><a href="global.html#prepareGetOrganisationsTemplateParams">prepareGetOrganisationsTemplateParams</a></li><li><a href="global.html#prepareOverviewTemplateParams">prepareOverviewTemplateParams</a></li><li><a href="global.html#prepareTasks">prepareTasks</a></li><li><a href="global.html#preventIndexing">preventIndexing</a></li><li><a href="global.html#processEntitiesMiddleware">processEntitiesMiddleware</a></li><li><a href="global.html#processSpecificationMiddleware">processSpecificationMiddleware</a></li><li><a href="global.html#proto">proto</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderTemplate">renderTemplate</a></li><li><a href="global.html#renderTemplateFn">renderTemplateFn</a></li><li><a href="global.html#requiredDatasets">requiredDatasets</a></li><li><a href="global.html#requiresGeometryTypeToBeSelected">requiresGeometryTypeToBeSelected</a></li><li><a href="global.html#requiresGeometryTypeToBeSelectedViaDeepLink">requiresGeometryTypeToBeSelectedViaDeepLink</a></li><li><a href="global.html#schemaIssues">schemaIssues</a></li><li><a href="global.html#setNoticesFromSourceKey">setNoticesFromSourceKey</a></li><li><a href="global.html#setupNunjucks">setupNunjucks</a></li><li><a href="global.html#splitByLeading">splitByLeading</a></li><li><a href="global.html#statusToTagClassMapping">statusToTagClassMapping</a></li><li><a href="global.html#templateSchema">templateSchema</a></li><li><a href="global.html#types">types</a></li><li><a href="global.html#validateAndRender">validateAndRender</a></li><li><a href="global.html#validateQueryParamsFn">validateQueryParamsFn</a></li><li><a href="global.html#validationErrorMessage">validationErrorMessage</a></li><li><a href="global.html#wizardBackLink">wizardBackLink</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

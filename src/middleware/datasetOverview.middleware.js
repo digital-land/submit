@@ -129,10 +129,29 @@ export const fetchEntityCount = fetchOne({
 })
 
 /**
+ * @typedef {Object} OrgInfo
+ * @property {string} entity - Organization entity ID
+ */
+
+/**
+ * @typedef {Object} Source
+ * @property {string} id - Source ID
+ */
+
+/**
+ * @typedef {Object} Issue
+ * @property {string} type - Issue type
+ */
+
+/**
+ * Prepare template parameters for dataset overview
  *
- * @param req {{ orgInfo: OrgInfo, sources: Source[], issues?: Issue[] }} request object
- * @param res {import('express').Response}
- * @param next {import('express').NextFunction}
+ * @param {Object} req - Request object
+ * @param {OrgInfo} req.orgInfo - Organization info
+ * @param {Source[]} req.sources - Sources array
+ * @param {Issue[]} [req.issues] - Optional issues array
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice } = req

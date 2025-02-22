@@ -12,13 +12,16 @@ export function errorTemplateContext () {
 /**
  * Use this class if you want to display specific HTTP error page.
  *
- * Uses the `errorPages/error.njk` template, but it can be overriden via options.
+ * Uses the `errorPages/error.njk` template, but it can be overridden via options.
  */
 export class MiddlewareError extends Error {
   /**
-   * @param {string} message
-   * @param {number} statusCode status to be returned to the client
-   * @param {{template?: string, cause?: Error}} options template path
+   * Create a new MiddlewareError
+   * @param {string} message - Error message
+   * @param {number} statusCode - HTTP status code to return to the client
+   * @param {Object} [options] - Additional options
+   * @param {string} [options.template] - Custom error template path
+   * @param {Error} [options.cause] - Cause of the error
    */
   constructor (message, statusCode, options = {}) {
     super(message, options)
