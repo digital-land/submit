@@ -298,24 +298,24 @@ describe('ResponseDetails', () => {
         id: 'test'
       }
 
-      const result = ResponseDetails.prototype.getPagination.call(instance, 5)
+      const result = ResponseDetails.prototype.getPagination.call(instance, 6)
 
       expect(result).toEqual({
         totalResults: 100,
         offset: 0,
         limit: 10,
         currentPage: 6,
-        nextPage: 6,
-        previousPage: 4,
+        nextPage: 7,
+        previousPage: 5,
         totalPages: 10,
         items: [
-          { number: 1, href: '/check/results/test/0', current: false },
+          { number: 1, href: '/check/results/test/1', current: false },
           { ellipsis: true, href: '#' },
-          { number: 5, href: '/check/results/test/4', current: false },
-          { number: 6, href: '/check/results/test/5', current: true },
-          { number: 7, href: '/check/results/test/6', current: false },
+          { number: 5, href: '/check/results/test/5', current: false },
+          { number: 6, href: '/check/results/test/6', current: true },
+          { number: 7, href: '/check/results/test/7', current: false },
           { ellipsis: true, href: '#' },
-          { number: 10, href: '/check/results/test/9', current: false }
+          { number: 10, href: '/check/results/test/10', current: false }
         ]
       })
     })
@@ -329,21 +329,21 @@ describe('ResponseDetails', () => {
         },
         id: 'test'
       }
-      const result = ResponseDetails.prototype.getPagination.call(instance, 9)
+      const result = ResponseDetails.prototype.getPagination.call(instance, 10)
       expect(result).toEqual({
         totalResults: 100,
         offset: 90,
         limit: 10,
         currentPage: 10,
         nextPage: null,
-        previousPage: 8,
+        previousPage: 9,
         totalPages: 10,
         items: [
-          { number: 1, href: '/check/results/test/0', current: false },
+          { number: 1, href: '/check/results/test/1', current: false },
           { ellipsis: true, href: '#' },
-          { number: 8, href: '/check/results/test/7', current: false },
-          { number: 9, href: '/check/results/test/8', current: false },
-          { number: 10, href: '/check/results/test/9', current: true }
+          { number: 8, href: '/check/results/test/8', current: false },
+          { number: 9, href: '/check/results/test/9', current: false },
+          { number: 10, href: '/check/results/test/10', current: true }
         ]
       })
     })
@@ -357,21 +357,21 @@ describe('ResponseDetails', () => {
         },
         id: 'test'
       }
-      const result = ResponseDetails.prototype.getPagination.call(instance, 0)
+      const result = ResponseDetails.prototype.getPagination.call(instance, 1)
       expect(result).toEqual({
         totalResults: 100,
         offset: 0,
         limit: 10,
         currentPage: 1,
-        nextPage: 1,
+        nextPage: 2,
         previousPage: null,
         totalPages: 10,
         items: [
-          { number: 1, href: '/check/results/test/0', current: true },
-          { number: 2, href: '/check/results/test/1', current: false },
-          { number: 3, href: '/check/results/test/2', current: false },
+          { number: 1, href: '/check/results/test/1', current: true },
+          { number: 2, href: '/check/results/test/2', current: false },
+          { number: 3, href: '/check/results/test/3', current: false },
           { ellipsis: true, href: '#' },
-          { number: 10, href: '/check/results/test/9', current: false }
+          { number: 10, href: '/check/results/test/10', current: false }
         ]
       })
     })

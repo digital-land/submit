@@ -10,6 +10,8 @@ import statusController from '../../../controllers/statusController.js'
 import resultsController from '../../../controllers/resultsController.js'
 import checkDeepLinkController from '../../../controllers/checkDeepLinkController.js'
 import shareResultsController from '../../../controllers/ShareResultsController.js'
+import issueDetailsController from '../../../controllers/issueDetailsController.js'
+
 const baseSettings = {
   controller: PageController,
   editable: true,
@@ -74,7 +76,7 @@ export default {
     controller: statusController,
     checkJourney: false,
     entryPoint: true,
-    next: (req, res) => `results/${req.params.id}/0`
+    next: (req, res) => `results/${req.params.id}/1`
   },
   '/results/:id/share': {
     ...baseSettings,
@@ -91,6 +93,15 @@ export default {
     entryPoint: true,
     forwardQuery: true,
     next: 'confirmation'
+  },
+  '/results/:id/issue/:issueType/:field/:pageNumber?': {
+    ...baseSettings,
+    controller: issueDetailsController,
+    noPost: true,
+    checkJourney: false,
+    entryPoint: true,
+    forwardQuery: true,
+    template: 'check/results/issueDetails.html'
   },
   '/confirmation': {
     ...baseSettings,
