@@ -121,5 +121,6 @@ describe('table utils', () => {
     expect(table.splitByLeading({ fields: ['foo', 'bar'] })).toStrictEqual({ leading: [], trailing: ['foo', 'bar'] })
     expect(table.splitByLeading({ fields: ['foo', 'name', 'bar'] })).toStrictEqual({ leading: ['name'], trailing: ['foo', 'bar'] })
     expect(table.splitByLeading({ fields: ['foo', 'name', 'reference'] })).toStrictEqual({ leading: ['reference', 'name'], trailing: ['foo'] })
+    expect(table.splitByLeading({ fields: ['foo', 'Bar', 'NAME', 'ReFeRenCe'] })).toStrictEqual({ leading: ['ReFeRenCe', 'NAME'], trailing: ['foo', 'Bar'] })
   })
 })
