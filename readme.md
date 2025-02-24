@@ -124,3 +124,56 @@ To switch off AirPlay Receiver, follow these steps:
 3. In the "AirPlay Receiver" toggle, select "Off".
 
 Once you have switched off AirPlay Receiver, you should be able to use the application without any issues.
+
+## Jira Integration (for local development)
+
+The application has a Jira integration that allows you to create and update Jira issues from the application.
+Most of this code is in the `src/services/jiraService.js` file.
+
+Prerequisites:
+- A Jira Service Desk instance
+- A Jira user with the following permissions:
+    - Create issues in the Jira Service Desk
+    - Edit issues in the Jira Service Desk
+    - View issues in the Jira Service Desk
+
+### Generating the Jira basic auth credentials
+
+```
+echo -n user@example.com:api_token_string | base64
+```
+
+You can read more about JIRA Basic Auth [here](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/).
+
+### How to enable Jira integration
+
+1. Go to the .env file
+2. Add the following variables:
+
+```
+JIRA_URL=your_jira_url
+JIRA_BASIC_AUTH=your_jira_basic_auth
+JIRA_SERVICE_DESK_ID=your_jira_service_desk_id
+```
+
+or do the following:
+
+Warning: This will overwrite your existing .env file.
+
+```
+cp .env.example .env
+```
+
+Then edit the .env file with the correct values.
+
+### How to create a test Jira Service Desk for local development
+
+1. Go to [JIRA Service Desk](https://www.atlassian.com/software/jira/service-desk/try)
+2. Click on "Try for free"
+3. Fill in the form and create a test instance
+4. In the "Users" section, create a new user
+5. In the "Projects" section, create a new project
+6. In the "Service Desk" section, create a new service desk - get the service desk ID (this is the `JIRA_SERVICE_DESK_ID` env variable)
+7. Get an API key for the new user, this can be found in the user's profile page
+8. Get the Jira URL (this is the `JIRA_URL` env variable)
+9. Generate the Jira basic auth credentials (this is the `JIRA_BASIC_AUTH` env variable). This is the username and password of the new user, separated by a colon then encoded in base64.
