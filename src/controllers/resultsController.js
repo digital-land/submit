@@ -319,10 +319,12 @@ export function getPassedChecks (req, res, next) {
 
 export function getFileNameOrUrlAndCheckedTime (req, res, next) {
   const { requestData } = req.locals
-  req.locals.type = requestData?.params?.type
-  req.locals.fileName = requestData?.params?.fileName
-  req.locals.url = requestData?.params?.url
-  req.locals.checkedTime = requestData?.modified
+  req.locals.uploadInfo = {
+    type: requestData?.params?.type,
+    fileName: requestData?.params?.fileName,
+    url: requestData?.params?.url,
+    checkedTime: requestData?.modified
+  }
   next()
 }
 

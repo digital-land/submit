@@ -74,14 +74,14 @@ panel: { html: tableTab } } } %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    {% set fileNameOrUrlText = 'File name' if options.type == 'check_file' else 'Endpoint URL' %}
+    {% set fileNameOrUrlText = 'File name' if options.uploadInfo.type == 'check_file' else 'Endpoint URL' %}
 
     {% set fileNameOrUrlHtml %}
       <code>
-        {% if options.type == 'check_file' and options.fileName %}
-          {{ options.fileName }}
-        {% elseif options.url %}
-          {{ options.url }}
+        {% if options.uploadInfo.type == 'check_file' and options.uploadInfo.fileName %}
+          {{ options.uploadInfo.fileName }}
+        {% elseif options.uploadInfo.url %}
+          {{ options.uploadInfo.url }}
         {% else %}
           "No valid data available"
         {% endif %}
@@ -103,7 +103,7 @@ panel: { html: tableTab } } } %}
           text: "Data checked"
         },
         value: {
-          text: options.checkedTime | govukDateTime
+          text: options.uploadInfo.checkedTime | govukDateTime
         }
       }
     ] %}
