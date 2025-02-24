@@ -241,10 +241,10 @@ describe('getFileNameOrUrlAndCheckedTime', () => {
 
     getFileNameOrUrlAndCheckedTime(req, res, next)
 
-    expect(req.locals.type).toBe('file')
-    expect(req.locals.fileName).toBe('example.txt')
-    expect(req.locals.url).toBe('http://example.com/file')
-    expect(req.locals.checkedTime).toBe('2023-10-01T12:00:00Z')
+    expect(req.locals.uploadInfo.type).toBe('file')
+    expect(req.locals.uploadInfo.fileName).toBe('example.txt')
+    expect(req.locals.uploadInfo.url).toBe('http://example.com/file')
+    expect(req.locals.uploadInfo.checkedTime).toBe('2023-10-01T12:00:00Z')
     expect(next).toHaveBeenCalled()
   })
 
@@ -257,10 +257,10 @@ describe('getFileNameOrUrlAndCheckedTime', () => {
 
     getFileNameOrUrlAndCheckedTime(req, res, next)
 
-    expect(req.locals.type).toBeUndefined()
-    expect(req.locals.fileName).toBeUndefined()
-    expect(req.locals.url).toBeUndefined()
-    expect(req.locals.checkedTime).toBeUndefined()
+    expect(req.locals.uploadInfo.type).toBeUndefined()
+    expect(req.locals.uploadInfo.fileName).toBeUndefined()
+    expect(req.locals.uploadInfo.url).toBeUndefined()
+    expect(req.locals.uploadInfo.checkedTime).toBeUndefined()
     expect(next).toHaveBeenCalled()
   })
 })
