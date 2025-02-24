@@ -2,11 +2,11 @@
   "source": {
     "include": ["src"],
     "includePattern": ".+\\.js$",
-    "excludePattern": "(node_modules/|docs/|test/)"
+    "excludePattern": "(node_modules/|test/)"
   },
   "plugins": ["plugins/markdown"],
   "opts": {
-    "destination": "./docs",
+    "destination": "./github-pages",
     "recurse": true,
     "readme": "./README.md"
   },
