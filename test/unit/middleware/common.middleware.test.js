@@ -1387,7 +1387,7 @@ describe('preventIndexing middleware', () => {
     expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')
   })
   it('should set headers on the check tool results page', () => {
-    const req = { originalUrl: '/check/results/PHvgmEPg4EQWGvr646vuMz/0' }
+    const req = { originalUrl: '/check/results/PHvgmEPg4EQWGvr646vuMz/1' }
     const res = { set: vi.fn() }
     preventIndexing(req, res, vi.fn())
     expect(res.set).toBeCalledWith('X-Robots-Tag', 'noindex')

@@ -1,13 +1,14 @@
-{% extends "layouts/main.html" %}
-
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "govuk/components/tag/macro.njk" import govukTag %}
 {% from "components/deadlineNotice.html" import deadlineNotice %}
 {% from "components/deadlineNoticeContent.html" import noticeHeading, noticeCardHint %}
 
-
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set pageName = organisation.name + " overview" %}
 {% set serviceType = 'Manage' %}
+
+{% extends "layouts/main.html" %}
+
 
 {% macro datasetItem(dataset) %}
 <li class="govuk-task-list__item govuk-task-list__item--with-link" data-dataset="{{ dataset.dataset }}" data-dataset-status="{{ dataset.status }}">

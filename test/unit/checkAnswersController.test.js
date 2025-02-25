@@ -82,8 +82,11 @@ describe('CheckAnswersController', () => {
       const result = await controller.createJiraServiceRequest(req, res, next)
 
       expect(createCustomerRequest).toHaveBeenCalledWith(
-        'Dataset URL request: Test Organisation for Test Dataset',
-        expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation (test-org)* for the dataset *Test Dataset*.'),
+        {
+          summary: 'Dataset URL request: Test Organisation for Test Dataset',
+          description: expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation (test-org)* for the dataset *Test Dataset*.'),
+          raiseOnBehalfOf: 'john.doe@example.com'
+        },
         config.jira.requestTypeId
       )
       expect(attachFileToIssue).toHaveBeenCalledWith(

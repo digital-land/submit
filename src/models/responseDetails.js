@@ -54,8 +54,8 @@ export default class ResponseDetails {
   getFields () {
     const columnKeys = [...new Set(this.getRows().map(row => row.converted_row).flatMap(row => Object.keys(row)))]
 
+    const columnFieldLog = this.getColumnFieldLog()
     return [...new Set(columnKeys.map(column => {
-      const columnFieldLog = this.getColumnFieldLog()
       const fieldLog = columnFieldLog.find(fieldLog => fieldLog.column === column)
       if (!fieldLog) {
         return column

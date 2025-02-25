@@ -161,6 +161,7 @@ code * {
 
 .app-masthead__image {
   display: none;
+
   @include govuk-media-query($from: desktop) {
     display: block;
     width: 100%;
@@ -186,7 +187,8 @@ code * {
   margin-bottom: 0px;
   border-collapse: separate;
 
-  th, td {
+  th,
+  td {
     padding: govuk-spacing(1) govuk-spacing(2);
   }
 }
@@ -197,6 +199,7 @@ code * {
   z-index: 1;
 
   box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+
   tr {
     background-color: govuk-colour("light-grey");
   }
@@ -222,7 +225,63 @@ code * {
   padding-bottom: 1em;
 }
 
-.schema-issue p { padding: 0; margin: 0}
+.schema-issue p {
+  padding: 0;
+  margin: 0
+}
+
+code {
+  padding: 2px;
+}
+
+code,
+code * {
+  font-family: monospace;
+  background-color: govuk-colour("light-grey");
+}
+
+$app-secondary-button-colour: #00823b;
+$app-secondary-button-hover-colour: darken($app-secondary-button-colour, 5%);
+$app-secondary-button-background-colour: govuk-colour("white");
+$app-secondary-button-hover-background-colour: govuk-colour("light-grey");
+
+$app-quiet-button-colour: govuk-colour("dark-grey");
+$app-quiet-button-hover-colour: darken($app-quiet-button-colour, 5%);
+
+$app-hover-dark-background: #dddcdb;
+
+.app-c-button--secondary-quiet {
+  padding: (govuk-spacing(2) - $govuk-border-width-form-element) govuk-spacing(2); // s1
+  border-color: $app-quiet-button-colour;
+  color: $app-quiet-button-colour;
+  background-color: $app-secondary-button-background-colour;
+  box-shadow: none;
+
+  &:link,
+  &:visited,
+  &:active,
+  &:focus {
+    color: $app-quiet-button-colour;
+    background-color: $app-secondary-button-background-colour;
+    text-decoration: none;
+  }
+
+  &:link:focus {
+    color: $app-quiet-button-colour;
+  }
+
+  &:hover {
+    border-color: $app-quiet-button-hover-colour;
+    color: $app-quiet-button-hover-colour;
+    background-color: $app-secondary-button-hover-background-colour;
+    text-decoration: none;
+  }
+
+  &::before {
+    content: none;
+  }
+}
+
 .govuk-error-summary span.column-name {
   font-weight: bold;
 }

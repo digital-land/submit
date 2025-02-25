@@ -111,7 +111,7 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   await expect(page.getByText('You cannot submit your data until you fix the issues')).toBeVisible()
   const itemsLocator = page.locator('.govuk-error-summary ul li')
   expect(await itemsLocator.count()).toBe(1)
-  await expect(itemsLocator).toContainText('1 issue of type missing column')
+  await expect(itemsLocator).toContainText('description column is missing')
   await expect(page.getByText('How to improve Adur District Council’s data')).toBeVisible()
 
   // verify we get correctly routed to a 404

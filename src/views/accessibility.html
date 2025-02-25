@@ -1,5 +1,5 @@
 {% extends "layouts/main.html" %}
-
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set pageName = 'Accessibility statement for Submit and update planning and housing data for England' %}
 
 {% set markdownContent %}

@@ -15,34 +15,38 @@ const validateParams = validateQueryParams({
 })
 
 /**
- * Middleware. Updates req with `task`
+ * Middleware. Updates req.locals with `task`, `field` and `issueType`
  *
- * @param {*} req request
+ * @param {import('express').Request & { aggregatedTasks: Map<string, { field: string, issueType: string, count: number }}} req request
  * @param {*} res response
  * @param {*} next next function
  */
 export const prepareTask = (req, res, next) => {
-  const { issueType, field } = req.params
+  const { issueType: issueTypeSlug, field } = req.params
 
-  const task = req.aggregatedTasks.get(`${issueType}|${field}`)
+  const task = req.aggregatedTasks.get(`${issueTypeSlug}|${field}`)
   if (!task) {
-    return next(new MiddlewareError(`No isssue of type '${issueType}' for field ${field}`, 404))
+    return next(new MiddlewareError(`No isssue of type '${issueTypeSlug}' for field ${field}`, 404))
   }
 
-  let message = issueType // fallback
-  try {
-    message = performanceDbApi.getTaskMessage({
-      issue_type: task.issueType,
-      num_issues: task.count,
-      rowCount: req.totalRows,
-      field: task.field,
-      format: 'html'
-    })
-  } catch (error) {
-    logger.warn('prepareTask/getTaskMessage failure', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+  let message = issueTypeSlug // fallback
+  if (issueTypeSlug === 'missing column') {
+    message = results.missingColumnTaskMessage(`<span class="column-name">${task.field}</span>`)
+  } else {
+    try {
+      message = performanceDbApi.getTaskMessage({
+        issue_type: task.issueType,
+        num_issues: task.count,
+        rowCount: req.totalRows,
+        field: task.field,
+        format: 'html'
+      })
+    } catch (error) {
+      logger.warn('prepareTask/getTaskMessage failure', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+    }
   }
 
-  req.locals.issueType = issueType
+  req.locals.issueType = issueTypeSlug
   req.locals.field = field
   req.locals.task = { ...task, message }
   next()
@@ -61,11 +65,17 @@ const setPagination = (req, res, next) => {
   next()
 }
 
+async function setDetailsOptions (req, res, next) {
+  req.locals.detailsOptions = { issue: { ...req.params } }
+  next()
+}
+
 const middlewares = [
   isFeatureEnabled('checkIssueDetailsPage')
     ? validateParams
     : (req, res, next) => { return next(new MiddlewareError('Not found', 404)) },
   results.getRequestDataMiddleware,
+  setDetailsOptions,
   results.fetchResponseDetails,
   results.checkForErroredResponse,
   results.setupTableParams,

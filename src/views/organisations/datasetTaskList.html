@@ -2,10 +2,12 @@
 {% from 'govuk/components/task-list/macro.njk' import govukTaskList %}
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
 
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
+{% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
+{% set serviceType = 'Manage' %}
+
 {% extends "layouts/main.html" %}
 
-{% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
-{% set serviceType = 'Submit' %}
 
 {% block beforeContent %}
 

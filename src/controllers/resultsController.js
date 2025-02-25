@@ -92,14 +92,21 @@ export function setupTemplate (req, res, next) {
   }
 }
 
+/**
+ * @param {import('express').Request & { locals: { detailsOptions?: { severity?: string, issue?: { issueType: string, field: string }}}}} req request
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 export async function fetchResponseDetails (req, res, next) {
   const { pageNumber } = req.parsedParams
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const detailsOpts = req.locals.detailsOptions ?? {}
       const responseDetails = req.locals.template === resultsTemplate
         // pageNumber starts with: 1, fetchResponseDetails parameter `pageOffset` starts with 0
-        ? await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, 'error')
-        : await req.locals.requestData.fetchResponseDetails(pageNumber - 1)
+        ? await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { severity: 'error', ...detailsOpts })
+        : await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { ...detailsOpts })
       req.locals.responseDetails = responseDetails
     }
   } catch (e) {
@@ -308,6 +315,10 @@ export function getTasksByLevel (req, level, status) {
   req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
 }
 
+export const missingColumnTaskMessage = (field) => {
+  return `${field} column is missing`
+}
+
 export function getMissingColumnTasks (req) {
   const { responseDetails } = req.locals
   const taskMap = new Map()
@@ -321,7 +332,7 @@ export function getMissingColumnTasks (req) {
         count: 1
       })
       tasks.push(makeTaskParam(req, {
-        taskMessage: `${column.field} column is missing`,
+        taskMessage: missingColumnTaskMessage(column.field),
         status: taskStatus.mustFix,
         field: column.field,
         issueType: 'missing column'
@@ -346,6 +357,7 @@ export function getBlockingTasks (req, res, next) {
   // add tasks for missing columns
   const { tasks: missingColumnTasks, taskMap } = getMissingColumnTasks(req)
   req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
+  req.missingColumnTasks = missingColumnTasks
   for (const [k, v] of taskMap.entries()) {
     req.aggregatedTasks.set(k, v)
   }
@@ -358,7 +370,7 @@ export function getNonBlockingTasks (req, res, next) {
 }
 
 export function getPassedChecks (req, res, next) {
-  const { tasks, totalRows } = req
+  const { tasks, totalRows, missingColumnTasks } = req
 
   const passedChecks = []
 
@@ -370,12 +382,12 @@ export function getPassedChecks (req, res, next) {
   }
 
   // add task complete for no duplicate refs
-  if (tasks.findIndex(task => task.issueType === 'reference values are not unique') < 0) {
+  if (missingColumnTasks.findIndex(task => task.title.text === 'reference column is missing') < 0 && tasks.findIndex(task => task.issueType === 'reference values are not unique') < 0) {
     passedChecks.push(makePassedCheck('All rows have unique references'))
   }
 
   // add task complete for valid geoms
-  if (tasks.findIndex(task => task.issueType === 'invalid WKT') < 0) {
+  if (missingColumnTasks.findIndex(task => task.title.text === 'geometry column is missing') < 0 && tasks.findIndex(task => task.issueType === 'invalid WKT') < 0) {
     passedChecks.push(makePassedCheck('All rows have valid geometry'))
   }
 
