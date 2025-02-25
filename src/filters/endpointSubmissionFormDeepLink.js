@@ -7,5 +7,8 @@
  * @return {string}
  */
 export function endpointSubmissionFormToolDeepLink (organisation, dataset) {
-  return `/submit/link?dataset=${encodeURIComponent(dataset.dataset)}&orgName=${encodeURIComponent(organisation.name)}&orgId=${encodeURIComponent(organisation.organisation)}`
+  if (!organisation || !dataset) {
+    return '/submit'
+  }
+  return `/submit/link?dataset=${encodeURIComponent(dataset)}&orgName=${encodeURIComponent(organisation)}&orgId=${encodeURIComponent(organisation.organisation)}`
 }
