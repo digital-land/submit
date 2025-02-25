@@ -281,3 +281,7 @@ $app-hover-dark-background: #dddcdb;
     content: none;
   }
 }
+
+.govuk-error-summary span.column-name {
+  font-weight: bold;
+}

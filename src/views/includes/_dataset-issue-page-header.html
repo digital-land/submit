@@ -1,0 +1,8 @@
+{% from '../components/dataset-banner.html' import datasetBanner %}
+
+<div class="govuk-grid-column-two-thirds">
+  {{ datasetBanner(options.lpa, options.datasetName or options.requestParams.dataset) }}
+
+  <h1 class="govuk-heading-l">Your data has issues</h1>
+
+</div>
