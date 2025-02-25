@@ -28,7 +28,9 @@
 
   {% if 'submitEndpointForm' | isFeatureEnabled %}
 
-  ## 2: <a href="{{ options.lpa | endpointSubmissionFormToolDeepLink(options.dataset) }}">Submit your data</a> to the Planning Data Platform. You need to provide your:
+  ## 2: Submit your data
+   
+  <a href="{{ options.lpa | endpointSubmissionFormToolDeepLink(options.dataset) }}">Submit your data</a> to the Planning Data Platform. You need to provide your:
 
   - full name
   - work email address
