@@ -35,7 +35,8 @@
     "test:acceptance:local": "NODE_ENV=local playwright test --config ./test/acceptance/playwright.config.js",
     "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
-    "lint:fix": "standard --fix"
+    "lint:fix": "standard --fix",
+    "generate:docs": "jsdoc -c jsdoc.json"
   },
   "engines": {
     "node": ">=22.5.1"
@@ -51,6 +52,7 @@
     "@wiremock/wiremock-testcontainers-node": "^0.0.1",
     "concurrently": "^8.2.2",
     "husky": "^9.0.11",
+    "jsdoc": "^4.0.4",
     "jsdom": "^24.1.0",
     "json-schema-faker": "^0.5.6",
     "nodemon": "^3.0.1",
@@ -109,7 +111,8 @@
   "standard": {
     "ignore": [
       "performance-test/",
-      "src/views/common/smartlook.js"
+      "src/views/common/smartlook.js",
+      "docs"
     ]
   }
 }

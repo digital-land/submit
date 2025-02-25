@@ -15,10 +15,12 @@ import { isFeatureEnabled } from '../utils/features.js'
  * Middleware. Set `req.handlerName` to a string that will identify
  * the function that threw the error.
  *
- * @param {Error} err
- * @param {import('express').Request & {handlerName: string}} req
- * @param {*} res
- * @param {*} next
+ * @param {Error} err - The error that was thrown
+ * @param {Object} req - Express request object with handlerName property
+ * @param {string} req.handlerName - Name of the handler function
+ * @param {string} req.originalUrl - Original request URL
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
  */
 export const logPageError = (err, req, res, next) => {
   console.assert(req.handlerName, 'handlerName missing ')
@@ -138,8 +140,24 @@ export const createPaginationTemplateParams = (req, res, next) => {
   }
 
   /**
-   * @type {{ previous: { href: string } | undefined, next: { href: string } | undefined, items: { type: 'ellipsis' | 'number', number?: number, href: string, ellipsis?: boolean, current?: boolean }[] }}
+   * @typedef {Object} PaginationItem
+   * @property {'ellipsis'|'number'} type - Type of pagination item
+   * @property {number} [number] - Page number (for number type)
+   * @property {string} href - Link URL
+   * @property {boolean} [ellipsis] - Whether this is an ellipsis item
+   * @property {boolean} [current] - Whether this is the current page
    */
+
+  /**
+   * @typedef {Object} PaginationNav
+   * @property {Object} [previous] - Previous page link
+   * @property {string} previous.href - Previous page URL
+   * @property {Object} [next] - Next page link
+   * @property {string} next.href - Next page URL
+   * @property {PaginationItem[]} items - Pagination items
+   */
+
+  /** @type {PaginationNav} */
   const paginationObj = {
     previous: undefined,
     next: undefined,
@@ -638,7 +656,7 @@ export const getSetBaseSubPath = (additionalParts = []) => (req, res, next) => {
 
 /**
  * @param {number} pageLength
- * @returns {(req, res, next) => void }
+ * @returns {Function} Express middleware function
  */
 export const getSetDataRange = (pageLength) => {
   v.parse(v.pipe(v.number(), v.integer(), v.minValue(1)), pageLength)

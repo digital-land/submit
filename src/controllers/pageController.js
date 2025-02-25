@@ -8,7 +8,9 @@ const { Controller } = hmpoFormWizard
  * If we arrived at the page via deep from another page, we'll use that page as the back link.
  *
  * @param {string} url current page URL
- * @param {{ referrer?: string, dataset: string }} deepLinkInfo deep link info from the session
+ * @param {Object} deepLinkInfo - deep link info from the session
+ * @param {string=} deepLinkInfo.referrer - optional referrer URL
+ * @param {string} deepLinkInfo.dataset - dataset name
  * @returns {string|undefined} back link URL
  */
 function wizardBackLink (currentUrl, deepLinkInfo) {
