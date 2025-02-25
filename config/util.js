@@ -68,21 +68,6 @@ export const ConfigSchema = v.object({
       return acc
     }, {})
   ),
-  guidanceNavigation: v.object({
-    title: v.string(),
-    items: v.array(v.object({
-      label: v.string(),
-      url: v.string(),
-      items: v.optional(
-        v.array(
-          v.object({
-            label: v.string(),
-            url: v.string()
-          })
-        )
-      )
-    }))
-  }),
   smartlook: v.optional(
     v.object({
       key: v.string(),
