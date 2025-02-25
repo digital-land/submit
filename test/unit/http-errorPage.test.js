@@ -23,7 +23,7 @@ describe(`http-error.html(seed: ${seed})`, () => {
   })
 
   it('Renders the correct heading', () => {
-    expect(document.querySelector('#main-content h2').textContent).toContain('Error accessing data URL')
+    expect(document.querySelector('#main-content h2').textContent).toContain('Error accessing endpoint URL')
   })
 
   it('Renders the error details summary list', () => {
@@ -32,7 +32,7 @@ describe(`http-error.html(seed: ${seed})`, () => {
 
     expect(rows.length).toBe(4)
 
-    expect(rows[0].querySelector('.govuk-summary-list__key').textContent).toContain('Data URL')
+    expect(rows[0].querySelector('.govuk-summary-list__key').textContent).toContain('Endpoint URL')
     expect(rows[0].querySelector('.govuk-summary-list__value').innerHTML).toContain(params.errorData.endpoint_url)
 
     expect(rows[1].querySelector('.govuk-summary-list__key').textContent).toContain('HTTP status')

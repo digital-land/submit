@@ -105,7 +105,7 @@ describe('overview.middleware', () => {
       expect(req.templateParams).toEqual(expectedTemplateParams)
 
       const { errorCards: errorCardNodes, doc } = getRenderedErrorCards(req.templateParams)
-      expect(errorCardNodes[0].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was an error accessing the data URL')
+      expect(errorCardNodes[0].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was an error accessing the endpoint URL')
       expect(errorCardNodes[1].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was a 404 error')
 
       const orgMemebershipInfo = doc.querySelector('.org-membership-info').textContent.trim()

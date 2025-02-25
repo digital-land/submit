@@ -200,7 +200,7 @@ export function prepareDatasetObjects (req, res, next) {
 
     const endpointCount = datasetEndpoints.length
     const httpStatus = datasetEndpoints.find(endpoint => endpoint.latest_status !== '200')?.latest_status
-    const error = httpStatus !== undefined ? `There was a ${httpStatus} error accessing the data URL` : undefined
+    const error = httpStatus !== undefined ? `There was a ${httpStatus} error accessing the endpoint URL` : undefined
     const issueCount = datasetIssues?.length || 0
 
     let status

@@ -58,7 +58,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
 
   it('Datasets with errors gives the correct value', () => {
     expect(statsBoxes[1].textContent).toContain(params.datasetsWithErrors)
-    expect(statsBoxes[1].textContent).toContain('data URL with errors')
+    expect(statsBoxes[1].textContent).toContain('endpoint URL with errors')
   })
 
   it('Datasets with issues gives the correct value', () => {
@@ -84,7 +84,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   const allDatasets = [].concat(...Object.values(params.datasets.statutory ?? []), ...Object.values(params.datasets.other ?? []))
   allDatasets.forEach((dataset, i) => {
     it(`dataset cards are rendered with correct hints for dataset='${dataset.dataset}'`, () => {
-      let expectedHint = 'Data URL submitted'
+      let expectedHint = 'Endpoint URL submitted'
       if (dataset.notice) {
         if (dataset.notice.type === 'due') {
           expectedHint = `You must review your ${datasetSlugToReadableName(dataset.dataset).toLowerCase()} register by ${dataset.notice.deadline} and update it as soon as a new site is identified or an existing one changes status.`
@@ -94,7 +94,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
           throw new Error('Notice type not recognised')
         }
       } else if (dataset.status === 'Not submitted') {
-        expectedHint = 'Data URL not submitted'
+        expectedHint = 'Endpoint URL not submitted'
       } else if (dataset.status === 'Needs fixing') {
         expectedHint = 'in this dataset'
       } else if (dataset.status === 'Error') {

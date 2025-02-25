@@ -171,7 +171,7 @@ SELECT
       else 'Live'
   end as status,
   case
-      when ((cast(rle.latest_status as integer) > 200)) then format('There was a %s error accessing the data URL', rle.latest_status)
+      when ((cast(rle.latest_status as integer) > 200)) then format('There was a %s error accessing the endpoint URL', rle.latest_status)
       else null
   end as error,
   case
