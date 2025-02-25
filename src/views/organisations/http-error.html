@@ -88,7 +88,7 @@
       ]
     }) }}
 
-    <p>If your endpoint URL has changed you can <a class="resubmit-link" href="{{ resubmitUrl }}">resubmit your endpoint URL</a>.</p>
+    <p>If your endpoint URL has changed you can <a class="resubmit-link" href="{{ organisation.name | endpointSubmissionFormToolDeepLink(dataset.dataset) }}">resubmit your endpoint URL</a>.</p>
 
     <p>You should try to make sure your endpoint URLs stay the same when you update your data so we can collect your data
       each night.</p>
