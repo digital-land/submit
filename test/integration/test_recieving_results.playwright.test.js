@@ -14,6 +14,7 @@ import ResultsPage from '../PageObjectModels/resultsPage'
 import prettifyColumnName from '../../src/filters/prettifyColumnName'
 
 import fs from 'fs'
+import { splitByLeading } from '../../src/utils/table'
 
 test('receiving a successful result', async ({ page }) => {
   const successResponse = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete.json')
@@ -61,9 +62,8 @@ test('receiving a result with errors', async ({ page }) => {
 
 test('receiving a non existing result', async ({ page }) => {
   const resultsPage = new ResultsPage(page)
-
-  await resultsPage.navigateToRequest('non-existing')
-  await expect(page.locator('h1')).toContainText('Sorry, there’s a problem with the service')
+  const response = await resultsPage.navigateToRequest('non-existing')
+  expect(response.status()).toBe(404)
 })
 
 const getTableContents = async (page, tableClass) => {
@@ -102,27 +102,24 @@ const getTableCellValue = async (page, row, column) => {
 }
 
 const getTableValuesFromResponse = (response, details) => {
-  const tableValues = []
-
   const columnFieldLog = response.response.data['column-field-log']
 
-  // Map over the details array and extract the necessary values
   const columnHeaders = Object.keys(details[0].converted_row)
+  const logByField = new Map()
+  for (const log of columnFieldLog) { logByField.set(log.column, log) }
+  const uniqueHeaders = new Set(columnHeaders.map(header => {
+    return logByField.get(header)?.field ?? header
+  }))
 
-  const notUniqueHeaders = columnHeaders.map(field => {
-    const fieldLog = columnFieldLog.find(fieldLog => fieldLog.field === field)
-    return fieldLog ? fieldLog.column : field
-  })
+  const { leading, trailing } = splitByLeading({ fields: uniqueHeaders })
+  const orderedUniqueHeaders = [...leading, ...trailing]
 
-  const uniqueHeaders = [...new Set(notUniqueHeaders)]
-
-  const prettifiedUniqueHeaders = uniqueHeaders.map(header => prettifyColumnName(header))
-
-  tableValues.unshift(prettifiedUniqueHeaders)
+  const prettifiedHeaders = orderedUniqueHeaders.map(header => prettifyColumnName(header))
+  const tableValues = [prettifiedHeaders]
 
   tableValues.push(...details.map(detail => {
     const convertedRow = detail.converted_row
-    return uniqueHeaders.map(header => {
+    return orderedUniqueHeaders.map(header => {
       const log = columnFieldLog.find(log => log.field === header)
       if (log) { header = log.column }
 
