@@ -32,6 +32,7 @@ class ResultsController extends PageController {
     this.use(getNonBlockingTasks)
     this.use(getPassedChecks)
     this.use(setupError)
+    this.use(getFileNameOrUrlAndCheckedTime)
   }
 
   async locals (req, res, next) {
@@ -392,6 +393,25 @@ export function getPassedChecks (req, res, next) {
 
   req.locals.passedChecks = passedChecks
 
+  next()
+}
+
+/**
+ * Middleware to extract file name, URL, and checked time from the request data.
+ * Updates `req.locals.uploadInfo` with the extracted information.
+ *
+ * @param {import('express').Request} req - The request object.
+ * @param {import('express').Response} res - The response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ */
+export function getFileNameOrUrlAndCheckedTime (req, res, next) {
+  const { requestData } = req.locals
+  req.locals.uploadInfo = {
+    type: requestData?.params?.type,
+    fileName: requestData?.params?.fileName,
+    url: requestData?.params?.url,
+    checkedTime: requestData?.modified
+  }
   next()
 }
 
