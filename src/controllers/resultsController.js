@@ -396,6 +396,14 @@ export function getPassedChecks (req, res, next) {
   next()
 }
 
+/**
+ * Middleware to extract file name, URL, and checked time from the request data.
+ * Updates `req.locals.uploadInfo` with the extracted information.
+ *
+ * @param {import('express').Request} req - The request object.
+ * @param {import('express').Response} res - The response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ */
 export function getFileNameOrUrlAndCheckedTime (req, res, next) {
   const { requestData } = req.locals
   req.locals.uploadInfo = {
@@ -406,6 +414,7 @@ export function getFileNameOrUrlAndCheckedTime (req, res, next) {
   }
   next()
 }
+
 const validateParams = validateQueryParams({
   schema: v.object({
     pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1')
