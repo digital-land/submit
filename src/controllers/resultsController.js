@@ -1,8 +1,13 @@
+import * as v from 'valibot'
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import prettifyColumnName from '../filters/prettifyColumnName.js'
 import { fetchMany } from '../middleware/middleware.builders.js'
+import { validateQueryParams } from '../middleware/common.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
+import { isFeatureEnabled } from '../utils/features.js'
+
+const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
 
 const failedFileRequestTemplate = 'results/failedFileRequest'
 const failedUrlRequestTemplate = 'results/failedUrlRequest'
@@ -12,6 +17,7 @@ class ResultsController extends PageController {
   /* Custom middleware */
   middlewareSetup () {
     super.middlewareSetup()
+    this.use(validateParams)
     this.use(getRequestDataMiddleware)
     this.use(setupTemplate)
     this.use(fetchResponseDetails)
@@ -21,7 +27,6 @@ class ResultsController extends PageController {
     this.use(extractIssuesFromResults)
     this.use(addQualityCriteriaLevelsToIssues)
     this.use(aggregateIssues)
-    this.use(filterOutTasksByQualityCriterialLevel)
     this.use(getTotalRows)
     this.use(getBlockingTasks)
     this.use(getNonBlockingTasks)
@@ -83,12 +88,21 @@ export function setupTemplate (req, res, next) {
   }
 }
 
+/**
+ * @param {import('express').Request & { locals: { detailsOptions?: { severity?: string, issue?: { issueType: string, field: string }}}}} req request
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
 export async function fetchResponseDetails (req, res, next) {
+  const { pageNumber } = req.parsedParams
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const detailsOpts = req.locals.detailsOptions ?? {}
       const responseDetails = req.locals.template === resultsTemplate
-        ? await req.locals.requestData.fetchResponseDetails(req.params.pageNumber, 50, 'error')
-        : await req.locals.requestData.fetchResponseDetails(req.params.pageNumber)
+        // pageNumber starts with: 1, fetchResponseDetails parameter `pageOffset` starts with 0
+        ? await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { severity: 'error', ...detailsOpts })
+        : await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { ...detailsOpts })
       req.locals.responseDetails = responseDetails
     }
   } catch (e) {
@@ -186,27 +200,38 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
   next()
 }
 
-// aggregate issues by issue_type into tasks
+/**
+ * Aggregate issues by issue_type into tasks
+ *
+ * Updates req with `aggregatedTasks: Map<string, task>` (keys are composites of issue type and field),
+ * and `tasks` array.
+ *
+ * @param {*} req request
+ * @param {*} res response
+ * @param {*} next next function
+ */
 export function aggregateIssues (req, res, next) {
   const { issues } = req
 
   const taskMap = new Map()
-
-  issues.forEach((issue) => {
-    const key = `${issue['issue-type']}_${issue.field}`
-    const task = taskMap.get(key)
-    if (!task) {
-      taskMap.set(key, {
-        issueType: issue['issue-type'],
-        field: issue.field,
-        qualityCriteriaLevel: issue.quality_criteria_level,
-        count: 1
-      })
-    } else {
-      task.count++
+  for (const issue of issues) {
+    if (filterOutTasksByQualityCriterialLevel(issue)) {
+      const key = `${issue['issue-type']}|${issue.field}`
+      const task = taskMap.get(key)
+      if (!task) {
+        taskMap.set(key, {
+          issueType: issue['issue-type'],
+          field: issue.field,
+          qualityCriteriaLevel: issue.quality_criteria_level,
+          count: 1
+        })
+      } else {
+        task.count++
+      }
     }
-  })
+  }
 
+  req.aggregatedTasks = taskMap
   req.tasks = Array.from(taskMap.values())
 
   next()
@@ -219,23 +244,40 @@ export function aggregateIssues (req, res, next) {
   Issues labeled as quality_level 3 are considered 'non-blocking'.
   Issues without a quality_level are excluded from the results, as these either have responsibility set to internal or severity of warning.
 */
-export function filterOutTasksByQualityCriterialLevel (req, res, next) {
-  const { tasks } = req
-
-  req.tasks = tasks.filter(task => [2, 3].includes(task.qualityCriteriaLevel))
-  next()
+export function filterOutTasksByQualityCriterialLevel (issue) {
+  return [2, 3].includes(issue.quality_criteria_level)
 }
 
-const makeTaskParam = (text, statusText, statusClasses) => {
+/**
+ * @typedef {{text: string, link: boolean, colour: string }} Status
+ *
+ * @type {{mustFix: Status, shouldFix: Status, passed: Status }}
+ */
+const taskStatus = {
+  mustFix: { text: 'Must fix', link: true, colour: 'red' },
+  shouldFix: { text: 'Should fix', link: true, colour: 'yellow' },
+  passed: { text: 'Passed', link: false, colour: 'green' }
+}
+
+/**
+ * @param {import('express').Request} req request
+ * @param {{ taskMessage: string, status: Status, issueType?: string, field?: string }}
+ * @returns
+ */
+const makeTaskParam = (req, { taskMessage, status, ...opts }) => {
+  if (status.link) {
+    if (!opts.field) { throw new Error('Missing field in options') }
+    if (!opts.issueType) { throw new Error('Missing issueType in options') }
+  }
   return {
     title: {
-      text
+      text: taskMessage
     },
-    href: '',
+    href: status.link && isIssueDetailsPageEnabled ? `/check/results/${req.params.id}/issue/${opts.issueType}/${opts.field}` : '',
     status: {
       tag: {
-        text: statusText,
-        classes: statusClasses
+        text: status.text,
+        classes: `govuk-tag--${status.colour}`
       }
     }
   }
@@ -247,7 +289,12 @@ export function getTotalRows (req, res, next) {
   next()
 }
 
-export function getTasksByLevel (req, res, next, level, tagColor, tagText) {
+/**
+ * @param {*} req request
+ * @param {number} level criteria level
+ * @param {Status} status status meta data
+ */
+export function getTasksByLevel (req, level, status) {
   const { tasks, totalRows } = req
   const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
   const taskParams = filteredTasks.map(task => {
@@ -257,30 +304,62 @@ export function getTasksByLevel (req, res, next, level, tagColor, tagText) {
       rowCount: totalRows,
       field: task.field
     })
-    return makeTaskParam(taskMessage, tagText, `govuk-tag--${tagColor}`)
+    return makeTaskParam(req, { taskMessage, status, issueType: task.issueType, field: task.field })
   })
   req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
 }
 
+export const missingColumnTaskMessage = (field) => {
+  return `${field} column is missing`
+}
+
+export function getMissingColumnTasks (req) {
+  const { responseDetails } = req.locals
+  const taskMap = new Map()
+  const tasks = []
+  for (const column of responseDetails.getColumnFieldLog()) {
+    if (column.missing) {
+      taskMap.set(`missing column|${column.field}`, {
+        issueType: 'missing column',
+        field: column.field,
+        qualityCriteriaLevel: 2, // = blocking issue
+        count: 1
+      })
+      tasks.push(makeTaskParam(req, {
+        taskMessage: missingColumnTaskMessage(column.field),
+        status: taskStatus.mustFix,
+        field: column.field,
+        issueType: 'missing column'
+      }))
+    }
+  }
+
+  return { taskMap, tasks }
+}
+
+/**
+ * Middleware. Updates `req.locals` with `tasksBlocking` and potentially updates
+ * `req.aggregatedTasks` map with entrires for missing columns.
+ *
+ * @param {import('express').Request & { aggregatedTasks: Map<string, Object>}} req request
+ * @param {*} res response
+ * @param {*} next next function
+ */
 export function getBlockingTasks (req, res, next) {
-  getTasksByLevel(req, res, next, 2, 'red', 'Must fix')
+  getTasksByLevel(req, 2, taskStatus.mustFix)
+
+  // add tasks for missing columns
+  const { tasks: missingColumnTasks, taskMap } = getMissingColumnTasks(req)
+  req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
+  req.missingColumnTasks = missingColumnTasks
+  for (const [k, v] of taskMap.entries()) {
+    req.aggregatedTasks.set(k, v)
+  }
   next()
 }
 
 export function getNonBlockingTasks (req, res, next) {
-  const { responseDetails } = req.locals
-  getTasksByLevel(req, res, next, 3, 'yellow', 'Should fix')
-
-  const columnFieldLog = responseDetails.getColumnFieldLog()
-
-  const missingColumnTasks = columnFieldLog
-    .filter(column => column.missing)
-    .map(({ field }) => makeTaskParam(`${field} column is missing`, 'Must fix', 'govuk-tag--red'))
-
-  req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
-  req.missingColumnTasks = missingColumnTasks
-
-  // add tasks from missing columns
+  getTasksByLevel(req, 3, taskStatus.shouldFix)
   next()
 }
 
@@ -289,7 +368,7 @@ export function getPassedChecks (req, res, next) {
 
   const passedChecks = []
 
-  const makePassedCheck = (text) => makeTaskParam(text, 'Passed', 'govuk-tag--green')
+  const makePassedCheck = (text) => makeTaskParam(req, { taskMessage: text, status: taskStatus.passed })
 
   // add task complete for how many rows are in the table
   if (totalRows > 0) {
@@ -315,5 +394,11 @@ export function getPassedChecks (req, res, next) {
 
   next()
 }
+
+const validateParams = validateQueryParams({
+  schema: v.object({
+    pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1')
+  })
+})
 
 export default ResultsController

@@ -14,6 +14,7 @@ vi.mock('../../src/filters/prettifyColumnName', () => ({
 
 const mockRequest = () => ({
   params: { id: '123', pageNumber: '1' },
+  parsedParams: { pageNumber: 1 },
   locals: {},
   form: { options: {} }
 })

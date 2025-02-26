@@ -59,7 +59,7 @@ class DataProviderUser(FastHttpUser):
         logging.info(f"Request with id: {request_id}, got status: {result.json().get('status')}")
 
         if result.json().get('status') == "COMPLETE":
-            self._get(path=f"/results/{request_id}/0", name="/results/[request_id]")
+            self._get(path=f"/results/{request_id}/1", name="/results/[request_id]")
 
     def _visit_start_page(self):
         return self._get(path='/')

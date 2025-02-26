@@ -19,15 +19,15 @@ export default class ResultsPage extends BasePage {
     expect(['There was a problem with the url provided', "The file you provided wasn't readable"]).toContain(await this.page.locator('h1').innerText())
   }
 
-  async navigateToRequest (id, pageNumber = 0) {
+  async navigateToRequest (id, pageNumber = 1) {
     return await this.page.goto(`${this.url}/${id}/${pageNumber}`)
   }
 
   async waitForPage (id = undefined) {
     if (id) {
-      return await this.page.waitForURL(`**${this.url}/${id}/0`)
+      return await this.page.waitForURL(`**${this.url}/${id}/1`)
     } else {
-      return await this.page.waitForURL(`**${this.url}/**/0`)
+      return await this.page.waitForURL(`**${this.url}/**/1`)
     }
   }
 

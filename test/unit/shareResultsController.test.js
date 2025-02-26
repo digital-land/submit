@@ -32,7 +32,7 @@ describe('ShareResultsController', () => {
     it('should set shareLink in req.locals and req.form.options', async () => {
       await shareResultsController.locals(req, res, next)
 
-      const expectedLink = `${config.url}check/results/123/0`
+      const expectedLink = `${config.url}check/results/123/1`
       expect(req.locals.shareLink).toBe(expectedLink)
       expect(req.form.options.shareLink).toBe(expectedLink)
     })
@@ -40,7 +40,7 @@ describe('ShareResultsController', () => {
     it('should set backLink and backLinkText in options', async () => {
       await shareResultsController.locals(req, res, next)
 
-      const expectedLink = `${config.url}check/results/123/0`
+      const expectedLink = `${config.url}check/results/123/1`
       expect(shareResultsController.options.backLink).toBe(expectedLink)
       expect(shareResultsController.options.backLinkText).toBe('Back to results')
     })
@@ -68,7 +68,7 @@ describe('ShareResultsController', () => {
   describe('generateResultsLink', () => {
     it('should generate correct results link', () => {
       const link = shareResultsController.generateResultsLink('456')
-      expect(link).toBe(`${config.url}check/results/456/0`)
+      expect(link).toBe(`${config.url}check/results/456/1`)
     })
 
     it('should handle different id formats', () => {
@@ -76,7 +76,7 @@ describe('ShareResultsController', () => {
 
       testCases.forEach(id => {
         const link = shareResultsController.generateResultsLink(id)
-        expect(link).toBe(`${config.url}check/results/${id}/0`)
+        expect(link).toBe(`${config.url}check/results/${id}/1`)
       })
     })
   })
