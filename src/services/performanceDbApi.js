@@ -10,38 +10,68 @@ import { types } from '../utils/logging.js'
 // for now we are using a csv for these messages but we will probably end up moving to a table, so for now this can sit in the fake performance db api
 
 import csv from 'csv-parser' // ToDo: remember to remove this from package.json when we move away from csv
-import fs from 'fs'
+import fs from 'node:fs'
 
 const messages = new Map()
 
-fs.createReadStream('src/content/fieldIssueMessages.csv').pipe(csv()).on('data', row => {
-  messages.set(row.issue_type, {
-    singular: row.singular_message,
-    plural: row.plural_message
+/**
+ * Reads messages from CSV files and populates `messages` map.
+ */
+export async function initialiseMessages () {
+  // the csv parser works streams so we have wrap it with promises
+  const fieldIssuesMessages = new Promise((resolve, reject) => {
+    fs.createReadStream('src/content/fieldIssueMessages.csv').pipe(csv()).on('data', row => {
+      try {
+        messages.set(row.issue_type, {
+          singular: row.singular_message,
+          plural: row.plural_message
+        })
+      } catch (error) {
+        reject(error)
+      }
+    }).on('end', () => {
+      logger.debug('finished populating messages', { type: types.App })
+      resolve(messages)
+    })
   })
-}).on('end', () => {
-  getEntityMessages()
-  getAllRowsMessages()
-})
 
-function getEntityMessages () {
-  fs.createReadStream('src/content/entityIssueMessages.csv').pipe(csv()).on('data', row => {
-    const messageInfo = messages.get(row.issue_type)
-    messageInfo.entities_singular = row.singular_message
-    messageInfo.entities_plural = row.plural_message
-  }).on('end', () => {
-    // Messages object is now populated
+  await fieldIssuesMessages
+
+  const entityMessages = new Promise((resolve, reject) => {
+    fs.createReadStream('src/content/entityIssueMessages.csv').pipe(csv()).on('data', row => {
+      try {
+        const messageInfo = messages.get(row.issue_type)
+        messageInfo.entities_singular = row.singular_message
+        messageInfo.entities_plural = row.plural_message
+      } catch (error) {
+        reject(error)
+      }
+    }).on('end', () => {
+      resolve(messages)
+    })
   })
+
+  await entityMessages
+
+  const allRowsMessages = new Promise((resolve, reject) => {
+    fs.createReadStream('src/content/allRowsIssueMessages.csv').pipe(csv()).on('data', row => {
+      try {
+        const messageInfo = messages.get(row.issue_type)
+        messageInfo.allRows_message = row.allRows_message
+      } catch (error) {
+        reject(error)
+      }
+    }).on('end', () => {
+      // Messages object is now populated
+      logger.info('allRowsMessages stream end', { type: types.App })
+      resolve(messages)
+    })
+  })
+
+  await allRowsMessages
 }
 
-function getAllRowsMessages () {
-  fs.createReadStream('src/content/allRowsIssueMessages.csv').pipe(csv()).on('data', row => {
-    const messageInfo = messages.get(row.issue_type)
-    messageInfo.allRows_message = row.allRows_message
-  }).on('end', () => {
-    // Messages object is now populated
-  })
-}
+await initialiseMessages()
 
 // ===========================================
 
@@ -188,7 +218,10 @@ export default {
   /**
      * Returns a task message based on the provided issue type, issue count, and entity count.
      *
-     * @param {{issue_type: string, num_issues: number, rowCount: number, field: string }} options
+     * Pass format = 'html' if you want the fields in the message to be marked up with span.column-name. Otherwise
+     * plain text message is returned.
+     *
+     * @param {{issue_type: string, num_issues: number, rowCount: number, field: string, format?: 'html' }} options
      * @param {boolean?} entityLevel Whether to use entity-level or dataset level messaging
      *
      * @returns {string} The task message with the issue count inserted
@@ -199,7 +232,8 @@ export default {
     issue_type: issueType,
     num_issues: numIssues,
     rowCount,
-    field
+    field,
+    ...rest
   }, entityLevel = false) {
     const messageInfo = messages.get(issueType)
     if (!messageInfo) {
@@ -227,7 +261,8 @@ export default {
         ? messageInfo.singular
         : messageInfo.plural
     }
-    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', field)
+    const fieldText = rest.format === 'html' ? `<span class="column-name">${field}</span>` : field
+    return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', fieldText)
   },
 
   latestResourceQuery: (lpa, dataset) => {
