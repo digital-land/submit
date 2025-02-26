@@ -153,7 +153,7 @@ test.describe('status and results', () => {
     const resultsPage = new ResultsPage(page)
     await resultsPage.navigateToRequest('completed')
     await new Promise(resolve => setTimeout(resolve, 500))
-    expect(page.url()).toContain('/results/completed/0')
+    expect(page.url()).toContain('/results/completed/1')
   })
 
   // ToDo: just waiting on Alex's 404 page

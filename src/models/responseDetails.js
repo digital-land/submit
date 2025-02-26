@@ -46,11 +46,16 @@ export default class ResponseDetails {
     return [...new Set(ColumnsWithDuplicates)]
   }
 
+  /**
+   * returned fields are `converted_row.column | columnFieldLog.field`
+   *
+   * @returns {string[]}
+   */
   getFields () {
     const columnKeys = [...new Set(this.getRows().map(row => row.converted_row).flatMap(row => Object.keys(row)))]
 
+    const columnFieldLog = this.getColumnFieldLog()
     return [...new Set(columnKeys.map(column => {
-      const columnFieldLog = this.getColumnFieldLog()
       const fieldLog = columnFieldLog.find(fieldLog => fieldLog.column === column)
       if (!fieldLog) {
         return column
@@ -152,16 +157,17 @@ export default class ResponseDetails {
 
   /**
    * @param {number} pageNumber
-   * @param {{ hash?: string }} options hash option should include the '#' character
+   * @param {{ hash?: string, href?: (item: number) => string }} opts hash option should include the '#' character
    * @returns {{ totalResults: number, offset: number, limit: number, currentPage: number, nextPage: number | null, previousPage: number | null, totalPages: number, items: { href: string }[] } }
    */
   getPagination (pageNumber, opts = {}) {
     pageNumber = parseInt(pageNumber)
-    if (Number.isNaN(pageNumber)) pageNumber = 0
+    if (Number.isNaN(pageNumber)) pageNumber = 1
     const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
 
     const hash = opts.hash ?? ''
-    const items = pagination(totalPages, pageNumber + 1).map(item => {
+    const hrefFn = opts.href ?? ((item) => `/check/results/${this.id}/${item}${hash}`)
+    const items = pagination(totalPages, pageNumber).map(item => {
       if (item === '...') {
         return {
           ellipsis: true,
@@ -170,8 +176,8 @@ export default class ResponseDetails {
       } else {
         return {
           number: item,
-          href: `/check/results/${this.id}/${parseInt(item) - 1}${hash}`,
-          current: pageNumber === parseInt(item) - 1
+          href: hrefFn(item),
+          current: pageNumber === item
         }
       }
     })
@@ -180,9 +186,9 @@ export default class ResponseDetails {
       totalResults: parseInt(this.pagination.totalResults),
       offset: parseInt(this.pagination.offset),
       limit: parseInt(this.pagination.limit),
-      currentPage: pageNumber + 1,
-      nextPage: pageNumber < totalPages - 1 ? pageNumber + 1 : null,
-      previousPage: pageNumber > 0 ? pageNumber - 1 : null,
+      currentPage: pageNumber,
+      nextPage: pageNumber < totalPages ? pageNumber + 1 : null,
+      previousPage: pageNumber > 1 ? pageNumber - 1 : null,
       totalPages,
       items
     }

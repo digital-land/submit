@@ -23,7 +23,7 @@ class ShareResultsController extends PageController {
   }
 
   generateResultsLink (id) {
-    return `${config.url}check/results/${id}/0`
+    return `${config.url}check/results/${id}/1`
   }
 }
 

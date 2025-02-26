@@ -70,6 +70,12 @@ describe('performanceDbApi', () => {
     it('returns a message with the correct field replacement', () => {
       const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'my_field' })
       expect(message).toContain('my_field')
+      expect(message).not.toContain('<span class="column-name">')
+    })
+
+    it('returns a message with HTML markup, when format=html option passed', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'my_field', format: 'html' })
+      expect(message).toContain('<span class="column-name">my_field</span>')
     })
 
     it('returns a singular message for num_issues === 1', () => {
