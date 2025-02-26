@@ -111,12 +111,12 @@
 
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithErrors}}</span>
-        endpoint {{ "URL" | pluralise(datasetsWithErrors) }} with errors
+        endpoint URL{{ "s" if (datasetsWithErrors != 1) }} with errors
       </div>
 
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithIssues}}</span>
-        {{ "datasets" | pluralise(datasetsWithIssues) }} need fixing
+        {{ "dataset" | pluralise(datasetsWithIssues) }} need{{ "s" if (datasetsWithErrors == 1) }} fixing
       </div>
     </div>
   </div>

@@ -58,12 +58,12 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
 
   it('Datasets with errors gives the correct value', () => {
     expect(statsBoxes[1].textContent).toContain(params.datasetsWithErrors)
-    expect(statsBoxes[1].textContent).toContain('endpoint URL with errors')
+    expect(statsBoxes[1].textContent).toMatch(/endpoint URLs? with errors/)
   })
 
   it('Datasets with issues gives the correct value', () => {
     expect(statsBoxes[2].textContent).toContain(params.datasetsWithIssues)
-    expect(statsBoxes[2].textContent).toContain('datasets need fixing')
+    expect(statsBoxes[2].textContent).toMatch(/datasets? needs? fixing/)
   })
 
   it('The correct number of dataset cards are rendered with the correct titles in group "statutory"', () => {
