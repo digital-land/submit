@@ -147,7 +147,7 @@ uploads/*
 .DS_Store
 
 # Ignore npm audit report file(static-audit)
-npm-audit-report.json 
+npm-audit-report.json
 .cursor/rules/*
 
 github-pages
