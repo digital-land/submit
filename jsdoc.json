@@ -4,7 +4,7 @@
     "includePattern": ".+\\.js$",
     "excludePattern": "(node_modules/|test/)"
   },
-  "plugins": ["plugins/markdown"],
+  "plugins": ["plugins/markdown", "node_modules/jsdoc-tsimport-plugin"],
   "opts": {
     "destination": "./github-pages",
     "recurse": true,
