@@ -216,7 +216,8 @@ export const OrgIssueTable = v.strictObject({
     datasetField: NonEmptyString,
     field: NonEmptyString,
     description: v.optional(NonEmptyString),
-    dataset: v.optional(NonEmptyString)
+    dataset: v.optional(NonEmptyString),
+    guidance: v.optional(NonEmptyString)
   })),
   tableParams,
   pagination: PaginationParams,
