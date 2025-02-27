@@ -12,9 +12,9 @@ export const splitByLeading = ({ fields }) => {
   const leading = []
   const trailing = []
   for (const field of fields) {
-    if (field === 'reference') {
+    if (field.toLocaleLowerCase('en-GB') === 'reference') {
       leading.splice(0, 0, field)
-    } else if (field === 'name') {
+    } else if (field.toLocaleLowerCase('en-GB') === 'name') {
       leading.push(field)
     } else {
       trailing.push(field)
