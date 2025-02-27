@@ -1,11 +1,12 @@
 import * as v from 'valibot'
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
-import prettifyColumnName from '../filters/prettifyColumnName.js'
 import { fetchMany } from '../middleware/middleware.builders.js'
 import { validateQueryParams } from '../middleware/common.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import { splitByLeading } from '../utils/table.js'
+import { MiddlewareError } from '../utils/errors.js'
 
 const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
 
@@ -32,6 +33,7 @@ class ResultsController extends PageController {
     this.use(getNonBlockingTasks)
     this.use(getPassedChecks)
     this.use(setupError)
+    this.use(getFileNameOrUrlAndCheckedTime)
   }
 
   async locals (req, res, next) {
@@ -59,6 +61,9 @@ export async function getRequestDataMiddleware (req, res, next) {
     }
     next()
   } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return next(new MiddlewareError(`No async request with id=${req.params.id}`, 404))
+    }
     next(error)
   }
 }
@@ -139,10 +144,12 @@ export function setupTableParams (req, res, next) {
       }
     })
 
+    const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
+    const orderedFields = [...leadingFields, ...trailingFields]
     req.locals.tableParams = {
-      columns: responseDetails.getColumns().map(column => prettifyColumnName(column)),
+      columns: orderedFields,
       rows,
-      fields: responseDetails.getFields()
+      fields: orderedFields
     }
 
     req.locals.mappings = responseDetails.getFieldMappings()
@@ -392,6 +399,25 @@ export function getPassedChecks (req, res, next) {
 
   req.locals.passedChecks = passedChecks
 
+  next()
+}
+
+/**
+ * Middleware to extract file name, URL, and checked time from the request data.
+ * Updates `req.locals.uploadInfo` with the extracted information.
+ *
+ * @param {import('express').Request} req - The request object.
+ * @param {import('express').Response} res - The response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ */
+export function getFileNameOrUrlAndCheckedTime (req, res, next) {
+  const { requestData } = req.locals
+  req.locals.uploadInfo = {
+    type: requestData?.params?.type,
+    fileName: requestData?.params?.fileName,
+    url: requestData?.params?.url,
+    checkedTime: requestData?.modified
+  }
   next()
 }
 
