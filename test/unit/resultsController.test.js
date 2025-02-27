@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate } from '../../src/controllers/resultsController'
+import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate, getFileNameOrUrlAndCheckedTime } from '../../src/controllers/resultsController'
 import { getRequestData } from '../../src/services/asyncRequestApi'
 import PageController from '../../src/controllers/pageController'
 
@@ -217,5 +217,48 @@ describe('ResultsController Class Tests', () => {
 
     expect(result).toBe(false)
     expect(req.form.options.data.hasErrors).toHaveBeenCalled()
+  })
+})
+
+describe('getFileNameOrUrlAndCheckedTime', () => {
+  it('should set req.locals properties based on requestData', () => {
+    const req = {
+      locals: {
+        requestData: {
+          params: {
+            type: 'file',
+            fileName: 'example.txt',
+            url: 'http://example.com/file'
+          },
+          modified: '2023-10-01T12:00:00Z'
+        }
+      }
+    }
+    const res = {}
+    const next = vi.fn()
+
+    getFileNameOrUrlAndCheckedTime(req, res, next)
+
+    expect(req.locals.uploadInfo.type).toBe('file')
+    expect(req.locals.uploadInfo.fileName).toBe('example.txt')
+    expect(req.locals.uploadInfo.url).toBe('http://example.com/file')
+    expect(req.locals.uploadInfo.checkedTime).toBe('2023-10-01T12:00:00Z')
+    expect(next).toHaveBeenCalled()
+  })
+
+  it('should call next even if requestData is missing', () => {
+    const req = {
+      locals: {}
+    }
+    const res = {}
+    const next = vi.fn()
+
+    getFileNameOrUrlAndCheckedTime(req, res, next)
+
+    expect(req.locals.uploadInfo.type).toBeUndefined()
+    expect(req.locals.uploadInfo.fileName).toBeUndefined()
+    expect(req.locals.uploadInfo.url).toBeUndefined()
+    expect(req.locals.uploadInfo.checkedTime).toBeUndefined()
+    expect(next).toHaveBeenCalled()
   })
 })
