@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate, getFileNameOrUrlAndCheckedTime } from '../../src/controllers/resultsController'
 import { getRequestData } from '../../src/services/asyncRequestApi'
-import prettifyColumnName from '../../src/filters/prettifyColumnName'
 import PageController from '../../src/controllers/pageController'
 
 vi.mock('../../src/services/asyncRequestApi', () => ({
@@ -125,12 +124,10 @@ describe('Middleware Tests', () => {
         getPagination: vi.fn(() => 'mockPagination')
       }
 
-      prettifyColumnName.mockImplementation((col) => `Pretty ${col}`)
-
       await setupTableParams(req, res, mockNext)
 
       expect(req.locals.tableParams).toEqual({
-        columns: ['Pretty column1', 'Pretty column2'],
+        columns: ['field1', 'field2'],
         rows: [{ columns: {}, data: 'rowData' }],
         fields: ['field1', 'field2']
       })

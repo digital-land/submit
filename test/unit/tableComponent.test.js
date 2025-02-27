@@ -12,7 +12,7 @@ const nunjucksEnv = nunjucks.configure([
   'node_modules/@x-govuk/govuk-prototype-components/'
 ], {})
 
-nunjucksEnv.addFilter('prettifyColumnName', columnName => columnName)
+nunjucksEnv.addFilter('prettifyColumnName', columnName => `The ${columnName}`)
 
 describe('Table Component', () => {
   const params = {
@@ -71,11 +71,11 @@ describe('Table Component', () => {
 
   const tableHead = document.querySelector('.govuk-table__head')
 
-  it('Renders the correct table headings', () => {
+  it('Renders prettified table headings', () => {
     const columnHeadings = tableHead.children[0].children
 
     params.tableParams.columns.forEach((column, i) => {
-      expect(columnHeadings[i].textContent).toContain(column)
+      expect(columnHeadings[i].textContent).toContain(`The ${column}`)
     })
   })
 
