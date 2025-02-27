@@ -209,7 +209,7 @@
       <h2 class="govuk-heading-m">Dataset actions</h2>
       <ul class="govuk-list">
         <li>
-          <a class="govuk-link" href="{{ organisation.organisation | checkToolDeepLink(dataset.dataset) }}">Check {{ dataset.name }} dataset</a>
+          <a class="govuk-link" href="{{ organisation.name | checkToolDeepLink(dataset.dataset) }}">Check {{ dataset.name }} dataset</a>
         </li>
         {% if dataset.dataset | getDatasetGuidanceUrl %}
         <li>
