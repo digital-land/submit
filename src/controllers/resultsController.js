@@ -129,7 +129,7 @@ export function setupTableParams (req, res, next) {
 
       const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
         let error
-        if (value.error && value.error.severity === 'error') {
+        if (value.error && value.error.severity === 'error' && value.error.responsibility !== 'internal') {
           error = value.error
         }
         const newValue = {
