@@ -10,7 +10,8 @@ const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 describe('Submit confirmation View', () => {
   const params = {
     values: {
-      dataset: 'mockDataset'
+      dataset: 'mockDataset',
+      email: 'email@example.com'
     }
   }
   const html = stripWhitespace(nunjucks.render('submit/confirmation.html', params))
@@ -22,5 +23,9 @@ describe('Submit confirmation View', () => {
   it('should render the gov uk panel', () => {
     const regex = new RegExp('<h1 class="govuk-panel__title".*mockDataset submitted.*</h1>', 'g')
     expect(html).toMatch(regex)
+  })
+
+  it('should contain the submitter email', () => {
+    expect(html).toMatch(/email&#64example.com/)
   })
 })

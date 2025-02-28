@@ -26,10 +26,13 @@ const proto = {
 
 /**
  *
- * @param {{datasetNameMapping, app: object?}} param0
+ * @param {Object} opts
+ * @param {Map<string, *>} opts.datasetNameMapping mapping
+ * @param {Object} [opts.app] express app
  * @returns
  */
-export function setupNunjucks ({ app, datasetNameMapping }) {
+export function setupNunjucks (opts) {
+  const { app, datasetNameMapping } = opts
   const options = { dev: true, noCache: true, watch: true }
   if (app) {
     options.express = app
