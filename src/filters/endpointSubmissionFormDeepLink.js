@@ -1,8 +1,8 @@
 /**
  * Returns the deep link to the endpoint submission form for a given dataset and organisation
  *
- * @param {string} organisation
- * @param {string} dataset
+ * @param {{name:string}} organisation
+ * @param {{dataset:string, name:string}} dataset
  *
  * @return {string}
  */
