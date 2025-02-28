@@ -10,5 +10,5 @@ export function endpointSubmissionFormToolDeepLink (organisation, dataset) {
   if (!organisation || !dataset) {
     return '/submit'
   }
-  return `/submit/link?dataset=${encodeURIComponent(dataset)}&orgName=${encodeURIComponent(organisation)}&orgId=${encodeURIComponent(organisation)}`
+  return `/submit/link?dataset=${encodeURIComponent(dataset.dataset)}&orgName=${encodeURIComponent(organisation.name)}&orgId=${encodeURIComponent(organisation.organisation)}`
 }
