@@ -190,7 +190,7 @@ panel: { html: tableTab } } } %}
   window.serverContext = {
     containerId: 'map',
     geometries: {{ options.geometries | dump | safe }},
-  {% if options.deepLink.orgId %} boundaryGeoJsonUrl: "/api/lpa-boundary/{{ options.deepLink.orgId }}"{% endif %}
+    {% if options.deepLink.orgId %} boundaryGeoJsonUrl: "/api/lpa-boundary/{{ options.deepLink.orgId | urlencode }}"{% endif %}
     }
 </script>
 <script src="/public/js/map.bundle.js"></script>
