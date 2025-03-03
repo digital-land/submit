@@ -8,7 +8,7 @@
   "opts": {
     "destination": "./github-pages",
     "recurse": true,
-    "readme": "./README.md"
+    "readme": "./readme.md"
   },
   "templates": {
     "cleverLinks": true,
