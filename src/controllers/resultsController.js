@@ -26,6 +26,7 @@ class ResultsController extends PageController {
     this.use(setupTableParams)
     this.use(getIssueTypesWithQualityCriteriaLevels)
     this.use(extractIssuesFromResults)
+    this.use(filterOutInternalIssues)
     this.use(addQualityCriteriaLevelsToIssues)
     this.use(aggregateIssues)
     this.use(getTotalRows)
@@ -128,7 +129,7 @@ export function setupTableParams (req, res, next) {
 
       const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
         let error
-        if (value.error && value.error.severity === 'error') {
+        if (value.error && value.error.severity === 'error' && value.error.responsibility !== 'internal') {
           error = value.error
         }
         const newValue = {
@@ -189,6 +190,12 @@ export function extractIssuesFromResults (req, res, next) {
 
   req.issues = issues
 
+  next()
+}
+
+export function filterOutInternalIssues (req, res, next) {
+  const { issues } = req
+  req.issues = issues.filter(issue => issue.responsibility !== 'internal')
   next()
 }
 
