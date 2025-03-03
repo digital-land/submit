@@ -41,6 +41,14 @@ jobs:
       - name: Generate documentation
         run: npm run generate:docs
 
+      - name: Validate documentation output
+        run: |
+          if [ ! -d "./github-pages" ] || [ -z "$(ls -A ./github-pages)" ]; then
+            echo "Documentation directory is empty or does not exist!"
+            exit 1
+          fi
+          echo "Documentation successfully generated"
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
