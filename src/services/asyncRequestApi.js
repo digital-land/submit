@@ -2,6 +2,7 @@ import axios from 'axios'
 import config from '../../config/index.js'
 import ResultData from '../models/requestData.js'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 
 const requestsEndpoint = `${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}`
 
@@ -42,14 +43,15 @@ const postRequest = async (formData) => {
     return response.data.id // assuming the response contains the id
   } catch (error) {
     // see: https://axios-http.com/docs/handling_errors
-    const errorMessage = `post request failed: response.status = '${error.response?.status}', ` +
-      `data: '${error.response?.data}', ` +
+    const errorMessage = 'post request failed:' +
+      (error.response
+        ? `response status: ${error.response.status}, response data: '${error.response.data}', `
+        : 'No response received, ') +
       `cause: '${error?.cause}' ` +
       `code: ${error.code}, ` +
-      (error.request ? 'No response received, ' : '') +
       `message: '${error.message ?? 'no message provided'}', ` +
-      (error.config ? `Error in Axios configuration ${error?.config}` : '')
-
+      (error.config ? `Error in Axios configuration ${error.config}` : '')
+    logger.warn('postRequest()', { type: types.App, formData })
     throw new Error(errorMessage)
   }
 }

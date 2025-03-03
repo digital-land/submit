@@ -2,11 +2,11 @@ const { min, max } = Math
 const range = (lo, hi) => Array.from({ length: hi - lo }, (_, i) => i + lo)
 
 /**
- *
- * @param {number} count
- * @param {number} current
- * @param {string} ellipsis
- * @returns {(number | string)[]}
+ * Generate pagination numbers with ellipsis for long ranges
+ * @param {number} count - Total number of pages
+ * @param {number} current - Current page number
+ * @param {string} [ellipsis='...'] - Ellipsis character(s)
+ * @returns {Array<number|string>} Array of page numbers and ellipsis
  */
 export const pagination = (count, current, ellipsis = '...') => {
   if (count <= 5) {

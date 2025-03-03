@@ -25,9 +25,11 @@ const proto = {
 }
 
 /**
- *
- * @param {{datasetNameMapping, app: object?}} param0
- * @returns
+ * Setup Nunjucks template engine with custom configuration
+ * @param {Object} config - Configuration object
+ * @param {Object} [config.app] - Express application instance
+ * @param {Object} config.datasetNameMapping - Dataset name mapping object
+ * @returns {Object} Configured Nunjucks instance
  */
 export function setupNunjucks ({ app, datasetNameMapping }) {
   const options = { dev: true, noCache: true, watch: true }

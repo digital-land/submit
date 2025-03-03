@@ -4,6 +4,29 @@ import { types } from '../utils/logging.js'
 import { pagination } from '../utils/pagination.js'
 
 /**
+ * @typedef {Object} PaginationOptions
+ * @property {string} [hash] - Hash option (should include the '#' character)
+ */
+
+/**
+ * @typedef {Object} PaginationItem
+ * @property {string} href - Link URL
+ * @property {boolean} [ellipsis] - Whether this is an ellipsis item
+ */
+
+/**
+ * @typedef {Object} PaginationResult
+ * @property {number} totalResults - Total number of results
+ * @property {number} offset - Current offset
+ * @property {number} limit - Items per page
+ * @property {number} currentPage - Current page number
+ * @property {number|null} nextPage - Next page number or null
+ * @property {number|null} previousPage - Previous page number or null
+ * @property {number} totalPages - Total number of pages
+ * @property {PaginationItem[]} items - Pagination items
+ */
+
+/**
  * Holds response data of 'http://ASYNC-REQUEST-API-HOST/requests/:result-id/response-details' endpoint.
  */
 export default class ResponseDetails {
@@ -16,7 +39,9 @@ export default class ResponseDetails {
 
   getRows () {
     if (!this.response) {
-      logger.warn('trying to get response details when there are none', { requestId: this.id })
+      logger.warn('trying to get response details when there are none', {
+        requestId: this.id
+      })
       return []
     }
     return this.response
@@ -24,7 +49,9 @@ export default class ResponseDetails {
 
   getColumnFieldLog () {
     if (!this.columnFieldLog) {
-      logger.warn('trying to get column field log when there is none', { requestId: this.id })
+      logger.warn('trying to get column field log when there is none', {
+        requestId: this.id
+      })
       return []
     }
     return this.columnFieldLog
@@ -37,9 +64,11 @@ export default class ResponseDetails {
 
     const fields = this.getFields()
 
-    const ColumnsWithDuplicates = fields.map(field => {
+    const ColumnsWithDuplicates = fields.map((field) => {
       const columnFieldLog = this.getColumnFieldLog()
-      const fieldLog = columnFieldLog.find(fieldLog => fieldLog.field === field)
+      const fieldLog = columnFieldLog.find(
+        (fieldLog) => fieldLog.field === field
+      )
       return fieldLog ? fieldLog.column : field
     })
 
@@ -52,60 +81,80 @@ export default class ResponseDetails {
    * @returns {string[]}
    */
   getFields () {
-    const columnKeys = [...new Set(this.getRows().map(row => row.converted_row).flatMap(row => Object.keys(row)))]
+    const columnKeys = [
+      ...new Set(
+        this.getRows()
+          .map((row) => row.converted_row)
+          .flatMap((row) => Object.keys(row))
+      )
+    ]
 
     const columnFieldLog = this.getColumnFieldLog()
-    return [...new Set(columnKeys.map(column => {
-      const fieldLog = columnFieldLog.find(fieldLog => fieldLog.column === column)
-      if (!fieldLog) {
-        return column
-      } else {
-        return fieldLog.field
-      }
-    }))]
+    return [
+      ...new Set(
+        columnKeys.map((column) => {
+          const fieldLog = columnFieldLog.find(
+            (fieldLog) => fieldLog.column === column
+          )
+          if (!fieldLog) {
+            return column
+          } else {
+            return fieldLog.field
+          }
+        })
+      )
+    ]
   }
 
   getFieldMappings () {
-    return Object.fromEntries(this.getFields().map(field => {
-      const columnFieldLog = this.getColumnFieldLog()
-      const columnLog = columnFieldLog.find(fieldLog => fieldLog.field === field)
-      return [
-        field,
-        columnLog ? columnLog.column : null
-      ]
-    }))
+    return Object.fromEntries(
+      this.getFields().map((field) => {
+        const columnFieldLog = this.getColumnFieldLog()
+        const columnLog = columnFieldLog.find(
+          (fieldLog) => fieldLog.field === field
+        )
+        return [field, columnLog ? columnLog.column : null]
+      })
+    )
   }
 
   /**
- * Returns an array of rows with verbose columns, optionally filtering out rows without errors.
- *
- * @param {boolean} [filterNonErrors=false] - If true, only return rows that have at least one error.
- * @returns {Array<object>} An array of rows with verbose columns, each containing:
- *   - `entryNumber`: the entry number of the row
- *   - `hasErrors`: a boolean indicating whether the row has any errors
- *   - `columns`: an array of verbose column details, each containing:
- *     - `key`: the column key
- *     - `value`: the column value
- *     - `column`: the column name
- *     - `field`: the field name
- *     - `error`: an error message if data was missing
- */
+   * Returns an array of rows with verbose columns, optionally filtering out rows without errors.
+   *
+   * @param {boolean} [filterNonErrors=false] - If true, only return rows that have at least one error.
+   * @returns {Array<object>} An array of rows with verbose columns, each containing:
+   *   - `entryNumber`: the entry number of the row
+   *   - `hasErrors`: a boolean indicating whether the row has any errors
+   *   - `columns`: an array of verbose column details, each containing:
+   *     - `key`: the column key
+   *     - `value`: the column value
+   *     - `column`: the column name
+   *     - `field`: the field name
+   *     - `error`: an error message if data was missing
+   */
   getRowsWithVerboseColumns (filterNonErrors = false) {
     if (!this.response) {
-      logger.warn('trying to get response details when there are none', { requestId: this.id })
+      logger.warn('trying to get response details when there are none', {
+        requestId: this.id
+      })
       return []
     }
 
     let rows = this.response
 
     if (filterNonErrors) {
-      rows = rows.filter(row => row.issue_logs.filter(issue => issue.severity === 'error').length > 0)
+      rows = rows.filter(
+        (row) =>
+          row.issue_logs.filter((issue) => issue.severity === 'error').length >
+          0
+      )
     }
 
     // Map over the details in the response and return an array of rows with verbose columns
-    return rows.map(row => ({
+    return rows.map((row) => ({
       entryNumber: row.entry_number,
-      hasErrors: row.issue_logs.filter(issue => issue.severity === 'error').length > 0,
+      hasErrors:
+        row.issue_logs.filter((issue) => issue.severity === 'error').length > 0,
       columns: getVerboseColumns(row, this.getColumnFieldLog())
     }))
   }
@@ -117,7 +166,9 @@ export default class ResponseDetails {
       return null
     }
 
-    const columnFieldEntry = columnFieldLog.find(column => column.field === 'point') || columnFieldLog.find(column => column.field === 'geometry')
+    const columnFieldEntry =
+      columnFieldLog.find((column) => column.field === 'point') ||
+      columnFieldLog.find((column) => column.field === 'geometry')
 
     if (!columnFieldEntry) {
       return null
@@ -140,7 +191,10 @@ export default class ResponseDetails {
     const item = rows[0]
     const getGeometryValue = this.#makeGeometryGetter(item)
     if (!getGeometryValue) {
-      logger.debug('could not create geometry getter', { type: types.App, requestId: this.id })
+      logger.debug('could not create geometry getter', {
+        type: types.App,
+        requestId: this.id
+      })
       return undefined
     }
 
@@ -151,11 +205,18 @@ export default class ResponseDetails {
         geometries.push(geometry)
       }
     }
-    logger.debug('getGetometries()', { type: types.App, requestId: this.id, geometryCount: geometries.length, rowCount: rows.length })
+    logger.debug('getGetometries()', {
+      type: types.App,
+      requestId: this.id,
+      geometryCount: geometries.length,
+      rowCount: rows.length
+    })
     return geometries
   }
 
   /**
+   * Get pagination details for the current response
+   *
    * @param {number} pageNumber
    * @param {{ hash?: string, href?: (item: number) => string }} opts hash option should include the '#' character
    * @returns {{ totalResults: number, offset: number, limit: number, currentPage: number, nextPage: number | null, previousPage: number | null, totalPages: number, items: { href: string }[] } }
@@ -163,11 +224,14 @@ export default class ResponseDetails {
   getPagination (pageNumber, opts = {}) {
     pageNumber = parseInt(pageNumber)
     if (Number.isNaN(pageNumber)) pageNumber = 1
-    const totalPages = Math.ceil(this.pagination.totalResults / this.pagination.limit)
+    const totalPages = Math.ceil(
+      this.pagination.totalResults / this.pagination.limit
+    )
 
     const hash = opts.hash ?? ''
-    const hrefFn = opts.href ?? ((item) => `/check/results/${this.id}/${item}${hash}`)
-    const items = pagination(totalPages, pageNumber).map(item => {
+    const hrefFn =
+      opts.href ?? ((item) => `/check/results/${this.id}/${item}${hash}`)
+    const items = pagination(totalPages, pageNumber).map((item) => {
       if (item === '...') {
         return {
           ellipsis: true,
@@ -195,30 +259,34 @@ export default class ResponseDetails {
   }
 
   /**
-   * Detects where geometry is stored in the item and returns a function of
-   * item to geometry value. It's caller responsibility to handle situations
-   * where the getter couldn't be returned (for most common use case, we can
-   * omit diplaying the map).
+   * Detects where geometry is stored in the item and returns a function to extract geometry value.
+   * It's caller's responsibility to handle situations where the getter couldn't be returned.
+   * For most common use cases, we can omit displaying the map.
    *
-   * @param {any} item
-   * @returns { ((item) => string ) | undefined}
+   * @param {Object} item - Data item containing geometry information
+   * @returns {Function|undefined} Function that takes an item and returns a geometry string, or undefined if no geometry found
    */
   #makeGeometryGetter (item) {
     /*
       The api seems to sometimes respond with weird casing, it can be camal case, all lower or all upper
       I'll implement a fix here, but hopefully infa will be addressing it on the backend to
     */
-    const keys = Object.fromEntries(Object.keys(item.converted_row).map(key => [key.toLowerCase(), key]))
+    const keys = Object.fromEntries(
+      Object.keys(item.converted_row).map((key) => [key.toLowerCase(), key])
+    )
     let getGeometryValue
     if ('point' in keys) {
-      getGeometryValue = row => row.converted_row[keys.point]
+      getGeometryValue = (row) => row.converted_row[keys.point]
     } else if ('geometry' in keys) {
-      getGeometryValue = row => row.converted_row[keys.geometry]
+      getGeometryValue = (row) => row.converted_row[keys.geometry]
     } else if ('wkt' in keys) {
-      getGeometryValue = row => row.converted_row[keys.wkt]
+      getGeometryValue = (row) => row.converted_row[keys.wkt]
     } else if ('geox' in keys) {
-      logger.debug('converted_row', { type: types.App, transformedRow: item.transformed_row })
-      getGeometryValue = row => {
+      logger.debug('converted_row', {
+        type: types.App,
+        transformedRow: item.transformed_row
+      })
+      getGeometryValue = (row) => {
         const GeoX = row.converted_row[keys.geox]
         const GeoY = row.converted_row[keys.geoy]
         if (GeoX === '' || GeoY === '') return ''
@@ -226,7 +294,10 @@ export default class ResponseDetails {
       }
     } else {
       // unexpected, but let's take a note and proceed without throwing
-      logger.warn('geometry data not found in response details', { requestId: this.id, type: types.App })
+      logger.warn('geometry data not found in response details', {
+        requestId: this.id,
+        type: types.App
+      })
     }
 
     return getGeometryValue

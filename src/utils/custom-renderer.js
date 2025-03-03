@@ -4,8 +4,9 @@ import logger from './logger.js'
 import { types } from './logging.js'
 
 /**
- * @param {ValiError} error
- * @returns {[string][]}
+ * Extract invalid schema paths from a validation error
+ * @param {ValiError} error - Validation error object
+ * @returns {Array<Array<string>>} Array of path arrays containing invalid fields
  */
 export const invalidSchemaPaths = (error) => {
   if (error instanceof v.ValiError) {
@@ -21,20 +22,21 @@ export const invalidSchemaPaths = (error) => {
 }
 
 /**
- * Depending on the config, validates the params against the given schema before rendering the template.
+ * Render a template with validation in non-production environments
  *
  * If validation error is raised, it's logged and re-thrown.
  *
- * Motivation: we want to ensure in developmen/test environments, that the data passed to
+ * Motivation: we want to ensure in development/test environments, that the data passed to
  * our templates is valid. This will help us ensure that we're testing the right thing.
  *
  * Note: Relies on {@link config.environment}
  *
- * @param {Response | { render: (template: string, params: object) => string} } renderer
- * @param {string} template path to template
- * @param {object} schema valibot schema
- * @param {object} params
- * @returns {string}
+ * @param {Object} renderer - Renderer object
+ * @param {Function} renderer.render - Render function that takes template and params
+ * @param {string} template - Path to template
+ * @param {Object} schema - Valibot schema
+ * @param {Object} params - Template parameters
+ * @returns {string} Rendered template
  */
 export const render = (renderer, template, schema, params) => {
   let parsed = params

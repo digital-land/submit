@@ -97,10 +97,14 @@ const readConfig = (config) => {
 }
 
 /**
+ * @typedef {Object} Config
+ */
+
+/**
  * Reads configs from disk, based on env variables
  * when 'environment' option not specified.
  *
- * @returns {Object}
+ * @returns {Config}
  */
 export function combineConfigs (environment) {
   console.assert(environment, 'environment not specified')
@@ -113,8 +117,8 @@ export function combineConfigs (environment) {
  * Validates the config object against the ConfigSchema.
  *
  * @param {*} config
- * @returns {v.InferOutput<typeof ConfigSchema>}
- * @throws {v.ValibotError}
+ * @returns {Config}
+ * @throws {ValibotError}
  */
 export const validateConfig = (config) => {
   try {
