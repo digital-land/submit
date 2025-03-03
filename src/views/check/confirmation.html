@@ -30,7 +30,7 @@
 
   ## 2: Submit your data
 
-  <a href="{{ { name: options.lpa, organisation: options.lpa } | endpointSubmissionFormToolDeepLink({dataset: options.dataset}) }}">Submit your data</a> to the Planning Data Platform. You need to provide your:
+  <a class="submit-link" href="{{ { name: options.lpa, organisation: options.orgId } | endpointSubmissionFormToolDeepLink({dataset: options.dataset}) }}">Submit your data</a> to the Planning Data Platform. You need to provide your:
 
   - full name
   - work email address
