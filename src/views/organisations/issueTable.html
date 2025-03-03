@@ -102,10 +102,6 @@
     <div>
       <h3 class="govuk-heading-m">{{ issueSpecification.field }}</h3>
 
-      {% if issueSpecification.description %}
-        {{ issueSpecification.description | govukMarkdown | safe }}
-      {% endif %}
-
       {% if issueSpecification.guidance %}
         {{ issueSpecification.guidance | govukMarkdown | safe }}
       {% endif %}
