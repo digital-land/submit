@@ -25,10 +25,14 @@ export default class ResultData {
   /**
    * Fetches check results details, optionally filtered by issue (type and field), or severity (but not both).
    *
-   * @param {number} pageOffset zero based
-   * @param {number} limit limit
-   * @param {{ severity?: string, issue?: { issueType?: string, field?: string? } }?} opts options
-   * @returns {ResponseDetails}
+   * @param {number} [pageOffset=0] - Zero based page offset
+   * @param {number} [limit=50] - Results per page limit
+   * @param {Object} [opts] - Filter options
+   * @param {string} [opts.severity] - Filter by severity
+   * @param {Object} [opts.issue] - Filter by issue
+   * @param {string} [opts.issue.issueType] - Issue type to filter by
+   * @param {string} [opts.issue.field] - Field to filter by
+   * @returns {Promise<ResponseDetails>} Response details
    */
   async fetchResponseDetails (pageOffset = 0, limit = 50, opts = { severity: undefined }) {
     v.parse(ResponseDetailsOptions, opts)
