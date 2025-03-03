@@ -205,6 +205,15 @@ ORDER BY
 export const issuesQueryLimit = 1000
 
 /**
+ * @typedef {Object} TaskMessageOptions
+ * @property {string} issue_type - Type of issue
+ * @property {number} num_issues - Number of issues
+ * @property {number} rowCount - Total row count
+ * @property {string} field - Field name
+ * @property {('html'|'text')} [format] - Output format
+ */
+
+/**
  * Performance DB API service
  * @export
  * @default
@@ -227,8 +236,8 @@ export default {
      * Pass format = 'html' if you want the fields in the message to be marked up with span.column-name. Otherwise
      * plain text message is returned.
      *
-     * @param {{issue_type: string, num_issues: number, rowCount: number, field: string, format?: 'html' }} options
-     * @param {boolean?} entityLevel Whether to use entity-level or dataset level messaging
+     * @param {TaskMessageOptions} options - Task message options
+     * @param {boolean} [entityLevel=false] - Whether to use entity-level or dataset level messaging
      *
      * @returns {string} The task message with the issue count inserted
      *

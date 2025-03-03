@@ -20,11 +20,11 @@ googleAnalytics: {
 }
 features:
   issueSpecificationGuidance:
-    enabled: false
+    enabled: true
   submitEndpointForm:
     enabled: false
   checkIssueDetailsPage:
     # https://github.com/digital-land/submit/issues/786
-    # enabling this feature will cause the results page to present 
+    # enabling this feature will cause the results page to present
     # links to individual issue pages
     enabled: false

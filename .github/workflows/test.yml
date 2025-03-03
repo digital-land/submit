@@ -37,6 +37,8 @@ jobs:
       - id: lint
         name: Lint
         run: npm run lint
+      - name: Test documentation generates without errors
+        run: npm run generate:docs
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
@@ -59,10 +61,10 @@ jobs:
 
       - uses: ./.github/actions/playwright-setup
       - name: Run integration tests
-        run: npm run test:integration      
+        run: npm run test:integration
       - name: Run acceptance tests
         run: npm run test:acceptance:ci
-      
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

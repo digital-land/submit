@@ -9,7 +9,6 @@ import { splitByLeading } from '../utils/table.js'
 import { MiddlewareError } from '../utils/errors.js'
 
 const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
-
 const failedFileRequestTemplate = 'results/failedFileRequest'
 const failedUrlRequestTemplate = 'results/failedUrlRequest'
 const resultsTemplate = 'results/results'
@@ -95,10 +94,24 @@ export function setupTemplate (req, res, next) {
 }
 
 /**
- * @param {import('express').Request & { locals: { detailsOptions?: { severity?: string, issue?: { issueType: string, field: string }}}}} req request
- * @param {*} res
- * @param {*} next
- * @returns
+ * @typedef {Object} DetailsOptions
+ * @property {string} [severity] - Severity filter
+ * @property {Object} [issue] - Issue filter
+ * @property {string} issue.issueType - Issue type
+ * @property {string} issue.field - Field name
+ */
+
+/**
+ * @typedef {Object} RequestWithDetails
+ * @property {Object} locals - Request locals
+ * @property {DetailsOptions} [locals.detailsOptions] - Details options
+ */
+
+/**
+ * @param {RequestWithDetails} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ * @returns {Promise<void>}
  */
 export async function fetchResponseDetails (req, res, next) {
   const { pageNumber } = req.parsedParams
@@ -118,6 +131,12 @@ export async function fetchResponseDetails (req, res, next) {
   next()
 }
 
+/**
+ * @param {RequestWithDetails} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ * @returns {void}
+ */
 export function setupTableParams (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.responseDetails
@@ -263,10 +282,13 @@ export function filterOutTasksByQualityCriterialLevel (issue) {
 }
 
 /**
- * @typedef {{text: string, link: boolean, colour: string }} Status
- *
- * @type {{mustFix: Status, shouldFix: Status, passed: Status }}
+ * @typedef {Object} Status
+ * @property {string} text - Status text
+ * @property {boolean} link - Whether status has a link
+ * @property {string} colour - Status color
  */
+
+/** @type {{mustFix: Status, shouldFix: Status, passed: Status}} */
 const taskStatus = {
   mustFix: { text: 'Must fix', link: true, colour: 'red' },
   shouldFix: { text: 'Should fix', link: true, colour: 'yellow' },
@@ -274,9 +296,13 @@ const taskStatus = {
 }
 
 /**
- * @param {import('express').Request} req request
- * @param {{ taskMessage: string, status: Status, issueType?: string, field?: string }}
- * @returns
+ * @param {Object} req - Express request object
+ * @param {Object} options - Task options
+ * @param {string} options.taskMessage - Task message text
+ * @param {Status} options.status - Status object
+ * @param {string} [options.issueType] - Issue type
+ * @param {string} [options.field] - Field name
+ * @returns {Object} Task parameter object
  */
 const makeTaskParam = (req, { taskMessage, status, ...opts }) => {
   if (status.link) {
@@ -353,11 +379,12 @@ export function getMissingColumnTasks (req) {
 
 /**
  * Middleware. Updates `req.locals` with `tasksBlocking` and potentially updates
- * `req.aggregatedTasks` map with entrires for missing columns.
+ * `req.aggregatedTasks` map with entries for missing columns.
  *
- * @param {import('express').Request & { aggregatedTasks: Map<string, Object>}} req request
- * @param {*} res response
- * @param {*} next next function
+ * @param {Object} req - Express request object
+ * @param {Map<string, Object>} req.aggregatedTasks - Map of tasks
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
  */
 export function getBlockingTasks (req, res, next) {
   getTasksByLevel(req, 2, taskStatus.mustFix)

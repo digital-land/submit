@@ -31,7 +31,8 @@ const proto = {
  * @param {Object} config.datasetNameMapping - Dataset name mapping object
  * @returns {Object} Configured Nunjucks instance
  */
-export function setupNunjucks ({ app, datasetNameMapping }) {
+export function setupNunjucks (opts) {
+  const { app, datasetNameMapping } = opts
   const options = { dev: true, noCache: true, watch: true }
   if (app) {
     options.express = app
