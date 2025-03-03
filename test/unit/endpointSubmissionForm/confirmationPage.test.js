@@ -26,6 +26,6 @@ describe('Submit confirmation View', () => {
   })
 
   it('should contain the submitter email', () => {
-    expect(html).toMatch(/email&#64example.com/)
+    expect(html).toMatch(/email&#64;example.com/)
   })
 })
