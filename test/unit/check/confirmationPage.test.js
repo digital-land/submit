@@ -28,10 +28,9 @@ describe('Check confirmation View', () => {
     expect(html).toMatch(regex)
   })
 
-  it('deeplink this and that', () => {
+  it('check tool deep link contains correct search params', () => {
     const submitLink = doc.querySelector('a.submit-link')
     const deepLink = new URL(`http://example.com${submitLink.getAttribute('href')}`)
-    console.debug(deepLink)
     const searchParams = deepLink.searchParams
     expect(searchParams.get('orgId')).toBe(templateParams.options.orgId)
     expect(searchParams.get('orgName')).toBe(templateParams.options.lpa)
