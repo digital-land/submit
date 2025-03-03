@@ -280,6 +280,13 @@ export const DatasetDetails = v.strictObject({
   }))
 })
 
+const SubmitEndpointConfirmation = v.strictObject({
+  values: v.object({
+    dataset: NonEmptyString,
+    email: NonEmptyString
+  })
+})
+
 /**
  * This acts as a registry of template -> schema for convenience.
  */
@@ -289,7 +296,7 @@ export const templateSchema = new Map([
   ['choose-dataset.html', ChooseDataset],
   ['lpa-details.html', v.any()],
 
-  ['submit/confirmation.html', v.any()],
+  ['submit/confirmation.html', SubmitEndpointConfirmation],
 
   ['organisations/overview.html', OrgOverviewPage],
   ['organisations/find.html', OrgFindPage],
