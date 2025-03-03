@@ -237,14 +237,13 @@ async function fetchIfFn (req, res, next) {
 }
 
 /**
- *
  * Returns a middleware that will fetch data if condition is satisfied,
  * invoke `elseFn` otherwise.
  *
- * @param {(req) => boolean} condition predicate fn
- * @param {*} fetchFn fetch middleware
- * @param {(req) => void} elseFn
- * @returns
+ * @param {Function} condition - Predicate function that takes a request object and returns a boolean
+ * @param {Function} fetchFn - Fetch middleware function
+ * @param {Function} [elseFn] - Optional function to call if condition is not met
+ * @returns {Function} Middleware function
  */
 export const fetchIf = (condition, fetchFn, elseFn = undefined) => {
   return fetchIfFn.bind({
@@ -253,41 +252,55 @@ export const fetchIf = (condition, fetchFn, elseFn = undefined) => {
 }
 
 /**
+ * @typedef {Object} QueryContext
+ * @property {Function} query - Function that takes req and params and returns query object
+ * @property {string} result - Key to store result under in req
+ * @property {(string|Function)} [dataset] - Dataset name or function to get dataset name
+ */
+
+/**
  * Fetches a single entity and stores it in `req` under key specified by `result` entry.
  *
  * Use `fallbackPolicy` to handle zero record responses differently than the default 404 response.
  * See {@link FetchOneFallbackPolicy}
  *
- * @param {{ query: ({ req, params}) => object, result: string, dataset?: FetchParams | (req) => string, fallbackPolicy?: (req, res, next) => void}} context
- * @returns
+ * @param {QueryContext} context - Configuration object
+ * @param {Function} context.query - Function that takes req and params and returns query object
+ * @param {string} context.result - Key to store result under in req
+ * @param {string|Function} [context.dataset] - Dataset name or function to get dataset name
+ * @param {Function} [context.fallbackPolicy] - Custom fallback policy for zero results
+ * @returns {Function} Middleware function
  */
 export function fetchOne (context) {
   return fetchOneFn.bind(context)
 }
 
 /**
-   * Fetches a collection of records and stores them in `req` under key specified by `result` entry.
-   *
-   * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
-   */
+ * Fetches a collection of records and stores them in `req` under key specified by `result` entry.
+ *
+ * @param {QueryContext} context - Configuration object
+ * @returns {Function} Middleware function
+ */
 export function fetchMany (context) {
   return fetchManyFn.bind(context)
 }
 
 /**
-   * Fetches a single record from each dataset databases and stores them in `req` under key specified by `result` entry.
-   *
-   * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
-   */
+ * Fetches a single record from each dataset databases and stores them in `req` under key specified by `result` entry.
+ *
+ * @param {QueryContext} context - Configuration object
+ * @returns {Function} Middleware function
+ */
 export function fetchOneFromAllDatasets (context) {
   return fetchOneFromAllDatasetsFn.bind(context)
 }
 
 /**
-   * Fetches a collection of records from all dataset databases and stores them in `req` under key specified by `result` entry.
-   *
-   * @param {{query: ({req, params}) => object, result: string, dataset?: FetchParams | (req) => string}} context
-   */
+ * Fetches a collection of records from all dataset databases and stores them in `req` under key specified by `result` entry.
+ *
+ * @param {QueryContext} context - Configuration object
+ * @returns {Function} Middleware function
+ */
 export function fetchManyFromAllDatasets (context) {
   return fetchManyFromAllDatasetsFn.bind(context)
 }
@@ -310,15 +323,15 @@ export function validateAndRender (res, name, params) {
 }
 
 /**
-   * Middleware. Validates and renders the template.
-   *
-   * `this` needs: `{ templateParams(req), template,  handlerName }`
-   *
-   * @param {*} req
-   * @param {*} res
-   * @param {*} next
-   * @returns
-   */
+ * Middleware. Validates and renders the template.
+ *
+ * `this` needs: `{ templateParams(req), template,  handlerName }`
+ *
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ * @returns {void}
+ */
 export function renderTemplateFn (req, res, next) {
   const templateParams = this.templateParams(req)
   try {
@@ -331,12 +344,14 @@ export function renderTemplateFn (req, res, next) {
 }
 
 /**
-   * Validates and renders the template.
-   *
-   *
-   * @param {{templateParams: (req) => object, template: string,  handlerName: string}} context
-   * @returns {(req, res, next) => void} middleware
-   */
+ * Validates and renders the template.
+ *
+ * @param {Object} context - Configuration object
+ * @param {Function} context.templateParams - Function that returns template parameters
+ * @param {string} context.template - Template name
+ * @param {string} context.handlerName - Handler name
+ * @returns {Function} Express middleware function
+ */
 export function renderTemplate (context) {
   return renderTemplateFn.bind(context)
 }
@@ -345,10 +360,10 @@ export function renderTemplate (context) {
  * Returns a middleware that executes the given sub-middlewares in parallel
  * and waits for all of them to complete.
  *
- * @param {*} req
- * @param {*} res
- * @param {*} next
- * @returns {(req, res, next) => void} middleware
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ * @returns {void}
  */
 async function parallelFn (req, res, next) {
   const fns = this.middlewares
@@ -379,14 +394,14 @@ async function parallelFn (req, res, next) {
 }
 
 /**
-   * Returns a middleware that invokes the passed middlewares in parallel.
-   *
-   * Usage: when all sub-middlewre can be fetched independently, but we can't accept a partial success
-   * (e.g. we require all middlewares to succeed).
-   *
-   * @param {((req,res,next) => void)[]} middlewares array of middleware functions
-   * @returns {(req, res, next) => Promise<void>}
-   */
+ * Returns a middleware that invokes the passed middlewares in parallel.
+ *
+ * Usage: when all sub-middlewre can be fetched independently, but we can't accept a partial success
+ * (e.g. we require all middlewares to succeed).
+ *
+ * @param {Function[]} middlewares - Array of middleware functions
+ * @returns {Function} Express middleware function that returns a Promise
+ */
 export function parallel (middlewares) {
   return parallelFn.bind({ middlewares })
 }
