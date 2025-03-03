@@ -8,19 +8,15 @@ import { stripWhitespace } from '../../utils/stripWhiteSpace.js'
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 describe('Check confirmation View', () => {
-  const params = {
-    values: {
-      dataset: 'mockDataset'
-    }
-  }
-  const html = stripWhitespace(nunjucks.render('submit/confirmation.html', params))
+  const params = {}
+  const html = stripWhitespace(nunjucks.render('check/confirmation.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: 'mockDataset submitted - Submit your planning data'
+    pageTitle: 'You can now publish your data - Check your planning data'
   })
 
   it('should render the gov uk panel', () => {
-    const regex = new RegExp('<h1 class="govuk-panel__title".*mockDataset submitted.*</h1>', 'g')
+    const regex = new RegExp('<h1 class="govuk-panel__title".*You can now publish your data.*</h1>', 'g')
     expect(html).toMatch(regex)
   })
 })
