@@ -25,11 +25,11 @@ const proto = {
 }
 
 /**
- *
- * @param {Object} opts
- * @param {Map<string, *>} opts.datasetNameMapping mapping
- * @param {Object} [opts.app] express app
- * @returns
+ * Setup Nunjucks template engine with custom configuration
+ * @param {Object} config - Configuration object
+ * @param {Object} [config.app] - Express application instance
+ * @param {Object} config.datasetNameMapping - Dataset name mapping object
+ * @returns {Object} Configured Nunjucks instance
  */
 export function setupNunjucks (opts) {
   const { app, datasetNameMapping } = opts
