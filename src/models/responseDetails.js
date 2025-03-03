@@ -6,6 +6,7 @@ import { pagination } from '../utils/pagination.js'
 /**
  * @typedef {Object} PaginationOptions
  * @property {string} [hash] - Hash option (should include the '#' character)
+ * @property {Function} [href] - Function to generate href (item: number) => string
  */
 
 /**
@@ -18,12 +19,12 @@ import { pagination } from '../utils/pagination.js'
  * @typedef {Object} PaginationResult
  * @property {number} totalResults - Total number of results
  * @property {number} offset - Current offset
- * @property {number} limit - Items per page
+ * @property {number} limit - Results per page limit
  * @property {number} currentPage - Current page number
  * @property {number|null} nextPage - Next page number or null
  * @property {number|null} previousPage - Previous page number or null
  * @property {number} totalPages - Total number of pages
- * @property {PaginationItem[]} items - Pagination items
+ * @property {Array<{href: string}>} items - Pagination items with hrefs
  */
 
 /**
@@ -218,8 +219,8 @@ export default class ResponseDetails {
    * Get pagination details for the current response
    *
    * @param {number} pageNumber
-   * @param {{ hash?: string, href?: (item: number) => string }} opts hash option should include the '#' character
-   * @returns {{ totalResults: number, offset: number, limit: number, currentPage: number, nextPage: number | null, previousPage: number | null, totalPages: number, items: { href: string }[] } }
+   * @param {PaginationOptions} [opts] - Pagination options
+   * @returns {PaginationResult} Pagination result object
    */
   getPagination (pageNumber, opts = {}) {
     pageNumber = parseInt(pageNumber)

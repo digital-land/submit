@@ -17,9 +17,13 @@ const validateParams = validateQueryParams({
 /**
  * Middleware. Updates req.locals with `task`, `field` and `issueType`
  *
- * @param {import('express').Request & { aggregatedTasks: Map<string, { field: string, issueType: string, count: number }}} req request
- * @param {*} res response
- * @param {*} next next function
+ * @param {Object} req - Express request object with aggregatedTasks
+ * @param {Map<string, Object>} req.aggregatedTasks - Map of tasks
+ * @param {string} req.aggregatedTasks.*.field - Field name
+ * @param {string} req.aggregatedTasks.*.issueType - Issue type
+ * @param {number} req.aggregatedTasks.*.count - Issue count
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
  */
 export const prepareTask = (req, res, next) => {
   const { issueType: issueTypeSlug, field } = req.params
