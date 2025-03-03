@@ -29,7 +29,7 @@ const fetchDatasetErrorStatus = fetchMany({
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
     const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
-    return /* sql */ `select dataset, project, provision_reason 
+    return /* sql */ `select dataset, project, provision_reason
        from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
   },
   result: 'provisions'
@@ -46,9 +46,12 @@ const fetchEntityCounts = fetchOneFromAllDatasets({
 /**
  * Calculates overall "health" of the datasets (not)provided by an organisation.
  *
- * @param {[number, number, number]} accumulator
- * @param {{ endpoint?: string, status: string }} dataset
- * @returns
+ * @param {number[]} accumulator - Array containing counts [withEndpoints, needsFixing, hasErrors]
+ * @param {Object} dataset - Dataset information
+ * @param {string} [dataset.endpoint] - Optional endpoint URL
+ * @param {string} dataset.status - Dataset status
+ * @param {number} dataset.endpointCount - Number of endpoints
+ * @returns {number[]} Updated accumulator
  */
 const orgStatsReducer = (accumulator, dataset) => {
   if (dataset.endpointCount > 0) accumulator[0]++
@@ -219,10 +222,18 @@ export function prepareDatasetObjects (req, res, next) {
 }
 
 /**
+ * Prepares overview template parameters.
  *
- * @param {{ provisions: { dataset: string, provision_reason: string, project: string }[], lpaOverview: Object, orgInfo: Object }} req
- * @param res
- * @param next
+ * @param {Object} req - Express request object
+ * @param {Object} req.orgInfo - Organization information
+ * @param {Array<Object>} req.provisions - Array of provision objects
+ * @param {string} req.provisions[].dataset - Dataset name
+ * @param {string} req.provisions[].provision_reason - Reason for provision
+ * @param {string} req.provisions[].project - Project name
+ * @param {Array<Object>} req.datasets - Array of dataset objects
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ * @returns {void}
  */
 export function prepareOverviewTemplateParams (req, res, next) {
   const { orgInfo: organisation, provisions, datasets } = req
