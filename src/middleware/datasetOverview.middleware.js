@@ -136,6 +136,13 @@ export const fetchEntityCount = fetchOne({
 /**
  * @typedef {Object} Source
  * @property {string} id - Source ID
+ * @property {number|undefined} status
+ * @property {string} endpoint
+ * @property {string} endpoint_url
+ * @property {string} documentation_url
+ * @property {Object|undefined} latest_log_entry_date
+ * @property {Object|undefined} resource_start_date
+ * @property {String|undefined} exception
  */
 
 /**
@@ -148,8 +155,16 @@ export const fetchEntityCount = fetchOne({
  *
  * @param {Object} req - Request object
  * @param {OrgInfo} req.orgInfo - Organization info
+ * @param {Object} req.dataset - dataset info
  * @param {Source[]} req.sources - Sources array
+ * @param {Object} req.datasetSpecification - dataset specification
+ * @param {Object[]} req.columnSummary
+ * @param {Object} req.entityCount
+ * @param {Object[]} [req.entryIssueCounts]
+ * @param {Object[]} [req.entityIssueCounts]
  * @param {Issue[]} [req.issues] - Optional issues array
+ * @param {Object} req.notice
+ * @param {Object} [req.templateParams] OUT parameter
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  */
