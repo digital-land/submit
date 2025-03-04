@@ -257,7 +257,7 @@ export const fetchIf = (condition, fetchFn, elseFn = undefined) => {
  * @typedef {Object} QueryContext
  * @property {Function} query - Function that takes req and params and returns query object
  * @property {string} result - Key to store result under in req
- * @property {(string|Function)} [dataset] - Dataset name or function to get dataset name
+ * @property {Symbol} [dataset] - how to get the dataset name, see {@link FetchOptions}
  * @property {Function} [context.fallbackPolicy] - Custom fallback policy for zero results
  */
 
