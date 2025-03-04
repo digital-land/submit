@@ -237,6 +237,7 @@ export function prepareDatasetObjects (req, res, next) {
  * @param {string} req.provisions[].provision_reason - Reason for provision
  * @param {string} req.provisions[].project - Project name
  * @param {Object[]} req.datasets - Array of dataset objects
+ * @param {Object} [req.templateParams] OUT parameter
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  * @returns {void}
