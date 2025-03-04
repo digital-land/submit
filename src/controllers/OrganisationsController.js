@@ -5,7 +5,7 @@ import entryIssueDetailsMiddleware from '../middleware/entryIssueDetails.middlew
 import issueTableMiddleware from '../middleware/issueTable.middleware.js'
 import organisationsMiddleware from '../middleware/organisations.middleware.js'
 import getStartedMiddleware from '../middleware/getStarted.middleware.js'
-import overviewMiddleware from '../middleware/overview.middleware.js'
+import overviewMiddleware from '../middleware/lpa-overview.middleware.js'
 import datasetDataviewMiddleware from '../middleware/dataview.middleware.js'
 import datasetEndpointIssueMiddleware from '../middleware/datasetEndpointIssue.middleware.js'
 

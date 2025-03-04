@@ -1,5 +1,7 @@
 /**
- * Middleware builders for data fetching, conditional execution, and template rendering.
+ * @module middleware-builders
+ *
+ * @description Middleware builders for data fetching, conditional execution, and template rendering.
  *
  * This file provides a set of reusable middleware functions and utility functions that
  * can be composed together to create custom workflows for a web application.
@@ -128,7 +130,7 @@ export async function fetchManyFn (req, res, next) {
 }
 
 /**
- * Fetches one result from all available datasets.
+ * Middleware. Fetches one result from all available datasets.
  *
  * This function runs a query on each available dataset, catches any errors that may occur,
  * and then compiles the results into a single object. The result object is then attached to
@@ -139,13 +141,11 @@ export async function fetchManyFn (req, res, next) {
  * @param {Object} req - The request object.
  * @param {Object} req.params - Route parameters.
  * @param {string} req.originalUrl - The original URL of the request.
- * @param {Object} req[this.result] - A property to store the result of the query.
  * @param {string} req.handlerName - A property to store the name of the handler.
  * @param {function} req.query - A function to construct a query based on the request parameters.
  * @param {Object} res - The response object.
  * @param {Function} next - The next middleware function in the stack.
  * @throws {Error} If any of the queries fail.
- * @memberof middleware
  */
 export async function fetchOneFromAllDatasetsFn (req, res, next) {
   try {
@@ -181,10 +181,11 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
  * @function fetchManyFromAllDatasetsFn
  * @param {Object} req - The request object.
  * @param {string} req.params - The URL parameters for the request.
- * @param {Object} req[this.result] - Property of the request object where the result will be stored.
+ * @param {string} req.originalUrl - original URL
+ * @param {string} [req.handlerName] - value set in this fn
  * @param {Object} res - The response object.
  * @param {Function} next - The next middleware function in the chain.
- *
+ * @returns {Promise<*>}
  * @throws {Error} If an error occurs while fetching data from any of the datasets.
  */
 export async function fetchManyFromAllDatasetsFn (req, res, next) {
@@ -244,6 +245,7 @@ async function fetchIfFn (req, res, next) {
  * @param {Function} fetchFn - Fetch middleware function
  * @param {Function} [elseFn] - Optional function to call if condition is not met
  * @returns {Function} Middleware function
+ * @function
  */
 export const fetchIf = (condition, fetchFn, elseFn = undefined) => {
   return fetchIfFn.bind({
@@ -256,6 +258,7 @@ export const fetchIf = (condition, fetchFn, elseFn = undefined) => {
  * @property {Function} query - Function that takes req and params and returns query object
  * @property {string} result - Key to store result under in req
  * @property {(string|Function)} [dataset] - Dataset name or function to get dataset name
+ * @property {Function} [context.fallbackPolicy] - Custom fallback policy for zero results
  */
 
 /**
@@ -265,10 +268,6 @@ export const fetchIf = (condition, fetchFn, elseFn = undefined) => {
  * See {@link FetchOneFallbackPolicy}
  *
  * @param {QueryContext} context - Configuration object
- * @param {Function} context.query - Function that takes req and params and returns query object
- * @param {string} context.result - Key to store result under in req
- * @param {string|Function} [context.dataset] - Dataset name or function to get dataset name
- * @param {Function} [context.fallbackPolicy] - Custom fallback policy for zero results
  * @returns {Function} Middleware function
  */
 export function fetchOne (context) {
@@ -306,11 +305,11 @@ export function fetchManyFromAllDatasets (context) {
 }
 
 /**
- * Looks up schema for name in @{link templateSchema} (defaults to any()), validates and renders the template.
+ * Looks up schema for name in {@link templateSchema} (defaults to any()), validates and renders the template.
  *
- * @param {*} res
+ * @param {import('express').Response} res response object
  * @param {string} name
- * @param {*} params
+ * @param {*} params template params
  * @returns {string}
  */
 export function validateAndRender (res, name, params) {
@@ -363,7 +362,7 @@ export function renderTemplate (context) {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
- * @returns {void}
+ * @returns {Promise<undefined>}
  */
 async function parallelFn (req, res, next) {
   const fns = this.middlewares
@@ -429,7 +428,7 @@ async function safeFn (req, res, next) {
 
 /**
  * Express 4.x does not handle promise rejections in middleware on its own. The
- * @{fetchOne} and @{fetchMany} middleware handle that case but for any other async
+ * {@fetchOne} and {@fetchMany} middleware handle that case but for any other async
  * code you can wrap it in this middleware to ensure rejections don't end up unhandled.
  *
  * @param middleware

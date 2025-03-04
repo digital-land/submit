@@ -1,3 +1,9 @@
+/**
+ * @module middleware-lpa-overview
+ *
+ * @description Middleware for oragnisation (LPA) overview page
+ */
+
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchOrgInfo, logPageError, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchResources } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
@@ -226,11 +232,11 @@ export function prepareDatasetObjects (req, res, next) {
  *
  * @param {Object} req - Express request object
  * @param {Object} req.orgInfo - Organization information
- * @param {Array<Object>} req.provisions - Array of provision objects
+ * @param {Object[]} [req.provisions] - Array of provision objects
  * @param {string} req.provisions[].dataset - Dataset name
  * @param {string} req.provisions[].provision_reason - Reason for provision
  * @param {string} req.provisions[].project - Project name
- * @param {Array<Object>} req.datasets - Array of dataset objects
+ * @param {Object[]} req.datasets - Array of dataset objects
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  * @returns {void}
@@ -258,7 +264,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
     }
   })
 
-  const isOPDMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
+  const isODPMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
 
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
@@ -284,7 +290,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
     datasetsWithEndpoints,
     datasetsWithIssues,
     datasetsWithErrors,
-    isOPDMember
+    isODPMember
   }
 
   next()
@@ -330,6 +336,9 @@ export function groupEndpointsByDataset (req, res, next) {
   next()
 }
 
+/**
+ * Organisation (LPA) overview page middleware chain.
+ */
 export default [
   fetchOrgInfo,
   fetchResources,
