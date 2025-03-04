@@ -43,10 +43,10 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <h2 class="govuk-heading-l">
-      Error accessing data URL
+      Error accessing endpoint URL
     </h2>
 
-    <p>There was an error accessing the data URL. Please check the URL is correct and your API is functioning correctly.
+    <p>There was an error accessing the endpoint URL. Please check the URL is correct and your API is functioning correctly.
     </p>
 
     <h3 class="govuk-heading-m">Error details</h3>
@@ -55,7 +55,7 @@
       rows: [
         {
           key: {
-            text: "Data URL"
+            text: "Endpoint URL"
           },
           value: {
             html: '<code>' + errorData.endpoint_url + '</code>'
@@ -88,9 +88,9 @@
       ]
     }) }}
 
-    <p>If your data URL has changed you can <a class="resubmit-link" href="{{ resubmitUrl }}">resubmit your data URL</a>.</p>
+    <p>If your endpoint URL has changed you can <a class="resubmit-link" href="{{ resubmitUrl }}">resubmit your endpoint URL</a>.</p>
 
-    <p>You should try to make sure your data URLs stay the same when you update your data so we can collect your data
+    <p>You should try to make sure your endpoint URLs stay the same when you update your data so we can collect your data
       each night.</p>
 
   </div>
