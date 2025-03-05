@@ -5,21 +5,13 @@
  */
 
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOrgInfo, logPageError, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchResources, expectationFetcher, expectations, noop } from './common.middleware.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
-import { dataSubjects, getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
+import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
-
-const CONSTANTS = {
-  availableDatasets: Object.values(dataSubjects).flatMap((dataSubject) =>
-    dataSubject.dataSets
-      .filter((dataset) => dataset.available)
-      .map((dataset) => dataset.value)
-  )
-}
 
 /**
  * Middleware. Updates req with 'datasetErrorStatus'.
@@ -352,19 +344,6 @@ export function groupEndpointsByDataset (req, res, next) {
     return acc
   }, {})
 
-  next()
-}
-
-/**
- * Provides the list of available/supported datasets.
- * @param {Object} req requets object
- * @param {string[]} [req.availableDatasets] OUT list of available datasets
- * @param {*} res
- * @param {*} next
- */
-const setAvailableDatasets = (req, res, next) => {
-  // Motivation: stop relying on global variables all over the place
-  req.availableDatasets = CONSTANTS.availableDatasets
   next()
 }
 

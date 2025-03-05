@@ -1,7 +1,7 @@
 // @ts-check
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-import { entryIssueGroups } from '../utils/utils.js'
+import { dataSubjects, entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -885,4 +885,23 @@ export const expectationFetcher = ({ expectation, result, includeDetails = false
     query: ({ params }) => expectationsQuery({ lpa: params.lpa, dataset: params.dataset, expectation, includeDetails }),
     result
   })
+}
+
+export const CONSTANTS = {
+  availableDatasets: Object.values(dataSubjects).flatMap((dataSubject) => dataSubject.dataSets
+    .filter((dataset) => dataset.available)
+    .map((dataset) => dataset.value)
+  )
+}
+/**
+ * Provides the list of available/supported datasets.
+ * @param {Object} req requets object
+ * @param {string[]} [req.availableDatasets] OUT list of available datasets
+ * @param {*} res
+ * @param {*} next
+ */
+export const setAvailableDatasets = (req, res, next) => {
+  // Motivation: stop relying on global variables all over the place
+  req.availableDatasets = CONSTANTS.availableDatasets
+  next()
 }
