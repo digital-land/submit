@@ -860,7 +860,7 @@ const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
   select dataset, name, passed, severity ${includeDetails ? ', details' : ''}
   from expectation
   where 
-     passed = FALSE
+     passed = 'False'
      AND name = '${expectation.name}'
      AND organisation = '${lpa}'
      ${lpaClause}`
