@@ -839,3 +839,50 @@ export const preventIndexing = (req, res, next) => {
   }
   next()
 }
+
+/**
+ * Middleware.
+ * @param {*} req request object
+ * @param {*} res response object
+ * @param {*} next next function
+ */
+export function noop (req, res, next) {
+  next()
+}
+
+const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
+  let lpaClause = ''
+  if (dataset) {
+    lpaClause = ` AND dataset = ${dataset}`
+  }
+
+  return /* sql */ `
+  select dataset, name, passed, severity ${includeDetails ? ', details' : ''}
+  from expectation
+  where 
+     passed = FALSE
+     AND name = '${expectation.name}'
+     AND organisation = '${lpa}'
+     ${lpaClause}`
+}
+/**
+ * The `name` field is used in queries.
+ */
+export const expectations = {
+  entitiesOutOfBounds: { name: 'Check no entities are outside of the local planning authority boundary' }
+}
+
+/**
+ *
+ * @param {Object} options
+ * @param {string} options.result key under which results will be stored in req
+ * @param {Object} options.expectation one of defined {@link expectations}
+ * @param {boolean} [options.includeDetails=false] should results include details (a JSON blob)
+ * @returns {Function} middleware function
+ */
+export const expectationFetcher = ({ expectation, result, includeDetails = false }) => {
+  return fetchMany({
+    query: ({ params }) => expectationsQuery({ lpa: params.lpa, dataset: params.dataset, expectation, includeDetails }),
+    result
+  })
+}
