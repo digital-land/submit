@@ -14,7 +14,8 @@ import {
   getSetDataRange,
   getErrorSummaryItems,
   prepareIssueDetailsTemplateParams,
-  filterOutEntitiesWithoutIssues
+  filterOutEntitiesWithoutIssues,
+  getIssueSpecification
 } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -108,7 +109,10 @@ export function prepareEntity (req, res, next) {
  * and organisation and dataset details.
  */
 export const getIssueDetails = renderTemplate({
-  templateParams: (req) => req.templateParams,
+  templateParams: (req) => ({
+    ...req.templateParams,
+    issueSpecification: req.issueSpecification
+  }),
   template: 'organisations/issueDetails.html',
   handlerName: 'getIssueDetails'
 })
@@ -121,6 +125,7 @@ export default [
   ...processEntitiesMiddlewares,
   ...processRelevantIssuesMiddlewares,
   ...processSpecificationMiddlewares,
+  getIssueSpecification,
   filterOutEntitiesWithoutIssues,
   setRecordCount,
   getSetDataRange(1),
