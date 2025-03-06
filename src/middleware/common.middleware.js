@@ -851,9 +851,9 @@ export function noop (req, res, next) {
 }
 
 const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
-  let lpaClause = ''
+  let datasetClause = ''
   if (dataset) {
-    lpaClause = ` AND dataset = ${dataset}`
+    datasetClause = ` AND dataset = ${dataset}`
   }
 
   return /* sql */ `
@@ -863,7 +863,7 @@ const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
      passed = 'False'
      AND name = '${expectation.name}'
      AND organisation = '${lpa}'
-     ${lpaClause}`
+     ${datasetClause}`
 }
 /**
  * The `name` field is used in queries.
