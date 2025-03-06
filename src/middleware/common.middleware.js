@@ -853,7 +853,7 @@ export function noop (req, res, next) {
 const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
   let datasetClause = ''
   if (dataset) {
-    datasetClause = ` AND dataset = ${dataset}`
+    datasetClause = ` AND dataset = '${dataset}'`
   }
 
   return /* sql */ `
