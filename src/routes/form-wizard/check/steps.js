@@ -107,6 +107,7 @@ export default {
     ...baseSettings,
     noPost: true,
     checkJourney: false, // ToDo: it would be useful here if we make sure they have selected if their results are ok from the previous step
+    controller: PageController,
     template: 'check/confirmation.html'
   },
   // This step allows to fill in some of the required data via query params.

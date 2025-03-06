@@ -230,7 +230,7 @@
       window.serverContext = {
         containerId: 'map',
         geoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}&limit=500",
-        boundaryGeoJsonUrl: "/api/lpa-boundary/{{ organisation.organisation }}"
+        boundaryGeoJsonUrl: "/api/lpa-boundary/{{ organisation.organisation | urlencode }}"
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>

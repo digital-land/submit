@@ -2,6 +2,7 @@ import PageController from './pageController.js'
 
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { datasets } from '../utils/utils.js'
 
 /**
  * Potentially updates sessionData with 'referrer'
@@ -44,10 +45,11 @@ class EndpointSubmissionFormDeepLinkController extends PageController {
       return next(error)
     }
 
+    const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false }
     req.sessionModel.set('dataset', dataset)
     req.sessionModel.set('lpa', orgName)
     req.sessionModel.set('orgId', orgId)
-    const sessionData = { lpa: orgName, dataset, orgId }
+    const sessionData = { lpa: orgName, dataset, orgId, datasetName: datasetInfo.text }
     maybeSetReferrer(req, sessionData)
     req.sessionModel.set(this.sessionKey, sessionData)
 
