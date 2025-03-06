@@ -1,8 +1,15 @@
-import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification } from './common.middleware.js'
+/**
+ * @module middleware-dataset-overview
+ *
+ * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
+ */
+
+import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop } from './common.middleware.js'
 import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { isFeatureEnabled } from '../utils/features.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -35,6 +42,11 @@ const fetchColumnSummary = fetchMany({
 const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
   result: 'specification'
+})
+
+const fetchOutOfBoundsExpectations = expectationFetcher({
+  expectation: expectations.entitiesOutOfBounds,
+  result: 'expectationOutOfBounds'
 })
 
 /**
@@ -164,12 +176,15 @@ export const fetchEntityCount = fetchOne({
  * @param {Object[]} [req.entityIssueCounts]
  * @param {Issue[]} [req.issues] - Optional issues array
  * @param {Object} req.notice
+ * @param {Object[]} [req.expectationOutOfBounds]
+ * @param {string} req.expectationOutOfBounds[].dataset
+ * @param {boolean} req.expectationOutOfBounds[].passed - did the exepectation pass
  * @param {Object} [req.templateParams] OUT parameter
  * @param {Object} res - Express response object
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice } = req
+  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, expectationOutOfBounds = [] } = req
 
   const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
   const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
@@ -212,10 +227,15 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     }
   })
 
+  const taskCount = (entryIssueCounts ? entryIssueCounts.length : 0) +
+    (entityIssueCounts ? entityIssueCounts.length : 0) +
+    endpointErrorIssues +
+    (expectationOutOfBounds.length > 0 ? 1 : 0)
+
   req.templateParams = {
     organisation: orgInfo,
     dataset,
-    taskCount: (entryIssueCounts ? entryIssueCounts.length : 0) + (entityIssueCounts ? entityIssueCounts.length : 0) + endpointErrorIssues,
+    taskCount,
     stats: {
       numberOfFieldsSupplied: numberOfFieldsSupplied ?? 0,
       numberOfFieldsMatched: numberOfFieldsMatched ?? 0,
@@ -246,6 +266,7 @@ export default [
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   fetchSpecification,
+  isFeatureEnabled('expectactionOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   pullOutDatasetSpecification,
   // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchEntityCount,
