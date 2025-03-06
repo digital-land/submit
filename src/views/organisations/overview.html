@@ -30,17 +30,17 @@
       {% if dataset.notice %}
         <p>{{ noticeCardHint(dataset.notice, dataset.dataset) }}</p>
       {% elif dataset.status == 'Not submitted' %}
-        <p>Data URL not submitted</p>
+        <p>Endpoint URL not submitted</p>
       {% elif dataset.status == 'Error' %}
         {% if not dataset.error or dataset.error === '' %}
-          <p>There was an error accessing the data URL</p>
+          <p>There was an error accessing the endpoint URL</p>
         {% else %}
           <p>{{ dataset.error }}</p>
         {% endif %}
       {% elif dataset.status == 'Needs fixing' %}
         <p>There {{ "is" | pluralise(dataset.issueCount) }} {{ dataset.issueCount }} {{ "issue" | pluralise(dataset.issueCount) }} in this dataset</p>
       {% else %}
-        <p>Data URL submitted</p>
+        <p>Endpoint URL submitted</p>
       {% endif %}
     </div>
   </div>
@@ -111,12 +111,12 @@
 
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithErrors}}</span>
-        data URL with errors
+        endpoint URL{{ "s" if (datasetsWithErrors != 1) }} with errors
       </div>
 
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithIssues}}</span>
-        datasets need fixing
+        {{ "dataset" | pluralise(datasetsWithIssues) }} need{{ "s" if (datasetsWithIssues == 1) }} fixing
       </div>
     </div>
   </div>

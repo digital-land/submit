@@ -1,8 +1,8 @@
 {% macro endpointErrorMessage(endpoint) %}
   {% if endpoint.error.code %}
-    There was a {{ endpoint.error.code }} error accessing the data URL
+    There was a {{ endpoint.error.code }} error accessing the endpoint URL
   {% else %}
-    There was an error accessing the data URL
+    There was an error accessing the endpoint URL
   {% endif %}
 {% endmacro %}
 
@@ -109,7 +109,7 @@
 {% for endpoint in stats.endpoints %}
   {% set endpointRow = {
     key: {
-      text: 'Data URL',
+      text: 'Endpoint URL',
       classes: 'padding-top'
     },
     value: {
@@ -134,7 +134,7 @@
   {% if endpoint.error %}
     {% set lastAccessedRow = {
       key: {
-        text: 'Data URL last accessed',
+        text: 'Endpoint URL last accessed',
         classes: 'app-inset-text---error'
       },
       value: {
@@ -144,7 +144,7 @@
   {% else %}
     {% set lastAccessedRow = {
       key: {
-        text: 'Data URL last accessed'
+        text: 'Endpoint URL last accessed'
       },
       value: {
         text: endpoint.lastAccessed | govukDateTime
@@ -157,7 +157,7 @@
 
   {% set lastUpdatedRow = {
     key: {
-      text: 'Data URL last updated'
+      text: 'Endpoint URL last updated'
     },
     value: {
       text: endpoint.lastUpdated and ( endpoint.lastUpdated | govukDateTime )

@@ -32,7 +32,8 @@ describe(`http-error.html(seed: ${seed})`, () => {
 
     expect(rows.length).toBe(4)
 
-    expect(rows[0].querySelector('.govuk-summary-list__key').textContent).toContain('endpoint URL')
+
+    expect(rows[0].querySelector('.govuk-summary-list__key').textContent).toContain('Endpoint URL')
     expect(rows[0].querySelector('.govuk-summary-list__value').innerHTML).toContain(params.errorData.endpoint_url)
 
     expect(rows[1].querySelector('.govuk-summary-list__key').textContent).toContain('HTTP status')

@@ -187,7 +187,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     }
 
     return {
-      name: `Data Url ${index}`,
+      name: `Endpoint URL ${index}`,
       endpoint: source.endpoint,
       endpoint_url: source.endpoint_url,
       documentation_url: source.documentation_url,
