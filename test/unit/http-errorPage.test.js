@@ -31,7 +31,6 @@ describe(`http-error.html(seed: ${seed})`, () => {
     const rows = [...summaryList.children]
 
     expect(rows.length).toBe(4)
-
     expect(rows[0].querySelector('.govuk-summary-list__key').textContent).toContain('Endpoint URL')
     expect(rows[0].querySelector('.govuk-summary-list__value').innerHTML).toContain(params.errorData.endpoint_url)
 
@@ -53,6 +52,6 @@ describe(`http-error.html(seed: ${seed})`, () => {
 
   it('re-submit link points to get-started page', () => {
     const resubmitLink = document.querySelector('a.resubmit-link')
-    expect(resubmitLink.getAttribute('href')).toBe(`/organisations/${encodeURIComponent(params.organisation.organisation)}/${encodeURIComponent(params.dataset.dataset)}/get-started`)
+    expect(resubmitLink.getAttribute('href')).toBe(`/submit/link?dataset=${encodeURIComponent(params.dataset.dataset)}&orgName=${encodeURIComponent(params.organisation.name)}&orgId=${encodeURIComponent(params.organisation.organisation)}`)
   })
 })
