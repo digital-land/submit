@@ -132,10 +132,7 @@ const show404ifNoIssues = (req, res, next) => {
 }
 
 export const getIssueDetails = renderTemplate({
-  templateParams: (req) => ({
-    ...req.templateParams,
-    issueSpecification: req.issueSpecification
-  }),
+  templateParams: (req) => req.templateParams,
   template: 'organisations/issueDetails.html',
   handlerName: 'getIssueDetails'
 })

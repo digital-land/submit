@@ -109,10 +109,7 @@ export function prepareEntity (req, res, next) {
  * and organisation and dataset details.
  */
 export const getIssueDetails = renderTemplate({
-  templateParams: (req) => ({
-    ...req.templateParams,
-    issueSpecification: req.issueSpecification
-  }),
+  templateParams: (req) => req.templateParams,
   template: 'organisations/issueDetails.html',
   handlerName: 'getIssueDetails'
 })
