@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
-import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/overview.middleware'
+import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/lpa-overview.middleware.js'
 import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
 
@@ -63,7 +63,7 @@ const reqTemplate = {
   datasetErrorStatus: []
 }
 
-describe('overview.middleware', () => {
+describe('lpa-overview.middleware', () => {
   /**
    * @param {Object} templateParams
    * @returns {{ errorCards: Object[], doc: Document }}
@@ -99,7 +99,7 @@ describe('overview.middleware', () => {
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
         datasetsWithErrors: 2,
-        isOPDMember: true
+        isODPMember: true
       }
 
       expect(req.templateParams).toEqual(expectedTemplateParams)
@@ -161,7 +161,7 @@ describe('overview.middleware', () => {
         datasetsWithEndpoints: 2,
         datasetsWithIssues: 1,
         datasetsWithErrors: 1,
-        isOPDMember: false
+        isODPMember: false
       }
 
       getOverview(req, res, next)

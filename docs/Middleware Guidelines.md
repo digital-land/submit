@@ -49,3 +49,7 @@ req.templateParams = {
     issues: req.issues.map( (issue) => issue.name )
 }
 ```
+
+## Errors
+
+A dedicated `Error` subclass, `MiddlewareError` (from [../src/utils/errors.js]) should be used to trigger the display of appropriate HTTP error page. For example, to present a 404 page, throw (or pass to `next`) error created via `new MiddlewareError('Not found', 404)`.
