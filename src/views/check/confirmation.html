@@ -26,6 +26,20 @@
   - a summary of what the data is about
   - a statement that the data is provided under the Open Government Licence
 
+  {% if 'submitEndpointForm' | isFeatureEnabled %}
+
+  ## 2: Submit your data
+
+  <a class="submit-link" href="{{ { name: options.lpa, organisation: options.orgId } | endpointSubmissionFormToolDeepLink({dataset: options.dataset}) }}">Submit your data</a> to the Planning Data Platform. You need to provide your:
+
+  - full name
+  - work email address
+  - endpoint URL: the location of your data through an API or CSV file
+  - webpage URL: publicly accessible page on your organisation's website with information about the data
+  We’ll confirm by email when we’ve received your data.
+
+  {% else %}
+
   ## 2: Send an email
 
   Send an email to [digitalland@communities.gov.uk](mailto:digitalland@communities.gov.uk).
@@ -35,6 +49,8 @@
   - your full name
   - the name of your local planning authority (LPA)
   - a link to a webpage containing the data on your LPA website
+
+  {% endif %}
 
   Details about what to do next are also available [in the guidance](/guidance)
 
