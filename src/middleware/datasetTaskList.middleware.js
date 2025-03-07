@@ -33,6 +33,8 @@ import '../types/datasette.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import config from '../../config/index.js'
+import pluralize from 'pluralize'
 
 /**
  * Fetches the resource status
@@ -66,6 +68,20 @@ function getStatusTag (status) {
 const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
 
 /**
+ * Returns a task message for failed entity out of bounds expectation.
+ * @param {string} dataset dataset slug
+ * @param {number} count how many entities out of bounds were found
+ * @returns {string} task message
+ */
+export function entityOutOfBoundsMessage (dataset, count) {
+  const displayNameConfig = config.datasetsConfig[dataset]?.entityDisplayName ?? { variable: 'entity', base: '' }
+  logger.info('about to pluralize: ', displayNameConfig)
+  // if count is missing for some reason, we don't display it and default to plural form
+  const displayName = `${displayNameConfig.base ?? ''} ${pluralize(displayNameConfig.variable, count ?? 2)}`.trim()
+  return `You have ${count ?? ''} ${displayName} outside of your boundary`.replace(/ {2}/, ' ')
+}
+
+/**
  * Generates a list of tasks based on the issues found in the dataset.
  *
  * @param {Object} req The request object. It should contain the following properties:
@@ -80,9 +96,8 @@ const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
  * @param {Object[]} [req.expectationOutOfBounds]
  * @param {string} req.expectationOutOfBounds[].dataset
  * @param {boolean} req.expectationOutOfBounds[].passed did the exepectation pass
- * @param {Object} req.expectationOutOfBounds[].details JSON blob
- * @param {number} req.expectationOutOfBounds[].details.expected
- * @param {number} req.expectationOutOfBounds[].details.actual
+ * @param {number} req.expectationOutOfBounds[].expected
+ * @param {number} req.expectationOutOfBounds[].actual
  * @param {Object} req.taskList OUT value
  * @param {Object} res - The response object.
  * @param {Function} next - The next middleware function.
@@ -153,7 +168,7 @@ export const prepareTasks = (req, res, next) => {
   if (expectationOutOfBounds.length > 0) {
     taskList.push({
       title: {
-        text: 'There are entities outside the boundary'
+        text: entityOutOfBoundsMessage(dataset, expectationOutOfBounds[0].actual)
       },
       href: '', // NOTE: design for 'expectation' task detail page not ready yet
       status: getStatusTag('Needs fixing')

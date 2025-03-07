@@ -50,24 +50,53 @@ contact:
 datasetsConfig:
   article-4-direction:
     guidanceUrl: /guidance/specifications/article-4-direction
+    entityDisplayName:
+      base: article 4 direction
+      variable: area
   article-4-direction-area:
     guidanceUrl: /guidance/specifications/article-4-direction
+    entityDisplayName:
+      base: article 4 direction
+      variable: area
   brownfield-land:
     guidanceUrl: https://www.gov.uk/government/publications/brownfield-land-registers-data-standard/publish-your-brownfield-land-data
+    entityDisplayName:
+      base: brownfield
+      variable: land
   conservation-area:
     guidanceUrl: /guidance/specifications/conservation-area
+    entityDisplayName:
+      base: conservation
+      variable: area
   conservation-area-document:
     guidanceUrl: /guidance/specifications/conservation-area
+    entityDisplayName:
+      base: conservation
+      variable: area
   tree-preservation-order:
     guidanceUrl: /guidance/specifications/tree-preservation-order
+    entityDisplayName:
+      base: tree preservation
+      variable: order
   tree-preservation-zone:
     guidanceUrl: /guidance/specifications/tree-preservation-order
+    entityDisplayName:
+      base: tree preservation
+      variable: zone
   tree:
     guidanceUrl: /guidance/specifications/tree-preservation-order
+    entityDisplayName:
+      variable: tree
   listed-building:
     guidanceUrl: /guidance/specifications/listed-building
+    entityDisplayName:
+      base: listed
+      variable: building
   listed-building-outline:
     guidanceUrl: /guidance/specifications/listed-building
+    entityDisplayName:
+      base: listed building
+      variable: outline
 tablePageLength: 50
 jira: {
   requestTypeId: 1

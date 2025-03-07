@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import * as S from '../../../src/routes/schemas.js'
 import { describe, it, vi, expect } from 'vitest'
-import { prepareDatasetTaskListTemplateParams, prepareTasks } from '../../../src/middleware/datasetTaskList.middleware.js'
+import { prepareDatasetTaskListTemplateParams, prepareTasks, entityOutOfBoundsMessage } from '../../../src/middleware/datasetTaskList.middleware.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
@@ -279,5 +279,28 @@ describe('datasetTaskList.middleware.js', () => {
 
       expect(next).toHaveBeenCalledTimes(1)
     })
+  })
+})
+
+describe('entityOutOfBoundsMessage()', () => {
+  it('handles not configured dataset', () => {
+    expect(entityOutOfBoundsMessage('new-dataset', 1)).toBe('You have 1 entity outside of your boundary')
+    expect(entityOutOfBoundsMessage('new-dataset', 9)).toBe('You have 9 entities outside of your boundary')
+  })
+  it('correctly displays configured dataset', () => {
+    expect(entityOutOfBoundsMessage('article-4-direction', 2)).toBe('You have 2 article 4 direction areas outside of your boundary')
+    expect(entityOutOfBoundsMessage('article-4-direction-area', 2)).toBe('You have 2 article 4 direction areas outside of your boundary')
+    expect(entityOutOfBoundsMessage('brownfield-land', 2)).toBe('You have 2 brownfield lands outside of your boundary')
+    expect(entityOutOfBoundsMessage('conservation-area', 2)).toBe('You have 2 conservation areas outside of your boundary')
+    expect(entityOutOfBoundsMessage('conservation-area-document', 2)).toBe('You have 2 conservation areas outside of your boundary')
+    expect(entityOutOfBoundsMessage('tree-preservation-order', 2)).toBe('You have 2 tree preservation orders outside of your boundary')
+    expect(entityOutOfBoundsMessage('tree-preservation-zone', 2)).toBe('You have 2 tree preservation zones outside of your boundary')
+    expect(entityOutOfBoundsMessage('tree', 2)).toBe('You have 2 trees outside of your boundary')
+    expect(entityOutOfBoundsMessage('listed-building', 2)).toBe('You have 2 listed buildings outside of your boundary')
+    expect(entityOutOfBoundsMessage('listed-building-outline', 2)).toBe('You have 2 listed building outlines outside of your boundary')
+  })
+  it('Handles missing count', () => {
+    expect(entityOutOfBoundsMessage('conservation-area', undefined)).toBe('You have conservation areas outside of your boundary')
+    expect(entityOutOfBoundsMessage('new-dataset', undefined)).toBe('You have entities outside of your boundary')
   })
 })
