@@ -25,6 +25,7 @@ describe('Dataset Overview Middleware', () => {
         datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
+        expectationOutOfBounds: [{ dataset: req.params.dataset, passed: 'False' }],
         sources: [
           { endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: 200, endpoint_entry_date: 'LU1', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
           { endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: 404, exception: 'exception', endpoint_entry_date: 'LU2', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
@@ -45,7 +46,7 @@ describe('Dataset Overview Middleware', () => {
       expect(reqWithResults.templateParams).toEqual({
         organisation: { name: 'mock-org' },
         dataset: reqWithResults.dataset,
-        taskCount: 2, // 1 issue + 1 endpoint error
+        taskCount: 3, // 1 issue + 1 endpoint error + 1 failed 'out of bound' expectation
         stats: {
           numberOfFieldsSupplied: 1,
           numberOfFieldsMatched: 1,

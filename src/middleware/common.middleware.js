@@ -850,6 +850,11 @@ export function noop (req, res, next) {
   next()
 }
 
+const expectationsOutOfBoundsDetailsSelectClause = () => {
+  return `CAST(JSON_EXTRACT(details, '$.actual') AS INTEGER) AS actual,
+          CAST(JSON_EXTRACT(details, '$.expected') AS INTEGER) AS expected`
+}
+
 const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
   let datasetClause = ''
   if (dataset) {
@@ -857,7 +862,7 @@ const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
   }
 
   return /* sql */ `
-  select dataset, name, passed, severity ${includeDetails ? ', details' : ''}
+  select dataset, name, passed, severity ${includeDetails ? ', ' + expectationsOutOfBoundsDetailsSelectClause() : ''}
   from expectation
   where 
      passed = 'False'
