@@ -1,0 +1,27 @@
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+
+{% if issueSpecification %}
+  {% set issueSpecificationInsetHtml %}
+    <div>
+      <h3 class="govuk-heading-m">{{ issueSpecification.field }}</h3>
+
+      {% if issueSpecification.guidance %}
+        {{ issueSpecification.guidance | govukMarkdown | safe }}
+      {% endif %}
+    </div>
+  {% endset %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">
+        How to fix this issue
+      </h2>
+
+      <p class="govuk-body">Your dataset is missing the <strong>{{ issueSpecification.field }}</strong> column.</p>
+      <p class="govuk-body">The <a href="{{ dataset.dataset | getDatasetGuidanceUrl }}" target="_blank" rel="noopener noreferrer">{{ dataset.name }}</a> guidance explains how to fix the issue:</p>
+      {{ govukInsetText({
+        html: issueSpecificationInsetHtml
+      }) }}
+    </div>
+  </div>
+{% endif %}

@@ -14,7 +14,8 @@ import {
   getSetDataRange,
   getErrorSummaryItems,
   prepareIssueDetailsTemplateParams,
-  filterOutEntitiesWithoutIssues
+  filterOutEntitiesWithoutIssues,
+  getIssueSpecification
 } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -121,6 +122,7 @@ export default [
   ...processEntitiesMiddlewares,
   ...processRelevantIssuesMiddlewares,
   ...processSpecificationMiddlewares,
+  getIssueSpecification,
   filterOutEntitiesWithoutIssues,
   setRecordCount,
   getSetDataRange(1),
