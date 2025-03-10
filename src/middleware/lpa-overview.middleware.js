@@ -5,19 +5,13 @@
  */
 
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchOrgInfo, logPageError, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchResources } from './common.middleware.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
-import { dataSubjects, getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
+import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
-
-// get a list of available datasets
-const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
-  dataSubject.dataSets
-    .filter((dataset) => dataset.available)
-    .map((dataset) => dataset.value)
-)
+import { isFeatureEnabled } from '../utils/features.js'
 
 /**
  * Middleware. Updates req with 'datasetErrorStatus'.
@@ -195,10 +189,24 @@ export const addNoticesToDatasets = (req, res, next) => {
 
   next()
 }
-
+/**
+ * Updates req.datasets objects with endpoint status and error information.
+ *
+ * @param {Object} req
+ * @param {Object} req.issues
+ * @param {Object} req.endpoints
+ * @param {Object[]} [req.expectationOutOfBounds]
+ * @param {string} req.expectationOutOfBounds[].dataset
+ * @param {boolean} req.expectationOutOfBounds[].passed - did the exepectation pass
+ * @param {string[]} req.availableDatasets
+ * @param {Object[]} [req.datasets] OUT param
+ * @param {*} res
+ * @param {*} next
+ */
 export function prepareDatasetObjects (req, res, next) {
-  const { issues, endpoints } = req
+  const { issues, endpoints, expectationOutOfBounds, availableDatasets } = req
 
+  const outOfBoundsViolations = new Set((expectationOutOfBounds ?? []).map(o => o.dataset))
   req.datasets = availableDatasets.map((dataset) => {
     const datasetEndpoints = endpoints[dataset]
     const datasetIssues = issues[dataset]
@@ -210,7 +218,8 @@ export function prepareDatasetObjects (req, res, next) {
     const endpointCount = datasetEndpoints.length
     const httpStatus = datasetEndpoints.find(endpoint => endpoint.latest_status !== '200')?.latest_status
     const error = httpStatus !== undefined ? `There was a ${httpStatus} error accessing the endpoint URL` : undefined
-    const issueCount = datasetIssues?.length || 0
+    const expectationFailed = outOfBoundsViolations.has(dataset)
+    const issueCount = (datasetIssues?.length || 0) + (expectationFailed ? 1 : 0)
 
     let status
     if (error) {
@@ -232,6 +241,7 @@ export function prepareDatasetObjects (req, res, next) {
  *
  * @param {Object} req - Express request object
  * @param {Object} req.orgInfo - Organization information
+ * @param {string[]} req.availableDatasets list of available datasets
  * @param {Object[]} [req.provisions] - Array of provision objects
  * @param {string} req.provisions[].dataset - Dataset name
  * @param {string} req.provisions[].provision_reason - Reason for provision
@@ -243,7 +253,7 @@ export function prepareDatasetObjects (req, res, next) {
  * @returns {void}
  */
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { orgInfo: organisation, provisions, datasets } = req
+  const { orgInfo: organisation, provisions, datasets, availableDatasets } = req
 
   const provisionData = new Map()
   for (const provision of provisions ?? []) {
@@ -337,6 +347,11 @@ export function groupEndpointsByDataset (req, res, next) {
   next()
 }
 
+const fetchOutOfBoundsExpectations = expectationFetcher({
+  expectation: expectations.entitiesOutOfBounds,
+  result: 'expectationOutOfBounds'
+})
+
 /**
  * Organisation (LPA) overview page middleware chain.
  */
@@ -348,6 +363,8 @@ export default [
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   fetchEntityCounts,
+  setAvailableDatasets,
+  isFeatureEnabled('expectactionOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   groupResourcesByDataset,
   groupIssuesCountsByDataset,
   groupEndpointsByDataset,

@@ -1,15 +1,15 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
-import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareOverviewTemplateParams } from '../../../src/middleware/lpa-overview.middleware.js'
+import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareDatasetObjects, prepareOverviewTemplateParams } from '../../../src/middleware/lpa-overview.middleware.js'
 import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 vi.mock('../../../src/utils/utils.js', async (importOriginal) => {
+  /** @type {Object} */
   const original = await importOriginal()
   return {
     ...original,
-    dataSubjects: {},
     getDeadlineHistory: () => ({
       deadlineDate: new Date('1996-04-17T10:00:00.000z'),
       lastYearDeadline: new Date('1995-04-17T10:00:00.000z'),
@@ -23,6 +23,7 @@ const exampleLpa = { name: 'Example LPA', organisation: 'LPA' }
 const reqTemplate = {
   params: { lpa: 'LPA' },
   orgInfo: exampleLpa,
+  availableDatasets: ['dataset1', 'dataset2', 'dataset3', 'dataset4'],
   datasets: [
     {
       dataset: 'dataset1',
@@ -136,6 +137,26 @@ describe('lpa-overview.middleware', () => {
       const ds4 = req.templateParams.datasets.other[1]
       expect(ds4.status).toBe('Error')
       expect(ds4.error).toBe(req.datasets[3].error) // Error message should be left untouched
+    })
+  })
+
+  describe('prepareDatasetObjects()', () => {
+    it('should take "out of bound" expectation failures into account', () => {
+      const req = {
+        expectationOutOfBounds: [],
+        issues: {},
+        endpoints: { datasetA: [{ latest_status: '200' }] },
+        availableDatasets: ['datasetA'],
+        datasets: undefined
+      }
+      req.expectationOutOfBounds = [{ passed: false, dataset: 'datasetA' }]
+      const res = { render: vi.fn() }
+
+      prepareDatasetObjects(req, res, () => {})
+
+      expect(req.datasets[0].error).toBeUndefined()
+      expect(req.datasets[0].issueCount).toBe(1)
+      expect(req.datasets[0].status).toBe('Needs fixing')
     })
   })
 
