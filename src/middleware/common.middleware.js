@@ -1,7 +1,7 @@
 // @ts-check
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-import { entryIssueGroups } from '../utils/utils.js'
+import { dataSubjects, entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -838,5 +838,71 @@ export const preventIndexing = (req, res, next) => {
   if (/^\/organisations\/[\w-:]+\/.*$|^\/check\/status.*$|\/check\/results.*$/.test(req.originalUrl)) {
     return noIndexHeader(req, res, next)
   }
+  next()
+}
+
+/**
+ * Middleware.
+ * @param {*} req request object
+ * @param {*} res response object
+ * @param {*} next next function
+ */
+export function noop (req, res, next) {
+  next()
+}
+
+const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
+  let datasetClause = ''
+  if (dataset) {
+    datasetClause = ` AND dataset = '${dataset}'`
+  }
+
+  return /* sql */ `
+  select dataset, name, passed, severity ${includeDetails ? ', details' : ''}
+  from expectation
+  where 
+     passed = 'False'
+     AND name = '${expectation.name}'
+     AND organisation = '${lpa}'
+     ${datasetClause}`
+}
+/**
+ * The `name` field is used in queries.
+ */
+export const expectations = {
+  entitiesOutOfBounds: { name: 'Check no entities are outside of the local planning authority boundary' }
+}
+
+/**
+ *
+ * @param {Object} options
+ * @param {string} options.result key under which results will be stored in req
+ * @param {Object} options.expectation one of defined {@link expectations}
+ * @param {boolean} [options.includeDetails=false] should results include details (a JSON blob)
+ * @returns {Function} middleware function
+ */
+export const expectationFetcher = ({ expectation, result, includeDetails = false }) => {
+  return fetchMany({
+    query: ({ params }) => expectationsQuery({ lpa: params.lpa, dataset: params.dataset, expectation, includeDetails }),
+    result
+  })
+}
+
+export const CONSTANTS = {
+  availableDatasets: Object.values(dataSubjects).flatMap((dataSubject) => dataSubject.dataSets
+    .filter((dataset) => dataset.available)
+    .map((dataset) => dataset.value)
+  )
+}
+/**
+ * Provides the list of available/supported datasets.
+ * @param {Object} req requets object
+ * @param {string[]} [req.availableDatasets] OUT list of available datasets
+ * @param {*} res
+ * @param {*} next
+ */
+export const setAvailableDatasets = (req, res, next) => {
+  // Motivation: stop relying on global variables all over the place
+  req.availableDatasets = CONSTANTS.availableDatasets
   next()
 }
