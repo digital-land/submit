@@ -107,7 +107,15 @@ export const DeadlineNoticeField = v.strictObject({
   deadline: v.string()
 })
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.number()) })
+const IssueSpecification = v.optional(v.strictObject({
+  datasetField: NonEmptyString,
+  field: NonEmptyString,
+  description: v.optional(NonEmptyString),
+  dataset: v.optional(NonEmptyString),
+  guidance: v.optional(NonEmptyString)
+}))
+
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 const DatasetItem = v.strictObject({
   endpointCount: v.optional(v.number()),
@@ -214,13 +222,7 @@ export const OrgIssueTable = v.strictObject({
   dataset: DatasetNameField,
   errorSummary: errorSummaryParams,
   issueType: v.string(),
-  issueSpecification: v.optional(v.strictObject({
-    datasetField: NonEmptyString,
-    field: NonEmptyString,
-    description: v.optional(NonEmptyString),
-    dataset: v.optional(NonEmptyString),
-    guidance: v.optional(NonEmptyString)
-  })),
+  issueSpecification: IssueSpecification,
   tableParams,
   pagination: PaginationParams,
   dataRange: dataRangeParams
@@ -243,7 +245,8 @@ export const OrgIssueDetails = v.strictObject({
   }),
   pagination: PaginationParams,
   pageNumber: v.integer(),
-  dataRange: dataRangeParams
+  dataRange: dataRangeParams,
+  issueSpecification: IssueSpecification
 })
 
 export const CheckAnswers = v.strictObject({

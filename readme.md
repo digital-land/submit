@@ -149,6 +149,8 @@ echo -n user@example.com:api_token_string | base64
 
 You can read more about JIRA Basic Auth [here](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/).
 
+API keys can be generated [here](https://id.atlassian.com/manage-profile/security/api-tokens).
+
 ### How to enable Jira integration
 
 1. Go to the .env file

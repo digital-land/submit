@@ -676,7 +676,7 @@ export function getIssueSpecification (req, res, next) {
 }
 
 export const prepareIssueDetailsTemplateParams = (req, res, next) => {
-  const { entry, pagination, dataRange, errorSummary, dataset, orgInfo } = req
+  const { entry, pagination, dataRange, errorSummary, dataset, orgInfo, issueSpecification } = req
   const { issue_type: issueType, issue_field: issueField, pageNumber } = req.parsedParams
 
   // schema: OrgIssueDetails
@@ -689,7 +689,8 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
     issueField,
     pagination,
     pageNumber,
-    dataRange
+    dataRange,
+    issueSpecification
   }
 
   next()

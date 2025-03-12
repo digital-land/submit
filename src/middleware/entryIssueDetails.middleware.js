@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
@@ -19,8 +19,8 @@ const validateIssueDetailsQueryParams = validateQueryParams({
 
 const fetchResourceMetaData = fetchMany({
   query: ({ req }) => `
-    select entity_count, entry_count, line_count, mime_type, internal_path, internal_mime_type, resource 
-    FROM dataset_resource 
+    select entity_count, entry_count, line_count, mime_type, internal_path, internal_mime_type, resource
+    FROM dataset_resource
     WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
   `,
   dataset: FetchOptions.fromParams,
@@ -143,6 +143,8 @@ export default [
   fetchDatasetInfo,
   fetchResources,
   fetchResourceMetaData,
+  ...processSpecificationMiddlewares,
+  getIssueSpecification,
   addResourceMetaDataToResources,
   fetchIssueCount,
   setRecordCount,
