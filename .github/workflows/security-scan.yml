@@ -11,7 +11,6 @@ env:
   ZAP_VERSION: 2.15.0
 
 jobs:
-  jobs:
   detect-environments:
     runs-on: ubuntu-latest
     outputs:
