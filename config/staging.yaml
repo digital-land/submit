@@ -10,7 +10,10 @@ redis: {
     host: 'staging-pub-async-redis-kh1elu.serverless.euw2.cache.amazonaws.com',
     port: 6379
 }
-url: 'https://publish.staging.digital-land.info/'
+url: 'https://submit.staging.planning.data.gov.uk/'
+jira: {
+  requestTypeId: 37
+}
 features:
   issueSpecificationGuidance:
     enabled: true
