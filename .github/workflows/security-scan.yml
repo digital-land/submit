@@ -11,9 +11,24 @@ env:
   ZAP_VERSION: 2.15.0
 
 jobs:
+  jobs:
+  detect-environments:
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.environments.outputs.result }}
+    steps:
+      - uses: actions/github-script@v6
+        id: environments
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            if (context.payload?.inputs?.environment) return [context.payload?.inputs?.environment];
+            const { data: { environments } } = await github.request(`GET /repos/${process.env.GITHUB_REPOSITORY}/environments`);
+            return environments.map(e => e.name)
+
   dynamic-audit:
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ needs.detect-environments.outputs.environments }}
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
@@ -61,7 +76,7 @@ jobs:
 
   static-audit:
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ needs.detect-environments.outputs.environments }}
     outputs:
       alerts_undefined: ${{ steps.report.outputs.alerts_undefined }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
@@ -76,9 +91,8 @@ jobs:
 
     - name: Run static security scan
       run: |
-        npm audit -f markdown | tee npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
-        npm audit --json > npm-audit-report.json || true
-
+        npm run static-security-scan
+        cat npm-audit-report.json  | tee npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
     - name: Upload npm audit report
       uses: actions/upload-artifact@v4
       if: always()
