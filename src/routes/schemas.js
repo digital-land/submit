@@ -28,6 +28,20 @@ export const StartPage = v.object({
   ...Base.entries
 })
 
+export const PaginationItem = v.variant('type', [
+  v.strictObject({
+    type: v.literal('number'),
+    number: v.pipe(v.number(), v.integer()),
+    href: v.string(),
+    current: v.boolean()
+  }),
+  v.strictObject({
+    type: v.literal('ellipsis'),
+    ellipsis: v.literal(true),
+    href: v.string()
+  })
+])
+
 export const PaginationParams = v.optional(v.strictObject({
   previous: v.optional(v.strictObject({
     href: v.string()
@@ -35,19 +49,7 @@ export const PaginationParams = v.optional(v.strictObject({
   next: v.optional(v.strictObject({
     href: v.string()
   })),
-  items: v.array(v.variant('type', [
-    v.strictObject({
-      type: v.literal('number'),
-      number: v.integer(),
-      href: v.string(),
-      current: v.boolean()
-    }),
-    v.strictObject({
-      type: v.literal('ellipsis'),
-      ellipsis: v.literal(true),
-      href: v.string()
-    })
-  ]))
+  items: v.array(PaginationItem)
 }))
 
 export const dataRangeParams = v.object({
@@ -63,7 +65,7 @@ export const errorSummaryParams = v.strictObject({
   heading: v.optional(v.string()),
   items: v.array(v.strictObject({
     html: v.string(),
-    href: v.url()
+    href: v.string()
   }))
 })
 
@@ -76,7 +78,7 @@ export const tableParams = v.strictObject({
         error: v.optional(v.object({
           message: v.string()
         })),
-        value: v.optional(v.string()),
+        value: v.nullish(v.string()),
         html: v.optional(v.string()),
         classes: v.optional(v.string())
       })
@@ -105,7 +107,7 @@ export const DeadlineNoticeField = v.strictObject({
   deadline: v.string()
 })
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.number()) })
 const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
 const DatasetItem = v.strictObject({
   endpointCount: v.optional(v.number()),

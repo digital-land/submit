@@ -8,6 +8,7 @@ import getStartedMiddleware from '../middleware/getStarted.middleware.js'
 import overviewMiddleware from '../middleware/lpa-overview.middleware.js'
 import datasetDataviewMiddleware from '../middleware/dataview.middleware.js'
 import datasetEndpointIssueMiddleware from '../middleware/datasetEndpointIssue.middleware.js'
+import datasetFailedExpectationIssueMiddleware from '../middleware/dataset-failed-expectation-issue.middleware.js'
 
 const organisationsController = {
   organisationsMiddleware,
@@ -19,7 +20,8 @@ const organisationsController = {
   getStartedMiddleware,
   overviewMiddleware,
   datasetDataviewMiddleware,
-  datasetEndpointIssueMiddleware
+  datasetEndpointIssueMiddleware,
+  datasetFailedExpectationIssueMiddleware
 }
 
 export default organisationsController

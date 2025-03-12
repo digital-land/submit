@@ -111,7 +111,7 @@ features:
     # enabling this feature will cause the results page to present
     # links to individual issue pages
     enabled: true
-  expectactionOutOfBoundsTask:
+  expectationOutOfBoundsTask:
     # this feature includes violated 'out of bounds' expectations
     # as 'tasks' on LPA overview pages etc.
     # https://github.com/digital-land/submit/issues/921
