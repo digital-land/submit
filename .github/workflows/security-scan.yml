@@ -4,30 +4,26 @@ on:
   schedule:
     - cron: "45 8 * * 1" 
   workflow_dispatch:
+    inputs:
+      environment:
+        description: What environment should run security scan?
+        required: true
+        default: 'development'
+        type: string
 
 env:
   APPLICATION: submit
   DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
   ZAP_VERSION: 2.15.0
+  DEPLOY_AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
+  DEPLOY_AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
+  DEPLOY_DOCKER_REPOSITORY: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
+
 
 jobs:
-  detect-environments:
-    runs-on: ubuntu-latest
-    outputs:
-      environments: ${{ steps.environments.outputs.result }}
-    steps:
-      - uses: actions/github-script@v6
-        id: environments
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            if (context.payload?.inputs?.environment) return [context.payload?.inputs?.environment];
-            const { data: { environments } } = await github.request(`GET /repos/${process.env.GITHUB_REPOSITORY}/environments`);
-            return environments.map(e => e.name)
-
   dynamic-audit:
     runs-on: ubuntu-latest
-    environment: ${{ needs.detect-environments.outputs.environments }}
+    environment: ${{ inputs.environment }}
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
@@ -75,7 +71,7 @@ jobs:
 
   static-audit:
     runs-on: ubuntu-latest
-    environment: ${{ needs.detect-environments.outputs.environments }}
+    environment: ${{ inputs.environment }}
     outputs:
       alerts_undefined: ${{ steps.report.outputs.alerts_undefined }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
@@ -92,6 +88,7 @@ jobs:
       run: |
         npm run static-security-scan
         cat npm-audit-report.json  | tee npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
+        
     - name: Upload npm audit report
       uses: actions/upload-artifact@v4
       if: always()
