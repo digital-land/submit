@@ -272,12 +272,16 @@ export default class ResponseDetails {
       The api seems to sometimes respond with weird casing, it can be camal case, all lower or all upper
       I'll implement a fix here, but hopefully infa will be addressing it on the backend to
     */
-
-    const key = item.transformed_row.find(obj => obj.field === 'geometry' || obj.field === 'point')?.field
-    const getter = (row) => {
-      const geometry = row.transformed_row.find(obj => obj.field === key)
-      return geometry?.value
+    const trow = item.transformed_row
+    if (trow) {
+      const key = trow.find(obj => obj.field === 'geometry' || obj.field === 'point')?.field
+      const getter = (row) => {
+        const geometry = row.transformed_row?.find(obj => obj.field === key)
+        return geometry?.value
+      }
+      return getter
     }
-    return key ? getter : undefined
+
+    return undefined
   }
 }
