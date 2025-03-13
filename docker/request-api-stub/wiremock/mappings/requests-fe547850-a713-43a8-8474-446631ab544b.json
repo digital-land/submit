@@ -1,0 +1,26 @@
+{
+  "id" : "fe547850-a713-43a8-8474-446631ab544b",
+  "name" : "requests",
+  "request" : {
+    "url" : "/requests",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"params\":{\"dataset\":\"article-4-direction-area\",\"collection\":\"article-4-direction\",\"url\":\"https://www.centralbedfordshire.gov.uk/download/downloads/id/182/conservation_area_geojson.geojson\",\"type\":\"check_url\"}}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 202,
+    "body" : "{\"params\":{\"type\":\"check_url\",\"dataset\":\"article-4-direction-area\",\"collection\":\"article-4-direction\",\"column_mapping\":null,\"geom_type\":null,\"url\":\"https://www.centralbedfordshire.gov.uk/download/downloads/id/182/conservation_area_geojson.geojson\"},\"id\":\"bBw7eBivoP3LEg7UE9VKA4\",\"type\":\"check_url\",\"status\":\"NEW\",\"created\":\"2025-03-13T16:31:17.484401Z\",\"modified\":\"2025-03-13T16:31:17.484401Z\",\"response\":null}",
+    "headers" : {
+      "server" : "uvicorn",
+      "location" : "$staging-pub-async-api-lb-12493311.eu-west-2.elb.amazonaws.com/requests/bBw7eBivoP3LEg7UE9VKA4",
+      "Date" : "Thu, 13 Mar 2025 16:31:17 GMT",
+      "Content-Type" : "application/json"
+    }
+  },
+  "uuid" : "fe547850-a713-43a8-8474-446631ab544b",
+  "persistent" : true,
+  "insertionIndex" : 17
+}

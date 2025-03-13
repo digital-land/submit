@@ -1,4 +1,4 @@
-import ResponseDetails from '../../src/models/responseDetails'
+import ResponseDetails from '../../src/models/responseDetails.js'
 import { describe, it, expect, vi } from 'vitest'
 
 vi.mock('../../src/utils/getVerboseColumns.js', () => {
@@ -24,7 +24,10 @@ describe('ResponseDetails', () => {
         'entry-date': '04/04/2025',
         'start-date': '04/04/2024',
         'documentation-url': 'www.example.com'
-      }
+      },
+      transformed_row: [
+        { field: 'point', value: 'POINT (423432.0000000000000000 564564.0000000000000000)' }
+      ]
     },
     {
       issue_logs: [],
@@ -39,13 +42,22 @@ describe('ResponseDetails', () => {
         'entry-date': '04/04/2025',
         'start-date': '04/04/2024',
         'documentation-url': 'www.example.com'
-      }
+      },
+      transformed_row: [
+        { field: 'point', value: 'POINT (423432.0000000000000000 564564.0000000000000000)' }
+      ]
     }
   ]
 
   const mockResponsWithGeoXGeoY = mockResponse.map(({ converted_row: row, ...entry }, i) => {
     const { geometry, wkt, ...other } = row
-    return { ...entry, converted_row: { ...other, GeoX: `123.4${i}`, GeoY: `123.4${i}` } }
+    return {
+      ...entry,
+      converted_row: { ...other, GeoX: `123.4${i}`, GeoY: `123.4${i}` },
+      transformed_row: [
+        { field: 'geometry', value: `POINT (123.4${i} 123.4${i})` }
+      ]
+    }
   })
 
   const mockPagination = {

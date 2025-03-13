@@ -1,0 +1,23 @@
+{
+  "id" : "7ffceaf2-278c-46d3-9b8e-f403a36bd93f",
+  "name" : "requests_bbw7ebivop3leg7ue9vka4",
+  "request" : {
+    "url" : "/requests/bBw7eBivoP3LEg7UE9VKA4",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "body" : "{\"params\":{\"type\":\"check_url\",\"dataset\":\"article-4-direction-area\",\"collection\":\"article-4-direction\",\"column_mapping\":null,\"geom_type\":null,\"url\":\"https://www.centralbedfordshire.gov.uk/download/downloads/id/182/conservation_area_geojson.geojson\"},\"id\":\"bBw7eBivoP3LEg7UE9VKA4\",\"type\":\"check_url\",\"status\":\"COMPLETE\",\"created\":\"2025-03-13T16:31:17.484401Z\",\"modified\":\"2025-03-13T16:31:20.485529Z\",\"response\":{\"data\":{\"error-summary\":[\"Reference column missing\",\"Permitted-development-rights column missing\"],\"column-field-log\":[{\"field\":\"name\",\"column\":\"Name\",\"dataset\":\"article-4-direction-area\",\"missing\":false,\"resource\":\"e12648b8e5abbb1b3e1fa80770b73e7c286dd57e8988cd93c685d0cffda45786\"},{\"field\":\"geometry\",\"column\":\"WKT\",\"dataset\":\"article-4-direction-area\",\"missing\":false,\"resource\":\"e12648b8e5abbb1b3e1fa80770b73e7c286dd57e8988cd93c685d0cffda45786\"},{\"field\":\"reference\",\"missing\":true},{\"field\":\"permitted-development-rights\",\"missing\":true}]},\"error\":null}}",
+    "headers" : {
+      "server" : "uvicorn",
+      "Date" : "Thu, 13 Mar 2025 16:31:21 GMT",
+      "Content-Type" : "application/json"
+    }
+  },
+  "uuid" : "7ffceaf2-278c-46d3-9b8e-f403a36bd93f",
+  "persistent" : true,
+  "scenarioName" : "scenario-1-requests-bBw7eBivoP3LEg7UE9VKA4",
+  "requiredScenarioState" : "scenario-1-requests-bBw7eBivoP3LEg7UE9VKA4-4",
+  "newScenarioState" : "scenario-1-requests-bBw7eBivoP3LEg7UE9VKA4-5",
+  "insertionIndex" : 13
+}
