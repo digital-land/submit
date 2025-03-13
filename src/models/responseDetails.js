@@ -272,35 +272,12 @@ export default class ResponseDetails {
       The api seems to sometimes respond with weird casing, it can be camal case, all lower or all upper
       I'll implement a fix here, but hopefully infa will be addressing it on the backend to
     */
-    const keys = Object.fromEntries(
-      Object.keys(item.converted_row).map((key) => [key.toLowerCase(), key])
-    )
-    let getGeometryValue
-    if ('point' in keys) {
-      getGeometryValue = (row) => row.converted_row[keys.point]
-    } else if ('geometry' in keys) {
-      getGeometryValue = (row) => row.converted_row[keys.geometry]
-    } else if ('wkt' in keys) {
-      getGeometryValue = (row) => row.converted_row[keys.wkt]
-    } else if ('geox' in keys) {
-      logger.debug('converted_row', {
-        type: types.App,
-        transformedRow: item.transformed_row
-      })
-      getGeometryValue = (row) => {
-        const GeoX = row.converted_row[keys.geox]
-        const GeoY = row.converted_row[keys.geoy]
-        if (GeoX === '' || GeoY === '') return ''
-        return `POINT (${GeoX} ${GeoY})`
-      }
-    } else {
-      // unexpected, but let's take a note and proceed without throwing
-      logger.warn('geometry data not found in response details', {
-        requestId: this.id,
-        type: types.App
-      })
-    }
 
-    return getGeometryValue
+    const key = item.transformed_row.find(obj => obj.field === 'geometry' || obj.field === 'point')?.field
+    const getter = (row) => {
+      const geometry = row.transformed_row.find(obj => obj.field === key)
+      return geometry?.value
+    }
+    return key ? getter : undefined
   }
 }
