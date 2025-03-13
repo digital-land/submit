@@ -42,7 +42,7 @@ jobs:
       matrix:
         environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     runs-on: ubuntu-latest
-    environment: ${{ matrix.environment }}
+    environment: ${{ matrix.environment || 'production'}}
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
@@ -94,7 +94,7 @@ jobs:
       matrix:
         environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     runs-on: ubuntu-latest
-    environment: ${{ matrix.environment }}
+    environment: ${{ matrix.environment || 'production'}}
     outputs:
       alerts_undefined: ${{ steps.report.outputs.alerts_undefined }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
@@ -190,6 +190,10 @@ jobs:
                     {
                       "type": "mrkdwn",
                       "text": "*Static Audit*"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*TOTAL* ${{ needs.static-audit.outputs.alerts_total }}"
                     },
                     {
                       "type": "mrkdwn",
