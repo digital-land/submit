@@ -364,7 +364,7 @@ export default [
   fetchEntryIssueCounts,
   fetchEntityCounts,
   setAvailableDatasets,
-  isFeatureEnabled('expectactionOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
+  isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   groupResourcesByDataset,
   groupIssuesCountsByDataset,
   groupEndpointsByDataset,

@@ -5,6 +5,18 @@ import * as v from 'valibot'
 
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
 
+/**
+ * Informatino to allow us to display sanely worded messages about entities.
+ *
+ * - `base` is the part that doesn't change
+ * - `variable` should be specified in singular, and can be potentially turned into plural
+ *    (by application code or template) when displayed.
+ */
+const EntityDisplay = v.object({
+  base: v.optional(NonEmptyString),
+  variable: NonEmptyString
+})
+
 export const ConfigSchema = v.object({
   port: v.pipe(v.integer(), v.minValue(1)),
   asyncRequestApi: v.object({
@@ -64,7 +76,10 @@ export const ConfigSchema = v.object({
       'listed-building',
       'listed-building-outline'
     ].reduce((acc, key) => {
-      acc[key] = v.object({ guidanceUrl: v.string() })
+      acc[key] = v.object({
+        guidanceUrl: v.string(),
+        entityDisplayName: EntityDisplay
+      })
       return acc
     }, {})
   ),

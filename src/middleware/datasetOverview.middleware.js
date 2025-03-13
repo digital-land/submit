@@ -266,7 +266,7 @@ export default [
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   fetchSpecification,
-  isFeatureEnabled('expectactionOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
+  isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   pullOutDatasetSpecification,
   // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchEntityCount,
