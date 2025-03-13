@@ -20,10 +20,30 @@ env:
   DEPLOY_DOCKER_REPOSITORY: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
 
 
-jobs:
-  dynamic-audit:
+jobs: 
+  detect-environments:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    outputs:
+      environments: ${{ steps.environments.outputs.result }}
+    steps:
+      - uses: actions/github-script@v7
+        id: environments
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: json
+          script: |
+            if (context.payload?.inputs?.environment) return [context.payload?.inputs?.environment];
+            const {data: {environments}} = 
+              await github.request(`GET /repos/${process.env.GITHUB_REPOSITORY}/environments`);
+            return environments.map(e => e.name)
+
+  dynamic-audit:
+    needs: [detect-environments]
+    strategy:
+      matrix:
+        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
@@ -70,8 +90,12 @@ jobs:
           echo "alerts_total=$(jq -rc '[ .site[0].alerts[] ] | length' zap-working-dir/zap-report.json)" >> $GITHUB_OUTPUT
 
   static-audit:
+    needs: [detect-environments]
+    strategy:
+      matrix:
+        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ matrix.environment }}
     outputs:
       alerts_undefined: ${{ steps.report.outputs.alerts_undefined }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
@@ -87,8 +111,8 @@ jobs:
     - name: Run static security scan
       run: |
         npm run static-security-scan
-        cat npm-audit-report.json  | tee npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
-        
+        cat npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
+
     - name: Upload npm audit report
       uses: actions/upload-artifact@v4
       if: always()
@@ -100,10 +124,13 @@ jobs:
       id: report
       run: |
         # Parse the npm audit report and output the number of alerts based on severity
-        echo "alerts_low=$(jq '[..vulnerabilities[] | select(.severity == "low")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
-        echo "alerts_medium=$(jq '[..vulnerabilities[] | select(.severity == "moderate")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
-        echo "alerts_high=$(jq '[..vulnerabilities[] | select(.severity == "high")] | length' npm-audit-report.json)" >> $GITHUB_OUTPUT
-
+        echo "alerts_info=${{ jq '.metadata.vulnerabilities.info' npm-audit-report.json }}" >> $GITHUB_OUTPUT
+        echo "alerts_low=${{ jq '.metadata.vulnerabilities.low' npm-audit-report.json }}" >> $GITHUB_OUTPUT
+        echo "alerts_medium=${{ jq '.metadata.vulnerabilities.moderate' npm-audit-report.json }}" >> $GITHUB_OUTPUT
+        echo "alerts_high=${{ jq '.metadata.vulnerabilities.high' npm-audit-report.json }}" >> $GITHUB_OUTPUT
+        echo "alerts_critical=${{ jq '.metadata.vulnerabilities.critical' npm-audit-report.json }}" >> $GITHUB_OUTPUT
+        echo "alerts_total=${{ jq '.metadata.vulnerabilities.total' npm-audit-report.json }}" >> $GITHUB_OUTPUT
+   
   send-report:
     runs-on: ubuntu-latest
     needs:
@@ -167,6 +194,10 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
+                      "text": "*CRITICAL* ${{ needs.static-audit.outputs.alerts_critical }}"
+                    },
+                    {
+                      "type": "mrkdwn",
                       "text": "*HIGH* ${{ needs.static-audit.outputs.alerts_high }}"
                     },
                     {
@@ -179,7 +210,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*UNDEFINED* ${{ needs.static-audit.outputs.alerts_undefined }}"
+                      "text": "*INFO* ${{ needs.static-audit.outputs.alerts_info }}"
                     }
                   ]
                 },
