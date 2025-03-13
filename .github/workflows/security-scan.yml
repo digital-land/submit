@@ -6,10 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: What environment should run security scan?
+        type: environment
+        description: The environment to run security scan.
         required: true
-        default: 'development'
-        type: string
 
 env:
   APPLICATION: submit
@@ -124,12 +123,12 @@ jobs:
       id: report
       run: |
         # Parse the npm audit report and output the number of alerts based on severity
-        echo "alerts_info=${{ jq '.metadata.vulnerabilities.info' npm-audit-report.json }}" >> $GITHUB_OUTPUT
-        echo "alerts_low=${{ jq '.metadata.vulnerabilities.low' npm-audit-report.json }}" >> $GITHUB_OUTPUT
-        echo "alerts_medium=${{ jq '.metadata.vulnerabilities.moderate' npm-audit-report.json }}" >> $GITHUB_OUTPUT
-        echo "alerts_high=${{ jq '.metadata.vulnerabilities.high' npm-audit-report.json }}" >> $GITHUB_OUTPUT
-        echo "alerts_critical=${{ jq '.metadata.vulnerabilities.critical' npm-audit-report.json }}" >> $GITHUB_OUTPUT
-        echo "alerts_total=${{ jq '.metadata.vulnerabilities.total' npm-audit-report.json }}" >> $GITHUB_OUTPUT
+        echo "alerts_info=$(jq '.metadata.vulnerabilities.info' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_low=$(jq '.metadata.vulnerabilities.low' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_medium=$(jq '.metadata.vulnerabilities.moderate' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_high=$(jq '.metadata.vulnerabilities.high' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_critical=$(jq '.metadata.vulnerabilities.critical' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_total=$(jq '.metadata.vulnerabilities.total' npm-audit-report.json)" >> $GITHUB_OUTPUT
    
   send-report:
     runs-on: ubuntu-latest
