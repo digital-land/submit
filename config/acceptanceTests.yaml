@@ -12,7 +12,5 @@ redis: {
 }
 url: 'http://localhost:5000/'
 features:
-  issueSpecificationGuidance:
-    enabled: true
   submitEndpointForm:
     enabled: true

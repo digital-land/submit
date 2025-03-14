@@ -22,8 +22,6 @@ jira: {
   requestTypeId: 28
 }
 features:
-  issueSpecificationGuidance:
-    enabled: true
   submitEndpointForm:
     enabled: false
   checkIssueDetailsPage:

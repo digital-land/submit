@@ -13,7 +13,5 @@ googleAnalytics: {
   measurementId: 'G-TEST-CODE'
 }
 features:
-  issueSpecificationGuidance:
-    enabled: true
   submitEndpointForm:
     enabled: true
