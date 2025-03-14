@@ -96,10 +96,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment || 'production'}}
     outputs:
-      alerts_undefined: ${{ steps.report.outputs.alerts_undefined }}
+      alerts_info: ${{ steps.report.outputs.alerts_info }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
-      alerts_medium: ${{ steps.report.outputs.alerts_medium }}
+      alerts_moderate: ${{ steps.report.outputs.alerts_moderate }}
       alerts_high: ${{ steps.report.outputs.alerts_high }}
+      alerts_critical: ${{ steps.report.outputs.alerts_critical }}
+      alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
     - uses: actions/checkout@v4
 
@@ -125,7 +127,7 @@ jobs:
         # Parse the npm audit report and output the number of alerts based on severity
         echo "alerts_info=$(jq '.metadata.vulnerabilities.info' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_low=$(jq '.metadata.vulnerabilities.low' npm-audit-report.json)" >> $GITHUB_OUTPUT
-        echo "alerts_medium=$(jq '.metadata.vulnerabilities.moderate' npm-audit-report.json)" >> $GITHUB_OUTPUT
+        echo "alerts_moderate=$(jq '.metadata.vulnerabilities.moderate' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_high=$(jq '.metadata.vulnerabilities.high' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_critical=$(jq '.metadata.vulnerabilities.critical' npm-audit-report.json)" >> $GITHUB_OUTPUT
         echo "alerts_total=$(jq '.metadata.vulnerabilities.total' npm-audit-report.json)" >> $GITHUB_OUTPUT
@@ -205,7 +207,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*MEDIUM* ${{ needs.static-audit.outputs.alerts_medium }}"
+                      "text": "*MODERATE* ${{ needs.static-audit.outputs.alerts_moderate }}"
                     },
                     {
                       "type": "mrkdwn",
