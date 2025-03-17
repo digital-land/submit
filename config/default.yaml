@@ -102,8 +102,6 @@ jira: {
   requestTypeId: 1
 }
 features:
-  issueSpecificationGuidance:
-    enabled: true
   submitEndpointForm:
     enabled: false
   checkIssueDetailsPage:
