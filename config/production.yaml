@@ -18,9 +18,10 @@ smartlook: {
 googleAnalytics: {
   measurementId: 'G-F2H5SW06PZ'
 }
+jira: {
+  requestTypeId: 28
+}
 features:
-  issueSpecificationGuidance:
-    enabled: true
   submitEndpointForm:
     enabled: false
   checkIssueDetailsPage:

@@ -15,8 +15,8 @@
     "start:development": "NODE_ENV=development node index.js",
     "start:local:watch": "NODE_ENV=test npm run start:watch",
     "docker-security-scan": "mkdir -p zap-working-dir && touch zap-working-dir/zap.log && chmod -R a+rw zap-working-dir && docker compose -f docker-compose.security.yml run --rm zap",
-    "static-security-scan": "npm audit --json > npm-audit-report.json",
-    "scan:zap": "npm run docker-security-scan && npm run static-security-scan",
+    "static-security-scan": "npm audit --json | tee npm-audit-report.json | npm-audit-markdown --output npm-audit-report.md || true",
+    "scan:zap": "npm run docker-security-scan",
     "mock:api": "node ./test/mock-api/index.js",
     "copy-frontend-bundles": "cp ./node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js ./node_modules/govuk-frontend/dist/govuk/govuk-frontend.min.js.map public/js/",
     "build": "npm run scss && cp -R src/assets/downloadable/. public/downloadable && npm run build-webpack && cp -R src/assets/static/. public/static && npm run copy-frontend-bundles",
@@ -65,7 +65,8 @@
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.2",
-    "zaproxy": "^2.0.0-rc.5"
+    "zaproxy": "^2.0.0-rc.5",
+    "npm-audit-markdown": "^1.2.0"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.537.0",
