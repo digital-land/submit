@@ -76,7 +76,7 @@ const SPECIAL_ISSUE_TYPES = ['reference values are not unique']
 export function entityOutOfBoundsMessage (dataset, count) {
   const displayNameConfig = config.datasetsConfig[dataset]?.entityDisplayName ?? { variable: 'entity', base: '' }
   // if count is missing for some reason, we don't display it and default to plural form
-  const displayName = `${displayNameConfig.base ?? ''} ${pluralize(displayNameConfig.variable, count ?? 2)}`.trim()
+  const displayName = `${displayNameConfig.base ?? ''} ${pluralize(displayNameConfig.variable, count ?? 2, false)}`.trim()
   return `You have ${count ?? ''} ${displayName} outside of your boundary`.replace(/ {2}/, ' ')
 }
 
