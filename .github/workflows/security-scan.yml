@@ -4,45 +4,15 @@ on:
   schedule:
     - cron: "45 8 * * 1" 
   workflow_dispatch:
-    inputs:
-      environment:
-        type: environment
-        description: The environment to run security scan.
-        required: true
 
 env:
   APPLICATION: submit
   DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
   ZAP_VERSION: 2.15.0
-  DEPLOY_AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
-  DEPLOY_AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
-  DEPLOY_DOCKER_REPOSITORY: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
-
 
 jobs: 
-  detect-environments:
-    runs-on: ubuntu-latest
-    outputs:
-      environments: ${{ steps.environments.outputs.result }}
-    steps:
-      - uses: actions/github-script@v7
-        id: environments
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          result-encoding: json
-          script: |
-            if (context.payload?.inputs?.environment) return [context.payload?.inputs?.environment];
-            const {data: {environments}} = 
-              await github.request(`GET /repos/${process.env.GITHUB_REPOSITORY}/environments`);
-            return environments.map(e => e.name)
-
   dynamic-audit:
-    needs: [detect-environments]
-    strategy:
-      matrix:
-        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     runs-on: ubuntu-latest
-    environment: ${{ matrix.environment || 'production'}}
     env:
       DOCKER_APPLICATION_TAG: latest
     outputs:
@@ -89,12 +59,7 @@ jobs:
           echo "alerts_total=$(jq -rc '[ .site[0].alerts[] ] | length' zap-working-dir/zap-report.json)" >> $GITHUB_OUTPUT
 
   static-audit:
-    needs: [detect-environments]
-    strategy:
-      matrix:
-        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     runs-on: ubuntu-latest
-    environment: ${{ matrix.environment || 'production'}}
     outputs:
       alerts_info: ${{ steps.report.outputs.alerts_info }}
       alerts_low: ${{ steps.report.outputs.alerts_low }}
