@@ -23,7 +23,7 @@ jira: {
 }
 features:
   submitEndpointForm:
-    enabled: false
+    enabled: true
   checkIssueDetailsPage:
     # https://github.com/digital-land/submit/issues/786
     # enabling this feature will cause the results page to present
