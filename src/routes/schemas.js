@@ -65,7 +65,7 @@ export const errorSummaryParams = v.strictObject({
   heading: v.optional(v.string()),
   items: v.array(v.strictObject({
     html: v.string(),
-    href: v.string()
+    href: v.optional(v.string())
   }))
 })
 

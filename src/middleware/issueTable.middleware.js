@@ -30,8 +30,29 @@ export const setRecordCount = (req, res, next) => {
   next()
 }
 
+const rowErrorReducer = (hasError, column) => {
+  return column.error !== undefined || hasError
+}
+
+const rowHasError = (row) => {
+  return Object.values(row.columns).reduce(rowErrorReducer, false)
+}
+
+/**
+ *
+ * @param {Object} req request object
+ * @param {Object[]} [req.issues] issues
+ * @param {Function} [req.rowFilter] predicate taking a single row
+ * @param {Object[]} req.issueEntities entities
+ * @param {Object[]} req.uniqueDatasetFields ??
+ * @param {Object} req.dataRange conforming to `src/routes/schemasjs:dataRangeParams`.
+ * @param {string} req.baseSubpath URL path prefix
+ * @param {Object} req.tableParams OUT value
+ * @param {*} res response object
+ * @param {*} next
+ */
 export const prepareTableParams = (req, res, next) => {
-  const { issueEntities, issues, uniqueDatasetFields, dataRange, baseSubpath } = req
+  const { issueEntities, issues = [], uniqueDatasetFields, dataRange, baseSubpath, rowFilter = rowHasError } = req
 
   const allRows = issueEntities.map((entity, index) => ({
     columns: Object.fromEntries(uniqueDatasetFields.map((field) => {
@@ -58,10 +79,7 @@ export const prepareTableParams = (req, res, next) => {
     }))
   }))
 
-  const rowsWithErrors = allRows.filter(row => Object.values(row.columns).reduce((hasError, column) => {
-    return column.error !== undefined || hasError
-  }, false))
-
+  const rowsWithErrors = allRows.filter(rowFilter)
   const rowsPaginated = rowsWithErrors.slice(dataRange.minRow, dataRange.maxRow)
 
   req.tableParams = {

@@ -18,10 +18,10 @@ import {
 import { getIssueDetails } from './entityIssueDetails.middleware.js'
 import { entityOutOfBoundsMessage } from './datasetTaskList.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
-import logger from '../utils/logger.js'
-import { types } from '../utils/logging.js'
 import { fetchOne, FetchOptions } from './middleware.builders.js'
 import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
+import { deserialiseEntityIds } from './dataset-failed-expectation-entry.middleware.js'
+import { prepareEntityForTable } from '../utils/entities.js'
 
 const ExpectationPathParams = v.union(Object.values(expectations).map(exp => v.literal(exp.slug)))
 
@@ -52,25 +52,6 @@ const validateExpectationsFailed = (req, res, next) => {
   } else {
     next()
   }
-}
-
-/**
- * @param {String} s JSON string
- * @returns {Object|undefined}
- */
-const safeParse = (s) => {
-  try {
-    return JSON.parse(s)
-  } catch (error) {
-    logger.info('safeParse() failed to parse', { type: types.App, string: s })
-    return undefined
-  }
-}
-
-const deserialiseEntities = (req, res, next) => {
-  const { expectationOutOfBounds } = req
-  req.entityIds = safeParse(expectationOutOfBounds[0].details)?.entities
-  next()
 }
 
 const preparePaginationInfo = (req, res, next) => {
@@ -116,6 +97,8 @@ const preparePaginationInfo = (req, res, next) => {
 const prepareTemplateParams = (req, res, next) => {
   const { orgInfo: organisation, dataset, expectationOutOfBounds, entity, dataRange, pagination } = req
 
+  const entityAugmented = prepareEntityForTable(entity)
+
   req.templateParams = {
     organisation,
     dataset,
@@ -129,7 +112,7 @@ const prepareTemplateParams = (req, res, next) => {
     issueField: expectations.entitiesOutOfBounds.slug,
     entry: {
       title: `Entity: ${entity.entity}`,
-      fields: Object.entries(entity).map(([k, v]) => {
+      fields: Object.entries(entityAugmented).map(([k, v]) => {
         return {
           key: { text: k },
           value: { html: `${v}` },
@@ -151,7 +134,7 @@ export default [
   fetchDatasetInfo,
   fetchOutOfBoundsExpectations,
   validateExpectationsFailed,
-  deserialiseEntities,
+  deserialiseEntityIds,
   fetchEntity,
   preparePaginationInfo,
   prepareTemplateParams,
