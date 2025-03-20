@@ -3,13 +3,17 @@
  */
 
 /**
+ * @typedef {Object} LeadingTrailingSplit
+ * @property {string[]} leading
+ * @property {string[]} trailing
+ */
+
+/**
  * Makes sure the 'reference' and 'name' columns come first.
  *
  * @param {Object} opts - Options object
  * @param {string[]} opts.fields - Array of field names
- * @returns {Object} Object containing leading and trailing fields
- * @returns {string[]} returns.leading - Fields that should come first
- * @returns {string[]} returns.trailing - Remaining fields
+ * @returns {LeadingTrailingSplit} Object containing leading and trailing fields
  */
 export const splitByLeading = ({ fields }) => {
   const leading = []
