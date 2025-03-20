@@ -47,11 +47,12 @@ export const render = (renderer, template, schema, params) => {
       if (error instanceof v.ValiError) {
         // the below will only show up in the terminal when testing
         // console.debug({ params, message: 'failed validation input' })
+        const paths = invalidSchemaPaths(error)
         logger.warn(
           validationErrorMessage(error, template),
           {
             errorMessage: `${error.message}`,
-            pathsWithIssues: invalidSchemaPaths(error),
+            pathsWithIssues: paths.length < 10 ? paths : paths.slice(0, 9),
             type: types.App
           }
         )

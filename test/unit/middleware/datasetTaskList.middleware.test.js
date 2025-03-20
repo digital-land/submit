@@ -274,7 +274,7 @@ describe('datasetTaskList.middleware.js', () => {
 
       expect(req.taskList.length).toBe(1)
       const { href, status: { tag: { text } } } = req.taskList[0]
-      expect(href).toBe('')
+      expect(href).toMatch('/organisations/some-lpa/some-dataset/expectation/out-of-bounds')
       expect(text).toBe('Needs fixing')
 
       expect(next).toHaveBeenCalledTimes(1)
