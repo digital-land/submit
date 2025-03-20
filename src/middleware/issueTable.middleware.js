@@ -1,10 +1,12 @@
-/*
-  this middleware should get all entities for the organisation, with all of the most recent issues
-  then filter out any of the issues that have been fixed
-  the construct the table params
-  then construct the template params
-  then render the template
-*/
+/**
+ * @module middleware-issue-table
+ *
+ * This middleware should get all entities for the organisation, with all of the most recent issues
+ * then filter out any of the issues that have been fixed
+ * the construct the table params
+ * then construct the template params
+ * then render the template
+ */
 
 import config from '../../config/index.js'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
@@ -42,7 +44,7 @@ const rowHasError = (row) => {
  *
  * @param {Object} req request object
  * @param {Object[]} [req.issues] issues
- * @param {Function} [req.rowFilter] predicate taking a single row
+ * @param {function(any): boolean} [req.rowFilter] predicate taking a single row
  * @param {Object[]} req.issueEntities entities
  * @param {Object[]} req.uniqueDatasetFields ??
  * @param {Object} req.dataRange conforming to `src/routes/schemasjs:dataRangeParams`.
