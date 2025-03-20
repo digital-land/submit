@@ -88,9 +88,9 @@ export function prepareEntity (req, res, next) {
   })
 
   const geometries = fields.values()
+    .toArray()
     .filter((row) => row.field === 'geometry')
     .map((row) => row.value)
-    .toArray()
 
   req.entry = {
     title: entityData.name || `entity: ${entityData.entity}`,
