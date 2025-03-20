@@ -65,39 +65,36 @@ export function prepareEntity (req, res, next) {
   const entityData = issueEntities[pageNumber - 1]
   const entityIssues = issues.filter(issue => issue.entity === entityData.entity)
 
-  const fields = specification.fields.map(({ field, datasetField }) => {
+  const fields = new Map()
+  for (const { field, datasetField } of specification.fields) {
     const value = entityData[field] || entityData[datasetField]
-
-    return getIssueField(field, value)
-  })
+    fields.set(field, getIssueField(field, value))
+  }
 
   entityIssues.forEach(issue => {
-    const field = fields.find(field => field.key.text === issue.field)
+    const field = fields.get(issue.field)
     if (field) {
       const message = issue.message || issue.type
       field.value.html = issueErrorMessageHtml(message, null) + field.value.html
       field.classes += 'dl-summary-card-list__row--error govuk-form-group--error'
-    }
-  })
-
-  for (const issue of entityIssues) {
-    if (!fields.find((field) => field.key.text === issue.field)) {
+    } else {
       const errorMessage = issue.message || issueType
       // TODO: pull the html out of here and into the template
       const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
       const classes = 'dl-summary-card-list__row--error govuk-form-group--error'
 
-      fields.push(getIssueField(issue.field, valueHtml, classes))
+      fields.set(issue.field, getIssueField(issue.field, valueHtml, classes))
     }
-  }
+  })
 
-  const geometries = fields
+  const geometries = fields.values()
     .filter((row) => row.field === 'geometry')
     .map((row) => row.value)
+    .toArray()
 
   req.entry = {
     title: entityData.name || `entity: ${entityData.entity}`,
-    fields,
+    fields: fields.values().toArray(),
     geometries
   }
 
