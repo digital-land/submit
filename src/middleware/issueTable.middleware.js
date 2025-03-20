@@ -14,6 +14,7 @@ import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchRe
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { entryIssueGroups } from '../utils/utils.js'
+import { splitByLeading } from '../utils/table.js'
 
 export const IssueTableQueryParams = v.object({
   lpa: v.string(),
@@ -47,7 +48,7 @@ const rowHasError = (row) => {
  * @param {Object[]} [req.issues] issues
  * @param {function(any): boolean} [req.rowFilter] predicate taking a single row
  * @param {Object[]} req.issueEntities entities
- * @param {Object[]} req.uniqueDatasetFields ??
+ * @param {string[]} req.uniqueDatasetFields
  * @param {Object} req.dataRange conforming to `src/routes/schemasjs:dataRangeParams`.
  * @param {string} req.baseSubpath URL path prefix
  * @param {Object} req.tableParams OUT value
@@ -56,9 +57,11 @@ const rowHasError = (row) => {
  */
 export const prepareTableParams = (req, res, next) => {
   const { issueEntities, issues = [], uniqueDatasetFields, dataRange, baseSubpath, rowFilter = rowHasError } = req
+  const { leading, trailing } = splitByLeading({ fields: uniqueDatasetFields })
+  const orderedFields = leading.concat(trailing)
 
   const allRows = issueEntities.map((entity, index) => ({
-    columns: Object.fromEntries(uniqueDatasetFields.map((field) => {
+    columns: Object.fromEntries(orderedFields.map((field) => {
       const errorMessage = issues.find(issue => issue.entity === entity.entity && (issue.field === field || issue.replacement_field === field))?.issue_type
       if (field === 'reference') {
         return [field, {
@@ -86,8 +89,8 @@ export const prepareTableParams = (req, res, next) => {
   const rowsPaginated = rowsWithErrors.slice(dataRange.minRow, dataRange.maxRow)
 
   req.tableParams = {
-    columns: uniqueDatasetFields,
-    fields: uniqueDatasetFields,
+    columns: orderedFields,
+    fields: orderedFields,
     rows: rowsPaginated
   }
 
