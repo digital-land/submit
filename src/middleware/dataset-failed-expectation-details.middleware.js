@@ -6,31 +6,19 @@
  * See https://datasette.planning.data.gov.uk/digital-land/expectation for data.
  */
 
-import * as v from 'valibot'
 import {
   validateOrgAndDatasetQueryParams,
   expectationFetcher,
   expectations,
-  validateQueryParams,
   fetchDatasetInfo,
   fetchOrgInfo
 } from './common.middleware.js'
 import { getIssueDetails } from './entityIssueDetails.middleware.js'
 import { entityOutOfBoundsMessage } from './datasetTaskList.middleware.js'
-import { MiddlewareError } from '../utils/errors.js'
 import { fetchOne, FetchOptions } from './middleware.builders.js'
 import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
-import { deserialiseEntityIds } from './dataset-failed-expectation-entry.middleware.js'
+import { deserialiseEntityIds, validateExpectationParams, validateExpectationsFailed } from './dataset-failed-expectation-entry.middleware.js'
 import { prepareEntityForTable } from '../utils/entities.js'
-
-const ExpectationPathParams = v.union(Object.values(expectations).map(exp => v.literal(exp.slug)))
-
-const validateExpectationParams = validateQueryParams({
-  schema: v.object({
-    expectation: ExpectationPathParams,
-    pageNumber: v.optional(v.pipe(v.string(), v.transform(s => parseInt(s, 10)), v.minValue(1)), '1')
-  })
-})
 
 const fetchOutOfBoundsExpectations = expectationFetcher({
   expectation: expectations.entitiesOutOfBounds,
@@ -45,14 +33,6 @@ const fetchEntity = fetchOne({
   dataset: FetchOptions.fromParams,
   result: 'entity'
 })
-
-const validateExpectationsFailed = (req, res, next) => {
-  if (req.expectationOutOfBounds.length === 0) {
-    next(new MiddlewareError('expectation query for out of bounds entities returned no results)', 404))
-  } else {
-    next()
-  }
-}
 
 const preparePaginationInfo = (req, res, next) => {
   const { orgInfo: organisation, dataset, entityIds = [] } = req

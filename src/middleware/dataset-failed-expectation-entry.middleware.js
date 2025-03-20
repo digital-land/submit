@@ -25,7 +25,7 @@ import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
 import { getIssueTable, prepareTableParams } from './issueTable.middleware.js'
 import { prepareEntityForTable, safeParse } from '../utils/entities.js'
 
-const ExpectationPathParams = v.union(Object.values(expectations).map(exp => v.literal(exp.slug)))
+export const ExpectationPathParams = v.union(Object.values(expectations).map(exp => v.literal(exp.slug)))
 
 const CONSTANTS = {
   /**
@@ -38,7 +38,7 @@ const subPath = (organisation, dataset) => {
   return `/organisations/${organisation.organisation}/${dataset.dataset}/expectation/out-of-bounds`
 }
 
-const validateExpectationParams = validateQueryParams({
+export const validateExpectationParams = validateQueryParams({
   schema: v.object({
     expectation: ExpectationPathParams,
     pageNumber: v.optional(v.pipe(v.string(), v.transform(s => parseInt(s, 10)), v.minValue(1)), '1')
@@ -76,7 +76,15 @@ const fetchEntities = fetchMany({
   result: 'entities'
 })
 
-const validateExpectationsFailed = (req, res, next) => {
+/**
+ * Validates the expectations actually exist, 404 otherwise.
+ *
+ * @param {Object} req request object
+ * @param {Object[]} req.expectationOutOfBounds array of expectation records
+ * @param {*} res response object
+ * @param {*} next
+ */
+export const validateExpectationsFailed = (req, res, next) => {
   if (req.expectationOutOfBounds.length === 0) {
     next(new MiddlewareError('expectation query for out of bounds entities returned no results)', 404))
   } else {
