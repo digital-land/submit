@@ -152,7 +152,6 @@ const setTableParamsInfo = (req, res, next) => {
  * @param {Object} req.tableParams table template parameters
  * @param {Object} req.dataRange
  * @param {Object} req.pagination pagination info
- * @param {Object} [req.entity]
  * @param {Object} req.templateParams OUT value
  * @param {Object} res - The response object.
  * @param {Function} next - The next middleware function.
