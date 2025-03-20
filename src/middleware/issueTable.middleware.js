@@ -1,6 +1,7 @@
 /**
  * @module middleware-issue-table
  *
+ * @description
  * This middleware should get all entities for the organisation, with all of the most recent issues
  * then filter out any of the issues that have been fixed
  * the construct the table params

@@ -1,7 +1,7 @@
 /**
  * @module utils-entities
  *
- * Convenience functions for dealing with entity records.
+ * @description Convenience functions for dealing with entity records.
  */
 
 import logger from './logger.js'
