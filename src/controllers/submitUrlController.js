@@ -33,7 +33,8 @@ class SubmitUrlController extends UploadController {
     }
 
     try {
-      const id = await postUrlRequest({ ...this.getBaseFormData(req), url: req.body.url })
+      const url = (req.body?.url ?? '').trim()
+      const id = await postUrlRequest({ ...this.getBaseFormData(req), url })
       req.body.request_id = id
     } catch (error) {
       next(error)

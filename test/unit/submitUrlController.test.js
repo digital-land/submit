@@ -59,6 +59,32 @@ describe('SubmitUrlController', async () => {
       })
     })
 
+    it('should trim any spaces in the URL', async () => {
+      const req = {
+        body: {
+          url: '  http://example.com  '
+        },
+        sessionModel: {
+          get: vi.fn()
+        },
+        session: {
+          id: '1234'
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      await submitUrlController.post(req, res, next)
+
+      expect(asyncRequestApi.postUrlRequest).toHaveBeenCalledWith({
+        url: 'http://example.com',
+        sessionId: '1234',
+        dataset: undefined,
+        dataSubject: undefined,
+        geomType: undefined
+      })
+    })
+
     it('should call next if the URL is invalid', async () => {
       const req = {
         body: {
