@@ -32,8 +32,8 @@ export const safeParse = (s) => {
  * @returns {Object}
  */
 export const prepareEntityForTable = (entity) => {
-  const entries = Object.entries(entity).map(([k, v]) => [k.replace('_', '-'), v])
+  const { json, ...rest } = entity
+  const entries = Object.entries(rest).map(([k, v]) => [k.replaceAll('_', '-'), v])
   const ie = Object.fromEntries(entries)
-  delete ie.json
-  return Object.assign(ie, safeParse(entity.json))
+  return Object.assign(ie, safeParse(json))
 }
