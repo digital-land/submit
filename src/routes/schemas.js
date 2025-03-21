@@ -236,13 +236,13 @@ export const OrgIssueDetails = v.strictObject({
     title: NonEmptyString,
     fields: v.array(v.strictObject({
       key: v.strictObject({ text: NonEmptyString }),
-      value: v.strictObject({ html: v.string() }),
+      value: v.strictObject({ html: v.string(), originalValue: v.optional(v.string()) }),
       classes: v.string()
     })),
     geometries: v.optional(v.array(v.string()))
   }),
   pagination: PaginationParams,
-  pageNumber: v.integer(),
+  pageNumber: v.pipe(v.number(), v.integer()),
   dataRange: dataRangeParams,
   issueSpecification: IssueSpecification
 })

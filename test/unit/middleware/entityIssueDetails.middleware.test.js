@@ -13,7 +13,7 @@ describe('issueDetails.middleware.js', () => {
 
       expect(result).toEqual({
         key: { text },
-        value: { html },
+        value: { html, originalValue: html },
         classes
       })
     })
@@ -25,7 +25,7 @@ describe('issueDetails.middleware.js', () => {
 
       expect(result).toEqual({
         key: { text },
-        value: { html },
+        value: { html, originalValue: html },
         classes: ''
       })
     })
@@ -71,20 +71,26 @@ describe('issueDetails.middleware.js', () => {
     const res = {}
 
     beforeEach(() => {
-      req.entities = [
-        { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2' },
-        { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4' }
-      ]
+      // req.entities = [
+      //   { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2' },
+      //   { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4' },
+      // ]
       req.issueEntities = [
-        { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2' },
-        { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4' }
+        { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2', geometry: 'POINT (-0.10 51.49)' },
+        { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4', geometry: undefined }
       ]
       req.issues = [
         { entity: 'entity1', field: 'field1', message: 'Error 1' },
         { entity: 'entity1', field: 'field2', message: 'Error 2' },
         { entity: 'entity2', field: 'field1', message: 'Error 3' }
       ]
-      req.specification = { fields: [{ field: 'field1', datasetField: 'datasetField1' }, { field: 'field2', datasetField: 'datasetField2' }] }
+      req.specification = {
+        fields: [
+          { field: 'field1', datasetField: 'datasetField1' },
+          { field: 'field2', datasetField: 'datasetField2' },
+          { field: 'geometry', datasetField: 'geometry_field' }
+        ]
+      }
       req.parsedParams = { pageNumber: 1, issue_type: 'issueType' }
     })
 
@@ -93,10 +99,32 @@ describe('issueDetails.middleware.js', () => {
       expect(req.entry).toEqual({
         title: 'Entity 1',
         fields: [
-          { key: { text: 'field1' }, value: { html: '<p class="govuk-error-message">Error 1</p>value1' }, classes: 'dl-summary-card-list__row--error govuk-form-group--error' },
-          { key: { text: 'field2' }, value: { html: '<p class="govuk-error-message">Error 2</p>value2' }, classes: 'dl-summary-card-list__row--error govuk-form-group--error' }
+          {
+            key: { text: 'field1' },
+            value: {
+              html: '<p class="govuk-error-message">Error 1</p>value1',
+              originalValue: 'value1'
+            },
+            classes: 'dl-summary-card-list__row--error govuk-form-group--error'
+          },
+          {
+            key: { text: 'field2' },
+            value: {
+              html: '<p class="govuk-error-message">Error 2</p>value2',
+              originalValue: 'value2'
+            },
+            classes: 'dl-summary-card-list__row--error govuk-form-group--error'
+          },
+          {
+            key: { text: 'geometry' },
+            classes: '',
+            value: {
+              html: req.issueEntities[0].geometry,
+              originalValue: req.issueEntities[0].geometry
+            }
+          }
         ],
-        geometries: []
+        geometries: [req.issueEntities[0].geometry]
       })
     })
 
@@ -109,10 +137,10 @@ describe('issueDetails.middleware.js', () => {
     it('should add new fields for issues without matching specification fields', () => {
       req.issues.push({ entity: 'entity1', field: 'newField', message: 'New Error' })
       prepareEntity(req, res, () => {})
-      expect(req.entry.fields).toHaveLength(3)
-      expect(req.entry.fields[2].key.text).toBe('newField')
-      expect(req.entry.fields[2].value.html).toBe('<p class="govuk-error-message">New Error</p>')
-      expect(req.entry.fields[2].classes).toContain('dl-summary-card-list__row--error')
+      expect(req.entry.fields).toHaveLength(4)
+      expect(req.entry.fields[3].key.text).toBe('newField')
+      expect(req.entry.fields[3].value.html).toBe('<p class="govuk-error-message">New Error</p>')
+      expect(req.entry.fields[3].classes).toContain('dl-summary-card-list__row--error')
     })
 
     it('should handle no issues or specification fields', () => {
