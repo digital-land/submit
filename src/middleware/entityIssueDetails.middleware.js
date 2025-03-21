@@ -34,12 +34,22 @@ const validateIssueDetailsQueryParams = validateQueryParams({
 })
 
 /**
+ * @typedef {Object} SummaryItem
+ * @property {Object} key
+ * @property {string} key.text
+ * @property {Object} value
+ * @property {string} value.html
+ * @property {string|undefined} value.originalValue
+ * @property {string} classes
+ */
+
+/**
  * Returns a data in a format used by the `govukSummaryList` component.
  *
  * @param {*} text
  * @param {*} html
  * @param {*} classes
- * @returns {{key: {text: string}, value: { html: string, originalValue: string }, classes: string}}
+ * @returns {SummaryItem}
  */
 export const getIssueField = (text, html, classes) => {
   classes = classes || ''
@@ -80,7 +90,7 @@ export function prepareEntity (req, res, next) {
   const entityData = issueEntities[pageNumber - 1]
   const entityIssues = issues.filter(issue => issue.entity === entityData.entity)
 
-  /** @type {Map<string, { key: { text: string }, classes: string, value: { html: string, originalValue?: string }} >} */
+  /** @type {Map<string, SummaryItem>} */
   const specFields = new Map()
   for (const { field, datasetField } of specification.fields) {
     const value = entityData[field] || entityData[datasetField]
