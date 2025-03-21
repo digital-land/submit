@@ -7,7 +7,7 @@ export default class StartPage extends BasePage {
   }
 
   async clickStartNow (skipVerification) {
-    await this.page.click('text=Start now')
+    // await this.page.click('text=Start now')
     return await super.verifyAndReturnPage(DatasetPage, skipVerification)
   }
 }
