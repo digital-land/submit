@@ -48,9 +48,9 @@ class CheckDeepLinkController extends PageController {
     const { dataset, orgName, orgId } = req.query
     const validationResult = v.safeParse(QueryParams, req.query)
     if (!(validationResult.success && datasets.has(dataset))) {
-      logger.info('DeepLinkController.get(): invalid params for deep link, redirecting to start page',
+      logger.info('DeepLinkController.get(): invalid params for deep link, redirecting to landing page',
         { type: types.App, query: req.query })
-      return res.redirect('/check')
+      return res.redirect('/')
     }
 
     req.sessionModel.set('dataset', dataset)

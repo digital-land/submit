@@ -11,6 +11,7 @@ import resultsController from '../../../controllers/resultsController.js'
 import checkDeepLinkController from '../../../controllers/checkDeepLinkController.js'
 import shareResultsController from '../../../controllers/ShareResultsController.js'
 import issueDetailsController from '../../../controllers/issueDetailsController.js'
+import checkStartController from '../../../controllers/checkStartController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -20,6 +21,7 @@ const baseSettings = {
 
 export default {
   '/': {
+    controller: checkStartController,
     entryPoint: true,
     resetJourney: true,
     next: 'dataset',

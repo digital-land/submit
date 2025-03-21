@@ -39,10 +39,10 @@ class EndpointSubmissionFormDeepLinkController extends PageController {
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
     const { dataset, orgName, orgId } = req.query
 
-    if (!dataset || !orgName) {
-      const error = new Error('Missing dataset or orgName in query params')
-      error.status = 400
-      return next(error)
+    if (!dataset || !orgName || !datasets.has(dataset)) {
+      logger.info('EndpointSubmissionFormDeepLinkController.get(): invalid params for deep link, redirecting to landing page',
+        { type: types.App, query: req.query })
+      return res.redirect('/')
     }
 
     const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false }

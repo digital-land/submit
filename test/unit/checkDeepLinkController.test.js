@@ -29,7 +29,7 @@ describe('CheckDeepLinkController', () => {
       const { req, res, next } = mockMiddlewareArgs({ query: {} })
       checkDeepLinkController.get(req, res, next)
 
-      expect(res.redirect).toHaveBeenCalledWith('/check')
+      expect(res.redirect).toHaveBeenCalledWith('/')
       expect(Array.from(req.sessionModel.keys())).toStrictEqual([])
       expect(next).toBeCalledTimes(0)
     })
