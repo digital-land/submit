@@ -105,7 +105,7 @@ export function prepareEntity (req, res, next) {
   })
 
   const geometries = []
-  for (const [key, field] of specFields.entries()) {
+  for (const field of specFields.values()) {
     const fieldName = field.key.text
     if (fieldName === 'geometry' || fieldName === 'point') {
       if (field.value.originalValue) {
