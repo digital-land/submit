@@ -153,7 +153,7 @@ test.describe('status and results', () => {
     const resultsPage = new ResultsPage(page)
     await resultsPage.navigateToRequest('processing')
     await new Promise(resolve => setTimeout(resolve, 500))
-    expect(page.url()).toContain('/check/results/processing')
+    expect(page.url()).toContain('/check/status/processing')
   })
 
   test('with an existing request id that has completed when visiting the results page the user remains on the results page', async ({ page }) => {
