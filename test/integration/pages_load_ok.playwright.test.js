@@ -59,7 +59,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await startPage.navigateHere()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-    uploadMethodPage.goBack()
+    await uploadMethodPage.goBack()
 
     const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
@@ -74,7 +74,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await startPage.navigateHere()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-    uploadMethodPage.goBack()
+    await uploadMethodPage.goBack()
 
     const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
@@ -93,7 +93,7 @@ test.describe('with a valid session, the user can access the later form pages', 
     await startPage.navigateHere()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-    uploadMethodPage.goBack()
+    await uploadMethodPage.goBack()
 
     const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
@@ -116,17 +116,17 @@ test.describe('with a valid session, the user can access the later form pages', 
     await startPage.navigateHere()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-    uploadMethodPage.goBack()
+    await uploadMethodPage.goBack()
 
     const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
     await datasetPage.selectDataset(datasets.Tree)
-    const geometryTypePage = await datasetPage.clickContinue()
 
+    const geometryTypePage = await datasetPage.clickContinue()
     await geometryTypePage.waitForPage()
     await geometryTypePage.selectGeometryType(geometryTypes.point)
-    const uploadMethodPage2 = await geometryTypePage.clickContinue()
 
+    const uploadMethodPage2 = await geometryTypePage.clickContinue()
     await uploadMethodPage2.waitForPage()
     await uploadMethodPage2.selectUploadMethod(uploadMethods.URL)
     await uploadMethodPage2.clickContinue()

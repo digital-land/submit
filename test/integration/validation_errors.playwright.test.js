@@ -8,7 +8,7 @@ test('when the user clicks continue on the geometry-type page without entering a
   await startPage.navigateHere()
 
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-  uploadMethodPage.goBack()
+  await uploadMethodPage.goBack()
 
   const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
   await datasetPage.selectDataset(datasets.Tree)
@@ -30,7 +30,7 @@ test('when the user clicks continue on the how do you want to provide your data 
   await startPage.navigateHere()
 
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-  uploadMethodPage.goBack()
+  await uploadMethodPage.goBack()
 
   const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
   await datasetPage.selectDataset(datasets.Conservation_area_dataset)
@@ -52,7 +52,7 @@ test('when the user clicks continue on the file upload page without selecting a 
   await startPage.navigateHere()
 
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-  uploadMethodPage.goBack()
+  await uploadMethodPage.goBack()
 
   const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
   await datasetPage.selectDataset(datasets.Conservation_area_dataset)
@@ -77,7 +77,7 @@ test('when the user clicks continue on the url page without entering a url, the 
   await startPage.navigateHere()
 
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-  uploadMethodPage.goBack()
+  await uploadMethodPage.goBack()
 
   const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
   await datasetPage.selectDataset(datasets.Conservation_area_dataset)
