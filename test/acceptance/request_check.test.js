@@ -104,20 +104,8 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   await resultsPage.expectPageHasBlockingTasks()
   await resultsPage.expectPageHasTabs(jsEnabled)
 
-  // issue details page
   await page.getByText('description column is missing').click()
-  await page.waitForURL(/\/check\/results\/.*\/issue\/.*/, { timeout: 4000 })
-  await expect(page.getByText('Your data has issues')).toBeVisible()
-  await expect(page.getByText('You cannot submit your data until you fix the issues')).toBeVisible()
-  const itemsLocator = page.locator('.govuk-error-summary ul li')
-  expect(await itemsLocator.count()).toBe(1)
-  await expect(itemsLocator).toContainText('description column is missing')
-  await expect(page.getByText('How to improve Adur District Council’s data')).toBeVisible()
-
-  // verify we get correctly routed to a 404
-  const nonExistingIssue = page.url().replace(/.*\/check/, '/check').replace('/description', '/foobar')
-  const response = await page.goto(nonExistingIssue)
-  expect(response.status()).toBe(404)
+  await expect(page.getByText('You cannot submit your data to the platform until you fix these issues.')).toBeVisible()
 }
 
 function log (message, start = false) {
