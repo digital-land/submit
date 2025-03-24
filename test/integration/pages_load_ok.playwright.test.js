@@ -4,9 +4,9 @@ import StartPage from '../PageObjectModels/startPage'
 import StatusPage from '../PageObjectModels/statusPage'
 import ResultsPage from '../PageObjectModels/resultsPage'
 
-import { datasets } from '../PageObjectModels/datasetPage'
+import DatasetPage, { datasets } from '../PageObjectModels/datasetPage'
 import { geometryTypes } from '../PageObjectModels/geometryTypePage'
-import { uploadMethods } from '../PageObjectModels/uploadMethodPage'
+import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
 const checkRouteResponse = async (page, route, statuses) => {
   const response = await page.goto(route)
@@ -46,21 +46,22 @@ test.describe('without a valid session, the user can not access the later form p
 })
 
 test.describe('with a valid session, the user can access the later form pages', () => {
-  test('/check/dataset', async ({ page }) => {
+  test('/check', async ({ page }) => {
     const startPage = new StartPage(page)
-
     await startPage.navigateHere()
-    await startPage.clickStartNow()
+    await startPage.verifyAndReturnPage(UploadMethodPage)
 
-    await checkRouteResponse(page, '/check/dataset', [200, 304])
+    await checkRouteResponse(page, '/check/upload-method', [200, 304])
   })
 
   test('/check/geometry-type', async ({ page }) => {
     const startPage = new StartPage(page)
-
     await startPage.navigateHere()
-    const datasetPage = await startPage.clickStartNow()
 
+    const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
+    uploadMethodPage.goBack()
+
+    const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
     await datasetPage.selectDataset(datasets.Tree)
     await datasetPage.clickContinue()
@@ -70,10 +71,12 @@ test.describe('with a valid session, the user can access the later form pages', 
 
   test('/check/upload-method', async ({ page }) => {
     const startPage = new StartPage(page)
-
     await startPage.navigateHere()
-    const datasetPage = await startPage.clickStartNow()
 
+    const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
+    uploadMethodPage.goBack()
+
+    const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
     await datasetPage.selectDataset(datasets.Tree)
     const geometryTypePage = await datasetPage.clickContinue()
@@ -87,42 +90,46 @@ test.describe('with a valid session, the user can access the later form pages', 
 
   test('/check/upload', async ({ page }) => {
     const startPage = new StartPage(page)
-
     await startPage.navigateHere()
-    const datasetPage = await startPage.clickStartNow()
 
+    const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
+    uploadMethodPage.goBack()
+
+    const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
     await datasetPage.selectDataset(datasets.Tree)
     const geometryTypePage = await datasetPage.clickContinue()
 
     await geometryTypePage.waitForPage()
     await geometryTypePage.selectGeometryType(geometryTypes.point)
-    const uploadMethodPage = await geometryTypePage.clickContinue()
+    const uploadMethodPage2 = await geometryTypePage.clickContinue()
 
-    await uploadMethodPage.waitForPage()
-    await uploadMethodPage.selectUploadMethod(uploadMethods.File)
-    await uploadMethodPage.clickContinue()
+    await uploadMethodPage2.waitForPage()
+    await uploadMethodPage2.selectUploadMethod(uploadMethods.File)
+    await uploadMethodPage2.clickContinue()
 
     await checkRouteResponse(page, '/check/upload', [200, 304])
   })
 
   test('/check/url', async ({ page }) => {
     const startPage = new StartPage(page)
-
     await startPage.navigateHere()
-    const datasetPage = await startPage.clickStartNow()
 
+    const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
+    uploadMethodPage.goBack()
+
+    const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
     await datasetPage.selectDataset(datasets.Tree)
     const geometryTypePage = await datasetPage.clickContinue()
 
     await geometryTypePage.waitForPage()
     await geometryTypePage.selectGeometryType(geometryTypes.point)
-    const uploadMethodPage = await geometryTypePage.clickContinue()
+    const uploadMethodPage2 = await geometryTypePage.clickContinue()
 
-    await uploadMethodPage.waitForPage()
-    await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
-    await uploadMethodPage.clickContinue()
+    await uploadMethodPage2.waitForPage()
+    await uploadMethodPage2.selectUploadMethod(uploadMethods.URL)
+    await uploadMethodPage2.clickContinue()
 
     await checkRouteResponse(page, '/check/url', [200, 304])
   })
@@ -134,7 +141,7 @@ test.describe('status and results', () => {
     const statusPage = new StatusPage(page)
     await statusPage.navigateToRequest('processing')
     await new Promise(resolve => setTimeout(resolve, 500))
-    expect(page.url()).toContain('/status/processing')
+    expect(page.url()).toContain('/check/status/processing')
   })
 
   // ToDo: potential improvement for the future?
@@ -146,14 +153,14 @@ test.describe('status and results', () => {
     const resultsPage = new ResultsPage(page)
     await resultsPage.navigateToRequest('processing')
     await new Promise(resolve => setTimeout(resolve, 500))
-    expect(page.url()).toContain('/status/processing')
+    expect(page.url()).toContain('/check/results/processing')
   })
 
   test('with an existing request id that has completed when visiting the results page the user remains on the results page', async ({ page }) => {
     const resultsPage = new ResultsPage(page)
     await resultsPage.navigateToRequest('completed')
     await new Promise(resolve => setTimeout(resolve, 500))
-    expect(page.url()).toContain('/results/completed/1')
+    expect(page.url()).toContain('/check/results/completed/1')
   })
 
   // ToDo: just waiting on Alex's 404 page
