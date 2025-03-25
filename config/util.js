@@ -6,7 +6,7 @@ import * as v from 'valibot'
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
 
 /**
- * Informatino to allow us to display sanely worded messages about entities.
+ * Information to allow us to display sanely worded messages about entities.
  *
  * - `base` is the part that doesn't change
  * - `variable` should be specified in singular, and can be potentially turned into plural
