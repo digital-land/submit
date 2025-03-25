@@ -290,7 +290,7 @@ describe('entityOutOfBoundsMessage()', () => {
   it('correctly displays configured dataset', () => {
     expect(entityOutOfBoundsMessage('article-4-direction', 2)).toBe('You have 2 article 4 direction areas outside of your boundary')
     expect(entityOutOfBoundsMessage('article-4-direction-area', 2)).toBe('You have 2 article 4 direction areas outside of your boundary')
-    expect(entityOutOfBoundsMessage('brownfield-land', 2)).toBe('You have 2 brownfield lands outside of your boundary')
+    expect(entityOutOfBoundsMessage('brownfield-land', 2)).toBe('You have 2 brownfield land sites outside of your boundary')
     expect(entityOutOfBoundsMessage('conservation-area', 2)).toBe('You have 2 conservation areas outside of your boundary')
     expect(entityOutOfBoundsMessage('conservation-area-document', 2)).toBe('You have 2 conservation areas outside of your boundary')
     expect(entityOutOfBoundsMessage('tree-preservation-order', 2)).toBe('You have 2 tree preservation orders outside of your boundary')
