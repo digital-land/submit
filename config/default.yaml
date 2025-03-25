@@ -61,8 +61,8 @@ datasetsConfig:
   brownfield-land:
     guidanceUrl: https://www.gov.uk/government/publications/brownfield-land-registers-data-standard/publish-your-brownfield-land-data
     entityDisplayName:
-      base: brownfield
-      variable: land
+      base: brownfield land
+      variable: site
   conservation-area:
     guidanceUrl: /guidance/specifications/conservation-area
     entityDisplayName:
