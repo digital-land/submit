@@ -71,10 +71,6 @@ describe('issueDetails.middleware.js', () => {
     const res = {}
 
     beforeEach(() => {
-      // req.entities = [
-      //   { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2' },
-      //   { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4' },
-      // ]
       req.issueEntities = [
         { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2', geometry: 'POINT (-0.10 51.49)' },
         { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4', geometry: undefined }
