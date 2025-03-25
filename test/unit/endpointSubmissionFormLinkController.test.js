@@ -29,10 +29,7 @@ describe('EndpointSubmissionFormDeepLinkController', () => {
       const { req, res, next } = mockMiddlewareArgs({ query: {} })
       endpointSubmissionFormDeepLinkController.get(req, res, next)
 
-      const error = new Error('Missing dataset or orgName in query params')
-      error.status = 400
-
-      expect(next).toHaveBeenCalledWith(error)
+      expect(res.redirect).toHaveBeenCalledWith('/')
     })
 
     it('should update session with deep link info', async () => {
