@@ -73,9 +73,30 @@ export const prepareTableParams = (req, res, next) => {
   next()
 }
 
+/**
+ *
+ * @param {Object[]} rows issue rows
+ * @param {Object} rows.columns
+ * @returns {Object[]}
+ */
+function geometryProps (rows) {
+  const geometries = []
+  for (const { columns } of rows) {
+    if ('point' in columns) {
+      geometries.push({ geo: columns.point.value, reference: columns.reference.html, type: 'point' })
+    }
+    if ('geometry' in columns) {
+      geometries.push({ geo: columns.geometry.value, reference: columns.reference.html, type: 'geometry' })
+    }
+  }
+  return geometries
+}
+
 export const prepareTemplateParams = (req, res, next) => {
   const { tableParams, orgInfo, dataset, errorSummary, pagination, dataRange, issueSpecification } = req
   const { issue_type: issueType } = req.params
+
+  const geometries = geometryProps(tableParams.rows)
 
   req.templateParams = {
     tableParams,
@@ -85,7 +106,8 @@ export const prepareTemplateParams = (req, res, next) => {
     issueType,
     pagination,
     dataRange,
-    issueSpecification
+    issueSpecification,
+    geometries
   }
   next()
 }

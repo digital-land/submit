@@ -54,7 +54,13 @@ describe('map.js', () => {
 
       expect(map.map.addSource).toHaveBeenCalledWith('geometry-0', {
         type: 'geojson',
-        data: { type: 'Point', coordinates: [1, 1] }
+        data: {
+          type: 'Feature',
+          geometry: { coordinates: [1, 1], type: 'Point' },
+          properties: {
+            geo: 'POINT (1 1)'
+          }
+        }
       })
       expect(map.map.addLayer).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'circle', id: 'geometry-0' }),

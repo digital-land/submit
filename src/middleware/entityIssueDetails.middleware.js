@@ -114,15 +114,20 @@ export function prepareEntity (req, res, next) {
     }
   })
 
+  const reference = specFields.get('reference')
   const geometries = []
-  for (const field of specFields.values()) {
-    const fieldName = field.key.text
-    if (fieldName === 'geometry' || fieldName === 'point') {
-      if (field.value.originalValue) {
-        geometries.push(field.value.originalValue)
-      }
+  const pushGeometry = (key) => {
+    const val = specFields.get(key)
+    if (val) {
+      geometries.push({
+        type: key,
+        geo: val.value.originalValue,
+        reference: reference?.value?.html
+      })
     }
   }
+  pushGeometry('geometry')
+  pushGeometry('point')
 
   req.entry = {
     title: entityData.name || `entity: ${entityData.entity}`,
