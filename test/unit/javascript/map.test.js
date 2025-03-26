@@ -49,8 +49,7 @@ describe('map.js', () => {
     it('should handle different geometry types correctly', () => {
       parse.mockReturnValueOnce({ type: 'Point', coordinates: [1, 1] })
 
-      const map = new Map({ containerId: 'map', data: [], interactive: true, wktFormat: true })
-      map.addWktDataToMap(['POINT (1 1)'])
+      const map = new Map({ containerId: 'map', data: ['POINT (1 1)'], interactive: true, wktFormat: true })
 
       expect(map.map.addSource).toHaveBeenCalledWith('geometry-0', {
         type: 'geojson',
