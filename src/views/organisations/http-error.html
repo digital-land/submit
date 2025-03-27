@@ -46,8 +46,13 @@
       Error accessing endpoint URL
     </h2>
 
-    <p>There was an error accessing the endpoint URL. Please check the URL is correct and your API is functioning correctly.
-    </p>
+    <p>There was an error accessing the endpoint URL. Possible reasons for this error could be:</p>
+    
+    <ul class="govuk-list govuk-list--bullet">
+      <li>the URL is incorrect</li>
+      <li>your API is not functioning correctly</li>
+      <li>the endpoint URL has changed</li>
+      <li>the endpoint URL is no longer active</li></ul>
 
     <h3 class="govuk-heading-m">Error details</h3>
 
@@ -89,6 +94,8 @@
     }) }}
 
     <p>If your endpoint URL has changed you can <a class="resubmit-link" href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">resubmit your endpoint URL</a>.</p>
+
+    <p>If your endpoint URL is no longer active, let us know by emailing digitalland@communities.gov.uk. We will retire it.</p>
 
     <p>You should try to make sure your endpoint URLs stay the same when you update your data so we can collect your data
       each night.</p>
