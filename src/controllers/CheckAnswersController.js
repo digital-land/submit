@@ -91,7 +91,7 @@ class CheckAnswersController extends PageController {
     const csv = stringify(csvData)
 
     const file = new File([csv], `request-${data.organisationId}-${data.dataset}-${dateNow}.csv`, { type: 'text/csv' })
-    const attachmentResponse = await attachFileToIssue(response.data.issueKey, file)
+    const attachmentResponse = await attachFileToIssue(response.data.issueKey, file, description)
 
     if (attachmentResponse.error || !attachmentResponse.data) {
       logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to attach file to Jira issue', {
