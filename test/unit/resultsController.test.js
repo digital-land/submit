@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate, getFileNameOrUrlAndCheckedTime } from '../../src/controllers/resultsController'
+import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate, getFileNameOrUrlAndCheckedTime, getPassedChecks } from '../../src/controllers/resultsController'
 import { getRequestData } from '../../src/services/asyncRequestApi'
 import PageController from '../../src/controllers/pageController'
 
@@ -260,5 +260,48 @@ describe('getFileNameOrUrlAndCheckedTime', () => {
     expect(req.locals.uploadInfo.url).toBeUndefined()
     expect(req.locals.uploadInfo.checkedTime).toBeUndefined()
     expect(next).toHaveBeenCalled()
+  })
+})
+
+describe('getPassedChecks()', () => {
+  const reqTemplate = {
+    locals: {
+      responseDetails: {
+        pagination: {
+          totalResults: '99'
+        }
+      }
+    },
+    tasks: [],
+    missingColumnTasks: []
+  }
+  it('displays correct number of rows', () => {
+    const req = structuredClone(reqTemplate)
+    getPassedChecks(req, {}, vi.fn())
+
+    expect(req.locals.passedChecks).toMatchObject([
+      {
+        status: { tag: { text: 'Passed' } },
+        title: { text: 'Found 99 rows' }
+      },
+      {
+        status: { tag: { text: 'Passed' } },
+        title: { text: 'All data is valid' }
+      }
+    ])
+  })
+
+  it('handles zero record case', () => {
+    const req1 = structuredClone(reqTemplate)
+    req1.locals.responseDetails.pagination.totalResults = '0'
+
+    getPassedChecks(req1, {}, vi.fn())
+    expect(req1.locals.passedChecks).toStrictEqual([])
+
+    const req2 = structuredClone(reqTemplate)
+    req2.locals.responseDetails.pagination.totalResults = undefined
+
+    getPassedChecks(req2, {}, vi.fn())
+    expect(req2.locals.passedChecks).toStrictEqual([])
   })
 })
