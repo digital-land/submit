@@ -405,29 +405,36 @@ export function getNonBlockingTasks (req, res, next) {
 }
 
 export function getPassedChecks (req, res, next) {
-  const { tasks, totalRows, missingColumnTasks } = req
+  const { tasks, missingColumnTasks } = req
 
   const passedChecks = []
 
   const makePassedCheck = (text) => makeTaskParam(req, { taskMessage: text, status: taskStatus.passed })
 
   // add task complete for how many rows are in the table
-  if (totalRows > 0) {
-    passedChecks.push(makePassedCheck(`Found ${totalRows} rows`))
+  const totalNumRows = req.locals.responseDetails.pagination.totalResults
+  if (Number.isInteger(totalNumRows) && totalNumRows > 0) {
+    passedChecks.push(makePassedCheck(`Found ${totalNumRows} rows`))
   }
 
-  // add task complete for no duplicate refs
-  if (missingColumnTasks.findIndex(task => task.title.text === 'reference column is missing') < 0 && tasks.findIndex(task => task.issueType === 'reference values are not unique') < 0) {
-    passedChecks.push(makePassedCheck('All rows have unique references'))
-  }
+  if (missingColumnTasks.length > 0 || tasks.length > 0) {
+    // add task complete for no duplicate refs
+    const foundRefColMissing = missingColumnTasks.findIndex(task => task.title.text === 'reference column is missing') >= 0
+    const foundRefValsNotUnique = tasks.findIndex(task => task.issueType === 'reference values are not unique') >= 0
+    if (!foundRefColMissing && !foundRefValsNotUnique) {
+      passedChecks.push(makePassedCheck('All rows have unique references'))
+    }
 
-  // add task complete for valid geoms
-  if (missingColumnTasks.findIndex(task => task.title.text === 'geometry column is missing') < 0 && tasks.findIndex(task => task.issueType === 'invalid WKT') < 0) {
-    passedChecks.push(makePassedCheck('All rows have valid geometry'))
+    // add task complete for valid geoms
+    const foundGeometryColMissing = missingColumnTasks.findIndex(task => task.title.text === 'geometry column is missing') >= 0
+    const foundInvalidWKT = tasks.findIndex(task => task.issueType === 'invalid WKT') >= 0
+    if (!foundGeometryColMissing && !foundInvalidWKT) {
+      passedChecks.push(makePassedCheck('All rows have valid geometry'))
+    }
   }
 
   // add task complete for all data is valid
-  if (tasks.length === 0) {
+  if (totalNumRows > 0 && tasks.length === 0) {
     passedChecks.push(makePassedCheck('All data is valid'))
   }
 
