@@ -268,7 +268,7 @@ describe('getPassedChecks()', () => {
     locals: {
       responseDetails: {
         pagination: {
-          totalResults: 99
+          totalResults: '99'
         }
       }
     },
@@ -292,10 +292,16 @@ describe('getPassedChecks()', () => {
   })
 
   it('handles zero record case', () => {
-    const req = structuredClone(reqTemplate)
-    req.locals.responseDetails.pagination.totalResults = 0
+    const req1 = structuredClone(reqTemplate)
+    req1.locals.responseDetails.pagination.totalResults = '0'
 
-    getPassedChecks(req, {}, vi.fn())
-    expect(req.locals.passedChecks).toStrictEqual([])
+    getPassedChecks(req1, {}, vi.fn())
+    expect(req1.locals.passedChecks).toStrictEqual([])
+
+    const req2 = structuredClone(reqTemplate)
+    req2.locals.responseDetails.pagination.totalResults = undefined
+
+    getPassedChecks(req2, {}, vi.fn())
+    expect(req2.locals.passedChecks).toStrictEqual([])
   })
 })

@@ -408,14 +408,7 @@ export function getPassedChecks (req, res, next) {
   const { tasks, missingColumnTasks } = req
 
   const passedChecks = []
-
   const makePassedCheck = (text) => makeTaskParam(req, { taskMessage: text, status: taskStatus.passed })
-
-  // add task complete for how many rows are in the table
-  const totalNumRows = req.locals.responseDetails.pagination.totalResults
-  if (Number.isInteger(totalNumRows) && totalNumRows > 0) {
-    passedChecks.push(makePassedCheck(`Found ${totalNumRows} rows`))
-  }
 
   if (missingColumnTasks.length > 0 || tasks.length > 0) {
     // add task complete for no duplicate refs
@@ -433,9 +426,14 @@ export function getPassedChecks (req, res, next) {
     }
   }
 
-  // add task complete for all data is valid
-  if (totalNumRows > 0 && tasks.length === 0) {
-    passedChecks.push(makePassedCheck('All data is valid'))
+  // add task complete for how many rows are in the table
+  const totalNumRows = Number.parseInt(req.locals.responseDetails.pagination.totalResults)
+  if (Number.isInteger(totalNumRows) && totalNumRows > 0) {
+    passedChecks.unshift(makePassedCheck(`Found ${totalNumRows} rows`))
+
+    if (tasks.length === 0 && missingColumnTasks.length === 0) {
+      passedChecks.push(makePassedCheck('All data is valid'))
+    }
   }
 
   req.locals.passedChecks = passedChecks
