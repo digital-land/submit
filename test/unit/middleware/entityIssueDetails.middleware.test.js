@@ -120,7 +120,11 @@ describe('issueDetails.middleware.js', () => {
             }
           }
         ],
-        geometries: [req.issueEntities[0].geometry]
+        geometries: [{
+          type: 'geometry',
+          geo: req.issueEntities[0].geometry,
+          reference: undefined
+        }]
       })
     })
 

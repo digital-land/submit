@@ -153,13 +153,13 @@ describe('issueTableMiddleware', () => {
   describe('prepareTemplateParams', () => {
     it('should set templateParams object with all required props', () => {
       const req = {
-        tableParams: 'some-table-params',
-        orgInfo: 'some-org-info',
-        dataset: 'some-dataset',
+        tableParams: { rows: [] },
+        orgInfo: { organisation: 'some-org-info' },
+        dataset: { dataset: 'some-dataset' },
         errorSummary: 'some-error-summary',
         params: { issue_type: 'some-issue-type' },
-        pagination: 'some-pagination',
-        dataRange: 'some-data-range'
+        pagination: {},
+        dataRange: {}
       }
       const res = {}
       const next = function () {}
