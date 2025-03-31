@@ -325,7 +325,9 @@ const makeTaskParam = (req, { taskMessage, status, ...opts }) => {
 
 export function getTotalRows (req, res, next) {
   const { responseDetails } = req.locals
-  req.totalRows = responseDetails.getRows().length
+  const totalRows = Number.parseInt(responseDetails.pagination.totalResults)
+  // NOTE: the fallback number may not be accurate, but it's better than just giving up and throwing
+  req.totalRows = Number.isInteger(totalRows) ? totalRows : responseDetails.getRows().length
   next()
 }
 
@@ -405,7 +407,7 @@ export function getNonBlockingTasks (req, res, next) {
 }
 
 export function getPassedChecks (req, res, next) {
-  const { tasks, missingColumnTasks } = req
+  const { tasks, totalRows, missingColumnTasks } = req
 
   const passedChecks = []
   const makePassedCheck = (text) => makeTaskParam(req, { taskMessage: text, status: taskStatus.passed })
@@ -427,9 +429,8 @@ export function getPassedChecks (req, res, next) {
   }
 
   // add task complete for how many rows are in the table
-  const totalNumRows = Number.parseInt(req.locals.responseDetails.pagination.totalResults)
-  if (Number.isInteger(totalNumRows) && totalNumRows > 0) {
-    passedChecks.unshift(makePassedCheck(`Found ${totalNumRows} rows`))
+  if (totalRows > 0) {
+    passedChecks.unshift(makePassedCheck(`Found ${totalRows} rows`))
 
     if (tasks.length === 0 && missingColumnTasks.length === 0) {
       passedChecks.push(makePassedCheck('All data is valid'))
