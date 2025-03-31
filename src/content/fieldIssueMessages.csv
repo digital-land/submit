@@ -4,7 +4,7 @@ issue_type,singular_message,plural_message
 "invalid coordinates", {column_name} must use the WGS84 or ETRS89 coordinate systems, {num_issues} entries in the {column_ name} field that must use the WGS84 or ETRS89 coordinate systems
 "invalid date", {column_name} must be in YYYY-MM-DD format, {num_issues} entries have {column_name} fields that must be in YYYY-MM-DD format
 "invalid decimal", {column_name} must only contain numbers and a decimal point, {num_issues} entries in the {column_name} field which must only contain numbers and a decimal point
-"invalid flag", "{column_name} must be 'yes', 'no', or blank","{num_issues} entries in the {column_name} field which must be 'yes', or blank"
+"invalid flag", "{column_name} must be 'yes', 'no', or blank","{num_issues} entries in the {column_name} field which must be 'yes', 'no', or blank"
 "invalid geometry - not fixable", {column_name} must have valid geometry, {num_issues} entries have {column_name} fields that must have valid geometry
 "invalid integer", {column_name} must only contain whole numbers, {num_issues} entries in the {column_name} field which must only contain whole numbers
 "invalid organisation", {column_name} must be a valid organisation, {num_issues} entries have {column_name} fields that must have a valid organisation
