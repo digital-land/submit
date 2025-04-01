@@ -25,6 +25,6 @@ describe('issueDetailsController', () => {
     })
     const next = vi.fn()
     prepareTask(req, {}, next)
-    expect(req.locals.task.message.trim()).toBe('2 entries have <span class="column-name">some flag</span> fields that must have valid YES or NO values')
+    expect(req.locals.task.message.trim()).toBe('2 entries in the <span class="column-name">some flag</span> field which must be \'yes\', \'no\', or blank')
   })
 })
