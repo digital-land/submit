@@ -17,3 +17,9 @@ url: 'http://localhost:5000/'
 features:
   submitEndpointForm:
     enabled: true
+  queryMetrics:
+    enabled: true
+  requestInfoStore:
+    enabled: true
+  datasetteCaching:
+    enabled: false

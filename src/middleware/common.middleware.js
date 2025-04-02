@@ -223,7 +223,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
   const promises = resources.map(resource => {
     const query = `SELECT entry_count FROM dataset_resource WHERE resource = "${resource.resource}"`
-    return datasette.runQuery(query, resource.dataset)
+    return datasette.runQuery(query, resource.dataset, { req, resultKey: 'resources' })
   })
 
   try {

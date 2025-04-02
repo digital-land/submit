@@ -6,7 +6,7 @@
 
 import performanceDbApi from '../services/performanceDbApi.js'
 import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
+import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets, cached } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import config from '../../config/index.js'
 import _ from 'lodash'
@@ -352,6 +352,11 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
   result: 'expectationOutOfBounds'
 })
 
+const cacheKeyFn = (req, resultKey) => {
+  const { lpa } = req.params
+  return `lpa-overview:${lpa}:${resultKey}`
+}
+
 /**
  * Organisation (LPA) overview page middleware chain.
  */
@@ -360,8 +365,16 @@ export default [
   fetchResources,
   fetchDatasetErrorStatus,
   fetchEndpointSummary,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  cached({
+    middleware: fetchEntityIssueCounts,
+    resultKey: 'entityIssueCounts',
+    key: cacheKeyFn
+  }),
+  cached({
+    middleware: fetchEntryIssueCounts,
+    resultKey: 'entryIssueCounts',
+    key: cacheKeyFn
+  }),
   fetchEntityCounts,
   setAvailableDatasets,
   isFeatureEnabled('expectactionOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,

@@ -2,6 +2,8 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { MiddlewareError, errorTemplateContext } from '../utils/errors.js'
 
+const reqId = Symbol.for('reqId')
+
 export function setupErrorHandlers (app) {
   const errContext = errorTemplateContext()
   app.use((err, req, res, next) => {
@@ -12,7 +14,8 @@ export function setupErrorHandlers (app) {
       message: 'error occurred',
       error: JSON.stringify(err),
       errorMessage: err.message,
-      errorStack: err.stack
+      errorStack: err.stack,
+      id: req[req.id]
     })
 
     if (res.headersSent) {
@@ -28,7 +31,7 @@ export function setupErrorHandlers (app) {
       res.status(middlewareError.statusCode).render(middlewareError.template, { ...errContext, err: middlewareError })
     } catch (e) {
       logger.error('Failed to render error page.', {
-        type: types.Response, errorMessage: e.message, errorStack: e.stack, originalError: err.message, endpoint: req.originalUrl
+        type: types.Response, errorMessage: e.message, errorStack: e.stack, originalError: err.message, endpoint: req.originalUrl, id: req[reqId]
       })
       const renderError = new MiddlewareError('Failed to render error page', 500, { cause: e })
       res.status(500).render('errorPages/error.njk', { ...errContext, err: renderError })

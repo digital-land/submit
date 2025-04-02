@@ -76,7 +76,7 @@ export const tableParams = v.strictObject({
         error: v.optional(v.object({
           message: v.string()
         })),
-        value: v.optional(v.string()),
+        value: v.nullish(v.string()),
         html: v.optional(v.string()),
         classes: v.optional(v.string())
       })
@@ -208,10 +208,10 @@ export const OrgEndpointError = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   errorData: v.strictObject({
-    endpoint_url: v.url(),
-    http_status: v.optional(v.integer()),
-    latest_log_entry_date: v.isoDateTime(),
-    latest_200_date: v.optional(v.isoDateTime())
+    endpoint_url: v.pipe(v.string(), v.url()),
+    http_status: v.optional(v.pipe(v.number(), v.integer())),
+    latest_log_entry_date: v.pipe(v.string(), v.isoDateTime()),
+    latest_200_date: v.optional(v.pipe(v.string(), v.isoDateTime()))
   })
 })
 
@@ -253,8 +253,8 @@ export const CheckAnswers = v.strictObject({
     name: NonEmptyString,
     email: v.pipe(v.string(), v.email()),
     dataset: NonEmptyString,
-    'endpoint-url': v.url(),
-    'documentation-url': v.url(),
+    'endpoint-url': v.pipe(v.string(), v.url()),
+    'documentation-url': v.pipe(v.string(), v.url()),
     hasLicence: NonEmptyString,
     errors: v.optional(v.array(v.strictObject({
       text: NonEmptyString

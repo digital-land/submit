@@ -16,8 +16,16 @@ import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
 import * as v from 'valibot'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
+import config from '../../config/index.js'
+import * as zlib from 'zlib'
+import { commandOptions } from 'redis'
 
 import { dataSubjects } from '../utils/utils.js'
+import { getRedis } from '../serverSetup/session.js'
+import { isFeatureEnabled } from '../utils/features.js'
+
+const requestStart = Symbol.for('requestStart')
+const requestId = Symbol.for('reqId')
 
 const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
   (dataSubject.dataSets || [])
@@ -90,7 +98,7 @@ async function fetchOneFn (req, res, next) {
   logger.debug({ type: types.DataFetch, message: 'fetchOne', resultKey: this.result })
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req))
+    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req, resultKey: this.result })
     const fallbackPolicy = this.fallbackPolicy ?? FetchOneFallbackPolicy['not-found-error']
     if (result.formattedData.length === 0) {
       // we can make the 404 more informative by informing the use what exactly was "not found"
@@ -118,7 +126,7 @@ async function fetchOneFn (req, res, next) {
 export async function fetchManyFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req))
+    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), { req, resultKey: this.result })
     req[this.result] = result.formattedData
     logger.debug({ type: types.DataFetch, message: 'fetchMany', resultKey: this.result, resultCount: result.formattedData.length })
     next()
@@ -151,7 +159,7 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
+      return datasette.runQuery(query, dataset, { req, resultKey: this.result }).catch(error => {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
       })
@@ -192,7 +200,7 @@ export async function fetchManyFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
+      return datasette.runQuery(query, dataset, { req, resultKey: this.result }).catch(error => {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
       })
@@ -333,12 +341,18 @@ export function validateAndRender (res, name, params) {
  */
 export function renderTemplateFn (req, res, next) {
   const templateParams = this.templateParams(req)
+  const reqId = req[requestId]
   try {
     validateAndRender(res, this.template, templateParams)
-    logger.info(`rendered ${this.template}`, { type: types.App })
+    logger.info('rendered', { type: types.App, id: reqId, template: this.template })
   } catch (err) {
     req.handlerName = this.handlerName
     next(err)
+  } finally {
+    const reqStart = req[requestStart]
+    if (reqStart) {
+      logger.debug({ type: types.Metric, message: 'request duration', duration: performance.now() - reqStart, id: reqId })
+    }
   }
 }
 
@@ -436,4 +450,57 @@ async function safeFn (req, res, next) {
  */
 export const handleRejections = (middleware) => {
   return safeFn.bind({ middleware })
+}
+
+async function cachedFn (req, res, next) {
+  const client = getRedis()
+  const resultKey = this.resultKey
+  const key = this.key(req, resultKey)
+  const compressed = await client.get(commandOptions({ returnBuffers: true }), key)
+  if (compressed) {
+    logger.info({ message: 'cache hit', key, id: req[requestId], resultKey })
+    const decompressed = zlib.brotliDecompressSync(compressed)
+    const jsonString = decompressed.toString('utf8')
+    const deserialised = JSON.parse(jsonString)
+    req[resultKey] = deserialised
+  }
+
+  if (req[resultKey]) {
+    next()
+  } else {
+    logger.debug({ message: 'cache miss', key, id: req[requestId], resultKey })
+    const error = await new Promise((resolve, reject) => {
+      this.middleware(req, res, resolve)
+    })
+    if (error) {
+      next(error)
+    } else {
+      const val = req[resultKey]
+      if (val) {
+        const serialised = JSON.stringify(val)
+        const compressed = zlib.brotliCompressSync(serialised)
+        client.set(key, compressed)
+      }
+      next()
+    }
+  }
+}
+
+const cachingEnabled = isFeatureEnabled('datasetteCaching')
+
+/**
+ * Returns a middleware wchich wraps a data fetch with a Redis cache lookup/store.
+ *
+ * @param {Object} opts options
+ * @param {Function} opts.middleware fetch middlware
+ * @param {string} opts.resultKey key used by the fetch middleware to store results in `req` object
+ * @param {Function} opts.key function returning the cache key `(req, resultKey) => string`
+ * @returns
+ */
+export const cached = (opts) => {
+  if (cachingEnabled && 'redis' in config) {
+    return cachedFn.bind(opts)
+  }
+
+  return opts.middleware
 }
