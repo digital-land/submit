@@ -417,9 +417,19 @@ export const processEntitiesMiddlewares = [
 export const filterOutEntitiesWithoutIssues = (req, res, next) => {
   const { entities, issues } = req
 
-  req.issueEntities = entities.filter(entity => {
-    return issues.findIndex(issue => issue.entity === entity.entity) >= 0
-  })
+  const entitiesWithIssues = new Set()
+  for (const issue of issues) {
+    entitiesWithIssues.add(issue.entity)
+  }
+
+  const result = []
+  for (const entity of entities) {
+    if (entitiesWithIssues.has(entity.entity)) {
+      result.push(entity)
+    }
+  }
+
+  req.issueEntities = result
 
   next()
 }
