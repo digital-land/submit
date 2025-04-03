@@ -17,7 +17,7 @@ import {
   fetchEntityIssueCounts,
   fetchEntryIssueCounts
 } from './common.middleware.js'
-import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { splitByLeading } from '../utils/table.js'
 
