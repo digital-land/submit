@@ -345,6 +345,14 @@ export const fetchEntities = fetchMany({
   result: 'entities'
 })
 
+export const fetchEntityCount = fetchOne({
+  query: ({ req }) => `
+    SELECT COUNT(*) as count FROM entity e
+    WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+  dataset: FetchOptions.fromParams,
+  result: 'entityCount'
+})
+
 export const extractJsonFieldFromEntities = (req, res, next) => {
   const { entities } = req
   if (!Array.isArray(entities)) {

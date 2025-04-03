@@ -18,12 +18,12 @@ import {
   expectationFetcher,
   expectations,
   fetchDatasetInfo,
+  fetchEntityCount,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   fetchOrgInfo, fetchResources, fetchSources,
   logPageError,
   noop,
-  processEntitiesMiddlewares,
   validateOrgAndDatasetQueryParams
 } from './common.middleware.js'
 import { fetchOne, renderTemplate } from './middleware.builders.js'
@@ -88,7 +88,7 @@ export function entityOutOfBoundsMessage (dataset, count) {
  * @param {Object} req.parsedParams An object containing the parameters of the request
  * @param {string} req.parsedParams.lpa The LPA (Local Planning Authority) associated with the request.
  * @param {string} req.parsedParams.dataset The name of the dataset associated with the request.
- * @param {Object[]} req.entities: An array of entity objects.
+ * @param {Object} req.entityCount total entity count under `count` field
  * @param {Object[]} req.resources: An array of resource objects.
  * @param {Object[]} req.sources: An array of source objects.
  * @param {Object} req.entryIssueCounts: An object containing the issue counts for the entries in the dataset.
@@ -105,10 +105,9 @@ export function entityOutOfBoundsMessage (dataset, count) {
  */
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
-  const { entities, resources, sources } = req
+  const { entityCount, resources, sources } = req
   const { entryIssueCounts, entityIssueCounts, expectationOutOfBounds = [] } = req
 
-  const entityCount = entities.length
   let issues = [...entryIssueCounts, ...entityIssueCounts]
 
   issues = issues.filter(
@@ -121,7 +120,7 @@ export const prepareTasks = (req, res, next) => {
   const taskList = Object.values(issues).map(({ field, issue_type: type, count }) => {
     // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
 
-    let rowCount = entityCount
+    let rowCount = entityCount.count
     if (SPECIAL_ISSUE_TYPES.includes(type)) {
       if (resources.length > 0) {
         rowCount = resources[0].entry_count
@@ -220,7 +219,7 @@ export default [
   fetchResources,
   isFeatureEnabled('expectactionOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   addEntityCountsToResources,
-  ...processEntitiesMiddlewares,
+  fetchEntityCount,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   prepareTasks,
