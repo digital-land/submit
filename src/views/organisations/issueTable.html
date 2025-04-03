@@ -125,7 +125,8 @@
       window.serverContext = {
         containerId: 'map',
         geometries: {{ geometries | dump | safe }},
-        mapType: "interactive"
+        mapType: "interactive",
+        boundaryGeoJsonUrl: "/api/lpa-boundary/{{ organisation.organisation | urlencode }}"
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>
