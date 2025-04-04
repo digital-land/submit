@@ -177,7 +177,7 @@ export function setupTableParams (req, res, next) {
       columns: orderedFields,
       rows,
       fields: orderedFields,
-      columnNameProcesssing: 'none'
+      columnNameProcessing: 'none'
     }
 
     req.locals.mappings = fieldMappings

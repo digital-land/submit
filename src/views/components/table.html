@@ -49,7 +49,7 @@
             </colgroup>
             <thead class="govuk-table__head dl-table__head">
                 <tr class="govuk-table__row">
-                    {% if params.columnNameProcesssing == 'none' %}
+                    {% if params.columnNameProcessing == 'none' %}
                         {% for column in params.columns %}
                             <th scope="col" class="govuk-table__header dl-table__header">{{ column | escape }}</th>
                         {% endfor %}
