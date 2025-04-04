@@ -103,7 +103,11 @@ export function setupTemplate (req, res, next) {
 
 /**
  * @typedef {Object} RequestWithDetails
+ * @property {Object} parsedParams
  * @property {Object} locals - Request locals
+ * @property {Object} locals.requestData
+ * @property {Object} locals.responseDetails
+ * @property {string} locals.template
  * @property {DetailsOptions} [locals.detailsOptions] - Details options
  */
 
@@ -164,15 +168,19 @@ export function setupTableParams (req, res, next) {
       }
     })
 
+    const fieldMappings = responseDetails.getFieldMappings()
     const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
-    const orderedFields = [...leadingFields, ...trailingFields]
+    // NOTE: the column field log alters the field names (converts '_' -> '-'), but we want the original CSV column names
+    // because that's what users expect
+    const orderedFields = [...leadingFields, ...trailingFields].map(field => fieldMappings[field] ?? field)
     req.locals.tableParams = {
       columns: orderedFields,
       rows,
-      fields: orderedFields
+      fields: orderedFields,
+      columnNameProcesssing: 'none'
     }
 
-    req.locals.mappings = responseDetails.getFieldMappings()
+    req.locals.mappings = fieldMappings
     req.locals.geometries = responseDetails.getGeometries()
     // pagination is on the 'table' tab, so we want to ensure clicking those
     // links takes us to a page with the table tab *selected*
