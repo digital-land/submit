@@ -123,13 +123,14 @@ describe('Middleware Tests', () => {
         getGeometries: vi.fn(() => 'mockGeometries'),
         getPagination: vi.fn(() => 'mockPagination')
       }
-
-      await setupTableParams(req, res, mockNext)
+       
+      setupTableParams(req, res, mockNext)
 
       expect(req.locals.tableParams).toEqual({
         columns: ['field1', 'field2'],
         rows: [{ columns: {}, data: 'rowData' }],
-        fields: ['field1', 'field2']
+        fields: ['field1', 'field2'],
+        columnNameProcessing: 'none'
       })
       expect(req.locals.mappings).toEqual('mockMappings')
       expect(req.locals.geometries).toEqual('mockGeometries')
