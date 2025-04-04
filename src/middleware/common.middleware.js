@@ -302,6 +302,14 @@ export const fetchEntities = fetchMany({
   result: 'entities'
 })
 
+export const fetchEntityCount = fetchOne({
+  query: ({ req }) => `
+    SELECT COUNT(*) as count FROM entity e
+    WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+  dataset: FetchOptions.fromParams,
+  result: 'entityCount'
+})
+
 export const extractJsonFieldFromEntities = (req, res, next) => {
   const { entities } = req
   if (!Array.isArray(entities)) {
@@ -366,9 +374,19 @@ export const processEntitiesMiddlewares = [
 export const filterOutEntitiesWithoutIssues = (req, res, next) => {
   const { entities, issues } = req
 
-  req.issueEntities = entities.filter(entity => {
-    return issues.findIndex(issue => issue.entity === entity.entity) >= 0
-  })
+  const entitiesWithIssues = new Set()
+  for (const issue of issues) {
+    entitiesWithIssues.add(issue.entity)
+  }
+
+  const result = []
+  for (const entity of entities) {
+    if (entitiesWithIssues.has(entity.entity)) {
+      result.push(entity)
+    }
+  }
+
+  req.issueEntities = result
 
   next()
 }

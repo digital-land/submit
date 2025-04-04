@@ -1,6 +1,23 @@
 import config from '../../config/index.js'
-import { createPaginationTemplateParams, extractJsonFieldFromEntities, fetchDatasetInfo, fetchOrgInfo, processSpecificationMiddlewares, replaceUnderscoreInEntities, setDefaultParams, validateQueryParams, show404IfPageNumberNotInRange, getSetBaseSubPath, getSetDataRange, logPageError, fetchResources, fetchEntityIssueCounts, fetchEntryIssueCounts } from './common.middleware.js'
-import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
+import {
+  createPaginationTemplateParams,
+  extractJsonFieldFromEntities,
+  fetchDatasetInfo,
+  fetchOrgInfo,
+  processSpecificationMiddlewares,
+  replaceUnderscoreInEntities,
+  setDefaultParams,
+  validateQueryParams,
+  show404IfPageNumberNotInRange,
+  getSetBaseSubPath,
+  getSetDataRange,
+  logPageError,
+  fetchResources,
+  fetchEntityCount,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts
+} from './common.middleware.js'
+import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { splitByLeading } from '../utils/table.js'
 
@@ -13,12 +30,6 @@ export const dataviewQueryParams = v.object({
 
 const validatedataviewQueryParams = validateQueryParams({
   schema: dataviewQueryParams
-})
-
-export const fetchEntitiesCount = fetchOne({
-  query: ({ req }) => `SELECT count(*) as count FROM entity WHERE organisation_entity = ${req.orgInfo.entity}`,
-  dataset: FetchOptions.fromParams,
-  result: 'entityCount'
 })
 
 export const fetchEntities = fetchMany({
@@ -100,7 +111,7 @@ export default [
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
 
-  fetchEntitiesCount,
+  fetchEntityCount,
   setRecordCount,
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
