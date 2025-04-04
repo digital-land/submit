@@ -61,16 +61,20 @@
 </div>
 
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-column-two-thirds">
     {{ govukErrorSummary({
       titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',
       errorList: errorSummary.items
     }) }}
+    </div>
+</div>
 
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
     {% if geometries and geometries.length %}
       <div
         id="map"
-        class="app-map"
+        class="app-map govuk-grid-column-full"
         role="region"
         aria-label="Static map showing {{dataset.name}} for {{organisation.name}}.">
       </div>
@@ -121,7 +125,8 @@
       window.serverContext = {
         containerId: 'map',
         geometries: {{ geometries | dump | safe }},
-        mapType: "static"
+        mapType: "interactive",
+        boundaryGeoJsonUrl: "/api/lpa-boundary/{{ organisation.organisation | urlencode }}"
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>
