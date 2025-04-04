@@ -9,12 +9,12 @@
 
 import { test, expect } from '@playwright/test'
 
-import ResultsPage from '../PageObjectModels/resultsPage'
+import ResultsPage from '../PageObjectModels/resultsPage.js'
 
-import prettifyColumnName from '../../src/filters/prettifyColumnName'
+import prettifyColumnName from '../../src/filters/prettifyColumnName.js'
 
 import fs from 'fs'
-import { splitByLeading } from '../../src/utils/table'
+import { splitByLeading } from '../../src/utils/table.js'
 
 test('receiving a successful result', async ({ page }) => {
   const successResponse = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete.json')
@@ -113,9 +113,7 @@ const getTableValuesFromResponse = (response, details) => {
 
   const { leading, trailing } = splitByLeading({ fields: uniqueHeaders })
   const orderedUniqueHeaders = [...leading, ...trailing]
-
-  const prettifiedHeaders = orderedUniqueHeaders.map(header => prettifyColumnName(header))
-  const tableValues = [prettifiedHeaders]
+  const tableValues = [orderedUniqueHeaders]
 
   tableValues.push(...details.map(detail => {
     const convertedRow = detail.converted_row
