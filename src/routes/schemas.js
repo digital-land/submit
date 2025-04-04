@@ -28,6 +28,20 @@ export const StartPage = v.object({
   ...Base.entries
 })
 
+export const PaginationItem = v.variant('type', [
+  v.strictObject({
+    type: v.literal('number'),
+    number: v.pipe(v.number(), v.integer()),
+    href: v.string(),
+    current: v.boolean()
+  }),
+  v.strictObject({
+    type: v.literal('ellipsis'),
+    ellipsis: v.literal(true),
+    href: v.string()
+  })
+])
+
 export const PaginationParams = v.optional(v.strictObject({
   previous: v.optional(v.strictObject({
     href: v.string()
@@ -35,19 +49,7 @@ export const PaginationParams = v.optional(v.strictObject({
   next: v.optional(v.strictObject({
     href: v.string()
   })),
-  items: v.array(v.variant('type', [
-    v.strictObject({
-      type: v.literal('number'),
-      number: v.integer(),
-      href: v.string(),
-      current: v.boolean()
-    }),
-    v.strictObject({
-      type: v.literal('ellipsis'),
-      ellipsis: v.literal(true),
-      href: v.string()
-    })
-  ]))
+  items: v.array(PaginationItem)
 }))
 
 export const dataRangeParams = v.object({
@@ -63,7 +65,7 @@ export const errorSummaryParams = v.strictObject({
   heading: v.optional(v.string()),
   items: v.array(v.strictObject({
     html: v.string(),
-    href: v.url()
+    href: v.optional(v.string())
   }))
 })
 
@@ -76,7 +78,7 @@ export const tableParams = v.strictObject({
         error: v.optional(v.object({
           message: v.string()
         })),
-        value: v.optional(v.string()),
+        value: v.nullish(v.string()),
         html: v.optional(v.string()),
         classes: v.optional(v.string())
       })
@@ -215,6 +217,17 @@ export const OrgEndpointError = v.strictObject({
   })
 })
 
+const MapGeometry = v.union([
+  v.string(),
+  v.object({
+    type: v.string(),
+    reference: NonEmptyString,
+    geo: NonEmptyString
+  })
+])
+
+const MapGeometries = v.array(MapGeometry)
+
 export const OrgIssueTable = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
@@ -223,7 +236,8 @@ export const OrgIssueTable = v.strictObject({
   issueSpecification: IssueSpecification,
   tableParams,
   pagination: PaginationParams,
-  dataRange: dataRangeParams
+  dataRange: dataRangeParams,
+  geometries: v.optional(MapGeometries)
 })
 
 export const OrgIssueDetails = v.strictObject({
@@ -236,13 +250,13 @@ export const OrgIssueDetails = v.strictObject({
     title: NonEmptyString,
     fields: v.array(v.strictObject({
       key: v.strictObject({ text: NonEmptyString }),
-      value: v.strictObject({ html: v.string() }),
+      value: v.strictObject({ html: v.string(), originalValue: v.optional(v.string()) }),
       classes: v.string()
     })),
-    geometries: v.optional(v.array(v.string()))
+    geometries: v.optional(MapGeometries)
   }),
   pagination: PaginationParams,
-  pageNumber: v.integer(),
+  pageNumber: v.pipe(v.number(), v.integer()),
   dataRange: dataRangeParams,
   issueSpecification: IssueSpecification
 })

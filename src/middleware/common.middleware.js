@@ -1,11 +1,15 @@
 // @ts-check
+/**
+ * @module middleware-common
+ *
+ */
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { dataSubjects, entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
-import { pagination } from '../utils/pagination.js'
+import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
@@ -125,6 +129,14 @@ export const show404IfPageNumberNotInRange = (req, res, next) => {
   next()
 }
 
+/**
+ * Potentially Updates `req` with `pagination`
+ *
+ * @param {Object} req request
+ * @param {Object} res response
+ * @param {Function} next next function
+ * @returns {undefined}
+ */
 export const createPaginationTemplateParams = (req, res, next) => {
   const { pageNumber } = req.parsedParams
   const { baseSubpath, dataRange } = req
@@ -138,62 +150,7 @@ export const createPaginationTemplateParams = (req, res, next) => {
     return next()
   }
 
-  /**
-   * @typedef {Object} PaginationItem
-   * @property {'ellipsis'|'number'} type - Type of pagination item
-   * @property {number} [number] - Page number (for number type)
-   * @property {string} href - Link URL
-   * @property {boolean} [ellipsis] - Whether this is an ellipsis item
-   * @property {boolean} [current] - Whether this is the current page
-   */
-
-  /**
-   * @typedef {Object} PaginationNav
-   * @property {Object} [previous] - Previous page link
-   * @property {string} previous.href - Previous page URL
-   * @property {Object} [next] - Next page link
-   * @property {string} next.href - Next page URL
-   * @property {PaginationItem[]} items - Pagination items
-   */
-
-  /** @type {PaginationNav} */
-  const paginationObj = {
-    previous: undefined,
-    next: undefined,
-    items: []
-  }
-
-  if (pageNumber > 1) {
-    paginationObj.previous = {
-      href: `${baseSubpath}/${pageNumber - 1}`
-    }
-  }
-  if (pageNumber < dataRange.maxPageNumber) {
-    paginationObj.next = {
-      href: `${baseSubpath}/${pageNumber + 1}`
-    }
-  }
-
-  for (const item of pagination(dataRange.maxPageNumber, Math.min(pageNumber, dataRange.maxPageNumber))) {
-    if (item === '...') {
-      paginationObj.items.push({
-        type: 'ellipsis',
-        ellipsis: true,
-        href: '#'
-      })
-    } else if (typeof item === 'number') {
-      paginationObj.items.push({
-        type: 'number',
-        number: item,
-        href: `${baseSubpath}/${item}`,
-        current: pageNumber === item
-      })
-    } else {
-      logger.warn('unexpected pagination item', { item, dataRange, types: types.App, endpoint: req.originalUrl })
-    }
-  }
-
-  req.pagination = paginationObj
+  req.pagination = createPaginationTemplateParamsObject({ pageNumber, dataRange, baseSubpath })
 
   next()
 }
@@ -870,7 +827,8 @@ export function noop (req, res, next) {
 
 const expectationsOutOfBoundsDetailsSelectClause = () => {
   return `CAST(JSON_EXTRACT(details, '$.actual') AS INTEGER) AS actual,
-          CAST(JSON_EXTRACT(details, '$.expected') AS INTEGER) AS expected`
+          CAST(JSON_EXTRACT(details, '$.expected') AS INTEGER) AS expected,
+          details as details`
 }
 
 const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
@@ -892,7 +850,7 @@ const expectationsQuery = ({ lpa, dataset, expectation, includeDetails }) => {
  * The `name` field is used in queries.
  */
 export const expectations = {
-  entitiesOutOfBounds: { name: 'Check no entities are outside of the local planning authority boundary' }
+  entitiesOutOfBounds: { name: 'Check no entities are outside of the local planning authority boundary', slug: 'out-of-bounds' }
 }
 
 /**

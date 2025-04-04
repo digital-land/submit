@@ -1,16 +1,20 @@
-/*
-  this middleware should get all entities for the organisation, with all of the most recent issues
-  then filter out any of the issues that have been fixed
-  the construct the table params
-  then construct the template params
-  then render the template
-*/
+/**
+ * @module middleware-issue-table
+ *
+ * @description
+ * This middleware should get all entities for the organisation, with all of the most recent issues
+ * then filter out any of the issues that have been fixed
+ * the construct the table params
+ * then construct the template params
+ * then render the template
+ */
 
 import config from '../../config/index.js'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { entryIssueGroups } from '../utils/utils.js'
+import { splitByLeading } from '../utils/table.js'
 
 export const IssueTableQueryParams = v.object({
   lpa: v.string(),
@@ -30,11 +34,34 @@ export const setRecordCount = (req, res, next) => {
   next()
 }
 
+const rowErrorReducer = (hasError, column) => {
+  return column.error !== undefined || hasError
+}
+
+const rowHasError = (row) => {
+  return Object.values(row.columns).reduce(rowErrorReducer, false)
+}
+
+/**
+ *
+ * @param {Object} req request object
+ * @param {Object[]} [req.issues] issues
+ * @param {function(any): boolean} [req.rowFilter] predicate taking a single row
+ * @param {Object[]} req.issueEntities entities
+ * @param {string[]} req.uniqueDatasetFields
+ * @param {Object} req.dataRange conforming to `src/routes/schemasjs:dataRangeParams`.
+ * @param {string} req.baseSubpath URL path prefix
+ * @param {Object} req.tableParams OUT value
+ * @param {*} res response object
+ * @param {*} next
+ */
 export const prepareTableParams = (req, res, next) => {
-  const { issueEntities, issues, uniqueDatasetFields, dataRange, baseSubpath } = req
+  const { issueEntities, issues = [], uniqueDatasetFields, dataRange, baseSubpath, rowFilter = rowHasError } = req
+  const { leading, trailing } = splitByLeading({ fields: uniqueDatasetFields })
+  const orderedFields = leading.concat(trailing)
 
   const allRows = issueEntities.map((entity, index) => ({
-    columns: Object.fromEntries(uniqueDatasetFields.map((field) => {
+    columns: Object.fromEntries(orderedFields.map((field) => {
       const errorMessage = issues.find(issue => issue.entity === entity.entity && (issue.field === field || issue.replacement_field === field))?.issue_type
       if (field === 'reference') {
         return [field, {
@@ -58,24 +85,42 @@ export const prepareTableParams = (req, res, next) => {
     }))
   }))
 
-  const rowsWithErrors = allRows.filter(row => Object.values(row.columns).reduce((hasError, column) => {
-    return column.error !== undefined || hasError
-  }, false))
-
+  const rowsWithErrors = allRows.filter(rowFilter)
   const rowsPaginated = rowsWithErrors.slice(dataRange.minRow, dataRange.maxRow)
 
   req.tableParams = {
-    columns: uniqueDatasetFields,
-    fields: uniqueDatasetFields,
+    columns: orderedFields,
+    fields: orderedFields,
     rows: rowsPaginated
   }
 
   next()
 }
 
+/**
+ *
+ * @param {Object[]} rows issue rows
+ * @param {Object} rows.columns
+ * @returns {Object[]}
+ */
+function geometryProps (rows) {
+  const geometries = []
+  for (const { columns } of rows) {
+    if ('point' in columns) {
+      geometries.push({ geo: columns.point.value, reference: columns.reference.html, type: 'point' })
+    }
+    if ('geometry' in columns) {
+      geometries.push({ geo: columns.geometry.value, reference: columns.reference.html, type: 'geometry' })
+    }
+  }
+  return geometries
+}
+
 export const prepareTemplateParams = (req, res, next) => {
   const { tableParams, orgInfo, dataset, errorSummary, pagination, dataRange, issueSpecification } = req
   const { issue_type: issueType } = req.params
+
+  const geometries = geometryProps(tableParams.rows)
 
   req.templateParams = {
     tableParams,
@@ -85,7 +130,8 @@ export const prepareTemplateParams = (req, res, next) => {
     issueType,
     pagination,
     dataRange,
-    issueSpecification
+    issueSpecification,
+    geometries
   }
   next()
 }

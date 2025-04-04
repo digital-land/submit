@@ -61,8 +61,8 @@ datasetsConfig:
   brownfield-land:
     guidanceUrl: https://www.gov.uk/government/publications/brownfield-land-registers-data-standard/publish-your-brownfield-land-data
     entityDisplayName:
-      base: brownfield
-      variable: land
+      base: brownfield land
+      variable: site
   conservation-area:
     guidanceUrl: /guidance/specifications/conservation-area
     entityDisplayName:
@@ -109,7 +109,7 @@ features:
     # enabling this feature will cause the results page to present
     # links to individual issue pages
     enabled: true
-  expectactionOutOfBoundsTask:
+  expectationOutOfBoundsTask:
     # this feature includes violated 'out of bounds' expectations
     # as 'tasks' on LPA overview pages etc.
     # https://github.com/digital-land/submit/issues/921
