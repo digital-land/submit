@@ -16,6 +16,13 @@ const defaultOsMapStyle = '/public/static/map-layers/OS_VTS_3857_Light.json'
 const fallbackMapStyle = 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw'
 
 /**
+ * @typedef {Object} MapGeometry
+ * @property {string} geo
+ * @property {string} [reference]
+ * @property {string} [name]
+ */
+
+/**
  * Creates a Map instance.
  * @param {MapOptions} opts - The options for creating the map.
  * @constructor
@@ -24,7 +31,7 @@ const fallbackMapStyle = 'https://api.maptiler.com/maps/basic-v2/style.json?key=
  * Options for creating a Map instance.
  * @typedef {Object} MapOptions
  * @property {string} containerId - Required - The ID of the HTML container element for the map.
- * @property {string[]} data - Required - An array of URLs or WKT geometries to be added to the map.
+ * @property {string[] | MapGeometry[]} data - Required - An array of URLs or WKT geometries to be added to the map.
  * @property {string} [boundaryGeoJsonUrl] - Optional - The URL of the boundary GeoJSON to be added to the map.
  * @property {boolean} [interactive] - Optional - Indicates whether the map should be interactive. Default is true.
  * @property {boolean} [wktFormat] - Optional - Indicates whether the data is in WKT format. Default is false.
@@ -62,13 +69,9 @@ export class Map {
     this.addControls(this.opts.interactive)
 
     this.map.on('load', async () => {
-      // Store the first symbol layer id
       this.setFirstMapLayerId()
 
-      // Add the boundary GeoJSON to the map
       if (this.opts.boundaryGeoJsonUrl) this.addBoundaryGeoJsonToMap(this.opts.boundaryGeoJsonUrl)
-
-      // Add layer data to map
       if (opts.wktFormat) this.addWktDataToMap(this.opts.data)
       else await this.addGeoJsonUrlsToMap(this.opts.data)
 
@@ -81,7 +84,6 @@ export class Map {
         }
       }
 
-      // Add popup to map
       if (opts.interactive) this.addPopupToMap()
     })
   }
@@ -109,13 +111,11 @@ export class Map {
 
   addWktDataToMap (geometriesWkt) {
     const geometries = []
-    geometriesWkt.forEach((geometryWkt, index) => {
+    geometriesWkt.forEach((item, index) => {
       const name = `geometry-${index}`
+      const geometryWkt = (typeof item === 'string') ? { geo: item } : item
+      const geometry = parse(geometryWkt.geo)
 
-      // Convert the coordinates string to a GeoJSON object
-      const geometry = parse(geometryWkt)
-
-      // if the geometry is invalid, log an error and continue
       if (!geometry) {
         console.error('Invalid WKT geometry format', geometryWkt)
         return
@@ -123,13 +123,11 @@ export class Map {
 
       // store geometries for use in calculating the bbox later
       geometries.push(geometry)
-      // add the source
       this.map.addSource(name, {
         type: 'geojson',
-        data: geometry
+        data: { type: 'Feature', geometry, properties: geometryWkt }
       })
 
-      // Add a layer to the map based on the geometry type
       if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
         this.map.addLayer({
           id: name,
@@ -241,6 +239,7 @@ export class Map {
   }
 
   addPopupToMap () {
+    // The onclick callback relies on `properties` of a feature that we've set up using `.addSource()`
     this.map.on('click', (e) => {
       const features = this.map.queryRenderedFeatures(e.point).filter(f => f.layer.id.startsWith('geometry-'))
       if (!features.length) return
@@ -272,11 +271,7 @@ export class Map {
           // feature text content
           const textContent = document.createElement('p')
           textContent.classList.add('govuk-body-s', 'govuk-!-margin-top-0', 'govuk-!-margin-bottom-0')
-          textContent.innerHTML = `
-            ${capitalize(startCase(feature.properties.dataset)) || ''}<br/>
-            <strong>Ref:</strong> ${feature.properties.reference || ''}<br/>
-            ${feature.properties.name ?? ''}
-          `
+          textContent.innerHTML = referencePopup(feature.properties)
 
           inset.appendChild(textContent)
           list.appendChild(inset)
@@ -364,6 +359,26 @@ const preventScroll = (scrollableChildElements = []) => {
   }
 }
 
+/**
+ * Contents of a popup element shows when user clicks on a geometry (point or polygon).
+ *
+ * @param {Object} options
+ * @param {string} [options.dataset] dataset
+ * @param {string} [options.reference] reference, can be a HTML string
+ * @param {string} [options.name] name
+ * @returns {string}
+ */
+function referencePopup ({ dataset, reference, name }) {
+  return `
+      ${capitalize(startCase(dataset)) || ''}<br/>
+      <strong>Ref:</strong> ${reference || ''}<br/>
+      ${name ?? ''}`.trim()
+}
+
+/**
+ * @param {string} geoJsonUrl
+ * @returns {Promise<string[]>}
+ */
 export const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   const geoJsonLinks = [geoJsonUrl]
   const initialResponse = await fetch(geoJsonUrl)
@@ -386,7 +401,7 @@ export const generatePaginatedGeoJsonLinks = async (geoJsonUrl) => {
   // create a loop to generate the links
   for (let offset = limit; offset <= lastOffset; offset += limit) {
     const newLink = new URL(geoJsonUrl)
-    newLink.searchParams.set('offset', offset)
+    newLink.searchParams.set('offset', `${offset}`)
 
     geoJsonLinks.push(newLink.toString())
   }
@@ -418,7 +433,7 @@ export const createMapFromServerContext = async () => {
   try {
     await getFreshApiToken()
   } catch (error) {
-    console.error('Error fetching OS Map API token', error)
+    console.error('Error fetching OS Map API token', error.message)
     options.style = fallbackMapStyle
   }
 
