@@ -47,7 +47,7 @@ export async function createCustomerRequest ({ summary, description, raiseOnBeha
  * @returns {Promise} - A promise that resolves to the response of the JIRA API.
  * @throws {Error} - Throws an error if JIRA_URL, JIRA_BASIC_AUTH, or JIRA_SERVICE_DESK_ID are not set.
  */
-export async function attachFileToIssue (issueKey, file) {
+export async function attachFileToIssue (issueKey, file, additionalComment = 'Please find the file attached.') {
   const JIRA_URL = process.env.JIRA_URL
   const JIRA_BASIC_AUTH = process.env.JIRA_BASIC_AUTH
   const JIRA_SERVICE_DESK_ID = process.env.JIRA_SERVICE_DESK_ID
@@ -78,7 +78,7 @@ export async function attachFileToIssue (issueKey, file) {
   const attachment = await axios.post(`${JIRA_URL}/rest/servicedeskapi/request/${issueKey}/attachment`, {
     temporaryAttachmentIds: [temporaryFileId],
     additionalComment: {
-      body: 'Please find the file attached.'
+      body: additionalComment
     },
     public: true
   }, {

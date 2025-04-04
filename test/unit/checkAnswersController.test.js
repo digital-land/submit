@@ -91,7 +91,8 @@ describe('CheckAnswersController', () => {
       )
       expect(attachFileToIssue).toHaveBeenCalledWith(
         'TEST-123',
-        expect.any(File)
+        expect.any(File),
+        expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation (test-org)* for the dataset *Test Dataset*.')
       )
       expect(result).toEqual(response.data)
     })
