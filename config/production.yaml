@@ -29,5 +29,5 @@ features:
     # enabling this feature will cause the results page to present
     # links to individual issue pages
     enabled: false
-  expectactionOutOfBoundsTask:
+  expectationOutOfBoundsTask:
     enabled: false
