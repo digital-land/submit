@@ -123,7 +123,7 @@ describe('Middleware Tests', () => {
         getGeometries: vi.fn(() => 'mockGeometries'),
         getPagination: vi.fn(() => 'mockPagination')
       }
-       
+
       setupTableParams(req, res, mockNext)
 
       expect(req.locals.tableParams).toEqual({
