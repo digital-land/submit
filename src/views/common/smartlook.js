@@ -7,4 +7,7 @@ window.smartlook || (function (d) {
 smartlook("init", "{{ smartlookKey }}", {
   region: "{{ smartlookRegion }}",
   forms: true,
+  numbers: true,
+  emails: false,
+  ips: false,
 });
