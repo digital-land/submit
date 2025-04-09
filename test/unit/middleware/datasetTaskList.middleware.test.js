@@ -45,6 +45,7 @@ describe('datasetTaskList.middleware.js', () => {
         },
         sources: [],
         entities: ['entity1', 'entity2'],
+        entityCount: { count: 2 },
         resources: [{ entry_count: 10 }],
         entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
         entityIssueCounts: [{ field: 'field2', issue_type: 'issue-type2', count: 1 }]
@@ -110,6 +111,7 @@ describe('datasetTaskList.middleware.js', () => {
         },
         sources: [],
         entities: [],
+        entityCount: { count: 0 },
         resources: [{ entry_count: 10 }],
         entryIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique', count: 1 }],
         entityIssueCounts: []
@@ -183,6 +185,7 @@ describe('datasetTaskList.middleware.js', () => {
           dataset: 'some-dataset'
         },
         entities: ['entity1'],
+        entityCount: { count: 1 },
         sources: [],
         resources: [{ entry_count: 10 }],
         entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
