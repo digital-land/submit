@@ -178,7 +178,10 @@ export function setupTableParams (req, res, next) {
     })
 
     const fieldToColumn = rows.length > 0 ? fieldToColumnMapping(rows[0]) : new Map()
-    const columnToField = rows.length > 0 ? new Map(fieldToColumn.entries().map(([k, v]) => [v, k])) : new Map()
+    const columnToField = new Map()
+    for (const [k, v] of fieldToColumn.entries()) {
+      columnToField.set(v, k)
+    }
 
     const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
     // NOTE: the column field log alters the field names (converts '_' -> '-', most of the time 🤷‍♂️), but we want
