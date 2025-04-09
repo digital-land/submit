@@ -29,11 +29,13 @@
             }
         }
         ],
-        // the below is optional, the only supported option at the moment is:
+        // (Optional) the only supported option at the moment is:
         // - 'none' - forces fields to be rendered as passed
         //
         // By default the column names go through `prettifyColumnName` filter
-        columnNameProcessing: 'none'
+        columnNameProcessing: 'none',
+        // (Optional) mapping of column names to field names in the 'columns' member of each row.
+        mapping: new Map([['foo', 'bar']]) 
     }
 #}
 
@@ -61,24 +63,19 @@
                 </tr>
             </thead>
             <tbody class="govuk-table__body">
+                {% set mapping = params.mapping %}
                 {% for row in params.rows %}
                     <tr class="govuk-table__row">
                         {% for field in params.fields %}
-                            {% set columnData = row.columns[field] %}
+                            {% set columnData = row.columns[mapping.get(field)] if mapping else row.columns[field] %}
                             <td class="govuk-table__cell app-wrap {{columnData.classes}}">
                                 {% set cellText = columnData.html | safe if columnData.html else columnData.value %}
                                 {% if columnData.error %}
-                                    {% if params.columnNameProcessing == 'none' %}
-                                        {{ govukInsetText({
-                                            classes: "app-inset-text---error",
-                                            html: '<p class="app-inset-text__value">'+cellText | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | escape +'</p>'
-                                        }) }}
-                                    {% else %}
-                                        {{ govukInsetText({
-                                            classes: "app-inset-text---error",
-                                            html: '<p class="app-inset-text__value">'+cellText | striptags +'</p> <p class="app-inset-text__error">'+columnData.error.message | prettifyColumnName +'</p>'
-                                        }) }}
-                                    {% endif %}
+                                    {% set errorText = columnData.error.message | escape if params.columnNameProcessing == 'none' else columnData.error.message | prettifyColumnName %}
+                                    {{ govukInsetText({
+                                        classes: "app-inset-text---error",
+                                        html: '<p class="app-inset-text__value">'+cellText | striptags +'</p> <p class="app-inset-text__error">'+ errorText +'</p>'
+                                    }) }}
                                 {% elseif cellText %}
                                     {{ cellText }}
                                 {% endif %}

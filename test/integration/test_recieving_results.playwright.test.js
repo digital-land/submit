@@ -101,29 +101,22 @@ const getTableCellValue = async (page, row, column) => {
   }
 }
 
+/**
+ * Returns an array of array. First array represents the headers, subsequent elements are the rows.
+ *
+ * @param {*} response
+ * @param {*} details
+ * @returns {String[][]}
+ */
 const getTableValuesFromResponse = (response, details) => {
-  const columnFieldLog = response.response.data['column-field-log']
-
   const columnHeaders = Object.keys(details[0].converted_row)
-  const logByField = new Map()
-  for (const log of columnFieldLog) { logByField.set(log.column, log) }
-  const uniqueHeaders = new Set(columnHeaders.map(header => {
-    return logByField.get(header)?.field ?? header
-  }))
-
-  const { leading, trailing } = splitByLeading({ fields: uniqueHeaders })
+  const { leading, trailing } = splitByLeading({ fields: columnHeaders })
   const orderedUniqueHeaders = [...leading, ...trailing]
   const tableValues = [orderedUniqueHeaders]
 
-  tableValues.push(...details.map(detail => {
-    const convertedRow = detail.converted_row
-    return orderedUniqueHeaders.map(header => {
-      const log = columnFieldLog.find(log => log.field === header)
-      if (log) { header = log.column }
-
-      return convertedRow[header]
-    })
-  }))
+  for (const { converted_row: row } of details) {
+    tableValues.push([...orderedUniqueHeaders.map(header => row[header])])
+  }
 
   return tableValues
 }

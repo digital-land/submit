@@ -136,6 +136,16 @@ export async function fetchResponseDetails (req, res, next) {
 }
 
 /**
+ * @param {Object} row a 'converted_row' from the response
+ * @returns {Map<string,string>}
+ */
+export const fieldToColumnMapping = ({ columns }) => {
+  const tuple = ([fieldName, { column }]) => [fieldName, column]
+  const mapping = new Map(Object.entries(columns).map(tuple))
+  return mapping
+}
+
+/**
  * @param {RequestWithDetails} req - Request object
  * @param {Object} res - Response object
  * @param {Function} next - Next middleware function
@@ -145,7 +155,6 @@ export function setupTableParams (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.responseDetails
     let rows = responseDetails.getRowsWithVerboseColumns(req.locals.requestData.hasErrors())
-
     // remove any issues that aren't of severity error
     rows = rows.map((row) => {
       const { columns, ...rest } = row
@@ -168,23 +177,27 @@ export function setupTableParams (req, res, next) {
       }
     })
 
-    const fieldMappings = responseDetails.getFieldMappings()
+    const fieldToColumn = rows.length > 0 ? fieldToColumnMapping(rows[0]) : new Map()
+    const columnToField = rows.length > 0 ? new Map(fieldToColumn.entries().map(([k, v]) => [v, k])) : new Map()
+
     const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
-    // NOTE: the column field log alters the field names (converts '_' -> '-'), but we want the original CSV column names
-    // because that's what users expect
-    const orderedFields = [...leadingFields, ...trailingFields].map(field => fieldMappings[field] ?? field)
+    // NOTE: the column field log alters the field names (converts '_' -> '-', most of the time 🤷‍♂️), but we want
+    // the original CSV column names because that's what users expect
+    const orderedFields = [...leadingFields, ...trailingFields]
+    const columns = orderedFields
+    const fields = orderedFields
     req.locals.tableParams = {
-      columns: orderedFields,
+      columns,
+      fields,
       rows,
-      fields: orderedFields,
-      columnNameProcessing: 'none'
+      columnNameProcessing: 'none',
+      mapping: columnToField
     }
 
-    req.locals.mappings = fieldMappings
     req.locals.geometries = responseDetails.getGeometries()
     // pagination is on the 'table' tab, so we want to ensure clicking those
     // links takes us to a page with the table tab *selected*
-    const pageNumer = Number.parseInt(req.params.pageNumber)
+    const { pageNumer } = req.parsedParams
     const pagination = responseDetails.getPagination(pageNumer, { hash: '#table-tab' })
     req.locals.pagination = pagination
     req.locals.id = req.params.id
