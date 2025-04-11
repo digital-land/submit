@@ -111,8 +111,9 @@ export class Map {
 
   addWktDataToMap (geometriesWkt) {
     const geometries = []
-    geometriesWkt.forEach((item, index) => {
-      const name = `geometry-${index}`
+    const features = []
+    for (let index = 0; index < geometriesWkt.length; ++index) {
+      const item = geometriesWkt[index]
       const geometryWkt = (typeof item === 'string') ? { geo: item } : item
       const geometry = parse(geometryWkt.geo)
 
@@ -120,48 +121,60 @@ export class Map {
         console.error('Invalid WKT geometry format', geometryWkt)
         return
       }
-
-      // store geometries for use in calculating the bbox later
       geometries.push(geometry)
-      this.map.addSource(name, {
-        type: 'geojson',
-        data: { type: 'Feature', geometry, properties: geometryWkt }
-      })
 
-      if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
-        this.map.addLayer({
-          id: name,
-          type: 'fill',
-          source: name,
-          layout: {},
-          paint: {
-            'fill-color': fillColor,
-            'fill-opacity': fillOpacity
-          }
-        }, this.firstMapLayerId)
-
-        this.map.addLayer({
-          id: name + '-border',
-          type: 'line',
-          source: name,
-          layout: {},
-          paint: {
-            'line-color': lineColor,
-            'line-width': 1
-          }
-        }, this.firstMapLayerId)
-      } else if (geometry.type === 'Point' || geometry.type === 'MultiPoint') {
-        this.map.addLayer({
-          id: name,
-          type: 'circle',
-          source: name,
-          paint: {
-            'circle-radius': pointRadius,
-            'circle-color': pointColor,
-            'circle-opacity': pointOpacity
-          }
-        }, this.firstMapLayerId)
+      if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon' || geometry.type === 'Point' || geometry.type === 'MultiPoint') {
+        features.push({
+          type: 'Feature',
+          geometry
+        })
       }
+    }
+
+    const sourceName = 'dataset'
+    const source = {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features
+      }
+    }
+    this.map.addSource(sourceName, source)
+
+    this.map.addLayer({
+      id: 'dataset-thing',
+      type: 'fill',
+      source: sourceName,
+      layout: {},
+      paint: {
+        'fill-color': fillColor,
+        'fill-opacity': fillOpacity
+      },
+      filter: ['==', '$type', 'Polygon']
+    }, this.firstMapLayerId)
+
+    this.map.addLayer({
+      id: 'dataset-thing-border',
+      type: 'line',
+      source: sourceName,
+      layout: {},
+      paint: {
+        'line-color': lineColor,
+        'line-width': 1
+      },
+      filter: ['==', '$type', 'Polygon']
+    })
+
+    this.map.addLayer({
+      id: 'dataset-thing-point',
+      type: 'circle',
+      source: sourceName,
+      paint: {
+        'circle-radius': pointRadius,
+        'circle-color': pointColor,
+        'circle-opacity': pointOpacity
+      },
+      filter: ['==', '$type', 'Point']
     })
 
     this.bbox = calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
