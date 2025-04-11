@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
 import axios from 'axios'
 import config from '../../config/index.js'
 import ResponseDetails from './responseDetails.js'
@@ -50,15 +51,30 @@ export default class ResultData {
       url.searchParams.append('jsonpath', `$.issue_logs[*].severity=="${opts.severity}"`)
     }
 
+    // we do initial request, check how many records there are via 'x-pagination-total-results' header
+    // and if fetch the rest if needed
     const response = await axios.get(url, { timeout: 30000 })
+    const totalResults = Number.parseInt(response.headers['x-pagination-total-results'])
+    const responses = [...response.data]
+    if (Number.isInteger(totalResults) && totalResults > response.data.length) {
+      const urlTemplate = new URL(url)
+      urlTemplate.searchParams.delete('offset')
+      urlTemplate.searchParams.delete('limit')
 
-    const pagination = {
-      totalResults: response.headers['x-pagination-total-results'],
-      offset: response.headers['x-pagination-offset'],
-      limit: response.headers['x-pagination-limit']
+      const paginationOpts = { limit: limit * 2, offset: response.data.length, maxOffset: Number.isInteger(totalResults) ? totalResults : 100 }
+      const restResponses = await fetchPaginated(url, paginationOpts)
+      responses.push(...restResponses.flatMap(resp => resp.data))
     }
 
-    return new ResponseDetails(this.id, response.data, pagination, this.getColumnFieldLog())
+    // we're not using x-pagination-offset and x-pagination-limit headers, because we fetched
+    // all the records already, so there's no need for pagination controls on the table
+    const pagination = {
+      totalResults: `${totalResults}`,
+      offset: '0',
+      limit: `${totalResults}`
+    }
+
+    return new ResponseDetails(this.id, responses, pagination, this.getColumnFieldLog())
   }
 
   isFailed () {
@@ -114,4 +130,101 @@ export default class ResultData {
   getId () {
     return this.id
   }
+}
+
+/**
+ * Returns a generator of offset values.
+ *
+ * @param {number} limit
+ * @param {number} offset
+ * @param {number} maxOffset
+ */
+function * offsets (limit, offset, maxOffset) {
+  let currentOffset = offset
+  while (currentOffset < maxOffset) {
+    yield currentOffset
+    currentOffset += limit
+  }
+}
+
+/**
+ *
+ * @param {number} numTasks max number of tasks to run
+ * @param {Object} gen offset generator
+ * @param {Function} taskFactory (taskIndex, offset) => Promise<>
+ * @returns
+ */
+function startRequests (numTasks, gen, taskFactory) {
+  const tasks = []
+  for (let i = 0; i < numTasks; ++i) {
+    const offsetItem = gen.next()
+    if (!offsetItem.done) {
+      const p = taskFactory(i, offsetItem.value)
+      tasks.push(p)
+    } else {
+      break
+    }
+  }
+  return tasks
+}
+
+/**
+ * Given a task factor function, executes a number of async tasks in parallel,
+ * but only at most `options.concurrency` tasks are in flight.
+ *
+ * Note: the tasks should be IO bound.
+ *
+ * If any of the tasks fail, the whole operation fails (in other words:
+ * no partial results).
+ *
+ * @param {Object} options
+ * @returns {Promise<Object[][]>}
+ */
+async function fetchBatched (options) {
+  // Note: trying more involved strategy of launching requests by using Promise.any()
+  // and trying to immedieately replace that one completed promise with a new one
+  // didn't really behave as expected - work was happening mostly in a single promise.
+  // This one's simpler and seems to actually do what expected.
+  const { concurrency, taskFn, offsetInfo } = options
+  const results = []
+  const gen = offsets(offsetInfo.limit, offsetInfo.offset, offsetInfo.maxOffset)
+  const newTask = async (index, offset) => {
+    logger.debug('fetchBatched(): starting task', { task: index, offset, type: types.DataFetch })
+    const p = taskFn(offset).then((val) => {
+      logger.debug('fetchBatched(): finishing task', { task: index, offset, type: types.DataFetch })
+      return { val, index, offset }
+    })
+    return p
+  }
+
+  let promises = startRequests(concurrency, gen, newTask)
+
+  do {
+    const completed = await Promise.all(promises)
+    results.push(...completed)
+    promises = startRequests(concurrency, gen, newTask)
+    logger.debug(`fetchBatched(): completed ${completed.length} tasks`, { type: types.DataFetch })
+  } while (promises.length > 0)
+
+  logger.info(`fetchBatched(): completed ${results.length} requests`, { type: types.DataFetch })
+  results.sort((r1, r2) => r1.offset - r2.offset)
+  return results.map(r => r.val)
+}
+
+/**
+ *
+ * @param {URL} url url
+ * @param {Object} options
+ * @returns {Promise<Object[]>}
+ */
+export const fetchPaginated = async (url, { limit, offset, maxOffset }) => {
+  const taskFn = async (offset) => {
+    const thisUrl = new URL(url)
+    thisUrl.searchParams.set('offset', offset)
+    thisUrl.searchParams.set('limit', limit)
+    const result = await axios.get(thisUrl, { timeout: 10000 })
+    return result
+  }
+
+  return await fetchBatched({ concurrency: 4, taskFn, offsetInfo: { limit, offset, maxOffset } })
 }
