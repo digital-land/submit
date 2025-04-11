@@ -1,8 +1,8 @@
 import RequestData from '../../src/models/requestData'
-import ResponseDetails from '../../src/models/responseDetails'
+import ResponseDetails from '../../src/models/responseDetails.js'
 import { describe, it, expect, vi } from 'vitest'
 import axios from 'axios'
-import logger from '../../src/utils/logger'
+import logger from '../../src/utils/logger.js'
 
 vi.mock('axios')
 
@@ -74,30 +74,6 @@ describe('RequestData', () => {
       const url = new URL(`http://localhost:8001/requests/1/response-details?offset=0&limit=50&jsonpath=${encodeURIComponent('$.issue_logs[*].severity=="error"')}`)
 
       expect(axios.get).toHaveBeenCalledWith(url, { timeout: 30000 })
-    })
-  })
-
-  describe('getErrorSummary', () => {
-    it('should return the error summary from the response', () => {
-      const response = {
-        data: {
-          'error-summary': ['error1', 'error2']
-        }
-      }
-      const requestData = new RequestData({ response })
-
-      const errorSummary = requestData.getErrorSummary()
-
-      expect(errorSummary).toStrictEqual(['error1', 'error2'])
-    })
-
-    it('should return an empty array if there is no error summary', () => {
-      const response = {}
-      const requestData = new RequestData(response)
-
-      const errorSummary = requestData.getErrorSummary()
-
-      expect(errorSummary).toStrictEqual([])
     })
   })
 

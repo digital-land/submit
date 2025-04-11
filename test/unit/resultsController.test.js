@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ResultsController, { fetchResponseDetails, getRequestDataMiddleware, setupError, setupTableParams, setupTemplate, getFileNameOrUrlAndCheckedTime, getPassedChecks } from '../../src/controllers/resultsController'
-import { getRequestData } from '../../src/services/asyncRequestApi'
-import PageController from '../../src/controllers/pageController'
+import ResultsController, {
+  fetchResponseDetails,
+  fieldToColumnMapping,
+  getRequestDataMiddleware,
+  setupError,
+  setupTableParams,
+  setupTemplate,
+  getFileNameOrUrlAndCheckedTime,
+  getPassedChecks
+} from '../../src/controllers/resultsController.js'
+import { getRequestData } from '../../src/services/asyncRequestApi.js'
+import PageController from '../../src/controllers/pageController.js'
 
 vi.mock('../../src/services/asyncRequestApi', () => ({
   getRequestData: vi.fn()
@@ -119,19 +128,19 @@ describe('Middleware Tests', () => {
         getRowsWithVerboseColumns: vi.fn(() => [{ columns: {}, data: 'rowData' }]),
         getColumns: vi.fn(() => ['column1', 'column2']),
         getFields: vi.fn(() => ['field1', 'field2']),
-        getFieldMappings: vi.fn(() => 'mockMappings'),
         getGeometries: vi.fn(() => 'mockGeometries'),
         getPagination: vi.fn(() => 'mockPagination')
       }
 
-      await setupTableParams(req, res, mockNext)
+      setupTableParams(req, res, mockNext)
 
       expect(req.locals.tableParams).toEqual({
         columns: ['field1', 'field2'],
         rows: [{ columns: {}, data: 'rowData' }],
-        fields: ['field1', 'field2']
+        fields: ['field1', 'field2'],
+        columnNameProcessing: 'none',
+        mapping: new Map()
       })
-      expect(req.locals.mappings).toEqual('mockMappings')
       expect(req.locals.geometries).toEqual('mockGeometries')
       expect(req.locals.pagination).toEqual('mockPagination')
       expect(mockNext).toHaveBeenCalled()
@@ -292,5 +301,29 @@ describe('getPassedChecks()', () => {
 
     getPassedChecks(req1, {}, vi.fn())
     expect(req1.locals.passedChecks).toStrictEqual([])
+  })
+})
+
+describe('fieldToColumnMapping()', () => {
+  it('creates a mapping', () => {
+    const result = fieldToColumnMapping({
+      columns: {
+        ID: { column: 'id' },
+        WKT: { column: 'wkt' },
+        Name: { column: 'name' },
+        Layer: { column: 'Layer' }
+      }
+    })
+    const expected = new Map([
+      ['ID', 'id'],
+      ['WKT', 'wkt'],
+      ['Name', 'name'],
+      ['Layer', 'Layer']
+    ])
+    expect(result).toEqual(expected)
+  })
+
+  it('handles empty', () => {
+    expect(fieldToColumnMapping({ columns: {} })).toStrictEqual(new Map())
   })
 })

@@ -118,41 +118,9 @@ describe('ResponseDetails', () => {
     it('returns the unique fields from the column keys', () => {
       const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
       const result = responseDetails.getFields()
-      const expected = ['ID', 'WKT', 'Name', 'Layer', 'Area', 'Geometry', 'Entry Date', 'Start Date', 'Documentation URL']
+      const expected = ['id', 'wkt', 'name', 'Layer', 'area(ha)', 'geometry', 'entry-date', 'start-date', 'documentation-url']
       expect(result).toEqual(expected)
     })
-  })
-
-  describe('getColumns', () => {
-    it('returns the columns', () => {
-      const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
-      responseDetails.getFields = vi.fn(() => ['ID', 'WKT', 'Name', 'Layer', 'Area', 'Geometry', 'Entry Date', 'Start Date', 'Documentation URL'])
-      const result = responseDetails.getColumns()
-      expect(result).toEqual(['id', 'wkt', 'name', 'Layer', 'area(ha)', 'geometry', 'entry-date', 'start-date', 'documentation-url'])
-    })
-
-    it('returns an empty array if there are no rows', () => {
-      const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
-      const result = responseDetails.getColumns()
-      expect(result).toStrictEqual([])
-    })
-  })
-
-  it('getFieldMappings', () => {
-    const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, mockColumnFieldLog)
-    const result = responseDetails.getFieldMappings()
-    const expected = {
-      ID: 'id',
-      WKT: 'wkt',
-      Name: 'name',
-      Layer: 'Layer',
-      Area: 'area(ha)',
-      Geometry: 'geometry',
-      'Entry Date': 'entry-date',
-      'Start Date': 'start-date',
-      'Documentation URL': 'documentation-url'
-    }
-    expect(result).toEqual(expected)
   })
 
   describe('getRowsWithVerboseColumns', () => {
