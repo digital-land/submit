@@ -152,7 +152,7 @@ function * offsets (limit, offset, maxOffset) {
  * @param {number} numTasks max number of tasks to run
  * @param {Object} gen offset generator
  * @param {Function} taskFactory (taskIndex, offset) => Promise<>
- * @returns
+ * @returns {Promise[]}
  */
 function startRequests (numTasks, gen, taskFactory) {
   const tasks = []
