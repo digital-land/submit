@@ -51,18 +51,19 @@ describe('map.js', () => {
 
       const map = new Map({ containerId: 'map', data: ['POINT (1 1)'], interactive: true, wktFormat: true })
 
-      expect(map.map.addSource).toHaveBeenCalledWith('geometry-0', {
+      expect(map.map.addSource).toHaveBeenCalledWith('dataset', {
         type: 'geojson',
         data: {
-          type: 'Feature',
-          geometry: { coordinates: [1, 1], type: 'Point' },
-          properties: {
-            geo: 'POINT (1 1)'
-          }
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: { coordinates: [1, 1], type: 'Point' }
+            }]
         }
       })
       expect(map.map.addLayer).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'circle', id: 'geometry-0' }),
+        expect.objectContaining({ type: 'fill', id: 'dataset-poly' }),
         'symbol-layer'
       )
     })
@@ -197,7 +198,8 @@ describe('map.js', () => {
 
     it('should default to maptiler style if token fetch fails', async () => {
       vi.mock('../../../src/assets/js/os-api-token.js', () => ({
-        getApiToken: vi.fn().mockRejectedValue(new Error('API token fetch failed'))
+        getApiToken: vi.fn().mockReturnValue(''),
+        getFreshApiToken: vi.fn().mockRejectedValue(new Error('API token fetch failed'))
       }))
 
       global.window.serverContext = {
