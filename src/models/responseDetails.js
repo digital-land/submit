@@ -80,7 +80,7 @@ export default class ResponseDetails {
     const columnKeys = []
     const rows = this.getRows()
     if (rows.length > 0) {
-      const keys = Object.keys(rows[0].converted_row) // ?? is this what we should be looking up?
+      const keys = Object.keys(rows[0].converted_row)
       columnKeys.push(...keys)
     }
 
