@@ -142,7 +142,7 @@ export class Map {
     this.map.addSource(sourceName, source)
 
     this.map.addLayer({
-      id: 'dataset-thing',
+      id: 'dataset-poly',
       type: 'fill',
       source: sourceName,
       layout: {},
@@ -154,7 +154,7 @@ export class Map {
     }, this.firstMapLayerId)
 
     this.map.addLayer({
-      id: 'dataset-thing-border',
+      id: 'dataset-poly-border',
       type: 'line',
       source: sourceName,
       layout: {},
@@ -166,7 +166,7 @@ export class Map {
     })
 
     this.map.addLayer({
-      id: 'dataset-thing-point',
+      id: 'dataset-poly-point',
       type: 'circle',
       source: sourceName,
       paint: {
