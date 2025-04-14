@@ -1,5 +1,6 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import { getIssueDetails, getIssueField, prepareEntity, setRecordCount } from '../../../src/middleware/entityIssueDetails.middleware.js'
+import { getIssueDetails, getIssueField, prepareEntity, setRecordCount, show404ifNoIssues } from '../../../src/middleware/entityIssueDetails.middleware.js'
+import { MiddlewareError } from '../../../src/utils/errors.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -227,6 +228,18 @@ describe('issueDetails.middleware.js', () => {
 
       expect(res.render).toHaveBeenCalledTimes(1)
       expect(res.render).toHaveBeenCalledWith('organisations/issueDetails.html', req.templateParams)
+    })
+  })
+
+  describe('show404ifNoIssues', () => {
+    it('raises 404 when on issues found', () => {
+      let next = vi.fn()
+      show404ifNoIssues({ recordCount: 0 }, {}, next)
+      expect(next).toHaveBeenCalledWith(new MiddlewareError('no issues found', 404))
+
+      next = vi.fn()
+      show404ifNoIssues({ recordCount: 10 }, {}, next)
+      expect(next).toHaveBeenCalledWith()
     })
   })
 })
