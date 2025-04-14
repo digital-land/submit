@@ -145,7 +145,7 @@ export function prepareEntity (req, res, next) {
  * @param {number} req.recordCount
  * @param {Object} res response
  * @param {Function} next next function
- * @returns
+ * @returns {undefined}
  */
 export const show404ifNoIssues = (req, res, next) => {
   const { recordCount } = req
