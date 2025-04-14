@@ -232,7 +232,7 @@ describe('issueDetails.middleware.js', () => {
   })
 
   describe('show404ifNoIssues', () => {
-    it('raises 404 when on issues found', () => {
+    it('raises 404 when no issues found', () => {
       let next = vi.fn()
       show404ifNoIssues({ recordCount: 0 }, {}, next)
       expect(next).toHaveBeenCalledWith(new MiddlewareError('no issues found', 404))
