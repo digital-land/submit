@@ -121,6 +121,12 @@ describe('ResponseDetails', () => {
       const expected = ['id', 'wkt', 'name', 'Layer', 'area(ha)', 'geometry', 'entry-date', 'start-date', 'documentation-url']
       expect(result).toEqual(expected)
     })
+    it('returns the unique fields from the column keys and field log', () => {
+      const responseDetails = new ResponseDetails(undefined, mockResponse, mockPagination, [{ column: 'foo', field: 'FOO' }])
+      const result = responseDetails.getFields()
+      const expected = ['id', 'wkt', 'name', 'Layer', 'area(ha)', 'geometry', 'entry-date', 'start-date', 'documentation-url', 'FOO']
+      expect(result).toEqual(expected)
+    })
   })
 
   describe('getRowsWithVerboseColumns', () => {

@@ -77,23 +77,24 @@ export default class ResponseDetails {
       return this.#cachedFields
     }
 
-    const columnKeys = []
+    const columnKeys = new Set()
     const rows = this.getRows()
     if (rows.length > 0) {
       const keys = Object.keys(rows[0].converted_row)
-      columnKeys.push(...keys)
+      for (const key of keys) {
+        columnKeys.add(key)
+      }
     }
 
     const columnFieldLog = this.getColumnFieldLog()
-    const logFields = new Map(columnFieldLog.map((field) => [field.column, field]))
-    const fields = new Set()
-    for (const colKey of columnKeys) {
-      const logField = logFields.get(colKey)
-      fields.add(logField ? logField.field : colKey)
+    for (const [col, field] of columnFieldLog.map((field) => [field.column, field.field])) {
+      if (!columnKeys.has(col)) {
+        columnKeys.add(field)
+      }
     }
 
-    this.#cachedFields = columnKeys
-    return columnKeys
+    this.#cachedFields = [...columnKeys]
+    return this.#cachedFields
   }
 
   /**
