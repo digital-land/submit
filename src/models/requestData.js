@@ -61,7 +61,7 @@ export default class ResultData {
       urlTemplate.searchParams.delete('offset')
       urlTemplate.searchParams.delete('limit')
 
-      const paginationOpts = { limit: limit * 2, offset: response.data.length, maxOffset: Number.isInteger(totalResults) ? totalResults : 100 }
+      const paginationOpts = { limit, offset: response.data.length, maxOffset: Number.isInteger(totalResults) ? totalResults : 100 }
       const restResponses = await fetchPaginated(url, paginationOpts)
       responses.push(...restResponses.flatMap(resp => resp.data))
     }
