@@ -20,14 +20,22 @@ vi.spyOn(logger, 'error')
 describe('RequestData', () => {
   describe('fetchResponseDetails', () => {
     it('should return a new ResponseDetails object (paginated)', async () => {
-      axios.get.mockResolvedValue({
+      axios.get.mockResolvedValueOnce({
         headers: {
-          'x-pagination-total-results': '100',
+          'x-pagination-total-results': '2',
           'x-pagination-offset': '0',
-          'x-pagination-limit': '50'
+          'x-pagination-limit': '1'
         },
         data: [{ 'error-summary': ['error1', 'error2'] }]
       })
+        .mockResolvedValueOnce({
+          headers: {
+            'x-pagination-total-results': '2',
+            'x-pagination-offset': '1',
+            'x-pagination-limit': '1'
+          },
+          data: [{ 'error-summary': ['error1', 'error2'] }]
+        })
 
       const response = {
         id: 1,
@@ -35,17 +43,17 @@ describe('RequestData', () => {
       }
       const requestData = new RequestData(response)
 
-      const responseDetails = await requestData.fetchResponseDetails()
+      const responseDetails = await requestData.fetchResponseDetails(0, 1)
 
       expect(responseDetails).toBeInstanceOf(ResponseDetails)
 
-      expect(responseDetails.pagination.totalResults).toBe('100')
+      expect(responseDetails.pagination.totalResults).toBe('2')
       expect(responseDetails.pagination.offset).toBe('0')
-      expect(responseDetails.pagination.limit).toBe('100')
+      expect(responseDetails.pagination.limit).toBe('2')
       expect(responseDetails.response).toStrictEqual([
         { 'error-summary': ['error1', 'error2'] },
-        { 'error-summary': ['error1', 'error2'] }]
-      )
+        { 'error-summary': ['error1', 'error2'] }
+      ])
     })
 
     it('should return a new ResponseDetails object', async () => {
