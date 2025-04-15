@@ -47,6 +47,12 @@ test('receiving a result with errors', async ({ page }) => {
 
   const tableValues = await getTableContents(page, 'govuk-table')
   const expectedTableValues = getTableValuesFromResponse(errorResponse, errorResponseDetails)
+  // fill the values for missing 'reference' column
+  expectedTableValues[0].unshift('reference')
+  for (let index = 1; index < expectedTableValues.length; ++index) {
+    expectedTableValues[index].unshift('')
+  }
+
   expect(tableValues[0]).toEqual(expectedTableValues[0])
   expect(tableValues[1]).toEqual(expectedTableValues[1])
   expect(tableValues[2]).toEqual(expectedTableValues[3])
@@ -122,6 +128,11 @@ const getTableValuesFromResponse = (response, details) => {
 }
 
 const readJsonFile = (path) => {
+  console.debug('reading JSON from', path)
   const jsonData = fs.readFileSync(path, 'utf-8')
-  return JSON.parse(jsonData)
+  try {
+    return JSON.parse(jsonData)
+  } finally {
+    console.warn('failed to deserialise JSON', path)
+  }
 }
