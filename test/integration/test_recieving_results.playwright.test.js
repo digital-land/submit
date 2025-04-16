@@ -128,7 +128,6 @@ const getTableValuesFromResponse = (response, details) => {
 }
 
 const readJsonFile = (path) => {
-  console.debug('reading JSON from', path)
   const jsonData = fs.readFileSync(path, 'utf-8')
   return JSON.parse(jsonData)
 }
