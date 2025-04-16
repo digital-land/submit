@@ -1,3 +1,4 @@
+import { MiddlewareError } from '../utils/errors.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
 import {
   fetchDatasetInfo,
@@ -139,6 +140,24 @@ export function prepareEntity (req, res, next) {
 }
 
 /**
+ *
+ * @param {Object} req request
+ * @param {number} req.recordCount
+ * @param {Object} res response
+ * @param {Function} next next function
+ * @returns {undefined}
+ */
+export const show404ifNoIssues = (req, res, next) => {
+  const { recordCount } = req
+  if (recordCount === 0) {
+    // possibly accessing an outdated URL
+    return next(new MiddlewareError('no issues found', 404))
+  }
+
+  next()
+}
+
+/**
  * Middleware. Renders the issue details page with the list of issues, entry data,
  * and organisation and dataset details.
  */
@@ -159,6 +178,7 @@ export default [
   getIssueSpecification,
   filterOutEntitiesWithoutIssues,
   setRecordCount,
+  show404ifNoIssues,
   getSetDataRange(1),
   show404IfPageNumberNotInRange,
   getSetBaseSubPath(['entity']),
