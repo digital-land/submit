@@ -44,7 +44,7 @@ describe('issueDetails.middleware.js', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('sets the record count to 0 if req.issues is undefined', () => {
+    it('sets the record count to 0 if req.issueEntities is undefined', () => {
       const req = {}
       const res = {}
       const next = vi.fn()
@@ -55,8 +55,8 @@ describe('issueDetails.middleware.js', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('sets the record count to 0 if req.issues is null', () => {
-      const req = { issues: null }
+    it('sets the record count to 0 if req.issueEntities is undefined', () => {
+      const req = { issues: null, issueEntities: undefined }
       const res = {}
       const next = vi.fn()
 

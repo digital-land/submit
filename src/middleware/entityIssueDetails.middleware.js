@@ -88,7 +88,7 @@ export function prepareEntity (req, res, next) {
   const { issueEntities, issues, specification } = req
   const { pageNumber, issue_type: issueType } = req.parsedParams
 
-  if (!issueEntities || (issueEntities && issueEntities.length === 0)) {
+  if (!issueEntities || issueEntities.length === 0) {
     return next(new MiddlewareError('No issues for entity', 404))
   }
 
