@@ -31,6 +31,8 @@ import { pagination } from '../utils/pagination.js'
  * Holds response data of 'http://ASYNC-REQUEST-API-HOST/requests/:result-id/response-details' endpoint.
  */
 export default class ResponseDetails {
+  #cachedFields
+
   constructor (id, response, pagination, columnFieldLog) {
     this.id = id
     this.response = response
@@ -48,6 +50,9 @@ export default class ResponseDetails {
     return this.response
   }
 
+  /**
+   * @returns {Object[]}
+   */
   getColumnFieldLog () {
     if (!this.columnFieldLog) {
       logger.warn('trying to get column field log when there is none', {
@@ -58,65 +63,38 @@ export default class ResponseDetails {
     return this.columnFieldLog
   }
 
-  getColumns () {
-    if (!this.getRows().length) {
-      return []
-    }
-
-    const fields = this.getFields()
-
-    const ColumnsWithDuplicates = fields.map((field) => {
-      const columnFieldLog = this.getColumnFieldLog()
-      const fieldLog = columnFieldLog.find(
-        (fieldLog) => fieldLog.field === field
-      )
-      return fieldLog ? fieldLog.column : field
-    })
-
-    return [...new Set(ColumnsWithDuplicates)]
-  }
-
   /**
-   * returned fields are `converted_row.column | columnFieldLog.field`
+   * Returns a collection of field names, where each name is either a column name from input data
+   * or field name from the column field log. The resulting collection includes fields that
+   * the submitted data might be missing.
+   *
+   * Note: fields are `converted_row.column | columnFieldLog.field`
    *
    * @returns {string[]}
    */
   getFields () {
-    const columnKeys = [
-      ...new Set(
-        this.getRows()
-          .map((row) => row.converted_row)
-          .flatMap((row) => Object.keys(row))
-      )
-    ]
+    if (this.#cachedFields) {
+      return this.#cachedFields
+    }
+
+    const columnKeys = new Set()
+    const rows = this.getRows()
+    if (rows.length > 0) {
+      const keys = Object.keys(rows[0].converted_row)
+      for (const key of keys) {
+        columnKeys.add(key)
+      }
+    }
 
     const columnFieldLog = this.getColumnFieldLog()
-    return [
-      ...new Set(
-        columnKeys.map((column) => {
-          const fieldLog = columnFieldLog.find(
-            (fieldLog) => fieldLog.column === column
-          )
-          if (!fieldLog) {
-            return column
-          } else {
-            return fieldLog.field
-          }
-        })
-      )
-    ]
-  }
+    for (const [col, field] of columnFieldLog.map((field) => [field.column, field.field])) {
+      if (!columnKeys.has(col)) {
+        columnKeys.add(field)
+      }
+    }
 
-  getFieldMappings () {
-    return Object.fromEntries(
-      this.getFields().map((field) => {
-        const columnFieldLog = this.getColumnFieldLog()
-        const columnLog = columnFieldLog.find(
-          (fieldLog) => fieldLog.field === field
-        )
-        return [field, columnLog ? columnLog.column : null]
-      })
-    )
+    this.#cachedFields = [...columnKeys]
+    return this.#cachedFields
   }
 
   /**

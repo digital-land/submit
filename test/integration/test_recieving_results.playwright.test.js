@@ -9,12 +9,12 @@
 
 import { test, expect } from '@playwright/test'
 
-import ResultsPage from '../PageObjectModels/resultsPage'
+import ResultsPage from '../PageObjectModels/resultsPage.js'
 
-import prettifyColumnName from '../../src/filters/prettifyColumnName'
+import prettifyColumnName from '../../src/filters/prettifyColumnName.js'
 
 import fs from 'fs'
-import { splitByLeading } from '../../src/utils/table'
+import { splitByLeading } from '../../src/utils/table.js'
 
 test('receiving a successful result', async ({ page }) => {
   const successResponse = readJsonFile('docker/request-api-stub/wiremock/__files/check_file/article-4/request-complete.json')
@@ -47,6 +47,12 @@ test('receiving a result with errors', async ({ page }) => {
 
   const tableValues = await getTableContents(page, 'govuk-table')
   const expectedTableValues = getTableValuesFromResponse(errorResponse, errorResponseDetails)
+  // fill the values for missing 'reference' column
+  expectedTableValues[0].unshift('reference')
+  for (let index = 1; index < expectedTableValues.length; ++index) {
+    expectedTableValues[index].unshift('')
+  }
+
   expect(tableValues[0]).toEqual(expectedTableValues[0])
   expect(tableValues[1]).toEqual(expectedTableValues[1])
   expect(tableValues[2]).toEqual(expectedTableValues[3])
@@ -101,31 +107,22 @@ const getTableCellValue = async (page, row, column) => {
   }
 }
 
+/**
+ * Returns an array of array. First array represents the headers, subsequent elements are the rows.
+ *
+ * @param {*} response
+ * @param {*} details
+ * @returns {String[][]}
+ */
 const getTableValuesFromResponse = (response, details) => {
-  const columnFieldLog = response.response.data['column-field-log']
-
   const columnHeaders = Object.keys(details[0].converted_row)
-  const logByField = new Map()
-  for (const log of columnFieldLog) { logByField.set(log.column, log) }
-  const uniqueHeaders = new Set(columnHeaders.map(header => {
-    return logByField.get(header)?.field ?? header
-  }))
-
-  const { leading, trailing } = splitByLeading({ fields: uniqueHeaders })
+  const { leading, trailing } = splitByLeading({ fields: columnHeaders })
   const orderedUniqueHeaders = [...leading, ...trailing]
+  const tableValues = [orderedUniqueHeaders]
 
-  const prettifiedHeaders = orderedUniqueHeaders.map(header => prettifyColumnName(header))
-  const tableValues = [prettifiedHeaders]
-
-  tableValues.push(...details.map(detail => {
-    const convertedRow = detail.converted_row
-    return orderedUniqueHeaders.map(header => {
-      const log = columnFieldLog.find(log => log.field === header)
-      if (log) { header = log.column }
-
-      return convertedRow[header]
-    })
-  }))
+  for (const { converted_row: row } of details) {
+    tableValues.push([...orderedUniqueHeaders.map(header => row[header])])
+  }
 
   return tableValues
 }
