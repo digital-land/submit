@@ -20,9 +20,6 @@ describe('Dataset Overview Page', () => {
     },
     stats: {
       numberOfRecords: 10,
-      numberOfFieldsSupplied: 5,
-      numberOfFieldsMatched: 6,
-      numberOfExpectedFields: 10,
       endpoints: [
         {
           name: 'endpoint 1',
@@ -74,18 +71,17 @@ describe('Dataset Overview Page', () => {
   it('Renders dataset details correctly', () => {
     expect(document.querySelector('#main-content h2.govuk-heading-m').textContent).toContain('Dataset details')
     const summaryListValues = document.querySelectorAll('dd.govuk-summary-list__value')
+
     expect(summaryListValues[0].textContent.trim()).toEqual(params.stats.numberOfRecords.toString())
-    expect(summaryListValues[1].textContent.trim()).toEqual(`${params.stats.numberOfFieldsSupplied}/${params.stats.numberOfExpectedFields}`)
-    expect(summaryListValues[2].textContent.trim()).toEqual(`${params.stats.numberOfFieldsMatched}/${params.stats.numberOfExpectedFields}`)
-    expect(summaryListValues[3].textContent.trim()).toEqual('Open Government Licence')
-    expect(summaryListValues[4].textContent).toContain(params.stats.endpoints[0].endpoint_url)
-    expect(summaryListValues[5].textContent).toContain(params.stats.endpoints[0].documentation_url)
-    expect(summaryListValues[6].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastAccessed))
-    expect(summaryListValues[7].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastUpdated))
-    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].endpoint_url)
-    expect(summaryListValues[9].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastAccessed))
-    expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].error.code)
-    expect(summaryListValues[10].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
+    expect(summaryListValues[1].textContent.trim()).toEqual('Open Government Licence')
+    expect(summaryListValues[2].textContent).toContain(params.stats.endpoints[0].endpoint_url)
+    expect(summaryListValues[3].textContent).toContain(params.stats.endpoints[0].documentation_url)
+    expect(summaryListValues[4].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastAccessed))
+    expect(summaryListValues[5].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastUpdated))
+    expect(summaryListValues[6].textContent).toContain(params.stats.endpoints[1].endpoint_url)
+    expect(summaryListValues[7].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastAccessed))
+    expect(summaryListValues[7].textContent).toContain(params.stats.endpoints[1].error.code)
+    expect(summaryListValues[8].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
   })
 
   it('Renders breadcrumbs correctly', () => {
