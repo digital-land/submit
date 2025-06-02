@@ -3,8 +3,11 @@ import { fetchLocalAuthorities } from '../utils/datasetteQueries/fetchLocalAutho
 
 class LpaDetailsController extends PageController {
   async locals (req, res, next) {
-    const localAuthoritiesNames = await fetchLocalAuthorities()
+    if (!req.sessionModel?.get('lpa') || !req.sessionModel?.get('dataset')) {
+      return res.redirect('/')
+    }
 
+    const localAuthoritiesNames = await fetchLocalAuthorities()
     const listItems = localAuthoritiesNames.map(name => ({
       text: name,
       value: name

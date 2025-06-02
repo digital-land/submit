@@ -25,15 +25,24 @@ describe('lpaDetailsController', async () => {
   })
 
   describe('locals', () => {
-    it('should set localAuthorities options in the form', async () => {
-      const req = {
+    let req, res, next
+    beforeEach(() => {
+      req = {
         form: {
           options: {}
+        },
+        sessionModel: {
+          get: vi.fn((key) => {
+            if (key === 'lpa' || key === 'dataset') return 'mock-value'
+            return undefined
+          })
         }
       }
-      const res = {}
-      const next = vi.fn()
+      res = { redirect: vi.fn() }
+      next = vi.fn()
+    })
 
+    it('should set localAuthorities options in the form', async () => {
       const localAuthoritiesNames = ['Authority 1', 'Authority 2']
 
       fetchLocalAuthorities.fetchLocalAuthorities = vi.fn().mockResolvedValue(localAuthoritiesNames)
@@ -49,20 +58,38 @@ describe('lpaDetailsController', async () => {
     })
 
     it('should call super.locals', async () => {
-      const req = {
-        form: {
-          options: {}
-        }
-      }
-      const res = {}
-      const next = vi.fn()
-
       fetchLocalAuthorities.fetchLocalAuthorities = vi.fn().mockResolvedValue([])
       const superLocalsSpy = vi.spyOn(PageController.prototype, 'locals')
 
       await controller.locals(req, res, next)
 
       expect(superLocalsSpy).toHaveBeenCalledWith(req, res, next)
+      expect(res.redirect).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('should redirect when lpa is missing from session', async () => {
+      req.sessionModel.get = vi.fn((key) => {
+        if (key === 'dataset') return 'mock-value'
+        return undefined
+      })
+
+      await controller.locals(req, res, next)
+
+      expect(res.redirect).toHaveBeenCalledWith('/')
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('should redirect when dataset is missing from session', async () => {
+      req.sessionModel.get = vi.fn((key) => {
+        if (key === 'lpa') return 'mock-value'
+        return undefined
+      })
+
+      await controller.locals(req, res, next)
+
+      expect(res.redirect).toHaveBeenCalledWith('/')
+      expect(next).not.toHaveBeenCalled()
     })
   })
 })

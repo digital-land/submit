@@ -25,7 +25,6 @@ export default {
     entryPoint: true,
     resetJourney: true,
     next: 'dataset',
-    template: 'check/start.html',
     noPost: true
   },
   '/dataset': {

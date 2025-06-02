@@ -26,7 +26,6 @@ export default {
     fields: ['name', 'email'],
     next: 'dataset-details',
     controller: LpaDetailsController,
-    backLink: '/start',
     checkJourney: false
   },
   '/dataset-details': {
