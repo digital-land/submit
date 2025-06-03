@@ -17,7 +17,7 @@ describe('Cookie banner component', () => {
     const rejectButton = document.querySelector('.js-app-c-cookie-banner__reject')
     const viewCookieLink = document.querySelector('.govuk-button-group .govuk-link')
 
-    expect(header.textContent.trim()).toEqual('Cookies on Submit and update your planning data')
+    expect(header.textContent.trim()).toEqual('Cookies on Check and submit planning data')
     expect(acceptButton.textContent.trim()).toEqual('Accept analytics cookies')
     expect(rejectButton.textContent.trim()).toEqual('Reject analytics cookies')
     expect(viewCookieLink.textContent.trim()).toEqual('View cookies')
