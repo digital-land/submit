@@ -19,7 +19,7 @@ describe(`http-error.html(seed: ${seed})`, () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Task list - Submit and update your planning data`
+    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Task list - Check and submit planning data`
   })
 
   it('Renders the correct heading', () => {
