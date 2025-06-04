@@ -54,69 +54,64 @@
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <h2 class="govuk-heading-l">National planning data in one place</h2>
+    <h2 class="govuk-heading-l">Check your data</h2>
 
-    <p class="govuk-body">Having a national index of planning data means developers, housing associations, policy
-      colleagues, researchers and journalists can access the data they need simply and quickly.</p>
+    <p class="govuk-body">The check tool can help you understand which issues you need to fix straightaway, and which issues you can fix later.</p>
 
-    <p class="govuk-body">It means less overhead for local authorities and organisations, reducing the time spent
-      preparing for data requests and freedom of information requests.</p>
+    <p class="govuk-body">The tool will accept any of these formats:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>CSV</li>
+      <li>GeoJSON</li>
+      <li>GML</li>
+      <li>GeoPackage</li>
+    </ul>
 
-    <p class="govuk-body">The data is updated from local authority websites every night, ensuring the data is up-to-date
-      and complete.</p>
+    <p class="govuk-body">Alternatively you can use your endpoint URL (the URL of the data file or feed itself).</p>
+    <p class="govuk-body">You do not need to publish your data on your website before you check it.</p>
   </div>
 </div>
 
 <div class="govuk-grid-row">
-  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl">
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl" />
 
   <div class="govuk-grid-column-two-thirds">
-    <h2 class="govuk-heading-l">You provide trusted and authoritative local data</h2>
+    <h2 class="govuk-heading-l">Provide your data</h2>
 
-    <p class="govuk-body">Your organisation is responsible for providing authoritative local data, which is why you must
-      publish it on your website.
-    </p>
+    <p class="govuk-body">Once you have published your data on your website, you can submit your data to the platform. We'll need your:</p>
 
-    <p class="govuk-body">
-      You need to provide information about the data on your website including links to the data itself. This can be a
-      simple file hosted on your website, but it’s better if it is supplied through an API that links directly to your
-      planning database software.
-    </p>
-
-    <p class="govuk-body">
-      <a href="/guidance" class="govuk-link">Read the guidance on how to provide planning and housing data</a>.
-    </p>
-
-    <p class="govuk-body">
-      Whenever you make changes to the data on the URL you’ve given us, the platform will automatically index the data
-      and make the updates available to users.
-    </p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>full name</li>
+      <li>work email address</li>
+      <li>endpoint URL</li>
+      <li>webpage URL: the URL of the page on your website which contains information about the dataset and the link to your data</li>
+    </ul>
   </div>
 </div>
 
 <div class="govuk-grid-row">
-  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl">
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl" />
 
   <div class="govuk-grid-column-two-thirds">
-    <h2 class="govuk-heading-l">We help you to improve your data</h2>
+    <h2 class="govuk-heading-l">View your data</h2>
 
     <p class="govuk-body">
-      The submit and update service tells you which datasets you need to provide, gives you information about the data
-      you have provided and what you can do to improve the data quality.
+      <a href="/organisations" class="govuk-link">Visit your organisation’s dashboard</a> anytime to clearly see the data you’ve supplied and the datasets you still need to submit.
     </p>
 
-    <p class="govuk-body">
-      Your data doesn’t need to be complete or perfect to start. Any data we have from you means we can start to index
-      it and provide it on the platform. And we can help you to identify what data needs improvement and how to do it,
-      so you can focus your time on making things better.
-    </p>
-
-    <p class="govuk-body">
-      The dashboard gives you a clear view of the data you’ve supplied as well as other information we hold about your
-      local area.
-    </p>
-
-    <p class="govuk-body">As we grow the service we’ll add more features to help you to improve your data.</p>
+    <p class="govuk-body">For any live data, we’ll let you know what you can do to improve it.</p>
   </div>
+</div>
+
+<div class="govuk-grid-row">
+  <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--xl" />
+
+  <div class="govuk-grid-column-two-thirds">
+    <h2 class="govuk-heading-l">Contribute to the data design process</h2>
+
+    <p class="govuk-body">Information about how you can help with designing data and get involved in community events and discussions.</p>
+
+    <p class="govuk-body"><a href="{{ dataDesignUrl }}" class="govuk-link">Contribute to the data design process</a></p>
+  </div>
+
 </div>
 {% endblock %}
