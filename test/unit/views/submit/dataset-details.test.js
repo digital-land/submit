@@ -46,15 +46,14 @@ describe(`dataset details View (seed: ${seed})`, () => {
   const params = mock(DatasetDetails, seed)
   params.errors = {}
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
-  const datasetName = params.values.dataset.toLowerCase()
 
   runGenericPageTests(html, {
-    pageTitle: `Enter ${datasetName} details - Submit your planning data`
+    pageTitle: 'Endpoint details - Submit your planning data'
   })
 
   it('should render the correct header', () => {
     const regex = new RegExp(
-      `<h1 class="govuk-heading-l".*${datasetName} details.*</h1>`,
+      '<h1 class="govuk-heading-l".*Endpoint details.*</h1>',
       'g'
     )
 
