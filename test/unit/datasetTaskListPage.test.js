@@ -17,7 +17,7 @@ describe(`Dataset Task List Page (seed: ${seed})`, () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Task list - Check and submit planning data`,
+    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Task list - Check and provide planning data`,
     breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: 'mock org', href: `/organisations/${params.organisation.organisation}` }, { text: 'Article 4 direction area' }]
   })
 

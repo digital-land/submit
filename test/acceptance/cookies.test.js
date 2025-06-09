@@ -12,7 +12,7 @@ test.describe('Cookies page', () => {
     const cookiesPage = new CookiesPage(page)
     await cookiesPage.navigateHere()
 
-    await expect(page).toHaveTitle('Cookie notice for Submit and update planning and housing data for England - Check and submit planning data')
+    await expect(page).toHaveTitle('Cookie notice for Submit and update planning and housing data for England - Check and provide planning data')
   })
 
   test('Can find and select the accept cookies radio button and submit the form', async ({ page, context }) => {
