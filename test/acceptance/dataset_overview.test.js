@@ -7,7 +7,7 @@ test.describe('Dataset overview', () => {
     const landingPage = new LandingPage(page)
     await landingPage.navigateHere()
 
-    expect(await page.locator('h1').innerText()).toEqual('Submit and update your planning data')
+    expect(await page.locator('h1').innerText()).toEqual('Check and provide planning data')
 
     const organisationsPage = await landingPage.clickStartNow()
 

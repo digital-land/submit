@@ -46,7 +46,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `${params.organisation.name} overview - Submit and update your planning data`,
+    pageTitle: `${params.organisation.name} overview - Check and provide planning data`,
     breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: params.organisation.name }]
   })
 
