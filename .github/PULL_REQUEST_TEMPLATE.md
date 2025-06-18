@@ -12,15 +12,9 @@
      - 📗 Update any related documentation and include any relevant screenshots.
 -->
 
-## Preview Link
+## Description
 
-<!--
-Replace [PR_NUMBER] with the actual PR number to generate the preview URL.
-For example, for PR #818, the preview link would be:
-https://submit-pr-818.herokuapp.com/
--->
-
-https://submit-pr-[PR_NUMBER].herokuapp.com/
+_Please replace this line with a brief description of the changes made._
 
 ## What type of PR is this? (check all applicable)
 
@@ -29,10 +23,6 @@ https://submit-pr-[PR_NUMBER].herokuapp.com/
 - [ ] Bug Fix
 - [ ] Optimization
 - [ ] Documentation Update
-
-## Description
-
-_Please replace this line with a brief description of the changes made._
 
 ## Related Tickets & Documents
 
@@ -44,8 +34,6 @@ For example, having the text: "closes #1234" would connect the current pull
 request to issue 1234.  And when we merge the pull request, GitHub will
 automatically close the issue.
 -->
-- Ticket Link
-- Related Issue #
 - Closes #
 
 ## QA Instructions, Screenshots, Recordings

@@ -11,7 +11,7 @@ redis: {
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
     port: 6379
 }
-url: 'https://submit.development.planning.data.gov.uk/'
+url: 'https://provide.development.planning.data.gov.uk/'
 jira: {
   requestTypeId: 37
 }
