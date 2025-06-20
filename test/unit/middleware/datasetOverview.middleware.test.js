@@ -48,9 +48,6 @@ describe('Dataset Overview Middleware', () => {
         dataset: reqWithResults.dataset,
         taskCount: 3, // 1 issue + 1 endpoint error + 1 failed 'out of bound' expectation
         stats: {
-          numberOfFieldsSupplied: 1,
-          numberOfFieldsMatched: 1,
-          numberOfExpectedFields: 2,
           numberOfRecords: 10,
           endpoints: [
             { name: 'Endpoint URL 0', endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01' },

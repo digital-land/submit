@@ -159,9 +159,6 @@ export const OrgDatasetOverview = v.strictObject({
   taskCount: v.integer(),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
-    numberOfFieldsSupplied: v.integer(),
-    numberOfFieldsMatched: v.integer(),
-    numberOfExpectedFields: v.integer(),
     endpoints: v.array(v.strictObject({
       name: v.string(),
       documentation_url: v.nullable(v.optional(v.string())),

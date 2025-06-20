@@ -184,21 +184,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, datasetSpecification, columnSummary, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, expectationOutOfBounds = [] } = req
-
-  const mappingFields = columnSummary[0]?.mapping_field?.split(';') ?? []
-  const nonMappingFields = columnSummary[0]?.non_mapping_field?.split(';') ?? []
-  const allFields = [...mappingFields, ...nonMappingFields]
-
-  const specFields = datasetSpecification ? datasetSpecification.fields : []
-  const numberOfFieldsSupplied = specFields.reduce((acc, field) => {
-    return allFields.includes(field.field) ? acc + 1 : acc
-  }, 0)
-  const numberOfFieldsMatched = specFields.reduce((acc, field) => {
-    return mappingFields.includes(field.field) ? acc + 1 : acc
-  }, 0)
-
-  const numberOfExpectedFields = specFields.length
+  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, expectationOutOfBounds = [] } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources.sort((a, b) => {
@@ -237,9 +223,6 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     dataset,
     taskCount,
     stats: {
-      numberOfFieldsSupplied: numberOfFieldsSupplied ?? 0,
-      numberOfFieldsMatched: numberOfFieldsMatched ?? 0,
-      numberOfExpectedFields: numberOfExpectedFields ?? 0,
       numberOfRecords: entityCount.entity_count,
       endpoints
     },
