@@ -58,6 +58,7 @@ export function setupNunjucks (opts) {
 
   const globalValues = {
     serviceName: config.serviceNames.submit,
+    dataDesignUrl: config.dataDesignUrl,
     ...config.templateContent
   }
 

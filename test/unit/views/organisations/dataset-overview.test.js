@@ -51,7 +51,7 @@ describe('Dataset Overview Page', () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'Mock org - World heritage site buffer zone - Dataset overview - Submit and update your planning data'
+    pageTitle: 'Mock org - World heritage site buffer zone - Dataset overview - Check and provide planning data'
   })
 
   it('Renders the correct headings', () => {

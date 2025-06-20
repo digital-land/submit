@@ -169,6 +169,16 @@ code * {
   }
 }
 
+.app-masthead__link,
+.app-masthead__link:link,
+.app-masthead__link:visited {
+  color: govuk-colour("white");
+}
+
+.app-masthead__link:focus {
+  color: govuk-colour("black");
+}
+
 .padding-top {
   padding-top: 40px;
 }
