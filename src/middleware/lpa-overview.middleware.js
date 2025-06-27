@@ -190,18 +190,9 @@ export const addNoticesToDatasets = (req, res, next) => {
   next()
 }
 /**
- * Updates req.datasets objects with endpoint status and error information.
+ * Populates `req.datasets` with status, error, and issue information for each available dataset.
  *
- * @param {Object} req
- * @param {Object} req.issues
- * @param {Object} req.endpoints
- * @param {Object[]} [req.expectationOutOfBounds]
- * @param {string} req.expectationOutOfBounds[].dataset
- * @param {boolean} req.expectationOutOfBounds[].passed - did the exepectation pass
- * @param {string[]} req.availableDatasets
- * @param {Object[]} [req.datasets] OUT param
- * @param {*} res
- * @param {*} next
+ * For each dataset, determines the number of endpoints, aggregates issue counts (including expectation violations), and sets the dataset's status as 'Not submitted', 'Error', 'Needs fixing', or 'Live'. If all endpoints for a dataset are in error, includes an error message with the HTTP status.
  */
 export function prepareDatasetObjects (req, res, next) {
   const { issues, endpoints, expectationOutOfBounds, availableDatasets } = req
