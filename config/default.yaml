@@ -15,15 +15,16 @@ aws: {
     s3ForcePathStyle: false,
 }
 # ToDo: url and name might need updating
-url: 'https://submit.planning.data.gov.uk'
+url: 'https://provide.planning.data.gov.uk'
 mainWebsiteUrl: https://www.planning.data.gov.uk
+dataDesignUrl: https://design.planning.data.gov.uk
 # NOTE: this property is deprecated, use serviceNames instead
-serviceName: 'Submit and update your planning data'
+serviceName: 'Check and provide planning data'
 # NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
 serviceNames: {
     submit: 'Submit your planning data',
     check: 'Check your planning data',
-    manage: 'Submit and update your planning data'
+    manage: 'Check and provide planning data'
 }
 datasetteUrl: 'https://datasette.planning.data.gov.uk'
 checkService:

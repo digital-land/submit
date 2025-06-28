@@ -10,7 +10,7 @@ redis: {
     host: 'production-pub-async-redis-eihmmv.serverless.euw2.cache.amazonaws.com',
     port: 6379
 }
-url: 'https://submit.planning.data.gov.uk/'
+url: 'https://provide.planning.data.gov.uk/'
 smartlook: {
   key: '6383ab27d6f6a02f043a518bea629cd232dc0131',
   region: 'eu'

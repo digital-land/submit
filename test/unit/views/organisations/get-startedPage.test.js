@@ -19,7 +19,7 @@ describe(`Get Started Page (seed: ${seed})`, () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Get started - Submit and update your planning data`
+    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Get started - Check and provide planning data`
   })
 
   it('Renders the correct headings', () => {
