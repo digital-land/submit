@@ -88,6 +88,10 @@ export function prepareEntity (req, res, next) {
   const { issueEntities, issues, specification } = req
   const { pageNumber, issue_type: issueType } = req.parsedParams
 
+  if (!issueEntities || issueEntities.length === 0) {
+    return next(new MiddlewareError('No issues for entity', 404))
+  }
+
   const entityData = issueEntities[pageNumber - 1]
   const entityIssues = issues.filter(issue => issue.entity === entityData.entity)
 

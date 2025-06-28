@@ -44,7 +44,7 @@ describe('issueDetails.middleware.js', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('sets the record count to 0 if req.issues is undefined', () => {
+    it('sets the record count to 0 if req.issueEntities is undefined', () => {
       const req = {}
       const res = {}
       const next = vi.fn()
@@ -55,8 +55,8 @@ describe('issueDetails.middleware.js', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
-    it('sets the record count to 0 if req.issues is null', () => {
-      const req = { issues: null }
+    it('sets the record count to 0 if req.issueEntities is undefined', () => {
+      const req = { issues: null, issueEntities: undefined }
       const res = {}
       const next = vi.fn()
 
@@ -68,27 +68,32 @@ describe('issueDetails.middleware.js', () => {
   })
 
   describe('prepareEntity', () => {
-    const req = {}
-    const res = {}
-
-    beforeEach(() => {
-      req.issueEntities = [
+    const reqTemplate = {
+      issueEntities: [
         { entity: 'entity1', name: 'Entity 1', field1: 'value1', field2: 'value2', geometry: 'POINT (-0.10 51.49)' },
         { entity: 'entity2', name: 'Entity 2', field1: 'value3', field2: 'value4', geometry: undefined }
-      ]
-      req.issues = [
+      ],
+      issues: [
         { entity: 'entity1', field: 'field1', message: 'Error 1' },
         { entity: 'entity1', field: 'field2', message: 'Error 2' },
         { entity: 'entity2', field: 'field1', message: 'Error 3' }
-      ]
-      req.specification = {
+      ],
+      specification: {
         fields: [
           { field: 'field1', datasetField: 'datasetField1' },
           { field: 'field2', datasetField: 'datasetField2' },
           { field: 'geometry', datasetField: 'geometry_field' }
         ]
-      }
-      req.parsedParams = { pageNumber: 1, issue_type: 'issueType' }
+      },
+      parsedParams: { pageNumber: 1, issue_type: 'issueType' }
+    }
+    const resTemplate = {}
+    let req = {}
+    let res = {}
+
+    beforeEach(() => {
+      req = structuredClone(reqTemplate)
+      res = structuredClone(resTemplate)
     })
 
     it('should set req.entry with correct title and fields', () => {
@@ -153,6 +158,14 @@ describe('issueDetails.middleware.js', () => {
         fields: [],
         geometries: []
       })
+    })
+    it('should handle no issueEntities', () => {
+      const request = structuredClone(req)
+      Object.assign(request, { issueEntities: [] })
+      const next = vi.fn()
+      prepareEntity(request, {}, next)
+      expect(request.entry).toBeUndefined()
+      expect(next).toHaveBeenCalledWith(new MiddlewareError('No issues for entity', 404))
     })
   })
 
