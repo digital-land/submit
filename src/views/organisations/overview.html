@@ -11,6 +11,14 @@
 
 
 {% macro datasetItem(dataset) %}
+<script>
+  console.log({
+    dataset: "{{ dataset.dataset }}",
+    status: "{{ dataset.status }}",
+    issueCount: "{{ dataset.issueCount | default(0) }}",
+    error: "{{ dataset.error | default('') }}"
+  });
+</script>
 <li class="govuk-task-list__item govuk-task-list__item--with-link" data-dataset="{{ dataset.dataset }}" data-dataset-status="{{ dataset.status }}">
   <div class="govuk-task-list__name-and-hint">
     <h3 class="govuk-heading-m">
