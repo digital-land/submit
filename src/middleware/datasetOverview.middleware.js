@@ -201,10 +201,6 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const numberOfExpectedFields = specFields.length
 
   let endpointErrorIssues = 0
-  // const endpoints = sources.sort((a, b) => {
-  //   if (a.status && a.status >= 200 && a.status < 300) return -1
-  //   if (b.status && b.status >= 200 && b.status < 300) return 1
-  //   return 0
   const endpoints = sources.slice()
     .sort((a, b) => new Date(b.endpoint_entry_date) - new Date(a.endpoint_entry_date))
     .map((source, index) => {
