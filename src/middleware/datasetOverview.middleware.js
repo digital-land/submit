@@ -201,31 +201,34 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const numberOfExpectedFields = specFields.length
 
   let endpointErrorIssues = 0
-  const endpoints = sources.sort((a, b) => {
-    if (a.status && a.status >= 200 && a.status < 300) return -1
-    if (b.status && b.status >= 200 && b.status < 300) return 1
-    return 0
-  }).map((source, index) => {
-    let error
+  // const endpoints = sources.sort((a, b) => {
+  //   if (a.status && a.status >= 200 && a.status < 300) return -1
+  //   if (b.status && b.status >= 200 && b.status < 300) return 1
+  //   return 0
+  const endpoints = sources.slice()
+    .sort((a, b) => new Date(b.endpoint_entry_date) - new Date(a.endpoint_entry_date))
+    .map((source, index) => {
+      let error
 
-    if (!source.status || source.status < 200 || source.status >= 300) {
-      error = {
-        code: source.status,
-        exception: source.exception
+      if (!source.status || source.status < 200 || source.status >= 300) {
+        error = {
+          code: source.status,
+          exception: source.exception
+        }
+        endpointErrorIssues += 1
       }
-      endpointErrorIssues += 1
-    }
 
-    return {
-      name: `Endpoint URL ${index}`,
-      endpoint: source.endpoint,
-      endpoint_url: source.endpoint_url,
-      documentation_url: source.documentation_url,
-      lastAccessed: source.latest_log_entry_date,
-      lastUpdated: source.resource_start_date, // as in: when was the _resource_ updated, not data under that resource
-      error
-    }
-  })
+      return {
+        name: `Endpoint URL ${index}`,
+        endpoint: source.endpoint,
+        endpoint_url: source.endpoint_url,
+        documentation_url: source.documentation_url,
+        lastAccessed: source.latest_log_entry_date,
+        lastUpdated: source.resource_start_date, // as in: when was the _resource_ updated, not data under that resource
+        entryDate: source.endpoint_entry_date,
+        error
+      }
+    })
 
   const taskCount = (entryIssueCounts ? entryIssueCounts.length : 0) +
     (entityIssueCounts ? entityIssueCounts.length : 0) +

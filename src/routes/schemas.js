@@ -169,6 +169,7 @@ export const OrgDatasetOverview = v.strictObject({
       endpoint: NonEmptyString,
       lastAccessed: v.string(),
       lastUpdated: v.nullable(v.string()),
+      entryDate: v.optional(v.nullable(v.string())),
       error: v.optional(v.strictObject({
         code: v.integer(),
         exception: v.string()

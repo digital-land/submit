@@ -30,7 +30,8 @@ describe('Dataset Overview Page', () => {
           endpoint_url: 'http://endpoint1.co.uk',
           documentation_url: 'http://endpoint1-docs.co.uk',
           lastAccessed: '2024-09-09',
-          lastUpdated: '2024-09-09'
+          lastUpdated: '2024-09-09',
+          entryDate: '2025-03-08'
         },
         {
           name: 'endpoint 2',
@@ -38,6 +39,7 @@ describe('Dataset Overview Page', () => {
           endpoint_url: 'http://endpoint2.co.uk',
           lastAccessed: '2024-19-19',
           lastUpdated: '2024-19-19',
+          entryDate: '2024-12-12',
           error: {
             code: 404,
             exception: ''
@@ -82,10 +84,12 @@ describe('Dataset Overview Page', () => {
     expect(summaryListValues[5].textContent).toContain(params.stats.endpoints[0].documentation_url)
     expect(summaryListValues[6].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastAccessed))
     expect(summaryListValues[7].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastUpdated))
-    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].endpoint_url)
-    expect(summaryListValues[9].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastAccessed))
-    expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].error.code)
-    expect(summaryListValues[10].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
+    expect(summaryListValues[8].textContent).toContain(govukDateTime(params.stats.endpoints[0].entryDate))
+    expect(summaryListValues[9].textContent).toContain(params.stats.endpoints[1].endpoint_url)
+    expect(summaryListValues[10].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastAccessed))
+    expect(summaryListValues[10].textContent).toContain(params.stats.endpoints[1].error.code)
+    expect(summaryListValues[11].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
+    expect(summaryListValues[12].textContent).toContain(govukDateTime(params.stats.endpoints[1].entryDate))
   })
 
   it('Renders breadcrumbs correctly', () => {

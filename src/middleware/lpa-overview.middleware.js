@@ -209,24 +209,22 @@ export function prepareDatasetObjects (req, res, next) {
   req.datasets = availableDatasets.map((dataset) => {
     const datasetEndpoints = endpoints[dataset]
     const datasetIssues = issues[dataset]
-
     if (!datasetEndpoints) {
       return { status: 'Not submitted', endpointCount: 0, dataset }
     }
 
     const endpointCount = datasetEndpoints.length
-    // const httpStatus = datasetEndpoints.find(endpoint => endpoint.latest_status !== '200')?.latest_status
-    // const error = httpStatus !== undefined ? `There was a ${httpStatus} error accessing the endpoint URL` : undefined
     const allError = datasetEndpoints.every(endpoint => endpoint.latest_status !== '200')
+    const someError = datasetEndpoints.some(endpoint => endpoint.latest_status !== '200')
     const httpStatus = allError ? datasetEndpoints[0]?.latest_status : undefined
-    const error = httpStatus !== undefined ? `There was a ${httpStatus} error accessing the endpoint URL` : undefined
+    const error = allError ? `There was a ${httpStatus} error accessing the endpoint URL` : undefined
     const expectationFailed = outOfBoundsViolations.has(dataset)
     const issueCount = (datasetIssues?.length || 0) + (expectationFailed ? 1 : 0)
 
     let status
-    if (error) {
+    if (allError) {
       status = 'Error'
-    } else if (issueCount > 0) {
+    } else if (someError || issueCount > 0) {
       status = 'Needs fixing'
     } else {
       status = 'Live'

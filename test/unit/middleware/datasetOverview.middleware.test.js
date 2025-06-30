@@ -53,8 +53,8 @@ describe('Dataset Overview Middleware', () => {
           numberOfExpectedFields: 2,
           numberOfRecords: 10,
           endpoints: [
-            { name: 'Endpoint URL 0', endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01' },
-            { name: 'Endpoint URL 1', endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: '2023-01-02' }
+            { name: 'Endpoint URL 0', endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01', entryDate: 'LU1' },
+            { name: 'Endpoint URL 1', endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: '2023-01-02', entryDate: 'LU2' }
           ]
         },
         notice: undefined
