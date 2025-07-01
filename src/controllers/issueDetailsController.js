@@ -7,6 +7,7 @@ import { MiddlewareError } from '../utils/errors.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
+import { fetchOne } from '../middleware/middleware.builders.js'
 
 const validateParams = validateQueryParams({
   schema: v.object({
@@ -74,12 +75,47 @@ async function setDetailsOptions (req, res, next) {
   next()
 }
 
+const fetchSpecification = fetchOne({
+  query: ({ req }) => `select * from specification WHERE specification = '${req.sessionModel.get('data-subject')}'`,
+  result: 'specification'
+})
+
+const fetchDatasetInfo = fetchOne({
+  query: ({ req }) => {
+    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${req.sessionModel.get('data-subject')}'`
+  },
+  result: 'datasetDetails'
+})
+
+async function getIssueSpecification (req, res, next) {
+  const {
+    specification,
+    datasetDetails,
+    params: {
+      field: issueField
+    }
+  } = req
+
+  if (!specification) return next()
+
+  const datasetSpecification = JSON.parse(specification.json).find((spec) => spec.dataset === req.sessionModel.get('dataset'))
+  const fieldSpecification = datasetSpecification.fields.find(f => f.field === issueField)
+
+  req.locals.issueSpecification = fieldSpecification
+  req.locals.datasetDetails = datasetDetails
+
+  next()
+}
+
 const middlewares = [
   isFeatureEnabled('checkIssueDetailsPage')
     ? validateParams
     : (req, res, next) => { return next(new MiddlewareError('Not found', 404)) },
   results.getRequestDataMiddleware,
   setDetailsOptions,
+  fetchDatasetInfo,
+  fetchSpecification,
+  getIssueSpecification,
   results.fetchResponseDetails,
   results.checkForErroredResponse,
   results.setupTableParams,
