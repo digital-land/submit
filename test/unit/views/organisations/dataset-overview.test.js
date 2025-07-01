@@ -86,7 +86,6 @@ describe('Dataset Overview Page', () => {
     expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].error.code)
     expect(summaryListValues[9].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
     expect(summaryListValues[10].textContent).toContain(govukDateTime(params.stats.endpoints[1].entryDate))
-
   })
 
   it('Renders breadcrumbs correctly', () => {
