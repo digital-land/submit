@@ -187,7 +187,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, expectationOutOfBounds = [] } = req
 
   let endpointErrorIssues = 0
-  const endpoints = sources.slice()
+  const endpoints = sources
     .sort((a, b) => new Date(b.endpoint_entry_date) - new Date(a.endpoint_entry_date))
     .map((source, index) => {
       let error

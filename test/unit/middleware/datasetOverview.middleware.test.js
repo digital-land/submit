@@ -27,8 +27,8 @@ describe('Dataset Overview Middleware', () => {
         entityCount: { entity_count: 10 },
         expectationOutOfBounds: [{ dataset: req.params.dataset, passed: 'False' }],
         sources: [
-          { endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: 200, endpoint_entry_date: 'LU1', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
-          { endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: 404, exception: 'exception', endpoint_entry_date: 'LU2', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
+          { endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: 200, endpoint_entry_date: '2024-02-01', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
+          { endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: 404, exception: 'exception', endpoint_entry_date: '2023-01-01', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
         ],
         entryIssueCounts: [
           {
@@ -50,8 +50,8 @@ describe('Dataset Overview Middleware', () => {
         stats: {
           numberOfRecords: 10,
           endpoints: [
-            { name: 'Endpoint URL 0', endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01', entryDate: 'LU1' },
-            { name: 'Endpoint URL 1', endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: '2023-01-02', entryDate: 'LU2' }
+            { name: 'Endpoint URL 0', endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', error: undefined, lastAccessed: 'LA1', lastUpdated: '2023-01-01', entryDate: '2024-02-01' },
+            { name: 'Endpoint URL 1', endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', error: { code: 404, exception: 'exception' }, lastAccessed: 'LA2', lastUpdated: '2023-01-02', entryDate: '2023-01-01' }
           ]
         },
         notice: undefined
