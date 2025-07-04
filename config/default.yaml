@@ -32,7 +32,7 @@ checkService:
     # of user supplied URLs
     userAgent: 'GOVUK Planning Data: Check Service'
 templateContent:
-    feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
+    feedbackLink: 'https://forms.office.com/Pages/ResponsePage.aspx?id=EGg0v32c3kOociSi7zmVqML0lOlr1nBLv1MaFDrnRRxURThTVTJBSDE0Sk45V1JJQlFSRDI2RzRBMy4u'
     homepageUrl: '/'
 email: {
     templates: {
