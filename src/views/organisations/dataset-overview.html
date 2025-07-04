@@ -149,6 +149,16 @@
   } %}
   {{ rows.push(lastUpdatedRow) }}
 
+  {% set entryDateRow = {
+    key: {
+      text: 'Endpoint entry date'
+    },
+    value: {
+      text: endpoint.entryDate and ( endpoint.entryDate | govukDateTime )
+    }
+  } %}
+  {{ rows.push(entryDateRow) }}
+
 {% endfor %}
 
 {% block content %}
