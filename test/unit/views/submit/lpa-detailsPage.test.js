@@ -12,7 +12,7 @@ describe('Lpa-details View', () => {
   const htmlNoErrors = nunjucks.render('lpa-details.html', params)
 
   runGenericPageTests(htmlNoErrors, {
-    pageTitle: 'What are your contact details? - Submit your planning data'
+    pageTitle: 'What are your contact details? - Check and provide your planning data'
   })
 
   describe('validation errors', () => {

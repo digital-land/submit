@@ -48,7 +48,7 @@ describe(`dataset details View (seed: ${seed})`, () => {
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: 'Endpoint details - Submit your planning data'
+    pageTitle: 'Endpoint details - Check and provide your planning data'
   })
 
   it('should render the correct header', () => {
