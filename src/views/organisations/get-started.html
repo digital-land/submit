@@ -46,7 +46,7 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <h2 class="govuk-heading-l">How to prepare and submit your {{ dataset.name }} data</h2>
+    <h2 class="govuk-heading-l">How to prepare and provide your {{ dataset.name }} data</h2>
 
     <div data-module="appstepnav" id="step-by-step-navigation" class="gem-c-step-nav js-hidden gem-c-step-nav--large"
       data-show-text="Show" data-hide-text="Hide" data-show-all-text="Show all steps"
@@ -104,7 +104,7 @@
                 <p class="gem-c-step-nav__paragraph">
                   The <a href="{{ organisation | checkToolDeepLink(dataset) }}">check service</a> can help you understand
                   if
-                  your data is ready to submit or if you need to change anything before you publish it on your website.
+                  your data is ready to provide or if you need to change anything before you publish it on your website.
                 </p>
 
                 <p class="gem-c-step-nav__paragraph">You need to choose to provide your data in one of these file formats:
@@ -178,15 +178,15 @@
               </span>
 
               <span class="js-step-title">
-                Submit your data
+                Provide your data
               </span>
             </h2>
           </div>
 
           <div class="gem-c-step-nav__panel js-panel" id="step-panel-submit-your-data-4">
             {% if 'submitEndpointForm' | isFeatureEnabled %}
-              <p class="gem-c-step-nav__paragraph"><a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Submit your data</a> to the Planning
-                Data Platform. You need to provide your:</p>
+              <p class="gem-c-step-nav__paragraph"><a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Provide your data</a> to the Planning
+                Data Platform. You need to submit your:</p>
 
               <ul class="govuk-list govuk-list--bullet">
                 <li>full name</li>
