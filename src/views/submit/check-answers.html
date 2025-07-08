@@ -26,7 +26,7 @@
     {% endif %}
 
     <h1 class="govuk-heading-xl">
-      Check your answers before submitting your dataset
+      Check your answers before providing your dataset
     </h1>
 
     {{ govukSummaryList({
@@ -137,17 +137,17 @@
     }) }}
 
     <h2 class="govuk-heading-m">
-      Now submit your dataset
+      Now provide your dataset
     </h2>
 
     <p class="govuk-body">
-      By submitting this dataset you are confirming that, to the best of your knowledge, the details you are providing are correct.
+      By providing this dataset you are confirming that, to the best of your knowledge, the details you are providing are correct.
     </p>
 
     <form method="post" novalidate>
 
       {{ govukButton({
-        text: "Accept and submit",
+        text: "Accept and provide",
         preventDoubleClick: true
       }) }}
 
