@@ -25,7 +25,7 @@ describe(`Get Started Page (seed: ${seed})`, () => {
   it('Renders the correct headings', () => {
     expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual(params.organisation.name)
     expect(document.querySelector('h1').textContent).toContain(`${params.dataset.name}`)
-    expect(document.querySelector('#main-content h2').textContent).toContain(`How to prepare and submit your ${params.dataset.name} data`)
+    expect(document.querySelector('#main-content h2').textContent).toContain(`How to prepare and provide your ${params.dataset.name} data`)
   })
 
   it('Renders breadcrumbs correctly', () => {
