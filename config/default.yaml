@@ -22,7 +22,7 @@ dataDesignUrl: https://design.planning.data.gov.uk
 serviceName: 'Check and provide planning data'
 # NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
 serviceNames: {
-    submit: 'Submit your planning data',
+    submit: 'Check and provide your planning data',
     check: 'Check your planning data',
     manage: 'Check and provide planning data'
 }
