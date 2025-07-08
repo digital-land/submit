@@ -125,9 +125,9 @@ panel: { html: tableTab } } } %}
 
     {% if options.tasksBlocking.length > 0 %}
     <div id="required-checks">
-      <h2 class="govuk-heading-m">Issues you must fix before submitting</h2>
+      <h2 class="govuk-heading-m">Issues you must fix before providing your data</h2>
 
-      <p>You cannot submit your data to the platform until you fix these issues.</p>
+      <p>You cannot provide your data to the platform until you fix these issues.</p>
 
       {{ govukTaskList({
       idPrefix: "must-fix",
@@ -138,9 +138,9 @@ panel: { html: tableTab } } } %}
 
     {% if options.tasksNonBlocking.length > 0 %}
     <div id="optional-checks">
-      <h2 class="govuk-heading-m">Issues you can fix after submitting</h2>
+      <h2 class="govuk-heading-m">Issues you can fix after providing your data</h2>
 
-      <p>You can submit your data with these issues but should fix them over time to improve the quality and usability
+      <p>You can provide your data with these issues but should fix them over time to improve the quality and usability
         of
         the data.</p>
 
@@ -152,7 +152,7 @@ panel: { html: tableTab } } } %}
     {% endif %}
 
     {% if options.tasksBlocking.length > 0 %}
-    <p>Fix the issues, then upload a new version of your data to check if it is ready to submit.</p>
+    <p>Fix the issues, then upload a new version of your data to check if it is ready to provide.</p>
 
     <form>
       <div class="govuk-button-group">
