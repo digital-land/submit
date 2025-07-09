@@ -21,7 +21,7 @@ describe('check-answers View', async () => {
   const html = stripWhitespace(nunjucks.render('check-answers.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: 'Check your answers - Submit your planning data'
+    pageTitle: 'Check your answers - Check and provide your planning data'
   })
 
   it('should render the lpa selected', () => {

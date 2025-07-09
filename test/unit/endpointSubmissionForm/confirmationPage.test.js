@@ -17,11 +17,11 @@ describe('Submit confirmation View', () => {
   const html = stripWhitespace(nunjucks.render('submit/confirmation.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: 'mockDataset submitted - Submit your planning data'
+    pageTitle: 'mockDataset provided - Check and provide your planning data'
   })
 
   it('should render the gov uk panel', () => {
-    const regex = new RegExp('<h1 class="govuk-panel__title".*mockDataset submitted.*</h1>', 'g')
+    const regex = new RegExp('<h1 class="govuk-panel__title".*mockDataset provided.*</h1>', 'g')
     expect(html).toMatch(regex)
   })
 

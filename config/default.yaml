@@ -22,7 +22,7 @@ dataDesignUrl: https://design.planning.data.gov.uk
 serviceName: 'Check and provide planning data'
 # NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
 serviceNames: {
-    submit: 'Submit your planning data',
+    submit: 'Check and provide your planning data',
     check: 'Check your planning data',
     manage: 'Check and provide planning data'
 }
@@ -32,7 +32,7 @@ checkService:
     # of user supplied URLs
     userAgent: 'GOVUK Planning Data: Check Service'
 templateContent:
-    feedbackLink: 'https://docs.google.com/forms/d/e/1FAIpQLSdYXqY0Aaket9XJBiGDhSL_CD_cxHZxgvQCFZZtdURdvvIY5A/viewform'
+    feedbackLink: 'https://forms.office.com/Pages/ResponsePage.aspx?id=EGg0v32c3kOociSi7zmVqML0lOlr1nBLv1MaFDrnRRxURThTVTJBSDE0Sk45V1JJQlFSRDI2RzRBMy4u'
     homepageUrl: '/'
 email: {
     templates: {
