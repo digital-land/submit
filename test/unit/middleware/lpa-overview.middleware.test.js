@@ -82,7 +82,7 @@ describe('lpa-overview.middleware', () => {
       const req = structuredClone(reqTemplate)
       const res = { render: vi.fn() }
 
-      prepareOverviewTemplateParams(req, res, () => {})
+      prepareOverviewTemplateParams(req, res, () => { })
 
       const expectedTemplateParams = {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
@@ -117,7 +117,7 @@ describe('lpa-overview.middleware', () => {
       reqNotMember.provisions.forEach((provision) => {
         provision.project = ''
       })
-      prepareOverviewTemplateParams(reqNotMember, res, () => {})
+      prepareOverviewTemplateParams(reqNotMember, res, () => { })
       const { doc: docNotMember } = getRenderedErrorCards(reqNotMember.templateParams)
       expect(docNotMember.querySelector('.org-membership-info').textContent.trim()).toMatch('is not a member of the Open Digital Planning programme')
     })
@@ -128,7 +128,7 @@ describe('lpa-overview.middleware', () => {
       req.datasetErrorStatus = [{ dataset: 'dataset1' }]
       const res = { render: vi.fn() }
 
-      prepareOverviewTemplateParams(req, res, () => {})
+      prepareOverviewTemplateParams(req, res, () => { })
 
       const ds1 = req.templateParams.datasets.statutory[0]
       expect(ds1.status).toBe('Live')
@@ -152,11 +152,60 @@ describe('lpa-overview.middleware', () => {
       req.expectationOutOfBounds = [{ passed: false, dataset: 'datasetA' }]
       const res = { render: vi.fn() }
 
-      prepareDatasetObjects(req, res, () => {})
+      prepareDatasetObjects(req, res, () => { })
 
       expect(req.datasets[0].error).toBeUndefined()
       expect(req.datasets[0].issueCount).toBe(1)
       expect(req.datasets[0].status).toBe('Needs fixing')
+    })
+    it('should not show an error if atleast one endpoint is 200', () => {
+      const req = {
+        expectationOutOfBounds: [],
+        issues: {},
+        endpoints: { datasetA: [{ latest_status: '200' }, { latest_status: '504' }, { latest_status: '504' }] },
+        availableDatasets: ['datasetA'],
+        datasets: undefined
+      }
+      const res = { render: vi.fn() }
+
+      prepareDatasetObjects(req, res, () => { })
+
+      expect(req.datasets[0].error).toBeUndefined()
+      expect(req.datasets[0].status).toBe('Needs fixing')
+    })
+    it('should show an error all endpoints have status !== 200', () => {
+      const req = {
+        expectationOutOfBounds: [],
+        issues: {},
+        endpoints: { datasetA: [{ latest_status: '504' }, { latest_status: '504' }] },
+        availableDatasets: ['datasetA'],
+        datasets: undefined
+      }
+      const res = { render: vi.fn() }
+
+      prepareDatasetObjects(req, res, () => { })
+
+      expect(req.datasets[0].error).toContain('504')
+      expect(req.datasets[0].status).toBe('Error')
+    })
+    it('should show live if all endpoint status == 200', () => {
+      const req = {
+        expectationOutOfBounds: [],
+        issues: {},
+        endpoints: {
+          datasetA: [{ latest_status: '200' },
+            { latest_status: '200' },
+            { latest_status: '200' }]
+        },
+        availableDatasets: ['datasetA'],
+        datasets: undefined
+      }
+      const res = { render: vi.fn() }
+
+      prepareDatasetObjects(req, res, () => { })
+
+      expect(req.datasets[0].error).toBeUndefined()
+      expect(req.datasets[0].status).toBe('Live')
     })
   })
 
