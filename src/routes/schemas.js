@@ -128,7 +128,8 @@ const DatasetItem = v.strictObject({
   project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
   numIssues: v.optional(v.number()),
-  notice: v.optional(DeadlineNoticeField)
+  notice: v.optional(DeadlineNoticeField),
+  endpointErrorCount: v.optional(v.number())
 })
 
 export const OrgOverviewPage = v.strictObject({
