@@ -57,8 +57,8 @@ const fetchEntityCounts = fetchOneFromAllDatasets({
  */
 const orgStatsReducer = (accumulator, dataset) => {
   if (dataset.endpointCount > 0) accumulator[0]++
-  if (dataset.issueCount > 0 && dataset.status === 'Needs fixing') accumulator[1]++
-  if (dataset.endpointErrorCount > 0) accumulator[2] += dataset.endpointErrorCount
+  if (dataset.status === 'Needs fixing') accumulator[1]++
+  if (dataset.status === 'Error') accumulator[2]++
   return accumulator
 }
 
