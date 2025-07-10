@@ -51,12 +51,14 @@ const fetchEntityCounts = fetchOneFromAllDatasets({
  * @param {string} [dataset.endpoint] - Optional endpoint URL
  * @param {string} dataset.status - Dataset status
  * @param {number} dataset.endpointCount - Number of endpoints
+ * @param {number} dataset.endpointErrorCount - Number of endpoints with error
+ * @param {number} dataset.issueCount - Number of issues
  * @returns {number[]} Updated accumulator
  */
 const orgStatsReducer = (accumulator, dataset) => {
   if (dataset.endpointCount > 0) accumulator[0]++
-  if (dataset.status === 'Needs fixing') accumulator[1]++
-  if (dataset.status === 'Error') accumulator[2]++
+  if (dataset.issueCount > 0) accumulator[1]++
+  if (dataset.endpointErrorCount > 0) accumulator[2]++
   return accumulator
 }
 
@@ -214,6 +216,7 @@ export function prepareDatasetObjects (req, res, next) {
     }
 
     const endpointCount = datasetEndpoints.length
+    const endpointErrorCount = datasetEndpoints.filter(endpoint => endpoint.latest_status !== '200').length
     const allError = datasetEndpoints.every(endpoint => endpoint.latest_status !== '200')
     const someError = datasetEndpoints.some(endpoint => endpoint.latest_status !== '200')
     const httpStatus = allError ? datasetEndpoints[0]?.latest_status : undefined
@@ -230,7 +233,7 @@ export function prepareDatasetObjects (req, res, next) {
       status = 'Live'
     }
 
-    return { dataset, error, issueCount, status, endpointCount }
+    return { dataset, error, issueCount, status, endpointCount, endpointErrorCount }
   })
 
   next()
@@ -259,7 +262,6 @@ export function prepareOverviewTemplateParams (req, res, next) {
   for (const provision of provisions ?? []) {
     provisionData.set(provision.dataset, provision)
   }
-
   // add in any of the missing key 8 datasets
   const keys = new Set(datasets.map(d => d.dataset))
   availableDatasets.forEach((dataset) => {
@@ -276,10 +278,8 @@ export function prepareOverviewTemplateParams (req, res, next) {
   })
 
   const isODPMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
-
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
-
   const datasetsByReason = _.groupBy(datasets, (ds) => {
     const reason = provisionData.get(ds.dataset)?.provision_reason
     switch (reason) {
