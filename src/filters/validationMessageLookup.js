@@ -40,7 +40,8 @@ const validationMessages = {
   },
   email: {
     required: 'Enter an email address',
-    email: 'Enter an email address in the correct format'
+    email: 'Enter an email address in the correct format',
+    format: 'Enter a valid gov.uk email address'
   },
   dataset: {
     required: 'Select a dataset'
@@ -52,7 +53,7 @@ const validationMessages = {
   },
   'documentation-url': {
     required: 'Enter a documentation URL',
-    format: 'Enter a valid documentation URL',
+    format: 'Enter a valid webpage URL. It must be on a gov.uk domain and must link to a webpage, not a file (e.g. .csv, .json).',
     maxlength: 'The URL must be less than 2048 characters'
   },
   hasLicence: {

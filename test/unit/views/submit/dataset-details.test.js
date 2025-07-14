@@ -110,7 +110,7 @@ describe(`dataset details View (seed: ${seed})`, () => {
           params,
           fieldId: 'documentation-url',
           fieldType: 'format',
-          message: 'Enter a valid documentation URL'
+          message: 'Enter a valid webpage URL. It must be on a gov.uk domain and must link to a webpage, not a file (e.g. .csv, .json).'
         })
       )
 
