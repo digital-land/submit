@@ -48,12 +48,12 @@ const validationMessages = {
   },
   'endpoint-url': {
     required: 'Enter an endpoint URL',
-    format: 'Endpoint URL must start with http:// or https://, have no spaces or unusual characters like { } [ ]',
+    format: 'Endpoint URL must start with http:// or https://, and have no spaces or special characters like { } [ ]',
     maxlength: 'The URL must be less than 2048 characters'
   },
   'documentation-url': {
     required: 'Enter a documentation URL',
-    format: 'Enter a valid webpage URL. It must be on a gov.uk domain and must link to a webpage, not a file (e.g. .csv, .json).',
+    format: 'Webpage URL must be on a gov.uk or org.uk domain and must link to a webpage, not a file (for example, .csv or .json)',
     maxlength: 'The URL must be less than 2048 characters'
   },
   hasLicence: {
