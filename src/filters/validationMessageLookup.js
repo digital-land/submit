@@ -40,19 +40,20 @@ const validationMessages = {
   },
   email: {
     required: 'Enter an email address',
-    email: 'Enter an email address in the correct format'
+    email: 'Enter an email address in the correct format',
+    format: 'Enter a valid gov.uk email address'
   },
   dataset: {
     required: 'Select a dataset'
   },
   'endpoint-url': {
     required: 'Enter an endpoint URL',
-    format: 'Endpoint URL must start with http:// or https://, have no spaces or unusual characters like { } [ ]',
+    format: 'Endpoint URL must start with http:// or https://, and have no spaces or special characters like { } [ ]',
     maxlength: 'The URL must be less than 2048 characters'
   },
   'documentation-url': {
     required: 'Enter a documentation URL',
-    format: 'Enter a valid documentation URL',
+    format: 'Webpage URL must be on a gov.uk or org.uk domain and must link to a webpage, not a file (for example, .csv or .json)',
     maxlength: 'The URL must be less than 2048 characters'
   },
   hasLicence: {

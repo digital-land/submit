@@ -78,7 +78,7 @@ describe(`dataset details View (seed: ${seed})`, () => {
           params,
           fieldId: 'endpoint-url',
           fieldType: 'format',
-          message: 'Endpoint URL must start with http:// or https://, have no spaces or unusual characters like { } [ ]'
+          message: 'Endpoint URL must start with http:// or https://, and have no spaces or special characters like { } [ ]'
         })
       )
 
@@ -110,7 +110,7 @@ describe(`dataset details View (seed: ${seed})`, () => {
           params,
           fieldId: 'documentation-url',
           fieldType: 'format',
-          message: 'Enter a valid documentation URL'
+          message: 'Webpage URL must be on a gov.uk or org.uk domain and must link to a webpage, not a file (for example, .csv or .json)'
         })
       )
 

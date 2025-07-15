@@ -1,5 +1,5 @@
 // ToDo: split this into two form wizards
-import { validUrl } from '../../../utils/validators.js'
+import { validUrl, validEmail, validDocumentationUrl } from '../../../utils/validators.js'
 
 export default {
   lpa: {
@@ -14,7 +14,8 @@ export default {
   email: {
     validate: [
       'required',
-      'email'
+      'email',
+      { type: 'format', fn: validEmail }
     ]
   },
   dataset: {
@@ -30,7 +31,7 @@ export default {
   'documentation-url': {
     validate: [
       'required',
-      { type: 'format', fn: validUrl },
+      { type: 'format', fn: validDocumentationUrl },
       { type: 'maxlength', arguments: [2048] }
     ]
   },
