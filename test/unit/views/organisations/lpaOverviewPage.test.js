@@ -58,7 +58,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
 
   it('Datasets with errors gives the correct value', () => {
     expect(statsBoxes[1].textContent).toContain(params.datasetsWithErrors)
-    expect(statsBoxes[1].textContent).toMatch(/endpoint URLs? with errors/)
+    expect(statsBoxes[1].textContent).toMatch(/datasets? with endpoint errors/)
   })
 
   it('Datasets with issues gives the correct value', () => {

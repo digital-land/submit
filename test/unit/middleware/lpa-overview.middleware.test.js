@@ -30,28 +30,32 @@ const reqTemplate = {
       issueCount: 0,
       endpointCount: 1,
       error: undefined,
-      status: 'Live'
+      status: 'Live',
+      endpointErrorCount: 0
     },
     {
       dataset: 'dataset2',
       issueCount: 0,
       endpointCount: 0,
       error: undefined,
-      status: 'Needs fixing'
+      status: 'Needs fixing',
+      endpointErrorCount: 0
     },
     {
       dataset: 'dataset3',
       issueCount: 0,
       endpointCount: 1,
       error: undefined,
-      status: 'Error'
+      status: 'Error',
+      endpointErrorCount: 1
     },
     {
       dataset: 'dataset4',
       issueCount: 0,
       endpointCount: 0,
       error: 'There was a 404 error',
-      status: 'Error'
+      status: 'Error',
+      endpointErrorCount: 1
     }
 
   ],
@@ -80,6 +84,7 @@ describe('lpa-overview.middleware', () => {
   describe('prepareOverviewTemplateParams', () => {
     it('should render the overview page', async () => {
       const req = structuredClone(reqTemplate)
+      req.datasets[1].issueCount = 1
       const res = { render: vi.fn() }
 
       prepareOverviewTemplateParams(req, res, () => { })
@@ -88,12 +93,12 @@ describe('lpa-overview.middleware', () => {
         organisation: { name: 'Example LPA', organisation: 'LPA' },
         datasets: {
           statutory: expect.arrayContaining([
-            { endpointCount: 1, status: 'Live', dataset: 'dataset1', error: undefined, issueCount: 0 },
-            { endpointCount: 1, status: 'Error', dataset: 'dataset3', error: undefined, issueCount: 0 }
+            { endpointCount: 1, status: 'Live', dataset: 'dataset1', error: undefined, issueCount: 0, endpointErrorCount: 0 },
+            { endpointCount: 1, status: 'Error', dataset: 'dataset3', error: undefined, issueCount: 0, endpointErrorCount: 1 }
           ]),
           other: expect.arrayContaining([
-            { endpointCount: 0, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issueCount: 0 },
-            { endpointCount: 0, status: 'Error', dataset: 'dataset4', error: 'There was a 404 error', issueCount: 0 }
+            { endpointCount: 0, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issueCount: 1, endpointErrorCount: 0 },
+            { endpointCount: 0, status: 'Error', dataset: 'dataset4', error: 'There was a 404 error', issueCount: 0, endpointErrorCount: 1 }
           ])
         },
         totalDatasets: 4,
@@ -137,6 +142,33 @@ describe('lpa-overview.middleware', () => {
       const ds4 = req.templateParams.datasets.other[1]
       expect(ds4.status).toBe('Error')
       expect(ds4.error).toBe(req.datasets[3].error) // Error message should be left untouched
+    })
+
+    it('should display a combined count of issues and endpoint errors in the dataset', () => {
+      const req = structuredClone(reqTemplate)
+      req.datasets[1].issueCount = 1
+      req.datasets[1].endpointErrorCount = 2
+      const res = { render: vi.fn() }
+
+      prepareOverviewTemplateParams(req, res, () => { })
+
+      const { doc } = getRenderedErrorCards(req.templateParams)
+      const hint = doc.querySelector('[data-dataset-status="Needs fixing"] .govuk-task-list__hint')
+
+      expect(hint?.textContent.trim()).toBe('There are 3 issues in this dataset')
+    })
+
+    it('should display a count of issue when there is only one issue', () => {
+      const req = structuredClone(reqTemplate)
+      req.datasets[1].issueCount = 1
+      const res = { render: vi.fn() }
+
+      prepareOverviewTemplateParams(req, res, () => { })
+
+      const { doc } = getRenderedErrorCards(req.templateParams)
+      const hint = doc.querySelector('[data-dataset-status="Needs fixing"] .govuk-task-list__hint')
+
+      expect(hint?.textContent.trim()).toBe('There is 1 issue in this dataset')
     })
   })
 

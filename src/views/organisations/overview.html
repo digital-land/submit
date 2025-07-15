@@ -38,7 +38,8 @@
           <p>{{ dataset.error }}</p>
         {% endif %}
       {% elif dataset.status == 'Needs fixing' %}
-        <p>There {{ "is" | pluralise(dataset.issueCount) }} {{ dataset.issueCount }} {{ "issue" | pluralise(dataset.issueCount) }} in this dataset</p>
+        {% set totalIssues = (dataset.issueCount or 0) + (dataset.endpointErrorCount or 0) %}
+        <p>There {{ "is" | pluralise(totalIssues) }} {{ totalIssues }} {{ "issue" | pluralise(totalIssues) }} in this dataset</p>
       {% else %}
         <p>Endpoint URL submitted</p>
       {% endif %}
@@ -111,7 +112,7 @@
 
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithErrors}}</span>
-        endpoint URL{{ "s" if (datasetsWithErrors != 1) }} with errors
+        dataset{{ "s" if (datasetsWithErrors != 1) }} with endpoint errors
       </div>
 
       <div class="dataset-status--item">
