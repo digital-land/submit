@@ -25,5 +25,5 @@ export const validDocumentationUrl = (urlString) => {
 }
 
 export const validEmail = (emailId) => {
-  return /^[^@]+@([a-z0-9-]+\.)*gov\.uk$/i.test(emailId.trim())
+  return /^[^@]+@([a-z0-9-]+\.)*(gov|org)\.uk$/i.test(emailId.trim())
 }
