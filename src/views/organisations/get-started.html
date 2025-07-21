@@ -184,19 +184,7 @@
           </div>
 
           <div class="gem-c-step-nav__panel js-panel" id="step-panel-submit-your-data-4">
-            {% if 'submitEndpointForm' | isFeatureEnabled %}
-              <p class="gem-c-step-nav__paragraph"><a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Provide your data</a> to the Planning
-                Data Platform. You need to submit your:</p>
-
-              <ul class="govuk-list govuk-list--bullet">
-                <li>full name</li>
-                <li>work email address</li>
-                <li>endpoint URL</li>
-                <li>website URL</li>
-              </ul>
-
-              <p class="gem-c-step-nav__paragraph">We’ll confirm by email when we’ve received your data.</p>
-            {% else %}
+              <p class="gem-c-step-nav__paragraph">Always check your data before you provide it. This helps you identify and fix any errors.</p>
               <p class="gem-c-step-nav__paragraph">
                 When you're ready to provide your data to the Planning Data Platform, submit your:
                 <ul class="govuk-list govuk-list--bullet">
@@ -217,7 +205,7 @@
               </p>
 
               <p class="govuk-body">
-                <a href="/" class="govuk-link">Provide your data</a>.
+                <a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Provide your data</a>.
               </p>
 
             {% endif %}
