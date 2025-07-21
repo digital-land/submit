@@ -4,6 +4,9 @@ import { attachFileToIssue, createCustomerRequest } from '../services/jiraServic
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
+import { postUrlRequest } from '../services/asyncRequestApi.js'
+import SubmitUrlController from './submitUrlController.js'
+import { datasets } from '../utils/utils.js'
 
 class CheckAnswersController extends PageController {
   /**
@@ -52,6 +55,30 @@ class CheckAnswersController extends PageController {
       documentationUrl: req.sessionModel.get('documentation-url'),
       endpoint: req.sessionModel.get('endpoint-url')
     }
+    const dataset = req.sessionModel.get('dataset')
+    const datasetMeta = datasets.get(dataset) || {}
+
+    const url = req.body.url || req.sessionModel.get('endpoint-url')
+    if (!url) logger.error('No Endpoint URL provided.')
+    const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
+    if (URLvalidationError) logger.warn(`URL validation failed for submitted URL: ${url}`)
+    const formData = {
+      url,
+      dataset: req.sessionModel.get('dataset'),
+      collection: datasetMeta.dataSubject,
+      geomType: req.sessionModel.get('geomType')
+    }
+    const requestId = await postUrlRequest(formData)
+    let checkTool = null
+    try {
+      checkTool = `${config.url}check/results/${requestId}/1`
+    } catch (err) {
+      logger.error('Failed to generate checkTool link:', {
+        errorMessage: err.message,
+        errorStack: err,
+        type: types.External
+      })
+    }
 
     const summary = `Dataset URL request: ${data.organisationName} for ${data.dataset}`
     const description = `A new dataset request has been made by *${data.name}* from *${data.organisationName} (${data.organisationId})* for the dataset *${data.dataset}*.\n\n
@@ -64,7 +91,8 @@ class CheckAnswersController extends PageController {
     - Organisation Name: ${data.organisationName}\n
     - Dataset: ${data.dataset}\n
     - Documentation URL: ${data.documentationUrl}\n
-    - Endpoint URL: ${data.endpoint}`
+    - Endpoint URL: ${data.endpoint}
+    - Check Tool: ${checkTool}`
 
     // Generate Jira service request
     const response = await createCustomerRequest({

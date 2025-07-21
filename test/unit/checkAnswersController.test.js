@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
+import { postUrlRequest } from '../../src/services/asyncRequestApi.js'
 
 vi.mock('../../src/services/jiraService.js')
+vi.mock('../../src/services/asyncRequestApi.js')
 
 describe('CheckAnswersController', () => {
   let req, res, next, controller
@@ -23,6 +25,7 @@ describe('CheckAnswersController', () => {
     controller = new CheckAnswersController({
       route: '/dataset'
     })
+    postUrlRequest.mockReset()
   })
 
   describe('POST to CheckAnswersController', () => {
@@ -62,6 +65,7 @@ describe('CheckAnswersController', () => {
   describe('createJiraServiceRequest', () => {
     it('should create a Jira service request and attach a file', async () => {
       config.jira.requestTypeId = '1'
+      postUrlRequest.mockResolvedValue('requestId')
       req.sessionModel.get.mockImplementation((key) => {
         const data = {
           name: 'John Doe',
@@ -80,6 +84,14 @@ describe('CheckAnswersController', () => {
       attachFileToIssue.mockResolvedValue({ data: {} })
 
       const result = await controller.createJiraServiceRequest(req, res, next)
+      expect(postUrlRequest).toHaveBeenCalled()
+
+      expect(createCustomerRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: expect.stringContaining(`${config.url}check/results/requestId/1`)
+        }),
+        config.jira.requestTypeId
+      )
 
       expect(createCustomerRequest).toHaveBeenCalledWith(
         {
