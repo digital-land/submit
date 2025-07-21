@@ -184,40 +184,29 @@
           </div>
 
           <div class="gem-c-step-nav__panel js-panel" id="step-panel-submit-your-data-4">
-            {% if 'submitEndpointForm' | isFeatureEnabled %}
-              <p class="gem-c-step-nav__paragraph"><a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Provide your data</a> to the Planning
-                Data Platform. You need to submit your:</p>
-
-              <ul class="govuk-list govuk-list--bullet">
-                <li>full name</li>
-                <li>work email address</li>
-                <li>endpoint URL</li>
-                <li>website URL</li>
-              </ul>
-
-              <p class="gem-c-step-nav__paragraph">We’ll confirm by email when we’ve received your data.</p>
-            {% else %}
-              <p class="gem-c-step-nav__paragraph">To submit your endpoint URL, send an email to <a href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
-              The email must include:
-              <ul class="govuk-list govuk-list--bullet">
-                <li>
-                  your full name
-                </li>
-                <li>
-                  the name of your planning authority
-                </li>
-                <li>
-                  a link to the webpage on your official planning authority website
-                </li>
-                <li>
-                  a link to the endpoint URL
-                </li>
-              </ul>
-
+              <p class="gem-c-step-nav__paragraph">Always check your data before you provide it. This helps you identify and fix any errors.</p>
               <p class="gem-c-step-nav__paragraph">
-                We'll process your submission and add your dataset to the planning data platform.
+                When you're ready to provide your data to the Planning Data Platform, submit your:
               </p>
-            {% endif %}
+              <ul class="govuk-list govuk-list--bullet">
+                <li>
+                  full name
+                </li>
+                <li>
+                  work email address
+                </li>
+                <li>
+                  endpoint URL
+                </li>
+                <li>
+                  webpage URL
+                </li>
+              </ul>
+              </p>
+
+              <p class="govuk-body">
+                <a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Provide your data</a>
+              </p>
           </div>
         </li>
 
