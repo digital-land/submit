@@ -59,26 +59,33 @@ class CheckAnswersController extends PageController {
     const datasetMeta = datasets.get(dataset) || {}
 
     const url = req.body.url || req.sessionModel.get('endpoint-url')
-    if (!url) logger.error('No Endpoint URL provided.')
+    if (!url) {
+      logger.error('No Endpoint URL provided.')
+    }
     const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
-    if (URLvalidationError) logger.warn(`URL validation failed for submitted URL: ${url}`)
+    if (URLvalidationError) {
+      logger.warn(`URL validation failed for submitted URL: ${url}`)
+    }
     const formData = {
       url,
       dataset: req.sessionModel.get('dataset'),
       collection: datasetMeta.dataSubject,
       geomType: req.sessionModel.get('geomType')
     }
-    const requestId = await postUrlRequest(formData)
-    let checkTool = null
+    let requestId
     try {
-      checkTool = `${config.url}check/results/${requestId}/1`
-    } catch (err) {
-      logger.error('Failed to generate checkTool link:', {
-        errorMessage: err.message,
-        errorStack: err,
+      requestId = await postUrlRequest(formData)
+    } catch (error) {
+      logger.error('Failed to submit URL request:', {
+        errorMessage: error.message,
+        errorStack: error,
         type: types.External
       })
+      requestId = null
     }
+    const checkTool = requestId
+      ? `${config.url}check/results/${requestId}/${config.jira.requestTypeId}`
+      : 'Check tool link unavailable'
 
     const summary = `Dataset URL request: ${data.organisationName} for ${data.dataset}`
     const description = `A new dataset request has been made by *${data.name}* from *${data.organisationName} (${data.organisationId})* for the dataset *${data.dataset}*.\n\n
