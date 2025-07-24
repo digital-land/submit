@@ -3,9 +3,11 @@ import { createCustomerRequest, attachFileToIssue } from '../../src/services/jir
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
 import { postUrlRequest } from '../../src/services/asyncRequestApi.js'
+import SubmitUrlController from '../../src/controllers/submitUrlController.js'
 
 vi.mock('../../src/services/jiraService.js')
 vi.mock('../../src/services/asyncRequestApi.js')
+vi.mock('../../src/controllers/submitUrlController.js')
 
 describe('CheckAnswersController', () => {
   let req, res, next, controller
@@ -26,6 +28,7 @@ describe('CheckAnswersController', () => {
       route: '/dataset'
     })
     postUrlRequest.mockReset()
+    SubmitUrlController.localUrlValidation.mockReset()
   })
 
   describe('POST to CheckAnswersController', () => {
@@ -110,6 +113,20 @@ describe('CheckAnswersController', () => {
     })
 
     it('should return null if Jira service request creation fails', async () => {
+      req.sessionModel.get.mockImplementation((key) => {
+        const data = {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          orgId: 'test-org',
+          lpa: 'Test Organisation',
+          dataset: 'Test Dataset',
+          'documentation-url': 'http://example.com/doc',
+          'endpoint-url': 'http://example.com/endpoint'
+        }
+        return data[key]
+      })
+      SubmitUrlController.localUrlValidation.mockResolvedValue(null)
+      postUrlRequest.mockResolvedValue('requestId')
       createCustomerRequest.mockResolvedValue({ error: 'Error' })
 
       const result = await controller.createJiraServiceRequest(req, res, next)

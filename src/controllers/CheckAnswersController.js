@@ -57,15 +57,20 @@ class CheckAnswersController extends PageController {
     }
     const dataset = req.sessionModel.get('dataset')
     const datasetMeta = datasets.get(dataset) || {}
-
     const url = req.body.url || req.sessionModel.get('endpoint-url')
     if (!url) {
       logger.error('No Endpoint URL provided.')
+      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
+      return res.redirect('/submit/check-answers')
     }
+
     const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
     if (URLvalidationError) {
       logger.warn(`URL validation failed for submitted URL: ${url}`)
+      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
+      return res.redirect('/submit/check-answers')
     }
+
     const formData = {
       url,
       dataset: req.sessionModel.get('dataset'),
@@ -98,7 +103,7 @@ class CheckAnswersController extends PageController {
     - Organisation Name: ${data.organisationName}\n
     - Dataset: ${data.dataset}\n
     - Documentation URL: ${data.documentationUrl}\n
-    - Endpoint URL: ${data.endpoint}
+    - Endpoint URL: ${data.endpoint}\n
     - Check Tool: ${checkTool}`
 
     // Generate Jira service request
