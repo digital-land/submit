@@ -3,6 +3,9 @@ import PageController from './pageController.js'
 class ProcessingController extends PageController {
   get (req, res, next) {
     const requestId = req.params.id
+    if (!requestId) {
+      return res.status(400).render('error', { message: 'Invalid request ID' })
+    }
     req.form.options.requestId = requestId
     req.form.options.pollingEndpoint = `/api/status/${requestId}`
     req.form.options.confirmationUrl = '/submit/confirmation'
