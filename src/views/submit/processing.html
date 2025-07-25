@@ -1,0 +1,52 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Processing Submission – {{ serviceName }}{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds" aria-live="polite">
+    <h1 class="govuk-heading-l" id="processing-heading">
+      {% if options.processingComplete %}
+        {{ options.headingTexts.checked }}
+      {% else %}
+        {{ options.headingTexts.checking }}
+      {% endif %}
+    </h1>
+    <p class="govuk-body" id="processing-message">
+      {% if options.processingComplete %}
+        {{ options.messageTexts.checked }}
+      {% else %}
+        {{ options.messageTexts.checking }}
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const requestId = '{{ options.requestId }}';
+    const confirmationUrl = '{{ options.confirmationUrl }}';
+    const pollingEndpoint = '{{ options.pollingEndpoint }}';
+    const finishedStatuses = ['COMPLETE', 'FAILED'];
+
+    async function pollStatus() {
+      try {
+        const response = await fetch(pollingEndpoint);
+        if (!response.ok) throw new Error('Network response not ok');
+        const data = await response.json();
+        console.log('Polled status:', data.status);
+
+        if (finishedStatuses.includes(data.status.toUpperCase())) {
+          window.location.href = confirmationUrl;
+        } else {
+          setTimeout(pollStatus, 3000);
+        }
+      } catch (err) {
+        setTimeout(pollStatus, 5000);
+      }
+    }
+
+    pollStatus();
+  })();
+</script>
+{% endblock %}

@@ -21,11 +21,12 @@ class CheckAnswersController extends PageController {
    */
   async post (req, res, next) {
     try {
-      const issue = await this.createJiraServiceRequest(req, res, next)
-
+      const { issue, requestId } = await this.createJiraServiceRequest(req, res, next)
       if (issue) {
         req.sessionModel.set('reference', issue.issueKey)
         req.sessionModel.set('errors', [])
+        req.sessionModel.set('processing', true)
+        req.sessionModel.set('request_id', requestId) // postUrlRequest request_id
       } else {
         req.sessionModel.set('errors', [{ text: 'Failed to create Jira issue.' }])
 
@@ -43,6 +44,10 @@ class CheckAnswersController extends PageController {
     }
 
     super.post(req, res, next)
+  }
+
+  nextPage (req) {
+    return '/submit/processing'
   }
 
   async createJiraServiceRequest (req, res, next) {
@@ -142,7 +147,7 @@ class CheckAnswersController extends PageController {
       return null
     }
 
-    return response.data
+    return { issue: response.data, requestId }
   }
 }
 
