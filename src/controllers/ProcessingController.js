@@ -11,11 +11,11 @@ class ProcessingController extends PageController {
     req.form.options.confirmationUrl = '/submit/confirmation'
     req.form.options.processingComplete = false
     req.form.options.headingTexts = {
-      checking: 'We are processing your submission',
+      checking: 'We are checking your submission',
       checked: 'Processing complete'
     }
     req.form.options.messageTexts = {
-      checking: 'Please wait while we check your submission.',
+      checking: 'Larger datasets may take a few minutes. Do not exit this page.',
       checked: 'Your submission has been processed.'
     }
 

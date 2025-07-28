@@ -2,7 +2,7 @@ import LpaDetailsController from '../../../controllers/lpaDetailsController.js'
 import PageController from '../../../controllers/pageController.js'
 import CheckAnswersController from '../../../controllers/CheckAnswersController.js'
 import EndpointSubmissionFormDeepLinkController from '../../../controllers/endpointSubmissionFormDeepLinkController.js'
-import ProcessingController from '../../../controllers/processingController.js'
+import ProcessingController from '../../../controllers/ProcessingController.js'
 
 const defaultParams = {
   entryPoint: false,
