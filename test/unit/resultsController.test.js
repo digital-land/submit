@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import config from '../../config/index.js'
 import ResultsController, {
   fetchResponseDetails,
   fieldToColumnMapping,
@@ -121,6 +122,7 @@ describe('Middleware Tests', () => {
       const res = mockResponse()
 
       req.locals.template = 'results/no-errors'
+      req.locals.datasetTypology = 'geography'
       req.locals.requestData = {
         hasErrors: vi.fn(() => false)
       }
@@ -144,6 +146,24 @@ describe('Middleware Tests', () => {
       expect(req.locals.geometries).toEqual('mockGeometries')
       expect(req.locals.pagination).toEqual('mockPagination')
       expect(mockNext).toHaveBeenCalled()
+    })
+    it('hide map when typology is not geography', () => {
+      const req = mockRequest()
+      const res = mockResponse()
+
+      req.locals.template = 'results/no-errors'
+      req.locals.datasetTypology = 'legal-instrument'
+      req.locals.requestData = {
+        hasErrors: vi.fn(() => false)
+      }
+      req.locals.responseDetails = {
+        getRowsWithVerboseColumns: vi.fn(() => [{ columns: {}, data: 'rowData' }]),
+        getColumns: vi.fn(() => ['column1', 'column2']),
+        getFields: vi.fn(() => ['field1', 'field2']),
+        getPagination: vi.fn(() => 'mockPagination')
+      }
+      setupTableParams(req, res, mockNext)
+      expect(req.locals.geometries).toBeNull()
     })
   })
 
@@ -274,7 +294,7 @@ describe('getFileNameOrUrlAndCheckedTime', () => {
 
 describe('getPassedChecks()', () => {
   const reqTemplate = {
-    locals: {},
+    locals: { datasetTypology: 'geography' },
     tasks: [],
     totalRows: 99,
     missingColumnTasks: []
@@ -302,6 +322,16 @@ describe('getPassedChecks()', () => {
     getPassedChecks(req1, {}, vi.fn())
     expect(req1.locals.passedChecks).toStrictEqual([])
   })
+
+  it('suppress the “All rows have valid geometry” message when typology is not geography', () => {
+    const req = structuredClone(reqTemplate)
+    req.locals = {
+      datasetTypology: null
+    }
+    getPassedChecks(req, {}, vi.fn())
+    const titles = req.locals.passedChecks.map(check => check.title.text)
+    expect(titles).not.toContain('All rows have valid geometry')
+  })
 })
 
 describe('fieldToColumnMapping()', () => {
@@ -325,5 +355,15 @@ describe('fieldToColumnMapping()', () => {
 
   it('handles empty', () => {
     expect(fieldToColumnMapping({ columns: {} })).toStrictEqual(new Map())
+  })
+})
+
+describe('fetchDatasetTypology()', () => {
+  it('datasets should include typology', async () => {
+    const response = await fetch(config.datasetAPI)
+    const responseJSON = await response.json()
+    const datasets = responseJSON.datasets || []
+    const missingTypology = datasets.filter(d => d.typology == null)
+    expect(missingTypology).toEqual([])
   })
 })
