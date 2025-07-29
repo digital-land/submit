@@ -20,7 +20,7 @@ describe('ProcessingController()', () => {
     })
   })
 
-  describe('ProcessingController()', () => {
+  describe('get method', () => {
     it('should attach form options to request when requestID provided', () => {
       controller.get = vi.fn(controller.get.bind(controller))
       controller.get(req, res, next)
