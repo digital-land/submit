@@ -2,8 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
+import { postUrlRequest } from '../../src/services/asyncRequestApi.js'
+import SubmitUrlController from '../../src/controllers/submitUrlController.js'
 
 vi.mock('../../src/services/jiraService.js')
+vi.mock('../../src/services/asyncRequestApi.js')
+vi.mock('../../src/controllers/submitUrlController.js')
 
 describe('CheckAnswersController', () => {
   let req, res, next, controller
@@ -23,12 +27,14 @@ describe('CheckAnswersController', () => {
     controller = new CheckAnswersController({
       route: '/dataset'
     })
+    postUrlRequest.mockReset()
+    SubmitUrlController.localUrlValidation.mockReset()
   })
 
   describe('POST to CheckAnswersController', () => {
     it('should create a Jira issue and set session data on success', async () => {
       const issue = { issueKey: 'TEST-123' }
-      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(issue)
+      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issue, requestId: 'requestId' })
 
       await controller.post(req, res, next)
 
@@ -39,7 +45,7 @@ describe('CheckAnswersController', () => {
     })
 
     it('should set session errors and redirect on failure to create Jira issue', async () => {
-      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(null)
+      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issue: null, requestId: null })
 
       await controller.post(req, res, next)
 
@@ -62,6 +68,7 @@ describe('CheckAnswersController', () => {
   describe('createJiraServiceRequest', () => {
     it('should create a Jira service request and attach a file', async () => {
       config.jira.requestTypeId = '1'
+      postUrlRequest.mockResolvedValue('requestId')
       req.sessionModel.get.mockImplementation((key) => {
         const data = {
           name: 'John Doe',
@@ -76,10 +83,19 @@ describe('CheckAnswersController', () => {
       })
 
       const response = { data: { issueKey: 'TEST-123' } }
+
       createCustomerRequest.mockResolvedValue(response)
       attachFileToIssue.mockResolvedValue({ data: {} })
 
       const result = await controller.createJiraServiceRequest(req, res, next)
+      expect(postUrlRequest).toHaveBeenCalled()
+
+      expect(createCustomerRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: expect.stringContaining(`${config.url}check/results/requestId/1`)
+        }),
+        config.jira.requestTypeId
+      )
 
       expect(createCustomerRequest).toHaveBeenCalledWith(
         {
@@ -94,10 +110,27 @@ describe('CheckAnswersController', () => {
         expect.any(File),
         expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation (test-org)* for the dataset *Test Dataset*.')
       )
-      expect(result).toEqual(response.data)
+      expect(result).toEqual({
+        issue: response.data,
+        requestId: 'requestId'
+      })
     })
 
     it('should return null if Jira service request creation fails', async () => {
+      req.sessionModel.get.mockImplementation((key) => {
+        const data = {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          orgId: 'test-org',
+          lpa: 'Test Organisation',
+          dataset: 'Test Dataset',
+          'documentation-url': 'http://example.com/doc',
+          'endpoint-url': 'http://example.com/endpoint'
+        }
+        return data[key]
+      })
+      SubmitUrlController.localUrlValidation.mockResolvedValue(null)
+      postUrlRequest.mockResolvedValue('requestId')
       createCustomerRequest.mockResolvedValue({ error: 'Error' })
 
       const result = await controller.createJiraServiceRequest(req, res, next)

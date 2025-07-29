@@ -4,6 +4,9 @@ import { attachFileToIssue, createCustomerRequest } from '../services/jiraServic
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
+import { postUrlRequest } from '../services/asyncRequestApi.js'
+import SubmitUrlController from './submitUrlController.js'
+import { datasets } from '../utils/utils.js'
 
 class CheckAnswersController extends PageController {
   /**
@@ -18,11 +21,12 @@ class CheckAnswersController extends PageController {
    */
   async post (req, res, next) {
     try {
-      const issue = await this.createJiraServiceRequest(req, res, next)
-
+      const { issue, requestId } = await this.createJiraServiceRequest(req, res, next)
       if (issue) {
         req.sessionModel.set('reference', issue.issueKey)
         req.sessionModel.set('errors', [])
+        req.sessionModel.set('processing', true)
+        req.sessionModel.set('request_id', requestId) // postUrlRequest request_id
       } else {
         req.sessionModel.set('errors', [{ text: 'Failed to create Jira issue.' }])
 
@@ -42,6 +46,14 @@ class CheckAnswersController extends PageController {
     super.post(req, res, next)
   }
 
+  nextPage (req) {
+    const requestId = req.sessionModel.get('request_id')
+    if (!requestId) {
+      return '/submit/check-answers'
+    }
+    return `/submit/processing/${requestId}`
+  }
+
   async createJiraServiceRequest (req, res, next) {
     const data = {
       name: req.sessionModel.get('name'),
@@ -52,6 +64,42 @@ class CheckAnswersController extends PageController {
       documentationUrl: req.sessionModel.get('documentation-url'),
       endpoint: req.sessionModel.get('endpoint-url')
     }
+    const dataset = req.sessionModel.get('dataset')
+    const datasetMeta = datasets.get(dataset) || {}
+    const url = req.body.url || req.sessionModel.get('endpoint-url')
+    if (!url) {
+      logger.error('No Endpoint URL provided.')
+      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
+      return res.redirect('/submit/check-answers')
+    }
+
+    const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
+    if (URLvalidationError) {
+      logger.warn(`URL validation failed for submitted URL: ${url}`)
+      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
+      return res.redirect('/submit/check-answers')
+    }
+
+    const formData = {
+      url,
+      dataset: req.sessionModel.get('dataset'),
+      collection: datasetMeta.dataSubject,
+      geomType: req.sessionModel.get('geomType')
+    }
+    let requestId
+    try {
+      requestId = await postUrlRequest(formData)
+    } catch (error) {
+      logger.error('Failed to submit URL request:', {
+        errorMessage: error.message,
+        errorStack: error,
+        type: types.External
+      })
+      requestId = null
+    }
+    const checkTool = requestId
+      ? `${config.url}check/results/${requestId}/${config.jira.requestTypeId}`
+      : 'Check tool link unavailable'
 
     const summary = `Dataset URL request: ${data.organisationName} for ${data.dataset}`
     const description = `A new dataset request has been made by *${data.name}* from *${data.organisationName} (${data.organisationId})* for the dataset *${data.dataset}*.\n\n
@@ -64,7 +112,8 @@ class CheckAnswersController extends PageController {
     - Organisation Name: ${data.organisationName}\n
     - Dataset: ${data.dataset}\n
     - Documentation URL: ${data.documentationUrl}\n
-    - Endpoint URL: ${data.endpoint}`
+    - Endpoint URL: ${data.endpoint}\n
+    - Check Tool: ${checkTool}`
 
     // Generate Jira service request
     const response = await createCustomerRequest({
@@ -102,7 +151,7 @@ class CheckAnswersController extends PageController {
       return null
     }
 
-    return response.data
+    return { issue: response.data, requestId }
   }
 }
 

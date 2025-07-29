@@ -1,0 +1,62 @@
+{% extends "layouts/main.html" %}
+
+{% block pageTitle %}Processing Submission – {{ serviceName }}{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds" aria-live="polite">
+        <h1 class="govuk-heading-l" id="processing-heading">
+            {% if options.processingComplete %}
+            {{ options.headingTexts.checked }}
+            {% else %}
+            {{ options.headingTexts.checking }}
+            {% endif %}
+        </h1>
+        <p class="govuk-body" id="processing-message">
+            {% if options.processingComplete %}
+            {{ options.messageTexts.checked }}
+            {% else %}
+            {{ options.messageTexts.checking }}
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const requestId = {{ options.requestId | dump | safe
+    }};
+    const confirmationUrl = {{ options.confirmationUrl | dump | safe }};
+    const pollingEndpoint = {{ options.pollingEndpoint | dump | safe }}
+    const finishedStatuses = ['COMPLETE', 'FAILED'];
+
+    async function pollStatus() {
+        let retryCount = 0;
+        const maxRetries = 20;
+        if (retryCount >= maxRetries) {
+            document.getElementById('processing-message').textContent =
+                'Processing is taking longer than expected. Please contact support.';
+            return;
+        }
+        retryCount++;
+        try {
+            const response = await fetch(pollingEndpoint);
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const data = await response.json();
+
+            if (finishedStatuses.includes(data.status.toUpperCase())) {
+                window.location.href = confirmationUrl;
+            } else {
+                retryCount = 0;
+                setTimeout(pollStatus, 3000);
+            }
+        } catch (err) {
+            console.error('Polling error:', err);
+            setTimeout(pollStatus, 5000);
+        }
+    }
+
+    pollStatus();
+  }) ();
+</script>
+{% endblock %}
