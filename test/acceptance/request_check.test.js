@@ -8,6 +8,7 @@
 
 import { test, expect } from '@playwright/test'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
+import config from '../../config/index.js'
 
 test.setTimeout(300000)
 
@@ -22,6 +23,17 @@ const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExample
 let lastTimestamp = 0
 
 async function checkDataFile ({ page, jsEnabled }) {
+  let hasMap = false
+  const datasetId = 'article-4-direction'
+  try {
+    const res = await fetch(`${config.datasetAPI}/dataset/${datasetId}.json`)
+    if (res.ok) {
+      const json = await res.json()
+      hasMap = json?.typology === 'geography'
+    }
+  } catch (err) {
+    hasMap = false
+  }
   log(`Starting test: request check of a @datafile, jsEnabled=${jsEnabled}`, true)
 
   const uploadMethodPage = await navigateToCheck(page)
@@ -50,7 +62,7 @@ async function checkDataFile ({ page, jsEnabled }) {
   let resultsPage
   if (jsEnabled) {
     resultsPage = await statusPage.clickContinue()
-    resultsPage.expectPageHasTabs(jsEnabled)
+    resultsPage.expectPageHasTabs(jsEnabled, hasMap)
   } else {
     await page.waitForTimeout(5000)
     resultsPage = await statusPage.clickCheckStatusButton()
@@ -58,7 +70,7 @@ async function checkDataFile ({ page, jsEnabled }) {
 
   await resultsPage.waitForPage(id)
   await resultsPage.expectPageHasTitle()
-  await resultsPage.expectPageHasTabs(jsEnabled)
+  await resultsPage.expectPageHasTabs(jsEnabled, hasMap)
   const confirmationPage = await resultsPage.clickContinue()
   log('Navigated to confirmation page')
   await confirmationPage.waitForPage()

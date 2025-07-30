@@ -504,7 +504,7 @@ const validateParams = validateQueryParams({
 async function fetchDatasetTypology (req, res, next) {
   const datasetName = req.locals.requestData?.getParams?.()?.dataset
   try {
-    const response = await fetch(config.datasetAPI)
+    const response = await fetch(`${config.datasetAPI}/dataset.json`)
     const data = await response.json()
     const datasetList = data.datasets || []
     const dataset = datasetList.find(d => d.dataset?.toLowerCase() === datasetName)
