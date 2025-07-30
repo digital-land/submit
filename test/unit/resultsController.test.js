@@ -360,7 +360,7 @@ describe('fieldToColumnMapping()', () => {
 
 describe('fetchDatasetTypology()', () => {
   it('datasets should include typology', async () => {
-    const response = await fetch(`${config.datasetAPI}/dataset.json`)
+    const response = await fetch(`${config.mainWebsiteUrl}/dataset.json`)
     const responseJSON = await response.json()
     const datasets = responseJSON.datasets || []
     const missingTypology = datasets.filter(d => d.typology == null)

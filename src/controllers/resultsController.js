@@ -508,7 +508,7 @@ async function fetchDatasetTypology (req, res, next) {
     return next()
   }
   try {
-    const response = await fetch(`${config.datasetAPI}/dataset/${datasetName}.json`)
+    const response = await fetch(`${config.mainWebsiteUrl}/dataset/${datasetName}.json`)
     if (!response.ok) {
       req.locals.datasetTypology = null
       return next()

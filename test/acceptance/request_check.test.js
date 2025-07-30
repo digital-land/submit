@@ -26,7 +26,7 @@ async function checkDataFile ({ page, jsEnabled }) {
   let hasMap = false
   const datasetId = 'article-4-direction'
   try {
-    const res = await fetch(`${config.datasetAPI}/dataset/${datasetId}.json`)
+    const res = await fetch(`${config.mainWebsiteUrl}/dataset/${datasetId}.json`)
     if (res.ok) {
       const json = await res.json()
       hasMap = json?.typology === 'geography'

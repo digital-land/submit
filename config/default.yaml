@@ -14,7 +14,6 @@ aws: {
     bucket: '',
     s3ForcePathStyle: false,
 }
-datasetAPI: 'https://www.planning.data.gov.uk'
 # ToDo: url and name might need updating
 url: 'https://provide.planning.data.gov.uk'
 mainWebsiteUrl: https://www.planning.data.gov.uk
