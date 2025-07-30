@@ -1,8 +1,9 @@
-name: Code change pipeline
-run-name: Code change pipeline to ${{ inputs.environment || 'development' }} by @${{ github.actor }}
+name: Publish
+run-name:  Publish - ${{ github.head_ref || github.ref_name }} to ${{ inputs.environment || 'All' }} by @${{ github.actor }} triggered via ${{ github.event_name }}
 
 on:
   push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       environment:
@@ -32,15 +33,12 @@ jobs:
               await github.request(`GET /repos/${process.env.GITHUB_REPOSITORY}/environments`);
             return environments.map(e => e.name)
   
-  deploy-changes:
+  publish-image:
     needs: [run-tests, detect-environments]
     strategy:
       matrix:
-        environment: ['production', 'staging']
-    if: ${{ github.ref_name == 'main'}}
+        environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
     uses: ./.github/workflows/deploy.yml
     with:
       environment: '${{ matrix.environment }}'
     secrets: inherit
-
- 

@@ -1,14 +1,14 @@
 name: Test
-run-name: Test run triggered by @${{ github.actor }}
+run-name: Test - ${{ github.head_ref || github.ref_name }} by @${{ github.actor }} triggered via ${{ github.event_name }}
 
 on:
   workflow_call:
     inputs:
       environment:
-        description: What environment should the app be deployed to?
+        description: Which environment's containers should be used
         required: true
-        default: 'development'
-        type: string
+        default: development
+        type: environment
     secrets:
       DEPLOY_DOCKER_REPOSITORY:
         required: true
@@ -16,7 +16,9 @@ on:
         required: true
       DEPLOY_AWS_SECRET_ACCESS_KEY:
         required: true
-
+  push:
+    branches-ignore: [main]
+    
 jobs:
   test:
     runs-on: ubuntu-latest
