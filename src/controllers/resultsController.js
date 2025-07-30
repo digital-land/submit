@@ -503,12 +503,18 @@ const validateParams = validateQueryParams({
  */
 async function fetchDatasetTypology (req, res, next) {
   const datasetName = req.locals.requestData?.getParams?.()?.dataset
+  if (!datasetName) {
+    req.locals.datasetTypology = null
+    return next()
+  }
   try {
-    const response = await fetch(`${config.datasetAPI}/dataset.json`)
+    const response = await fetch(`${config.datasetAPI}/dataset/${datasetName}.json`)
+    if (!response.ok) {
+      req.locals.datasetTypology = null
+      return next()
+    }
     const data = await response.json()
-    const datasetList = data.datasets || []
-    const dataset = datasetList.find(d => d.dataset?.toLowerCase() === datasetName)
-    req.locals.datasetTypology = dataset?.typology || null
+    req.locals.datasetTypology = data?.typology || null
     next()
   } catch (error) {
     req.locals.datasetTypology = null
