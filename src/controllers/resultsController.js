@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import config from '../../config/index.js'
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { fetchMany } from '../middleware/middleware.builders.js'
@@ -20,6 +21,7 @@ class ResultsController extends PageController {
     this.use(validateParams)
     this.use(getRequestDataMiddleware)
     this.use(setupTemplate)
+    this.use(fetchDatasetTypology)
     this.use(fetchResponseDetails)
     this.use(checkForErroredResponse)
     this.use(setupTableParams)
@@ -196,8 +198,10 @@ export function setupTableParams (req, res, next) {
       columnNameProcessing: 'none',
       mapping: columnToField
     }
-
-    req.locals.geometries = responseDetails.getGeometries()
+    req.locals.geometries =
+      req.locals.datasetTypology === 'geography'
+        ? responseDetails.getGeometries()
+        : null
     // pagination is on the 'table' tab, so we want to ensure clicking those
     // links takes us to a page with the table tab *selected*
     const { pageNumber } = req.parsedParams
@@ -447,7 +451,7 @@ export function getPassedChecks (req, res, next) {
     // add task complete for valid geoms
     const foundGeometryColMissing = missingColumnTasks.findIndex(task => task.title.text === 'geometry column is missing') >= 0
     const foundInvalidWKT = tasks.findIndex(task => task.issueType === 'invalid WKT') >= 0
-    if (!foundGeometryColMissing && !foundInvalidWKT) {
+    if (req.locals.datasetTypology === 'geography' && !foundGeometryColMissing && !foundInvalidWKT) {
       passedChecks.push(makePassedCheck('All rows have valid geometry'))
     }
   }
@@ -490,5 +494,32 @@ const validateParams = validateQueryParams({
     pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1')
   })
 })
+
+/**
+ * Middleware to fetch typology of dataset.
+ * @param {*} req - request object
+ * @param {*} res - response object
+ * @param {*} next - next middleware function
+ */
+async function fetchDatasetTypology (req, res, next) {
+  const datasetName = req.locals.requestData?.getParams?.()?.dataset
+  if (!datasetName) {
+    req.locals.datasetTypology = null
+    return next()
+  }
+  try {
+    const response = await fetch(`${config.mainWebsiteUrl}/dataset/${datasetName}.json`)
+    if (!response.ok) {
+      req.locals.datasetTypology = null
+      return next()
+    }
+    const data = await response.json()
+    req.locals.datasetTypology = data?.typology || null
+    next()
+  } catch (error) {
+    req.locals.datasetTypology = null
+    next()
+  }
+}
 
 export default ResultsController

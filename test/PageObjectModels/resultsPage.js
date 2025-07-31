@@ -35,8 +35,12 @@ export default class ResultsPage extends BasePage {
     await this.page.waitForSelector('.govuk-tag.govuk-tag--red:text("Must fix")')
   }
 
-  async expectPageHasTabs (jsEnabled = true) {
-    await expect(this.page.locator('#map-tab')).toBeVisible()
+  async expectPageHasTabs (jsEnabled = true, hasMap = false) {
+    if (hasMap) {
+      await expect(this.page.locator('#map-tab')).toBeVisible()
+    } else {
+      await expect(this.page.locator('#map-tab')).not.toBeVisible()
+    }
 
     if (jsEnabled) {
       await this.page.click('#tab_table-tab')
