@@ -5,10 +5,10 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: Which environment's containers should be used
+        description: Which environment's containers should be used?
         required: true
-        default: development
-        type: environment
+        default: 'development'
+        type: string
     secrets:
       DEPLOY_DOCKER_REPOSITORY:
         required: true
