@@ -21,7 +21,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || development }}
+    environment: ${{ inputs.environment || 'development' }}
     env:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
     steps:
