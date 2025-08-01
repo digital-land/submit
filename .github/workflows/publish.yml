@@ -1,5 +1,5 @@
 name: Publish
-run-name:  Publish - ${{ github.head_ref || github.ref_name }} to ${{ inputs.environment || 'All' }} by @${{ github.actor }} triggered via ${{ github.event_name }}
+run-name: Publish - ${{ github.head_ref || github.ref_name }} to ${{ inputs.environment || 'All' }} by @${{ github.actor }} triggered via ${{ github.event_name }}
 
 on:
   push:
