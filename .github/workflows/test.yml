@@ -6,7 +6,6 @@ on:
     inputs:
       environment:
         description: Which environment's containers should be used?
-        required: true
         default: 'development'
         type: string
     secrets:
