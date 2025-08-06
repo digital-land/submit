@@ -11,6 +11,16 @@ describe('StatusPage', () => {
   beforeEach(async () => {
     vi.useFakeTimers()
     global.fetch = vi.fn()
+    global.fetch = vi.fn((url) => {
+      if (url.endsWith('/dataset.json')) {
+        // mock the https://www.planning.data.gov.uk/dataset.json fetch used in utils/datasetLoader.js
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ datasets: [] }),
+          statusText: 'OK'
+        })
+      }
+    })
     mockHeading = { textContent: 'Checking File' }
     mockButton = { textContent: 'Retrieve Latest Status', style: { display: 'block' } }
     mockMessage = { textContent: 'Please wait', style: { display: 'block' } }
