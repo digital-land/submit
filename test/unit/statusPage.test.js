@@ -20,6 +20,12 @@ describe('StatusPage', () => {
           statusText: 'OK'
         })
       }
+      // Return a default response for other URLs
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+        statusText: 'OK'
+      })
     })
     mockHeading = { textContent: 'Checking File' }
     mockButton = { textContent: 'Retrieve Latest Status', style: { display: 'block' } }
