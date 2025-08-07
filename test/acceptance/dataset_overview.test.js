@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import LandingPage from '../PageObjectModels/landingPage'
 import OrganisationOverviewPage from '../PageObjectModels/organisationOverviewPage'
+import { getDatasetNameMap } from '../../src/utils/datasetLoader'
 
 test.describe('Dataset overview', () => {
   test('Can go from landing page to organisational overview', async ({ page, context }) => {
@@ -74,5 +75,29 @@ test.describe('Dataset overview', () => {
     await datasetOverviewPage.viewDatasetIssues()
 
     expect(await page.locator('h2.govuk-heading-l').innerText()).toEqual('London Borough of Lambeth’s task list')
+  })
+
+  test('Dataset names shown dynamically match names fetched from datasetLoader', async ({ page }) => {
+    const organisationId = 'local-authority:LBH'
+    const nameMap = await getDatasetNameMap()
+    const organisationOverviewPage = new OrganisationOverviewPage(page, { organisationId })
+    await organisationOverviewPage.navigateHere()
+
+    expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
+    const datasetElements = await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').allInnerTexts()
+    const expectedDatasets = [
+      'article-4-direction',
+      'article-4-direction-area'
+    ]
+    const expectedNames = expectedDatasets
+      .map(key => nameMap[key])
+
+    const displayedNames = datasetElements
+      .map(text => text.split('\n')[0].trim())
+      .sort()
+
+    for (const expectedName of expectedNames) {
+      expect(displayedNames).toContain(expectedName)
+    }
   })
 })
