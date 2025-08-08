@@ -85,19 +85,13 @@ test.describe('Dataset overview', () => {
 
     expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
     const datasetElements = await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').allInnerTexts()
-    const expectedDatasets = [
-      'article-4-direction',
-      'article-4-direction-area'
-    ]
-    const expectedNames = expectedDatasets
-      .map(key => nameMap[key])
-
     const displayedNames = datasetElements
       .map(text => text.split('\n')[0].trim())
-      .sort()
 
-    for (const expectedName of expectedNames) {
-      expect(displayedNames).toContain(expectedName)
+    for (const displayedName of displayedNames) {
+      const matchingKey = Object.keys(nameMap).find(key => nameMap[key] === displayedName)
+      expect(matchingKey).toBeDefined()
     }
+    expect(displayedNames.length).toEqual(8)
   })
 })
