@@ -1,36 +1,40 @@
-issue_type,allRows_message
-"future entry date","{column_name} column must be in the past"
-"invalid coordinates","{column_name} column must have valid coordinates"
-"invalid date","{column_name} column must be in YYYY-MM-DD format"
-"invalid decimal","{column_name} column must have valid decimal numbers"
-"invalid flag","{column_name} column must have valid YES or NO values"
-"invalid geometry - not fixable","{column_name} column must have valid geometry"
-"invalid integer","{column_name} column must have valid integers"
-"invalid organisation","{column_name} column must have valid organisation values"
-"invalid URI","{column_name} column must have valid URIs"
-"invalid WKT","{column_name} column must have valid WKT values"
-"missing value","{column_name} column is missing values"
-"OSGB out of bounds of custom boundary","{column_name} column must be within the specified boundary"
-"OSGB out of bounds of England","{column_name} column must be within England"
-"too large","{column_name} column must be below the maximum number needed"
-"too small","{column_name} column must be above the minimum number needed"
-"Unexpected geom type","{column_name} column must have valid geometry"
-"Unexpected geom type within GeometryCollection","{column_name} column must have valid geometry"
-"unknown entity - missing reference","{column_name} column is missing a valid reference"
-"WGS84 out of bounds","{column_name} column must be within the specified boundary"
-"WGS84 out of bounds of custom boundary","{column_name} column must be within the specified boundary"
-"WGS84 out of bounds of England","{column_name} column must be within England"
-"invalid geometry - fixed","{column_name} geometry in all rows is invalid, but has been fixed"
-"invalid type geojson","{column_name} must have valid GeoJSON"
-"Mercator","{column_name} coordinates in all rows are in Mercator projection"
-"Mercator flipped","{column_name} Mercator coordinates in all rows have been flipped"
-"OSGB","{column_name} coordinates in all rows are in OSGB projection"
-"OSGB flipped","{column_name} OSGB coordinates in all rows have been flipped"
-"WGS84 flipped","{column_name} WGS84 coordinates in all rows have been flipped"
-"combined-value","{column_name} values in all rows are combined values"
-"default-field","{column_name} column has default values"
-"default-value","{column_name} column has default values"
-"patch","{column_name} column has been patched"
-"removed URI prefix","{column_name} column has had prefixes removed from URIs"
-"unknown entity","{column_name} column must have known enitities"
-"reference values are not unique","{column_name} column must have unique entries"
+issue_type,allRows_message,dataset
+"future entry date","{column_name} column must be in the past",all
+"invalid coordinates","{column_name} column must have valid coordinates",all
+"invalid date","{column_name} column must be in YYYY-MM-DD format",all
+"invalid decimal","{column_name} column must have valid decimal numbers",all
+"invalid flag","{column_name} column must have valid YES or NO values",all
+"invalid geometry - not fixable","{column_name} column must have valid geometry",all
+"invalid integer","{column_name} column must have valid integers",all
+"invalid organisation","{column_name} column must have valid organisation values",all
+"invalid URI","{column_name} column must have valid URIs",all
+"invalid WKT","{column_name} column must have valid WKT values",all
+"missing value","{column_name} column is missing values",all
+"OSGB out of bounds of custom boundary","{column_name} column must be within the specified boundary",all
+"OSGB out of bounds of England","{column_name} column must be within England",all
+"too large","{column_name} column must be below the maximum number needed",all
+"too small","{column_name} column must be above the minimum number needed",all
+"Unexpected geom type","{column_name} column must have valid geometry",all
+"Unexpected geom type within GeometryCollection","{column_name} column must have valid geometry",all
+"unknown entity - missing reference","{column_name} column is missing a valid reference",all
+"WGS84 out of bounds","{column_name} column must be within the specified boundary",all
+"WGS84 out of bounds of custom boundary","{column_name} column must be within the specified boundary",all
+"WGS84 out of bounds of England","{column_name} column must be within England",all
+"invalid geometry - fixed","{column_name} geometry in all rows is invalid, but has been fixed",all
+"invalid type geojson","{column_name} must have valid GeoJSON",all
+"Mercator","{column_name} coordinates in all rows are in Mercator projection",all
+"Mercator flipped","{column_name} Mercator coordinates in all rows have been flipped",all
+"OSGB","{column_name} coordinates in all rows are in OSGB projection",all
+"OSGB flipped","{column_name} OSGB coordinates in all rows have been flipped",all
+"WGS84 flipped","{column_name} WGS84 coordinates in all rows have been flipped",all
+"combined-value","{column_name} values in all rows are combined values",all
+"default-field","{column_name} column has default values",all
+"default-value","{column_name} column has default values",all
+"patch","{column_name} column has been patched",all
+"removed URI prefix","{column_name} column has had prefixes removed from URIs",all
+"unknown entity","{column_name} column must have known enitities",all
+"reference values are not unique","{column_name} column must have unique entries",all
+"missing associated entity", "{column_name} column must match the reference field in the article 4 direction",article-4-direction
+"missing associated entity", "{column_name} column must match the listed building reference from Historic England, known as 'List-Entry-Number'",listed-building-outline
+"missing associated entity","{column_name} column must match the reference field in the conservation area document",conservation-area
+"missing associated entity","{column_name} column must match the reference field in the tree protection order",tree-preservation-order

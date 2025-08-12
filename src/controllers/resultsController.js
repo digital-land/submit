@@ -366,13 +366,16 @@ export function getTotalRows (req, res, next) {
  */
 export function getTasksByLevel (req, level, status) {
   const { tasks, totalRows } = req
+  const dataset = req.locals.requestData?.getParams?.()?.dataset
+
   const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
   const taskParams = filteredTasks.map(task => {
     const taskMessage = performanceDbApi.getTaskMessage({
       issue_type: task.issueType,
       num_issues: task.count,
       rowCount: totalRows,
-      field: task.field
+      field: task.field,
+      dataset
     })
     return makeTaskParam(req, { taskMessage, status, issueType: task.issueType, field: task.field })
   })

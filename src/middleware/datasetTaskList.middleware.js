@@ -130,7 +130,7 @@ export const prepareTasks = (req, res, next) => {
 
     let title
     try {
-      title = performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type })
+      title = performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type, dataset })
     } catch (e) {
       logger.warn('Failed to generate task title', {
         type: types.App,

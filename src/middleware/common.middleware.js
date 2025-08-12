@@ -659,7 +659,7 @@ export const getSetDataRange = (pageLength) => {
 }
 
 export function getErrorSummaryItems (req, res, next) {
-  const { issue_type: issueType, issue_field: issueField } = req.params
+  const { issue_type: issueType, issue_field: issueField, dataset } = req.params
   const { entryIssues, issues: entityIssues, issueCount, entities, resources } = req
 
   const issues = entityIssues || entryIssues
@@ -669,7 +669,7 @@ export function getErrorSummaryItems (req, res, next) {
 
   const errorHeading = ''
   const issueItems = [{
-    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField }, true)
+    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField, dataset }, true)
   }]
 
   req.errorSummary = {
