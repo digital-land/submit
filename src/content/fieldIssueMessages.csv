@@ -1,37 +1,41 @@
-issue_type,singular_message,plural_message
-"future entry date", {column_name} must be in the past, {num_issues} entries have {column_name} fields that must be in the past
-"future entry-date", {column_name} must be in the past, {num_issues} entries have {column_name} fields that must be in the past
-"invalid coordinates", {column_name} must use the WGS84 or ETRS89 coordinate systems, {num_issues} entries in the {column_ name} field that must use the WGS84 or ETRS89 coordinate systems
-"invalid date", {column_name} must be in YYYY-MM-DD format, {num_issues} entries have {column_name} fields that must be in YYYY-MM-DD format
-"invalid decimal", {column_name} must only contain numbers and a decimal point, {num_issues} entries in the {column_name} field which must only contain numbers and a decimal point
-"invalid flag", "{column_name} must be 'yes', 'no', or blank","{num_issues} entries in the {column_name} field which must be 'yes', 'no', or blank"
-"invalid geometry - not fixable", {column_name} must have valid geometry, {num_issues} entries have {column_name} fields that must have valid geometry
-"invalid integer", {column_name} must only contain whole numbers, {num_issues} entries in the {column_name} field which must only contain whole numbers
-"invalid organisation", {column_name} must be a valid organisation, {num_issues} entries have {column_name} fields that must have a valid organisation
-"invalid URI", {column_name} must be a valid URL, {num_issues} entries in the {column_name} field which must have valid URLs
-"invalid WKT", {column_name} must have valid WKT values, {num_issues} entries have {column_name} fields that must have valid WKT values
-"missing value", {column_name} must not contain blank values, {num_issues} entries in the {column_name} field which must not contain blank values
-"OSGB out of bounds of custom boundary", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary
-"OSGB out of bounds of England", {column_name} must be within England, {num_issues} entries have {column_name} fields that must be within England
-"too large", {column_name} must be below the maximum number needed, {num_issues} entries have {column_name} fields that must be below the maximum number needed
-"too small", "{column_name} must be equal to, or greater than 0", "{num_issues} entries in the {column_name} field which must be equal to, or greater than 0"
-"Unexpected geom type", "{column_name} must be a point, polygon or multipolygon", "{num_issues} entries in the {column_name} field which must be a point, polygon or multipolygon"
-"Unexpected geom type within GeometryCollection", {column_name} must have valid geometry, {num_issues} entries have {column_name} fields that must have valid geometry
-"unknown entity - missing reference", 1 row is missing a {column_name}, {num_issues} entries are missing a {column_name}
-"WGS84 out of bounds", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary
-"WGS84 out of bounds of custom boundary", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary
-"WGS84 out of bounds of England", {column_name} must be within the boundary of England, {num_issues} entries in the {column_name} field which must be within the boundary of England
-"invalid geometry - fixed", {column_name} has an invalid geometry that has been fixed, {num_issues} entries have {column_name} fields that have invalid geometries that have been fixed
-"invalid type geojson", {column_name} must have valid GeoJSON, {num_issues} entries have {column_name} fields that must have valid GeoJSON
-"Mercator", {column_name} uses Mercator coordinates, {num_issues} entries have {column_name} fields that use Mercator coordinates
-"Mercator flipped", {column_name} uses flipped Mercator coordinates, {num_issues} entries have {column_name} fields that use flipped Mercator coordinates
-"OSGB", {column_name} uses OSGB coordinates, {num_issues} entries have {column_name} fields that use OSGB coordinates
-"OSGB flipped", {column_name} uses flipped OSGB coordinates, {num_issues} entries have {column_name} fields that use flipped OSGB coordinates
-"WGS84 flipped", {column_name} uses flipped WGS84 coordinates, {num_issues} entries have {column_name} fields that use flipped WGS84 coordinates
-"combined-value", {column_name} has a combined value, {num_issues} entries have {column_name} fields that have combined values
-"default-field", {column_name} has a default value from another field, {num_issues} entries have {column_name} fields that have default values from other entries
-"default-value", {column_name} has a default value, {num_issues} entries have {column_name} fields that have default values
-"patch", {column_name} has been patched, {num_issues} entries have {column_name} fields that have been patched
-"removed URI prefix", {column_name} has a URI prefix that has been removed, {num_issues} entries have {column_name} fields that have URI prefixes that have been removed
-"unknown entity", {column_name} has an unknown entity, {num_issues} entries have {column_name} fields that have unknown entities
-"reference values are not unique", {column_name} must have values that are unique within the dataset, {num_issues} entries in the {column_name} field which must be unique within the dataset
+issue_type,singular_message,plural_message,dataset
+"future entry date", {column_name} must be in the past, {num_issues} entries have {column_name} fields that must be in the past,all
+"future entry-date", {column_name} must be in the past, {num_issues} entries have {column_name} fields that must be in the past,all
+"invalid coordinates", {column_name} must use the WGS84 or ETRS89 coordinate systems, {num_issues} entries in the {column_ name} field that must use the WGS84 or ETRS89 coordinate systems,all
+"invalid date", {column_name} must be in YYYY-MM-DD format, {num_issues} entries have {column_name} fields that must be in YYYY-MM-DD format,all
+"invalid decimal", {column_name} must only contain numbers and a decimal point, {num_issues} entries in the {column_name} field which must only contain numbers and a decimal point,all
+"invalid flag", "{column_name} must be 'yes', 'no', or blank","{num_issues} entries in the {column_name} field which must be 'yes', 'no', or blank",all
+"invalid geometry - not fixable", {column_name} must have valid geometry, {num_issues} entries have {column_name} fields that must have valid geometry,all
+"invalid integer", {column_name} must only contain whole numbers, {num_issues} entries in the {column_name} field which must only contain whole numbers,all
+"invalid organisation", {column_name} must be a valid organisation, {num_issues} entries have {column_name} fields that must have a valid organisation,all
+"invalid URI", {column_name} must be a valid URL, {num_issues} entries in the {column_name} field which must have valid URLs,all
+"invalid WKT", {column_name} must have valid WKT values, {num_issues} entries have {column_name} fields that must have valid WKT values,all
+"missing value", {column_name} must not contain blank values, {num_issues} entries in the {column_name} field which must not contain blank values,all
+"OSGB out of bounds of custom boundary", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary,all
+"OSGB out of bounds of England", {column_name} must be within England, {num_issues} entries have {column_name} fields that must be within England,all
+"too large", {column_name} must be below the maximum number needed, {num_issues} entries have {column_name} fields that must be below the maximum number needed,all
+"too small", "{column_name} must be equal to, or greater than 0", "{num_issues} entries in the {column_name} field which must be equal to, or greater than 0",all
+"Unexpected geom type", "{column_name} must be a point, polygon or multipolygon", "{num_issues} entries in the {column_name} field which must be a point, polygon or multipolygon",all
+"Unexpected geom type within GeometryCollection", {column_name} must have valid geometry, {num_issues} entries have {column_name} fields that must have valid geometry,all
+"unknown entity - missing reference", 1 row is missing a {column_name}, {num_issues} entries are missing a {column_name},all
+"WGS84 out of bounds", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary,all
+"WGS84 out of bounds of custom boundary", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary,all
+"WGS84 out of bounds of England", {column_name} must be within the boundary of England, {num_issues} entries in the {column_name} field which must be within the boundary of England,all
+"invalid geometry - fixed", {column_name} has an invalid geometry that has been fixed, {num_issues} entries have {column_name} fields that have invalid geometries that have been fixed,all
+"invalid type geojson", {column_name} must have valid GeoJSON, {num_issues} entries have {column_name} fields that must have valid GeoJSON,all
+"Mercator", {column_name} uses Mercator coordinates, {num_issues} entries have {column_name} fields that use Mercator coordinates,all
+"Mercator flipped", {column_name} uses flipped Mercator coordinates, {num_issues} entries have {column_name} fields that use flipped Mercator coordinates,all
+"OSGB", {column_name} uses OSGB coordinates, {num_issues} entries have {column_name} fields that use OSGB coordinates,all
+"OSGB flipped", {column_name} uses flipped OSGB coordinates, {num_issues} entries have {column_name} fields that use flipped OSGB coordinates,all
+"WGS84 flipped", {column_name} uses flipped WGS84 coordinates, {num_issues} entries have {column_name} fields that use flipped WGS84 coordinates,all
+"combined-value", {column_name} has a combined value, {num_issues} entries have {column_name} fields that have combined values,all
+"default-field", {column_name} has a default value from another field, {num_issues} entries have {column_name} fields that have default values from other entries,all
+"default-value", {column_name} has a default value, {num_issues} entries have {column_name} fields that have default values,all
+"patch", {column_name} has been patched, {num_issues} entries have {column_name} fields that have been patched,all
+"removed URI prefix", {column_name} has a URI prefix that has been removed, {num_issues} entries have {column_name} fields that have URI prefixes that have been removed,all
+"unknown entity", {column_name} has an unknown entity, {num_issues} entries have {column_name} fields that have unknown entities,all
+"reference values are not unique", {column_name} must have values that are unique within the dataset, {num_issues} entries in the {column_name} field which must be unique within the dataset,all
+"missing associated entity", "{column_name} must match the reference field in the article 4 direction", "{num_entries} entries with article-4-direction fields that must match the reference field in the article 4 direction",article-4-direction
+"missing associated entity", "{column_name} must match the listed building reference from Historic England, known as 'List-Entry-Number'", "{num_entries} entries with {column_name} field must match the listed building reference from Historic England, known as 'List-Entry-Number'",listed-building-outline
+"missing associated entity", "{column_name} must match the reference field in the conservation area document", "{num_entries} entries with {column_name} field must match the reference field in the conservation area document",conservation-area
+"missing associated entity", "{column_name} must match the reference field in the tree protection order", "{num_entries} entries with {column_name} field must match the reference field in the tree protection order",tree-preservation-order

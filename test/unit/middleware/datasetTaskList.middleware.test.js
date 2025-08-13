@@ -63,14 +63,16 @@ describe('datasetTaskList.middleware.js', () => {
         issue_type: 'issue-type1',
         num_issues: 1,
         rowCount: 2,
-        field: 'field1'
+        field: 'field1',
+        dataset: 'some-dataset'
       })
 
       expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
         issue_type: 'issue-type2',
         num_issues: 1,
         rowCount: 2,
-        field: 'field2'
+        field: 'field2',
+        dataset: 'some-dataset'
       })
 
       expect(req.taskList).toEqual([
@@ -129,7 +131,8 @@ describe('datasetTaskList.middleware.js', () => {
         issue_type: 'reference values are not unique',
         num_issues: 1,
         rowCount: 10,
-        field: 'field1'
+        field: 'field1',
+        dataset: 'some-dataset'
       })
 
       expect(req.taskList).toEqual([

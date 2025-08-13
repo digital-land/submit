@@ -28,7 +28,7 @@ const validateParams = validateQueryParams({
  */
 export const prepareTask = (req, res, next) => {
   const { issueType: issueTypeSlug, field } = req.params
-
+  const dataset = req.sessionModel?.get('data-subject')
   const task = req.aggregatedTasks.get(`${issueTypeSlug}|${field}`)
   if (!task) {
     return next(new MiddlewareError(`No isssue of type '${issueTypeSlug}' for field ${field}`, 404))
@@ -44,7 +44,8 @@ export const prepareTask = (req, res, next) => {
         num_issues: task.count,
         rowCount: req.totalRows,
         field: task.field,
-        format: 'html'
+        format: 'html',
+        dataset
       })
     } catch (error) {
       logger.warn('prepareTask/getTaskMessage failure', { type: types.App, errorMessage: error.message, errorStack: error.stack })

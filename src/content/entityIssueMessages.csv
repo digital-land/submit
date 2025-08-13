@@ -1,37 +1,41 @@
-issue_type,singular_message,plural_message
-"future entry date", 1 entry must be in the past, {num_entries} entries must be in the past
-"future entry-date", 1 entry must be in the past, {num_entries} entries must be in the past
-"invalid coordinates", 1 entry must have valid coordinates, {num_entries} entries must have valid coordinates
-"invalid date", 1 entry must have dates in YYYY-MM-DD format, {num_entries} entries must have dates in YYYY-MM-DD format
-"invalid decimal", 1 entry must have a decimal number, {num_entries} entries must have decimal numbers
-"invalid flag", 1 entry must have a YES or NO value, {num_entries} entries must have YES or NO values
-"invalid geometry - not fixable", 1 must have valid geometry, {num_entries} entries must have valid geometry
-"invalid integer", 1 entry must have a valid integer, {num_entries} entries must have valid integers
-"invalid organisation", 1 entry must have a valid organisation, {num_entries} entries must have a valid organisation
-"invalid URI", 1 entry must have a valid URI, {num_entries} entries must have valid URIs
-"invalid WKT", 1 entry must have valid WKT values, {num_entries} entries must have valid WKT values
-"missing value", 1 row is missing a {column_name}, {num_entries} rows are missing a {column_name}
-"OSGB out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary
-"OSGB out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England
-"too large", 1 entry must be below the maximum number needed, {num_entries} entries must be below the maximum number needed
-"too small", 1 entry must be above the minimum number needed, {num_entries} entries must be above the minimum number needed
-"Unexpected geom type", 1 entry must have valid geometry, {num_entries} entries must have valid geometry
-"Unexpected geom type within GeometryCollection", 1 entry must have valid geometry, {num_entries} entries must have valid geometry
-"unknown entity - missing reference", 1 row is missing a {column_name}, {num_entries} rows are missing a {column_name}
-"WGS84 out of bounds", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary
-"WGS84 out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary
-"WGS84 out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England
-"invalid geometry - fixed", 1 entry has an invalid geometry that has been fixed, {num_entries} entries have invalid geometries that have been fixed
-"invalid type geojson", 1 entry must have valid GeoJSON, {num_entries} entries must have valid GeoJSON
-"Mercator", 1 entry uses Mercator coordinates, {num_entries} entries use Mercator coordinates
-"Mercator flipped", 1 entry uses flipped Mercator coordinates, {num_entries} entries use flipped Mercator coordinates
-"OSGB", 1 entry uses OSGB coordinates, {num_entries} entries use OSGB coordinates
-"OSGB flipped", 1 entry uses flipped OSGB coordinates, {num_entries} entries use flipped OSGB coordinates
-"WGS84 flipped", 1 entry uses flipped WGS84 coordinates, {num_entries} entries use flipped WGS84 coordinates
-"combined-value", 1 entry has a combined value, {num_entries} entries have combined values
-"default-field", 1 entry has a default value from another field, {num_entries} entries have default values from other fields
-"default-value", 1 entry has a default value, {num_entries} entries have default values
-"patch", 1 entry has been patched, {num_entries} entries have been patched
-"removed URI prefix", 1 entry has a URI prefix that has been removed, {num_entries} entries have URI prefixes that have been removed
-"unknown entity", 1 entry has an unknown entity, {num_entries} entries have unknown entities
-"reference values are not unique", 1 entry has reference values that are not unique, {num_entries} entries have reference values that are not unique
+issue_type,singular_message,plural_message,dataset
+"future entry date", 1 entry must be in the past, {num_entries} entries must be in the past,all
+"future entry-date", 1 entry must be in the past, {num_entries} entries must be in the past,all
+"invalid coordinates", 1 entry must have valid coordinates, {num_entries} entries must have valid coordinates,all
+"invalid date", 1 entry must have dates in YYYY-MM-DD format, {num_entries} entries must have dates in YYYY-MM-DD format,all
+"invalid decimal", 1 entry must have a decimal number, {num_entries} entries must have decimal numbers,all
+"invalid flag", 1 entry must have a YES or NO value, {num_entries} entries must have YES or NO values,all
+"invalid geometry - not fixable", 1 must have valid geometry, {num_entries} entries must have valid geometry,all
+"invalid integer", 1 entry must have a valid integer, {num_entries} entries must have valid integers,all
+"invalid organisation", 1 entry must have a valid organisation, {num_entries} entries must have a valid organisation,all
+"invalid URI", 1 entry must have a valid URI, {num_entries} entries must have valid URIs,all
+"invalid WKT", 1 entry must have valid WKT values, {num_entries} entries must have valid WKT values,all
+"missing value", 1 row is missing a {column_name}, {num_entries} rows are missing a {column_name},all
+"OSGB out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary,all
+"OSGB out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England,all
+"too large", 1 entry must be below the maximum number needed, {num_entries} entries must be below the maximum number needed,all
+"too small", 1 entry must be above the minimum number needed, {num_entries} entries must be above the minimum number needed,all
+"Unexpected geom type", 1 entry must have valid geometry, {num_entries} entries must have valid geometry,all
+"Unexpected geom type within GeometryCollection", 1 entry must have valid geometry, {num_entries} entries must have valid geometry,all
+"unknown entity - missing reference", 1 row is missing a {column_name}, {num_entries} rows are missing a {column_name},all
+"WGS84 out of bounds", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary,all
+"WGS84 out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary,all
+"WGS84 out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England,all
+"invalid geometry - fixed", 1 entry has an invalid geometry that has been fixed, {num_entries} entries have invalid geometries that have been fixed,all
+"invalid type geojson", 1 entry must have valid GeoJSON, {num_entries} entries must have valid GeoJSON,all
+"Mercator", 1 entry uses Mercator coordinates, {num_entries} entries use Mercator coordinates,all
+"Mercator flipped", 1 entry uses flipped Mercator coordinates, {num_entries} entries use flipped Mercator coordinates,all
+"OSGB", 1 entry uses OSGB coordinates, {num_entries} entries use OSGB coordinates,all
+"OSGB flipped", 1 entry uses flipped OSGB coordinates, {num_entries} entries use flipped OSGB coordinates,all
+"WGS84 flipped", 1 entry uses flipped WGS84 coordinates, {num_entries} entries use flipped WGS84 coordinates,all
+"combined-value", 1 entry has a combined value, {num_entries} entries have combined values,all
+"default-field", 1 entry has a default value from another field, {num_entries} entries have default values from other fields,all
+"default-value", 1 entry has a default value, {num_entries} entries have default values,all
+"patch", 1 entry has been patched, {num_entries} entries have been patched,all
+"removed URI prefix", 1 entry has a URI prefix that has been removed, {num_entries} entries have URI prefixes that have been removed,all
+"unknown entity", 1 entry has an unknown entity, {num_entries} entries have unknown entities,all
+"reference values are not unique", 1 entry has reference values that are not unique, {num_entries} entries have reference values that are not unique,all
+"missing associated entity", "1 entry with article-4-direction fields that must match the reference field in the article 4 direction", "{num_entries} entries with article-4-direction fields that must match the reference field in the article 4 direction",article-4-direction
+"missing associated entity", "1 entry with listed-building field must match the listed building reference from Historic England, known as 'List-Entry-Number'", "{num_entries} entries with listed-building field must match the listed building reference from Historic England, known as 'List-Entry-Number'",listed-building-outline
+"missing associated entity", "1 entry with conservation-area-document field must match the reference field in the conservation area document", "{num_entries} entries with conservation-area-document field must match the reference field in the conservation area document",conservation-area
+"missing associated entity", "1 entry with tree-protection-order field must match the reference field in the tree protection order", "{num_entries} entries with tree-protection-order field must match the reference field in the tree protection order",tree-preservation-order

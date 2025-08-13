@@ -25,7 +25,24 @@ describe('performanceDbApi', () => {
               issue_type: 'some_issue_type',
               singular_message: entitiesFile ? 'singular entities message for {column_name}' : 'singular message for {column_name}',
               plural_message: entitiesFile ? 'plural entities message for {column_name} with count {num_issues}' : 'plural message for {column_name} with count {num_issues}',
-              allRows_message: 'all rows message for {column_name}'
+              allRows_message: 'all rows message for {column_name}',
+              dataset: 'all'
+            })
+
+            callback({
+              issue_type: 'some_issue_type',
+              singular_message: entitiesFile ? 'dataset one singular entities message for {column_name}' : 'dataset one singular message for {column_name}',
+              plural_message: entitiesFile ? 'dataset one plural entities message for {column_name} with count {num_issues}' : 'dataset one plural message for {column_name} with count {num_issues}',
+              allRows_message: 'all rows message for {column_name}',
+              dataset: 'dataset-one'
+            })
+
+            callback({
+              issue_type: 'some_issue_type',
+              singular_message: entitiesFile ? 'dataset two singular entities message for {column_name}' : 'dataset two singular message for {column_name}',
+              plural_message: entitiesFile ? 'dataset two plural entities message for {column_name} with count {num_issues}' : 'dataset two plural message for {column_name} with count {num_issues}',
+              allRows_message: 'all rows message for {column_name}',
+              dataset: 'dataset-two'
             })
             /* eslint-enable n/no-callback-literal */
 
@@ -101,6 +118,21 @@ describe('performanceDbApi', () => {
     it('returns a fallback message when the issue type is unknown', () => {
       const message = performanceDbApi.getTaskMessage({ issue_type: 'unknown_issue_type', num_issues: 1 })
       expect(message).toContain('1 issue of type unknown_issue_type')
+    })
+
+    it('returns dataset specific error message for dataset-one', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'some_field', dataset: 'dataset-one' })
+      expect(message).toContain('dataset one singular message for some_field')
+    })
+
+    it('returns dataset specific error plural message for dataset-two', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 2, field: 'some_field', dataset: 'dataset-two' })
+      expect(message).toContain('dataset two plural message for some_field with count 2')
+    })
+
+    it('fallbacks to main message if dataset does not exist', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'my_field', dataset: 'dataset-does-not-exist' })
+      expect(message).toContain('singular message for my_field')
     })
   })
 })
