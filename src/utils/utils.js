@@ -79,7 +79,7 @@ export async function buildDataSubjects () {
       dataSets: [
         {
           value: 'tree',
-          text: nameMap['tree'],
+          text: nameMap.tree,
           available: true,
           requiresGeometryTypeSelection: true
         },
