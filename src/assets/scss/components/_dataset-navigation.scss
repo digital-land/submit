@@ -1,8 +1,10 @@
 $badgeBgColour: govuk-colour('red');
 
-.app-c-dataset-navigation {
+.app-c-dataset-navigation,
+.govuk-template--rebranded .app-c-dataset-navigation {
   background-color: govuk-colour('white');
   border-top: 1px solid govuk-colour('mid-grey');
+  border-bottom-color: govuk-colour('mid-grey');
 }
 
 .app-c-dataset-navigation__notification-badge {
