@@ -1,0 +1,15 @@
+{% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner %}
+
+{% set phaseBannerHtml -%}
+  This is a new service – your
+  <a class="govuk-link" href="{{ feedbackLink | default('/feedback') | escape }}">feedback</a>
+  will help us to improve it.
+{%- endset %}
+
+{{ govukPhaseBanner({
+  tag: {
+    text: "BETA"
+  },
+  html: phaseBannerHtml,
+  classes: phaseBannerClasses
+}) }}

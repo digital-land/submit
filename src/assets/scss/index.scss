@@ -141,7 +141,7 @@ code * {
 }
 
 .app-masthead {
-  @include govuk-responsive-padding(6, "top");
+  @include govuk-responsive-padding(2, "top");
   @include govuk-responsive-padding(6, "bottom");
   border-bottom: 1px solid govuk-colour("blue");
   color: govuk-colour("white");
@@ -177,6 +177,29 @@ code * {
 
 .app-masthead__link:focus {
   color: govuk-colour("black");
+}
+
+.app-masthead__phase-banner--inverse {
+  color: govuk-colour("white");
+  margin-bottom: govuk-spacing(3);
+  border-bottom: none;
+
+  .govuk-phase-banner__content__tag {
+    background-color: govuk-colour("white");
+  }
+
+  .govuk-phase-banner__text {
+    color: govuk-colour("white");
+  }
+
+  .govuk-link {
+    color: govuk-colour("white");
+
+    &:focus {
+      color: govuk-colour("black");
+    }
+  }
+
 }
 
 .padding-top {
