@@ -59,6 +59,8 @@ export function setupNunjucks (opts) {
   const globalValues = {
     serviceName: config.serviceNames.submit,
     dataDesignUrl: config.dataDesignUrl,
+    mainWebsiteUrl: config.mainWebsiteUrl,
+    govukRebrand: true,
     ...config.templateContent
   }
 

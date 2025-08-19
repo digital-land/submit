@@ -2,7 +2,7 @@
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 
 {{ govukHeader({
-  homepageUrl: homepageUrl,
+  homepageUrl: mainWebsiteUrl,
   classes: 'govuk-header--full-width-border'
 }) }}
 
@@ -13,3 +13,9 @@
   serviceUrl: startPageUrl or homepageUrl,
   navigation: navigationItems
 }) }}
+
+{% if currentPath != '/' %}
+  {% set phaseBannerClasses = 'govuk-width-container' %}
+  {% include "components/app-phase-banner.html" %}
+{% endif %}
+
