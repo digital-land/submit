@@ -40,3 +40,4 @@ issue_type,allRows_message,dataset
 "missing associated entity","{column_name} column must match the reference field in the conservation area document",conservation-area-document
 "missing associated entity","{column_name} column must match the reference field in the tree protection order",tree-preservation-order
 "missing associated entity","{column_name} column must match the reference field in the tree protection order",tree-preservation-zone
+"missing associated entity","{column_name} column must match the reference field in the tree protection order",tree
