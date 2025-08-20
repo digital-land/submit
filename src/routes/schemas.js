@@ -222,7 +222,7 @@ const MapGeometry = v.union([
   v.object({
     type: v.string(),
     reference: NonEmptyString,
-    geo: NonEmptyString
+    geo: v.nullable(v.string())
   })
 ])
 
