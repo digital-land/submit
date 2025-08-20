@@ -218,6 +218,7 @@ export const OrgEndpointError = v.strictObject({
 
 const MapGeometry = v.union([
   v.string(),
+  v.number(),
   v.object({
     type: v.string(),
     reference: NonEmptyString,
