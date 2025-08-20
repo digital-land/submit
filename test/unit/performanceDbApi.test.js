@@ -44,6 +44,13 @@ describe('performanceDbApi', () => {
               allRows_message: 'all rows message for {column_name}',
               dataset: 'dataset-two'
             })
+
+            callback({
+              issue_type: 'some_issue_type_with_no_all_rows_message',
+              singular_message: entitiesFile ? 'dataset two singular entities message for {column_name}' : 'dataset two singular message for {column_name}',
+              plural_message: entitiesFile ? 'dataset two plural entities message for {column_name} with count {num_issues}' : 'dataset two plural message for {column_name} with count {num_issues}',
+              dataset: 'dataset-two'
+            })
             /* eslint-enable n/no-callback-literal */
 
             return {
@@ -133,6 +140,11 @@ describe('performanceDbApi', () => {
     it('fallbacks to main message if dataset does not exist', () => {
       const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: 'my_field', dataset: 'dataset-does-not-exist' })
       expect(message).toContain('singular message for my_field')
+    })
+
+    it('returns a fallback message when the issue type is missing an all rows message', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type_with_no_all_rows_message', num_issues: 5, rowCount: 5, field: 'some_field' })
+      expect(message).toContain('5 issue of type some_issue_type_with_no_all_rows_message')
     })
   })
 })
