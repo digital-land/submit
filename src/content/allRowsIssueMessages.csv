@@ -34,7 +34,7 @@ issue_type,allRows_message,dataset
 "removed URI prefix","{column_name} column has had prefixes removed from URIs",all
 "unknown entity","{column_name} column must have known enitities",all
 "reference values are not unique","{column_name} column must have unique entries",all
-"missing associated entity", "{column_name} column must match the reference field in the article 4 direction",article-4-direction
-"missing associated entity", "{column_name} column must match the listed building reference from Historic England, known as 'List-Entry-Number'",listed-building-outline
+"missing associated entity","{column_name} column must match the reference field in the article 4 direction",article-4-direction
+"missing associated entity","{column_name} column must match the listed building reference from Historic England, known as 'List-Entry-Number'",listed-building-outline
 "missing associated entity","{column_name} column must match the reference field in the conservation area document",conservation-area
 "missing associated entity","{column_name} column must match the reference field in the tree protection order",tree-preservation-order
