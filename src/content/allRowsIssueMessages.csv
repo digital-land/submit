@@ -38,3 +38,4 @@ issue_type,allRows_message,dataset
 "missing associated entity","{column_name} column must match the listed building reference from Historic England, known as 'List-Entry-Number'",listed-building-outline
 "missing associated entity","{column_name} column must match the reference field in the conservation area document",conservation-area
 "missing associated entity","{column_name} column must match the reference field in the tree protection order",tree-preservation-order
+"missing associated entity","{column_name} column must match the reference field in the tree protection order",tree-preservation-zone
