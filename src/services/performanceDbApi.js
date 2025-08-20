@@ -272,13 +272,14 @@ export default {
     field,
     ...rest
   }, entityLevel = false) {
+    const defaultMessage = `${numIssues} issue of type ${issueType}`
     let messageInfo = messages.get(issueType)
     if (!messageInfo) {
       logger.warn({
         message: `PerformanceDbApi.getTaskMessage(): Unknown issue type: ${issueType}`,
         type: types.App
       })
-      return `${numIssues} issue of type ${issueType}`
+      return defaultMessage
     }
 
     if (!field) {
@@ -305,6 +306,9 @@ export default {
         ? messageInfo.singular
         : messageInfo.plural
     }
+
+    if (!message) return defaultMessage
+
     const fieldText = rest.format === 'html' ? `<span class="column-name">${field}</span>` : field
     return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', fieldText)
   },
