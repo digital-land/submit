@@ -6,8 +6,23 @@ export const severityLevels = {
   warning: 'warning',
   error: 'error'
 }
+
 export async function buildDataSubjects () {
-  const nameMap = await getDatasetNameMap()
+  const datasetKeys = [
+    'article-4-direction',
+    'article-4-direction-area',
+    'brownfield-land',
+    'brownfield-site',
+    'conservation-area',
+    'conservation-area-document',
+    'listed-building',
+    'listed-building-grade',
+    'listed-building-outline',
+    'tree',
+    'tree-preservation-order',
+    'tree-preservation-zone'
+  ]
+  const nameMap = await getDatasetNameMap(datasetKeys)
   return {
     'article-4-direction': {
       available: true,
@@ -98,8 +113,6 @@ export async function buildDataSubjects () {
   }
 }
 
-export const dataSubjects = await buildDataSubjects()
-
 export const entryIssueGroups = [
   {
     type: 'missing value',
@@ -114,6 +127,11 @@ export const entryIssueGroups = [
     field: 'entity'
   }
 ]
+
+export async function getDataSubjects () {
+  const dataSubjects = await buildDataSubjects()
+  return dataSubjects
+}
 
 export function makeDatasetsLookup (dataSubjects) {
   const lookup = new Map()
@@ -139,8 +157,13 @@ export function makeDatasetsLookup (dataSubjects) {
  * Map of dataset identifiers to their configuration objects
  * @type {Map<string, Dataset>}
  */
-export const datasets = makeDatasetsLookup(dataSubjects)
-
+export async function getDatasets () {
+  const dataSubjects = await getDataSubjects()
+  const datasets = makeDatasetsLookup(dataSubjects)
+  return datasets
+}
+// export const datasets = makeDatasetsLookup(dataSubjects)
+// console.log('datasets:', datasets)
 /**
  * Gets the list of available datasets sorted by display text
  *
