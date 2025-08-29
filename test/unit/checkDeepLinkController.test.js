@@ -27,7 +27,7 @@ describe('CheckDeepLinkController', () => {
   describe('get()', () => {
     it('should redirect to check tool start page when params invalid', async () => {
       const { req, res, next } = mockMiddlewareArgs({ query: {} })
-      checkDeepLinkController.get(req, res, next)
+      await checkDeepLinkController.get(req, res, next)
 
       expect(res.redirect).toHaveBeenCalledWith('/')
       expect(Array.from(req.sessionModel.keys())).toStrictEqual([])
@@ -38,7 +38,7 @@ describe('CheckDeepLinkController', () => {
       const query = { dataset: 'conservation-area', orgName: 'Some Org', orgId: 'some-org' }
       const { req, res, next } = mockMiddlewareArgs({ query })
 
-      checkDeepLinkController.get(req, res, next)
+      await checkDeepLinkController.get(req, res, next)
 
       expect(req.sessionModel.get(checkDeepLinkController.sessionKey)).toStrictEqual({
         'data-subject': 'conservation-area',
