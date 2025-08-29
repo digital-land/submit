@@ -23,8 +23,17 @@ describe('getDatasetNameMap', () => {
       ok: true,
       json: async () => mockApiData
     })
-    const result = await getDatasetNameMap()
-    expect(fetch).toHaveBeenCalledWith(`${config.mainWebsiteUrl}/dataset.json`)
+
+    const datasetKeys = ['ancient-woodland', 'article-4-direction-area']
+    const result = await getDatasetNameMap(datasetKeys)
+    expect(fetch).toHaveBeenCalledWith(
+      `${config.mainWebsiteUrl}/dataset.json?dataset=ancient-woodland&dataset=article-4-direction-area&field=dataset&field=name&include_typologies=false`,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'user-agent': 'Planning Data Provide'
+        })
+      })
+    )
     expect(result).toEqual({
       'ancient-woodland': 'Ancient woodland',
       'article-4-direction-area': 'Article 4 direction area'
@@ -35,6 +44,6 @@ describe('getDatasetNameMap', () => {
       ok: false,
       statusText: 'Not Found'
     })
-    await expect(getDatasetNameMap()).rejects.toThrow('Failed to fetch datasets from API: Not Found')
+    await expect(getDatasetNameMap(['ancient-woodland'])).rejects.toThrow('Failed to fetch datasets from API: Not Found')
   })
 })
