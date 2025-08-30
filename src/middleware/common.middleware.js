@@ -575,16 +575,30 @@ export const fetchEntryIssues = fetchMany({
 export const fetchEntityIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
+
     return `
-      select dataset, field, i.issue_type, COUNT(resource+line_number) as count
-      from issue i
-      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-      WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-      AND (entity != '' AND entity IS NOT NULL)
-      AND it.responsibility = 'external'
-      AND it.severity = 'error'
-      ${datasetClause}
-      GROUP BY field, i.issue_type, dataset
+      WITH unique_issues AS (
+        SELECT DISTINCT
+          i.dataset,
+          i.field,
+          i.issue_type,
+          i.entity
+        FROM issue i
+        LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+        WHERE resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
+          AND COALESCE(entity, '') <> ''
+          AND (i.end_date = '' OR i.end_date IS NULL)
+          AND it.responsibility = 'external'
+          AND it.severity = 'error'
+          ${datasetClause}
+      )
+      SELECT
+        dataset,
+        field,
+        issue_type,
+        COUNT(*) AS count
+      FROM unique_issues
+      GROUP BY field, issue_type, dataset
     `
   },
   result: 'entityIssueCounts'
