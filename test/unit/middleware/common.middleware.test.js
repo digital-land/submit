@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification } from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -1459,6 +1459,87 @@ describe('preventIndexing middleware', () => {
 
       expect(req.issueSpecification).toBeUndefined()
       expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+  describe('fetchEntities', () => {
+    let req, res, next
+
+    beforeEach(() => {
+      req = {
+        orgInfo: { entity: 123 },
+        originalUrl: '/test/url',
+        params: { dataset: 'test_dataset' }
+      }
+      res = {}
+      next = vi.fn()
+      vi.clearAllMocks()
+    })
+
+    it('fetches entities in batches when count > 0', async () => {
+      // Mock count query and two batches
+      const mockEntitiesBatch = [{ id: 1 }, { id: 2 }, { id: 3 }]
+      datasette.runQuery
+        .mockResolvedValueOnce({ formattedData: [{ count: 3 }] }) // count query
+        .mockResolvedValueOnce({ formattedData: mockEntitiesBatch }) // first batch
+
+      await fetchEntities(req, res, next)
+
+      expect(datasette.runQuery).toHaveBeenCalledTimes(2)
+      expect(req.entities).toEqual([...mockEntitiesBatch])
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('fetches entities in multiple batches when count > 1000', async () => {
+      // Simulate 2500 entities, so 3 batches: 1000, 1000, 500
+      const batch1 = Array.from({ length: 1000 }, (_, i) => ({ id: i + 1 }))
+      const batch2 = Array.from({ length: 1000 }, (_, i) => ({ id: i + 1001 }))
+      const batch3 = Array.from({ length: 500 }, (_, i) => ({ id: i + 2001 }))
+
+      datasette.runQuery
+        .mockResolvedValueOnce({ formattedData: [{ count: 2500 }] }) // count query
+        .mockResolvedValueOnce({ formattedData: batch1 }) // batch 1
+        .mockResolvedValueOnce({ formattedData: batch2 }) // batch 2
+        .mockResolvedValueOnce({ formattedData: batch3 }) // batch 3
+
+      await fetchEntities(req, res, next)
+
+      expect(datasette.runQuery).toHaveBeenCalledTimes(4)
+      expect(req.entities.length).toBe(2500)
+      expect(req.entities[0]).toEqual({ id: 1 })
+      expect(req.entities[2499]).toEqual({ id: 2500 })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles zero entities gracefully', async () => {
+      datasette.runQuery.mockResolvedValueOnce({ formattedData: [{ count: 0 }] }) // count query
+
+      await fetchEntities(req, res, next)
+
+      expect(datasette.runQuery).toHaveBeenCalledTimes(1)
+      expect(req.entities).toEqual([])
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('calls next with an error if count query fails', async () => {
+      const error = new Error('Count query failed')
+      datasette.runQuery.mockRejectedValueOnce(error)
+
+      await fetchEntities(req, res, next)
+
+      expect(datasette.runQuery).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(error)
+    })
+
+    it('calls next with an error if batch query fails', async () => {
+      const error = new Error('Batch query failed')
+      datasette.runQuery
+        .mockResolvedValueOnce({ formattedData: [{ count: 1500 }] }) // count query
+        .mockRejectedValueOnce(error) // first batch fails
+
+      await fetchEntities(req, res, next)
+
+      expect(datasette.runQuery).toHaveBeenCalledTimes(2)
+      expect(next).toHaveBeenCalledWith(error)
     })
   })
 })
