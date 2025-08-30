@@ -36,7 +36,7 @@ export const FetchOptions = {
   performanceDb: Symbol('performance-db')
 }
 
-const datasetOverride = (val, req) => {
+export const datasetOverride = (val, req) => {
   if (!val) {
     return 'digital-land'
   }
