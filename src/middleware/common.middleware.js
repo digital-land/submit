@@ -295,32 +295,38 @@ export const processSpecificationMiddlewares = [
 // Entities
 
 export const fetchEntities = async (req, res, next) => {
-  let entities = []
-  const limit = 1000
+  try {
+    let entities = []
+    const limit = 1000
 
-  // get count of entities for the organisation
-  const {
-    formattedData: [{ count }]
-  } = await datasette.runQuery(
-    `SELECT COUNT(*) as count FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity}`,
-    datasetOverride(FetchOptions.fromParams, req)
-  )
+    // get count of entities for the organisation
+    const {
+      formattedData: [{ count }]
+    } = await datasette.runQuery(
+      `SELECT COUNT(*) as count FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+      datasetOverride(FetchOptions.fromParams, req)
+    )
 
-  // fetch entities in batches of `limit` until we have fetched all entities
-  // datasette limits the number of rows returned to 1000 by default
-  if (count && count > 0) {
-    for (let offset = 0; offset < count; offset += limit) {
-      const query = `SELECT * FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity} LIMIT ${limit} OFFSET ${offset}`
-      const { formattedData } = await datasette.runQuery(query, datasetOverride(FetchOptions.fromParams, req))
-      entities = entities.concat(formattedData)
+    // fetch entities in batches of `limit` until we have fetched all entities
+    // datasette limits the number of rows returned to 1000 by default
+    if (count && count > 0) {
+      for (let offset = 0; offset < count; offset += limit) {
+        const query = `SELECT * FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity} LIMIT ${limit} OFFSET ${offset}`
+        const { formattedData } = await datasette.runQuery(query, datasetOverride(FetchOptions.fromParams, req))
+        entities = entities.concat(formattedData)
+      }
+    } else {
+      logger.info('fetchEntities(): No entities found', { type: types.App, endpoint: req.originalUrl })
     }
-  } else {
-    logger.info('fetchEntities(): No entities found', { type: types.App, endpoint: req.originalUrl })
+
+    req.entities = entities
+
+    next()
+  } catch (error) {
+    logger.error('fetchEntities(): failed', { type: types.DataFetch, endpoint: req.originalUrl, errorMessage: error.message, errorStack: error.stack })
+
+    next(error)
   }
-
-  req.entities = entities
-
-  next()
 }
 
 export const fetchEntityCount = fetchOne({
