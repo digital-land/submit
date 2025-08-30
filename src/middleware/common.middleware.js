@@ -397,18 +397,45 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
   query: ({ req, params }) => {
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
+
     return `
-        select i.issue_type, field, entity, message, severity, value
-        from issue i
-        LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-        WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-        ${issueTypeClause}
-        AND it.responsibility = 'external'
-        AND it.severity = 'error'
-        ${issueFieldClause}
-        AND i.dataset = '${req.params.dataset}'
-        AND entity != ''
-        `
+        WITH ranked AS (
+          SELECT
+            i.issue_type,
+            field,
+            entity,
+            message,
+            severity,
+            value,
+            ROW_NUMBER() OVER (
+              PARTITION BY i.issue_type, entity
+              ORDER BY i.rowid
+            ) AS rn
+          FROM issue i
+          LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+          WHERE resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
+            ${issueTypeClause}
+            AND it.responsibility = 'external'
+            AND it.severity = 'error'
+            ${issueFieldClause}
+            AND i.dataset = '${req.params.dataset}'
+            AND entity != ''
+            AND (
+              i.end_date = ''
+              OR i.end_date IS NULL
+            )
+        )
+        SELECT
+          issue_type,
+          field,
+          entity,
+          message,
+          severity,
+          value
+        FROM ranked
+        WHERE rn = 1
+        ORDER BY entity;
+      `
     // LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
   },
   result: 'issues'
