@@ -167,7 +167,7 @@ export const fetchResources = fetchMany({
       LEFT JOIN resource_dataset rd ON rd.resource = r.resource
       LEFT JOIN reporting_historic_endpoints rhe ON r.resource = rhe.resource
       LEFT JOIN source s ON s.endpoint = rhe.endpoint_url
-      WHERE r.end_date = ''
+      WHERE (r.end_date = '' OR r.end_date IS NULL)
       ${lpaClause}
       ${datasetClause}
       ORDER BY r.start_date desc`
