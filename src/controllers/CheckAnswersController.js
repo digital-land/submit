@@ -46,14 +46,6 @@ class CheckAnswersController extends PageController {
     super.post(req, res, next)
   }
 
-  nextPage (req) {
-    const requestId = req.sessionModel.get('request_id')
-    if (!requestId) {
-      return '/submit/check-answers'
-    }
-    return `/submit/processing/${requestId}`
-  }
-
   async createJiraServiceRequest (req, res, next) {
     const data = {
       name: req.sessionModel.get('name'),
