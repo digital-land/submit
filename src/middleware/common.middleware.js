@@ -7,7 +7,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { dataSubjects, entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { datasetOverride, fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
@@ -167,7 +167,9 @@ export const fetchResources = fetchMany({
       LEFT JOIN resource_dataset rd ON rd.resource = r.resource
       LEFT JOIN reporting_historic_endpoints rhe ON r.resource = rhe.resource
       LEFT JOIN source s ON s.endpoint = rhe.endpoint_url
-      WHERE r.end_date = ''
+      WHERE (r.end_date = '' OR r.end_date IS NULL)
+      AND rhe.endpoint_url != ''
+      AND rhe.endpoint_url IS NOT NULL
       ${lpaClause}
       ${datasetClause}
       ORDER BY r.start_date desc`
@@ -294,13 +296,40 @@ export const processSpecificationMiddlewares = [
 
 // Entities
 
-export const fetchEntities = fetchMany({
-  query: ({ req }) => `
-    SELECT * FROM entity e
-    WHERE e.organisation_entity = ${req.orgInfo.entity}`,
-  dataset: FetchOptions.fromParams,
-  result: 'entities'
-})
+export const fetchEntities = async (req, res, next) => {
+  try {
+    let entities = []
+    const limit = 1000
+
+    // get count of entities for the organisation
+    const {
+      formattedData: [{ count }]
+    } = await datasette.runQuery(
+      `SELECT COUNT(*) as count FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+      datasetOverride(FetchOptions.fromParams, req)
+    )
+
+    // fetch entities in batches of `limit` until we have fetched all entities
+    // datasette limits the number of rows returned to 1000 by default
+    if (count && count > 0) {
+      for (let offset = 0; offset < count; offset += limit) {
+        const query = `SELECT * FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity} LIMIT ${limit} OFFSET ${offset}`
+        const { formattedData } = await datasette.runQuery(query, datasetOverride(FetchOptions.fromParams, req))
+        entities = entities.concat(formattedData)
+      }
+    } else {
+      logger.info('fetchEntities(): No entities found', { type: types.App, endpoint: req.originalUrl })
+    }
+
+    req.entities = entities
+
+    next()
+  } catch (error) {
+    logger.error('fetchEntities(): failed', { type: types.DataFetch, endpoint: req.originalUrl, errorMessage: error.message, errorStack: error.stack })
+
+    next(error)
+  }
+}
 
 export const fetchEntityCount = fetchOne({
   query: ({ req }) => `
@@ -397,18 +426,45 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
   query: ({ req, params }) => {
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
+
     return `
-        select i.issue_type, field, entity, message, severity, value
-        from issue i
-        LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-        WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-        ${issueTypeClause}
-        AND it.responsibility = 'external'
-        AND it.severity = 'error'
-        ${issueFieldClause}
-        AND i.dataset = '${req.params.dataset}'
-        AND entity != ''
-        `
+        WITH ranked AS (
+          SELECT
+            i.issue_type,
+            field,
+            entity,
+            message,
+            severity,
+            value,
+            ROW_NUMBER() OVER (
+              PARTITION BY i.issue_type, entity
+              ORDER BY i.rowid
+            ) AS rn
+          FROM issue i
+          LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+          WHERE resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
+            ${issueTypeClause}
+            AND it.responsibility = 'external'
+            AND it.severity = 'error'
+            ${issueFieldClause}
+            AND i.dataset = '${req.params.dataset}'
+            AND entity != ''
+            AND (
+              i.end_date = ''
+              OR i.end_date IS NULL
+            )
+        )
+        SELECT
+          issue_type,
+          field,
+          entity,
+          message,
+          severity,
+          value
+        FROM ranked
+        WHERE rn = 1
+        ORDER BY entity;
+      `
     // LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
   },
   result: 'issues'
@@ -527,16 +583,30 @@ export const fetchEntryIssues = fetchMany({
 export const fetchEntityIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
+
     return `
-      select dataset, field, i.issue_type, COUNT(resource+line_number) as count
-      from issue i
-      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-      WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-      AND (entity != '' AND entity IS NOT NULL)
-      AND it.responsibility = 'external'
-      AND it.severity = 'error'
-      ${datasetClause}
-      GROUP BY field, i.issue_type, dataset
+      WITH unique_issues AS (
+        SELECT DISTINCT
+          i.dataset,
+          i.field,
+          i.issue_type,
+          i.entity
+        FROM issue i
+        LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+        WHERE resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
+          AND COALESCE(entity, '') <> ''
+          AND (i.end_date = '' OR i.end_date IS NULL)
+          AND it.responsibility = 'external'
+          AND it.severity = 'error'
+          ${datasetClause}
+      )
+      SELECT
+        dataset,
+        field,
+        issue_type,
+        COUNT(*) AS count
+      FROM unique_issues
+      GROUP BY field, issue_type, dataset
     `
   },
   result: 'entityIssueCounts'
