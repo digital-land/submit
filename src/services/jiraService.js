@@ -1,5 +1,4 @@
 import axios from 'axios'
-import logger from '../utils/logger.js'
 
 /**
  * Creates a customer request in JIRA Service Desk.
@@ -29,7 +28,7 @@ export async function createCustomerRequest ({ summary, description, raiseOnBeha
     requestTypeId,
     raiseOnBehalfOf
   })
-  logger.info('Jira payload:', JSON.stringify(data, null, 2))
+
   return await axios.post(`${JIRA_URL}/rest/servicedeskapi/request`, data, {
     headers: {
       'Content-Type': 'application/json',

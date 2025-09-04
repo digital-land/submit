@@ -48,55 +48,54 @@ class CheckAnswersController extends PageController {
   }
 
   async createJiraServiceRequest (req, res, next) {
+    const data = {
+      name: req.sessionModel.get('name'),
+      email: req.sessionModel.get('email'),
+      organisationId: req.sessionModel.get('orgId'),
+      organisationName: req.sessionModel.get('lpa'),
+      dataset: req.sessionModel.get('dataset'),
+      documentationUrl: req.sessionModel.get('documentation-url'),
+      endpoint: req.sessionModel.get('endpoint-url')
+    }
+    const dataset = req.sessionModel.get('dataset')
+    const datasetMeta = datasets.get(dataset) || {}
+    const url = req.body.url || req.sessionModel.get('endpoint-url')
+    if (!url) {
+      logger.error('No Endpoint URL provided.')
+      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
+      return res.redirect('/submit/check-answers')
+    }
+
+    const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
+    if (URLvalidationError) {
+      logger.warn(`URL validation failed for submitted URL: ${url}`)
+      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
+      return res.redirect('/submit/check-answers')
+    }
+
+    const formData = {
+      url,
+      dataset: req.sessionModel.get('dataset'),
+      collection: datasetMeta.dataSubject,
+      geomType: req.sessionModel.get('geomType')
+    }
+    let requestId
     try {
-      const data = {
-        name: req.sessionModel.get('name'),
-        email: req.sessionModel.get('email'),
-        organisationId: req.sessionModel.get('orgId'),
-        organisationName: req.sessionModel.get('lpa'),
-        dataset: req.sessionModel.get('dataset'),
-        documentationUrl: req.sessionModel.get('documentation-url'),
-        endpoint: req.sessionModel.get('endpoint-url')
-      }
-      const dataset = req.sessionModel.get('dataset')
-      const datasetMeta = datasets.get(dataset) || {}
-      const url = req.body.url || req.sessionModel.get('endpoint-url')
-      if (!url) {
-        logger.error('No Endpoint URL provided.')
-        req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
-        return res.redirect('/submit/check-answers')
-      }
+      requestId = await postUrlRequest(formData)
+    } catch (error) {
+      logger.error('Failed to submit URL request:', {
+        errorMessage: error.message,
+        errorStack: error,
+        type: types.External
+      })
+      requestId = null
+    }
+    const checkTool = requestId
+      ? `${config.url}check/results/${requestId}/${config.jira.requestTypeId}`
+      : 'Check tool link unavailable'
 
-      const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
-      if (URLvalidationError) {
-        logger.warn(`URL validation failed for submitted URL: ${url}`)
-        req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
-        return res.redirect('/submit/check-answers')
-      }
-
-      const formData = {
-        url,
-        dataset: req.sessionModel.get('dataset'),
-        collection: datasetMeta.dataSubject,
-        geomType: req.sessionModel.get('geomType')
-      }
-      let requestId
-      try {
-        requestId = await postUrlRequest(formData)
-      } catch (error) {
-        logger.error('Failed to submit URL request:', {
-          errorMessage: error.message,
-          errorStack: error,
-          type: types.External
-        })
-        requestId = null
-      }
-      const checkTool = requestId
-        ? `${config.url}check/results/${requestId}/${config.jira.requestTypeId}`
-        : 'Check tool link unavailable'
-
-      const summary = `Dataset URL request: ${data.organisationName} for ${data.dataset}`
-      const description = `A new dataset request has been made by *${data.name}* from *${data.organisationName} (${data.organisationId})* for the dataset *${data.dataset}*.\n\n
+    const summary = `Dataset URL request: ${data.organisationName} for ${data.dataset}`
+    const description = `A new dataset request has been made by *${data.name}* from *${data.organisationName} (${data.organisationId})* for the dataset *${data.dataset}*.\n\n
 
     *Details:*\n
 
@@ -109,69 +108,43 @@ class CheckAnswersController extends PageController {
     - Endpoint URL: ${data.endpoint}\n
     - Check Tool: ${checkTool}`
 
-      // Generate Jira service request
-      const jiraPayload = {
-        summary,
-        description,
-        raiseOnBehalfOf: data.email,
-        serviceDeskId: config.jira.serviceDeskId,
-        requestTypeId: config.jira.requestTypeId
-      }
-      logger.info('Jira payload in CheckAnswersController:', JSON.stringify(jiraPayload, null, 2))
+    // Generate Jira service request
+    const response = await createCustomerRequest({
+      summary,
+      description,
+      raiseOnBehalfOf: data.email
+    }, config.jira.requestTypeId)
 
-      let response
-      try {
-        response = await createCustomerRequest({
-          summary,
-          description,
-          raiseOnBehalfOf: data.email
-        }, config.jira.requestTypeId)
-        logger.info('Jira creation response:', response?.data || 'No data returned')
-      } catch (err) {
-        logger.error('Jira API error:', err.response?.data || err.message)
-        return null
-      }
-
-      // const response = await createCustomerRequest({
-      //   summary,
-      //   description,
-      //   raiseOnBehalfOf: data.email
-      // }, config.jira.requestTypeId)
-
-      if (response.error || !response.data) {
-        logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to create Jira service request', {
-          errorMessage: response.error.message,
-          errorStack: response.error,
-          type: types.External
-        })
-        return null
-      }
-
-      // Create CSV to attach to Jira issue
-      const dateNow = new Date().toISOString().split('T')[0]
-      const csvData = [
-        ['organisation', 'pipelines', 'documentation-url', 'endpoint-url', 'start-date', 'licence'],
-        [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, 'ogl3']
-      ]
-      const csv = stringify(csvData)
-
-      const file = new File([csv], `request-${data.organisationId}-${data.dataset}-${dateNow}.csv`, { type: 'text/csv' })
-      const attachmentResponse = await attachFileToIssue(response.data.issueKey, file, description)
-
-      if (attachmentResponse.error || !attachmentResponse.data) {
-        logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to attach file to Jira issue', {
-          errorMessage: attachmentResponse.error.message,
-          errorStack: attachmentResponse.error,
-          type: types.External
-        })
-        return null
-      }
-      return response.data
-    // return { issue: response.data, requestId }
-    } catch (err) {
-      logger.error('Unexpected error in createJiraServiceRequest:', err)
+    if (response.error || !response.data) {
+      logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to create Jira service request', {
+        errorMessage: response.error.message,
+        errorStack: response.error,
+        type: types.External
+      })
       return null
     }
+
+    // Create CSV to attach to Jira issue
+    const dateNow = new Date().toISOString().split('T')[0]
+    const csvData = [
+      ['organisation', 'pipelines', 'documentation-url', 'endpoint-url', 'start-date', 'licence'],
+      [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, 'ogl3']
+    ]
+    const csv = stringify(csvData)
+
+    const file = new File([csv], `request-${data.organisationId}-${data.dataset}-${dateNow}.csv`, { type: 'text/csv' })
+    const attachmentResponse = await attachFileToIssue(response.data.issueKey, file, description)
+
+    if (attachmentResponse.error || !attachmentResponse.data) {
+      logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to attach file to Jira issue', {
+        errorMessage: attachmentResponse.error.message,
+        errorStack: attachmentResponse.error,
+        type: types.External
+      })
+      return null
+    }
+    return response.data
+    // return { issue: response.data, requestId }
   }
 }
 
