@@ -2,7 +2,6 @@ import LpaDetailsController from '../../../controllers/lpaDetailsController.js'
 import PageController from '../../../controllers/pageController.js'
 import CheckAnswersController from '../../../controllers/CheckAnswersController.js'
 import EndpointSubmissionFormDeepLinkController from '../../../controllers/endpointSubmissionFormDeepLinkController.js'
-import ProcessingController from '../../../controllers/ProcessingController.js'
 
 const defaultParams = {
   entryPoint: false,
@@ -39,16 +38,9 @@ export default {
   '/check-answers': {
     ...defaultParams,
     controller: CheckAnswersController,
-    next: (req, res) => `/submit/processing/${req.sessionModel.get('request_id')}`,
+    next: 'confirmation',
     checkJourney: false,
     backLink: '/dataset-details'
-  },
-  '/processing/:id': {
-    ...defaultParams,
-    template: 'submit/processing.html',
-    controller: ProcessingController,
-    checkJourney: false,
-    next: 'confirmation'
   },
   '/confirmation': {
     ...defaultParams,

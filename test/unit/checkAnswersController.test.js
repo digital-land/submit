@@ -34,8 +34,8 @@ describe('CheckAnswersController', () => {
   describe('POST to CheckAnswersController', () => {
     it('should create a Jira issue and set session data on success', async () => {
       const issue = { issueKey: 'TEST-123' }
-      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issue, requestId: 'requestId' })
-
+      // vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issue, requestId: 'requestId' })
+      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(issue)
       await controller.post(req, res, next)
 
       expect(req.sessionModel.set).toHaveBeenCalledWith('reference', issue.issueKey)
@@ -45,7 +45,8 @@ describe('CheckAnswersController', () => {
     })
 
     it('should set session errors and redirect on failure to create Jira issue', async () => {
-      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issue: null, requestId: null })
+      vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(null)
+      // vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issue: null, requestId: null })
 
       await controller.post(req, res, next)
 
@@ -110,10 +111,11 @@ describe('CheckAnswersController', () => {
         expect.any(File),
         expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation (test-org)* for the dataset *Test Dataset*.')
       )
-      expect(result).toEqual({
-        issue: response.data,
-        requestId: 'requestId'
-      })
+      // expect(result).toEqual({
+      //   issue: response.data,
+      //   requestId: 'requestId'
+      // })
+      expect(result).toEqual(response.data)
     })
 
     it('should return null if Jira service request creation fails', async () => {
