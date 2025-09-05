@@ -27,7 +27,7 @@ describe('EndpointSubmissionFormDeepLinkController', () => {
   describe('get()', () => {
     it('should throw a 400 error when params invalid', async () => {
       const { req, res, next } = mockMiddlewareArgs({ query: {} })
-      endpointSubmissionFormDeepLinkController.get(req, res, next)
+      await endpointSubmissionFormDeepLinkController.get(req, res, next)
 
       expect(res.redirect).toHaveBeenCalledWith('/')
     })
@@ -36,7 +36,7 @@ describe('EndpointSubmissionFormDeepLinkController', () => {
       const query = { dataset: 'conservation-area', orgName: 'Some Org', orgId: 'some-org' }
       const { req, res, next } = mockMiddlewareArgs({ query })
 
-      endpointSubmissionFormDeepLinkController.get(req, res, next)
+      await endpointSubmissionFormDeepLinkController.get(req, res, next)
 
       expect(req.sessionModel.get(endpointSubmissionFormDeepLinkController.sessionKey)).toStrictEqual({
         lpa: 'Some Org',
