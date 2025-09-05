@@ -62,7 +62,8 @@ export default class StatusPage {
   updatePageForPollingTimeout () {
     // update the page
     this.heading.textContent = headingTexts.checking
-    this.processingMessage.style.display = 'none'
+    this.processingMessage.style.display = 'block'
+    this.processingMessage.textContent = messageTexts.checking
     this.continueButton.textContent = buttonTexts.checking
     this.continueButton.ariaLabel = buttonAriaLabels.checking
     this.continueButton.style.display = 'block'
