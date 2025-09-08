@@ -30,9 +30,9 @@ class StatusController extends PageController {
       req.form.options.buttonAriaLabels = buttonAriaLabels
       req.form.options.pollingEndpoint = `/api/status/${req.form.options.data.id}`
       const now = new Date()
-      req.form.options.lastUpdated = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase() +
-                                     ' on ' +
-                                     now.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })
+      req.form.options.lastUpdated = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' }).toLowerCase() +
+        ' on ' +
+        now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/London' })
       const lastPage = getLastPage(req)
       if (lastPage) {
         req.form.options.lastPage = lastPage
