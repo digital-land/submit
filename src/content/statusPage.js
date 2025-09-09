@@ -4,16 +4,16 @@ export const headingTexts = {
 }
 
 export const messageTexts = {
-  checking: 'Do not close this page',
+  checking: 'Do not close this page. Larger files may take longer.',
   checked: 'You can continue'
 }
 
 export const buttonTexts = {
-  checking: 'Retrieve Latest Status',
+  checking: 'Check latest status',
   checked: 'Continue'
 }
 
 export const buttonAriaLabels = {
-  checking: 'Retrieve Latest Status of data check',
+  checking: 'Check latest status of data check',
   checked: 'Continue to next step'
 }
