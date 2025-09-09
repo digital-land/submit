@@ -21,13 +21,11 @@ class CheckAnswersController extends PageController {
    */
   async post (req, res, next) {
     try {
-      // const { issue, requestId } = await this.createJiraServiceRequest(req, res, next)
       const issue = await this.createJiraServiceRequest(req, res, next)
       if (issue) {
         req.sessionModel.set('reference', issue.issueKey)
         req.sessionModel.set('errors', [])
         req.sessionModel.set('processing', true)
-        // req.sessionModel.set('request_id', requestId) // postUrlRequest request_id
       } else {
         req.sessionModel.set('errors', [{ text: 'Failed to create Jira issue.' }])
 
@@ -63,14 +61,14 @@ class CheckAnswersController extends PageController {
     if (!url) {
       logger.error('No Endpoint URL provided.')
       req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
-      return res.redirect('/submit/check-answers')
+      return null
     }
 
     const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
     if (URLvalidationError) {
       logger.warn(`URL validation failed for submitted URL: ${url}`)
       req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
-      return res.redirect('/submit/check-answers')
+      return null
     }
 
     const formData = {
@@ -144,7 +142,6 @@ class CheckAnswersController extends PageController {
       return null
     }
     return response.data
-    // return { issue: response.data, requestId }
   }
 }
 
