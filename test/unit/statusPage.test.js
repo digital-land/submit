@@ -12,7 +12,7 @@ describe('StatusPage', () => {
     vi.useFakeTimers()
     global.fetch = vi.fn()
     mockHeading = { textContent: 'Checking File' }
-    mockButton = { textContent: 'Retrieve Latest Status', style: { display: 'block' } }
+    mockButton = { textContent: 'Check latest status', style: { display: 'block' } }
     mockMessage = { textContent: 'Please wait', style: { display: 'block' } }
     global.window = {
       addEventListener: vi.fn()
@@ -111,6 +111,6 @@ describe('StatusPage', () => {
 
     expect(statusPage.heading.textContent).toBe(headingTexts.checking)
     expect(statusPage.continueButton.style.display).toBe('block')
-    expect(statusPage.continueButton.textContent).toBe('Retrieve Latest Status')
+    expect(statusPage.continueButton.textContent).toBe('Check latest status')
   })
 })
