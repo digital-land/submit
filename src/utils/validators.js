@@ -27,3 +27,8 @@ export const validDocumentationUrl = (urlString) => {
 export const validEmail = (emailId) => {
   return /^[^@]+@([a-z0-9-]+\.)*(gov|org)\.uk$/i.test(emailId.trim())
 }
+
+export const validateGeomType = (values) => {
+  // Only validate geometry type if dataset is tree
+  return values.dataset === 'tree' ? ['required'] : []
+}

@@ -1,5 +1,5 @@
 // ToDo: split this into two form wizards
-import { validUrl, validEmail, validDocumentationUrl } from '../../../utils/validators.js'
+import { validUrl, validEmail, validDocumentationUrl, validateGeomType } from '../../../utils/validators.js'
 
 export default {
   lpa: {
@@ -37,5 +37,12 @@ export default {
   },
   hasLicence: {
     validate: ['required']
+  },
+  geomType: {
+    validate: validateGeomType,
+    options: [
+      { value: 'point', label: 'Points' },
+      { value: 'polygon', label: 'Polygons' }
+    ]
   }
 }

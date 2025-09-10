@@ -1,6 +1,7 @@
 {% extends "layouts/main.html" %}
 
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from 'govuk/components/radios/macro.njk' import govukRadios %}
 {% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
@@ -89,6 +90,27 @@
         } if 'documentation-url' in errors,
         value: values['documentation-url']
       }) }}
+
+      {% if values['dataset'] == 'tree' %}
+        {{ govukRadios({
+          name: "geomType",
+          fieldset: {
+            legend: {
+              text: "Is your geometry data given as points or polygons?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          value: values['geomType'],
+          items: [
+            { value: "point", text: "Points" },
+            { value: "polygon", text: "Polygons" }
+          ],
+          errorMessage: {
+            text: 'geomType' | validationMessageLookup(errors['geomType'].type)
+          } if errors['geomType']
+        }) }}
+      {% endif %}
 
       {{ govukCheckboxes({
         name: "licence",

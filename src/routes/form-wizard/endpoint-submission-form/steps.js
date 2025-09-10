@@ -30,7 +30,7 @@ export default {
   },
   '/dataset-details': {
     ...defaultParams,
-    fields: ['endpoint-url', 'documentation-url', 'hasLicence'],
+    fields: ['endpoint-url', 'documentation-url', 'hasLicence', 'geomType'],
     next: 'check-answers',
     checkJourney: false,
     backLink: '/lpa-details'

@@ -1,6 +1,6 @@
 /* eslint-disable prefer-regex-literals */
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, beforeEach } from 'vitest'
 import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from '../../generic-page.js'
 import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
@@ -121,6 +121,21 @@ describe(`dataset details View (seed: ${seed})`, () => {
           fieldId: 'documentation-url',
           fieldType: 'maxlength',
           message: 'The URL must be less than 2048 characters'
+        })
+      )
+    })
+
+    describe('geomType', () => {
+      beforeEach(() => {
+        params.values.dataset = 'tree'
+      })
+      it(
+        'should display an error message when the geomType field is not selected for tree ',
+        errorTestFn({
+          params,
+          fieldId: 'geomType',
+          fieldType: 'required',
+          message: 'Select if your geometry data given as points or polygons'
         })
       )
     })

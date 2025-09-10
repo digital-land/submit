@@ -290,7 +290,8 @@ export const DatasetDetails = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   values: v.strictObject({
-    dataset: NonEmptyString
+    dataset: NonEmptyString,
+    geomType: v.optional(v.picklist(['point', 'polygon']))
   }),
   errors: v.record(NonEmptyString, v.strictObject({
     type: NonEmptyString
