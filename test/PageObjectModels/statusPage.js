@@ -47,4 +47,8 @@ export default class StatusPage extends BasePage {
     await this.page.click('#js-async-continue-button')
     return await super.verifyAndReturnPage(ResultsPage)
   }
+
+  async isCheckStatusButtonVisible () {
+    return await this.page.isVisible('#js-async-continue-button')
+  }
 }
