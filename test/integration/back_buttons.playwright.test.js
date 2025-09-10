@@ -3,7 +3,7 @@ import { test } from '@playwright/test'
 import StartPage from '../PageObjectModels/startPage'
 import DatasetPage, { datasets } from '../PageObjectModels/datasetPage'
 
-import { geometryTypes } from '../PageObjectModels/geometryTypePage'
+import GeometryTypePage, { geometryTypes } from '../PageObjectModels/geometryTypePage'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 import LandingPage from '../PageObjectModels/landingPage'
 
@@ -14,9 +14,10 @@ test.describe('Back buttons work as expected without js for...', () => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
 
-    const chooseUploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
-    await chooseUploadMethodPage.waitForPage()
-    await chooseUploadMethodPage.goBack()
+    // The app goes to geometry-type page first, not upload-method
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.goBack()
 
     const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
@@ -28,6 +29,11 @@ test.describe('Back buttons work as expected without js for...', () => {
   test('geometry type page', async ({ page }) => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
+
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
 
     const chooseUploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await chooseUploadMethodPage.waitForPage()
@@ -50,6 +56,11 @@ test.describe('Back buttons work as expected without js for...', () => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
 
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
+
     const chooseUploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await chooseUploadMethodPage.waitForPage()
     await chooseUploadMethodPage.goBack()
@@ -64,6 +75,11 @@ test.describe('Back buttons work as expected without js for...', () => {
   test('upload method page (from geometry type)', async ({ page, baseURL }) => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
+
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
 
     const chooseUploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await chooseUploadMethodPage.waitForPage()
@@ -92,15 +108,24 @@ test.describe('Back buttons work as expected without js for...', () => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
 
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
+
     const chooseUploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await chooseUploadMethodPage.waitForPage()
     await chooseUploadMethodPage.goBack()
 
     const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
-    await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+    await datasetPage.selectDataset(datasets.Tree)
 
-    const uploadMethodPage = await datasetPage.clickContinue()
+    const geometryTypePage = await datasetPage.clickContinue()
+    await geometryTypePage.waitForPage()
+    await geometryTypePage.selectGeometryType(geometryTypes.point)
+
+    const uploadMethodPage = await geometryTypePage.clickContinue()
     await uploadMethodPage.waitForPage()
     await uploadMethodPage.selectUploadMethod(uploadMethods.File)
 
@@ -121,15 +146,24 @@ test.describe('Back buttons work as expected without js for...', () => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
 
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
+
     const chooseUploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await chooseUploadMethodPage.waitForPage()
     await chooseUploadMethodPage.goBack()
 
     const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
     await datasetPage.waitForPage()
-    await datasetPage.selectDataset(datasets.Article_4_direction_area_dataset)
+    await datasetPage.selectDataset(datasets.Tree)
 
-    const uploadMethodPage = await datasetPage.clickContinue()
+    const geometryTypePage = await datasetPage.clickContinue()
+    await geometryTypePage.waitForPage()
+    await geometryTypePage.selectGeometryType(geometryTypes.point)
+
+    const uploadMethodPage = await geometryTypePage.clickContinue()
     await uploadMethodPage.waitForPage()
     await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
 
