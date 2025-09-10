@@ -5,7 +5,7 @@ import StatusPage from '../PageObjectModels/statusPage'
 import ResultsPage from '../PageObjectModels/resultsPage'
 
 import DatasetPage, { datasets } from '../PageObjectModels/datasetPage'
-import { geometryTypes } from '../PageObjectModels/geometryTypePage'
+import GeometryTypePage, { geometryTypes } from '../PageObjectModels/geometryTypePage'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 
 const checkRouteResponse = async (page, route, statuses) => {
@@ -49,14 +49,19 @@ test.describe('with a valid session, the user can access the later form pages', 
   test('/check', async ({ page }) => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
-    await startPage.verifyAndReturnPage(UploadMethodPage)
+    await startPage.verifyAndReturnPage(GeometryTypePage)
 
-    await checkRouteResponse(page, '/check/upload-method', [200, 304])
+    await checkRouteResponse(page, '/check/geometry-type', [200, 304])
   })
 
   test('/check/geometry-type', async ({ page }) => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
+
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await uploadMethodPage.goBack()
@@ -72,6 +77,11 @@ test.describe('with a valid session, the user can access the later form pages', 
   test('/check/upload-method', async ({ page }) => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
+
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await uploadMethodPage.goBack()
@@ -91,6 +101,11 @@ test.describe('with a valid session, the user can access the later form pages', 
   test('/check/upload', async ({ page }) => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
+
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await uploadMethodPage.goBack()
@@ -114,6 +129,11 @@ test.describe('with a valid session, the user can access the later form pages', 
   test('/check/url', async ({ page }) => {
     const startPage = new StartPage(page)
     await startPage.navigateHere()
+
+    const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
+    await serviceStartGeometryTypePage.waitForPage()
+    await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
+    await serviceStartGeometryTypePage.clickContinue()
 
     const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
     await uploadMethodPage.goBack()
