@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test'
 import LandingPage from '../PageObjectModels/landingPage'
 import OrganisationOverviewPage from '../PageObjectModels/organisationOverviewPage'
-import { getDatasetNameMap } from '../../src/utils/datasetLoader'
 
 test.describe('Dataset overview', () => {
   test('Can go from landing page to organisational overview', async ({ page, context }) => {
@@ -79,7 +78,21 @@ test.describe('Dataset overview', () => {
 
   test('Dataset names shown dynamically match names fetched from datasetLoader', async ({ page }) => {
     const organisationId = 'local-authority:LBH'
-    const nameMap = await getDatasetNameMap()
+
+    // Mock the expected nameMap to avoid Redis calls
+    const nameMap = {
+      'brownfield-land': 'Brownfield land',
+      'article-4-direction-area': 'Article 4 direction area',
+      'article-4-direction': 'Article 4 direction',
+      'conservation-area': 'Conservation area',
+      'conservation-area-document': 'Conservation area document',
+      tree: 'Tree',
+      'tree-preservation-zone': 'Tree preservation zone',
+      'listed-building': 'Listed building',
+      'listed-building-outline': 'Listed building outline',
+      'tree-preservation-order': 'Tree preservation order'
+    }
+
     const organisationOverviewPage = new OrganisationOverviewPage(page, { organisationId })
     await organisationOverviewPage.navigateHere()
 
