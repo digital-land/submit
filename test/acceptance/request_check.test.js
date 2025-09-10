@@ -26,7 +26,7 @@ let lastTimestamp = 0
 
 async function waitForStatusPageToBeProcessing (statusPage) {
   while (await statusPage.page.url().includes('/check/status')) {
-    await statusPage.page.waitForTimeout(5000)
+    await statusPage.page.waitForTimeout(1000)
 
     if (await statusPage.isCheckStatusButtonVisible()) {
       await statusPage.clickCheckStatusButton()
