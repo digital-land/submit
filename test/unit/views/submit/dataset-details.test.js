@@ -135,7 +135,7 @@ describe(`dataset details View (seed: ${seed})`, () => {
           params,
           fieldId: 'geomType',
           fieldType: 'required',
-          message: 'Select if your geometry data given as points or polygons'
+          message: 'Select whether your geometry data is given as points or polygons'
         })
       )
     })
