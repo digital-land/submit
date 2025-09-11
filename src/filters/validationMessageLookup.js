@@ -57,7 +57,7 @@ const validationMessages = {
     maxlength: 'The URL must be less than 2048 characters'
   },
   geomType: {
-    required: 'Select if your geometry data given as points or polygons'
+    required: 'Select whether your geometry data is given as points or polygons'
   },
   hasLicence: {
     required: 'You need to confirm this dataset is provided under the Open Government Licence'
