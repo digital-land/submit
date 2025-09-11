@@ -25,7 +25,12 @@ const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExample
 let lastTimestamp = 0
 
 async function waitForStatusPageToBeProcessing (statusPage) {
-  while (await statusPage.page.url().includes('/check/status')) {
+  // wait up to 60 seconds for processing to finish
+  for (let i = 0; i < 60; i++) {
+    if (!(await statusPage.page.url().includes('/check/status'))) {
+      break
+    }
+
     await statusPage.page.waitForTimeout(1000)
 
     if (await statusPage.isCheckStatusButtonVisible()) {
