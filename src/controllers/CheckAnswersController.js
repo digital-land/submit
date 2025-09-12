@@ -53,7 +53,8 @@ class CheckAnswersController extends PageController {
       organisationName: req.sessionModel.get('lpa'),
       dataset: req.sessionModel.get('dataset'),
       documentationUrl: req.sessionModel.get('documentation-url'),
-      endpoint: req.sessionModel.get('endpoint-url')
+      endpoint: req.sessionModel.get('endpoint-url'),
+      geomType: req.sessionModel.get('geomType')
     }
     const dataset = req.sessionModel.get('dataset')
     const datasetMeta = datasets.get(dataset) || {}
@@ -104,6 +105,7 @@ class CheckAnswersController extends PageController {
     - Dataset: ${data.dataset}\n
     - Documentation URL: ${data.documentationUrl}\n
     - Endpoint URL: ${data.endpoint}\n
+    - ${data.dataset === 'tree' ? `Geometry Type: ${data.geomType}` : ''}\n
     - Check Tool: ${checkTool}`
 
     // Generate Jira service request
