@@ -29,8 +29,7 @@
       Check your answers before providing your dataset
     </h1>
 
-    {{ govukSummaryList({
-      rows: [
+    {% set rows = [
       {
         key: {
           text: "Local planning authority"
@@ -114,8 +113,31 @@
           }
           ]
         }
-      },
-      {
+      }
+    ]%}
+
+
+    {% if values['dataset'] == 'tree' %}
+      {% set rows = (rows.push({
+        key: { 
+          text: "Geometry type"
+        },
+        value: {
+          text: values['geomType'] | capitalize
+        },
+        actions: {
+          items: [
+            {
+              href: "/submit/dataset-details",
+              text: "Change",
+              visuallyHiddenText: "geometry type"
+            }
+          ]
+        }
+      }), rows) %}
+    {% endif %}
+
+    {% set rows = (rows.push({
         key: {
           text: "Dataset provided under Open Government Licence?"
         },
@@ -131,10 +153,10 @@
           }
           ]
         }
-      }
+      }), rows) %}
 
-      ]
-    }) }}
+
+    {{ govukSummaryList({ rows: rows }) }}
 
     <h2 class="govuk-heading-m">
       Now provide your dataset

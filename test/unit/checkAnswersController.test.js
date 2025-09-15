@@ -29,6 +29,7 @@ describe('CheckAnswersController', () => {
     })
     postUrlRequest.mockReset()
     SubmitUrlController.localUrlValidation.mockReset()
+    vi.clearAllMocks()
   })
 
   describe('POST to CheckAnswersController', () => {
@@ -155,6 +156,70 @@ describe('CheckAnswersController', () => {
       const result = await controller.createJiraServiceRequest(req, res, next)
 
       expect(result).toBeNull()
+    })
+
+    it('should add geomtry type for dataset is tree', async () => {
+      config.jira.requestTypeId = '1'
+      postUrlRequest.mockResolvedValue('requestId')
+      req.sessionModel.get.mockImplementation((key) => {
+        const data = {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          orgId: 'test-org',
+          lpa: 'Test Organisation',
+          dataset: 'tree',
+          'documentation-url': 'http://example.com/doc',
+          'endpoint-url': 'http://example.com/endpoint',
+          geomType: 'polygon'
+        }
+        return data[key]
+      })
+      const response = { data: { issueKey: 'TEST-123' } }
+      createCustomerRequest.mockResolvedValue(response)
+      attachFileToIssue.mockResolvedValue({ data: {} })
+
+      const result = await controller.createJiraServiceRequest(req, res, next)
+      expect(postUrlRequest).toHaveBeenCalled()
+
+      expect(createCustomerRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: expect.stringContaining('Geometry Type: polygon')
+        }),
+        config.jira.requestTypeId
+      )
+      expect(result).toEqual(response.data)
+    })
+
+    it('should not include geometry type when dataset is not tree', async () => {
+      config.jira.requestTypeId = '1'
+      postUrlRequest.mockResolvedValue('requestId')
+      req.sessionModel.get.mockImplementation((key) => {
+        const data = {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          orgId: 'test-org',
+          lpa: 'Test Organisation',
+          dataset: 'conservation-area',
+          'documentation-url': 'http://example.com/doc',
+          'endpoint-url': 'http://example.com/endpoint',
+          geomType: 'polygon'
+        }
+        return data[key]
+      })
+      const response = { data: { issueKey: 'TEST-123' } }
+      createCustomerRequest.mockResolvedValue(response)
+      attachFileToIssue.mockResolvedValue({ data: {} })
+
+      const result = await controller.createJiraServiceRequest(req, res, next)
+      expect(postUrlRequest).toHaveBeenCalled()
+
+      expect(createCustomerRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: expect.not.stringContaining('Geometry Type: polygon')
+        }),
+        config.jira.requestTypeId
+      )
+      expect(result).toEqual(response.data)
     })
   })
 })
