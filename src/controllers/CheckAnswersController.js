@@ -105,8 +105,7 @@ class CheckAnswersController extends PageController {
     - Dataset: ${data.dataset}\n
     - Documentation URL: ${data.documentationUrl}\n
     - Endpoint URL: ${data.endpoint}\n
-    - ${data.dataset === 'tree' ? `Geometry Type: ${data.geomType}` : ''}\n
-    - Check Tool: ${checkTool}`
+    ${data.dataset === 'tree' ? `- Geometry Type: ${data.geomType}\n\n` : ''}- Check Tool: ${checkTool}`
 
     // Generate Jira service request
     const response = await createCustomerRequest({
