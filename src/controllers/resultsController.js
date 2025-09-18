@@ -72,7 +72,7 @@ export async function getRequestDataMiddleware (req, res, next) {
 
 export async function checkForErroredResponse (req, res, next) {
   if (req.locals.requestData.response.error) {
-    return next(new Error(req.locals.requestData.response.error.message))
+    return next(new MiddlewareError(req.locals.requestData.response.error.errMsg, 500, { template: 'check/error-redirect.html' }))
   }
   next()
 }
