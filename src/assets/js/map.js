@@ -253,6 +253,8 @@ export class Map {
     const fitOptions = { padding: 20, duration: 0 }
     if (this.limitMaxZoom) {
       fitOptions.maxZoom = 11
+    } else {
+      fitOptions.maxZoom = 18
     }
     this.map.fitBounds(bbox, fitOptions)
   }
