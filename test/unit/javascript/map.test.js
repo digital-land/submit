@@ -220,8 +220,28 @@ describe('map.js', () => {
         wktFormat: true,
         geoJsonUrl: undefined,
         boundaryGeoJsonUrl: undefined,
-        style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw'
+        style: 'https://api.maptiler.com/maps/basic-v2/style.json?key=ncAXR9XEn7JgHBLguAUw',
+        limitMaxZoom: false
       })
+    })
+    it('should default limitMaxZoom to false if dataset page', async () => {
+      global.window.serverContext = {
+        containerId: 'map',
+        geometries: ['POINT (1 1)', 'LINESTRING (1 1, 2 2)'],
+        mapType: 'interactive'
+      }
+
+      const map = await createMapFromServerContext()
+      expect(map.opts.limitMaxZoom).toBe(false)
+    })
+    it('should default limitMaxZoom to true is entity page', async () => {
+      global.window.serverContext = {
+        containerId: 'map',
+        geometries: ['POINT (1 1)', 'LINESTRING (1 1, 2 2)']
+      }
+
+      const map = await createMapFromServerContext()
+      expect(map.opts.limitMaxZoom).toBe(true)
     })
   })
 })

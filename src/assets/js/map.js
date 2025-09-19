@@ -35,11 +35,13 @@ const fallbackMapStyle = 'https://api.maptiler.com/maps/basic-v2/style.json?key=
  * @property {string} [boundaryGeoJsonUrl] - Optional - The URL of the boundary GeoJSON to be added to the map.
  * @property {boolean} [interactive] - Optional - Indicates whether the map should be interactive. Default is true.
  * @property {boolean} [wktFormat] - Optional - Indicates whether the data is in WKT format. Default is false.
+ * @property {boolean} [limitMaxZoom] - Optional - Indicates whether to limit the maximum zoom level when fitting bounds. Default is false.
  * @property {number[]} [boundingBox] - Optional - The bounding box coordinates [minX, minY, maxX, maxY] to set the initial view of the map.
  */
 export class Map {
   constructor (opts) {
     this.opts = opts
+    this.limitMaxZoom = opts.limitMaxZoom ?? false
     this.bbox = this.opts.boundingBox ?? null
     this.map = new maplibregl.Map({
       container: this.opts.containerId,
@@ -248,7 +250,11 @@ export class Map {
   }
 
   setMapViewToBoundingBox (bbox) {
-    this.map.fitBounds(bbox, { padding: 20, duration: 0 })
+    const fitOptions = { padding: 20, duration: 0 }
+    if (this.limitMaxZoom) {
+      fitOptions.maxZoom = 11
+    }
+    this.map.fitBounds(bbox, fitOptions)
   }
 
   addPopupToMap () {
@@ -439,7 +445,8 @@ export const createMapFromServerContext = async () => {
     data: geometries,
     boundaryGeoJsonUrl,
     interactive: mapType !== 'static',
-    wktFormat: geoJsonUrl === undefined
+    wktFormat: geoJsonUrl === undefined,
+    limitMaxZoom: mapType !== 'interactive'
   }
 
   // fetch initial token
