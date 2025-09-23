@@ -19,6 +19,8 @@ const navigateToCheck = async (page) => {
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
+//TODO: this file should cause a server error when served to the async. It currently does but is temporary
+const serverErrorFile = 'https://www.tendringdc.gov.uk/sites/default/files/documents/planning/CAD%20csv.csv'
 
 let lastTimestamp = 0
 
@@ -274,6 +276,38 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs(false)
+    })
+
+    test('request check of a @url that should cause a server error and be displayed', async ({ page }) => {
+      log('equest check of a @url that should cause a server error and be displayed with javascript disabled', true)
+
+      const uploadMethodPage = await navigateToCheck(page)
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL(serverErrorFile)
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+      
+      const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
+
+      await page.waitForTimeout(5000)
+      const resultsPage = await statusPage.clickCheckStatusButton()
+
+      // Check if the page contains an element with ID 'bad-upload'
+      const expectedErrors = [
+        {
+          fieldName: '#bad-upload',
+          expectedErrorMessage: 'Unfortunately, we were unable to fulfill your request'
+        }
+      ]
+      await resultsPage.expectErrorMessages(expectedErrors)
     })
   })
 })

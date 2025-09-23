@@ -5,9 +5,13 @@
 
 {% extends "layouts/main.html" %}
 
+{% block pageTitle %}
+Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
+{% endblock %}
+
 {% block content %}
 {{ govukErrorSummary({
-titleText: "There is a problem",
+titleText: "There’s a problem",
 errorList: [
 {
 text: err.message
@@ -17,7 +21,9 @@ text: err.message
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <p class="govuk-body">Unfortunately, we were unable to fulfill your request</p>
+    <p class="govuk-body" id="bad-upload-outer">
+      <a href="#govuk-error-summary" class="govuk-link" id="bad-upload">Error: Unfortunately, we were unable to fulfill your request</a>
+    </p>
     <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
         href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>
   </div>
