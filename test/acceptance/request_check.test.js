@@ -19,7 +19,7 @@ const navigateToCheck = async (page) => {
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
-//TODO: this file should cause a server error when served to the async. It currently does but is temporary
+// TODO: this file should cause a server error when served to the async. It currently does but is temporary
 const serverErrorFile = 'https://www.tendringdc.gov.uk/sites/default/files/documents/planning/CAD%20csv.csv'
 
 let lastTimestamp = 0
@@ -293,7 +293,7 @@ test.describe('Request Check', () => {
       await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectCheckStatusButtonToBeVisible()
-      
+
       const id = await statusPage.getIdFromUrl()
       log(`Extracted ID from URL: ${id}`)
 
