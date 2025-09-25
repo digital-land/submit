@@ -19,7 +19,7 @@ const navigateToCheck = async (page) => {
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
-// TODO: this file should cause a server error when served to the async. It currently does but is temporary
+// TODO: this file should cause a server error when served to the async. It currently does but is temporary (A linkg that causes a Server Timeout Error or SSL Error is requiered)
 const serverErrorFile = 'https://www.tendringdc.gov.uk/sites/default/files/documents/planning/CAD%20csv.csv'
 
 let lastTimestamp = 0
@@ -300,6 +300,9 @@ test.describe('Request Check', () => {
       await page.waitForTimeout(5000)
       const resultsPage = await statusPage.clickCheckStatusButton()
 
+      // Wait longer for error page to load and render error messages i.e. webkit
+      await page.waitForTimeout(3000)
+      
       // Check if the page contains an element with ID 'bad-upload'
       const expectedErrors = [
         {
