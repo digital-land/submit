@@ -72,7 +72,12 @@ export async function getRequestDataMiddleware (req, res, next) {
 
 export async function checkForErroredResponse (req, res, next) {
   if (req.locals.requestData.response.error) {
-    return next(new MiddlewareError(req.locals.requestData.response.error.errMsg, 500, { template: 'check/error-redirect.html' }))
+    const { errMsg } = req.locals.requestData.response.error
+    if (errMsg && errMsg.length > 0) {
+      return next(new MiddlewareError(errMsg, 500, { template: 'check/error-redirect.html' }))
+    } else{
+      return next(new MiddlewareError('An unknown error occured when processing your endpoint', 500, { template: 'check/error-redirect.html' }))
+    }
   }
   next()
 }
