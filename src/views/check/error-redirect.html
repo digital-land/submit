@@ -20,8 +20,8 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <p class="govuk-body">
-      <a href="#govuk-error-summary" class="govuk-link" id="bad-upload" tabindex="-1">Error: Unfortunately, we were unable to fulfill your request</a>
+    <p class="govuk-body" id="bad-upload" tabindex="-1">
+      Error: {{ err.message }}
     </p>
     <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
         href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>

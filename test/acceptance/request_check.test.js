@@ -307,7 +307,7 @@ test.describe('Request Check', () => {
       const expectedErrors = [
         {
           fieldName: '#bad-upload',
-          expectedErrorMessage: 'Unfortunately, we were unable to fulfill your request'
+          expectedErrorMessage: 'The requested URL could not be downloaded: SSLError'
         }
       ]
       await resultsPage.expectErrorMessages(expectedErrors)
