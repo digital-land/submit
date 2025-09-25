@@ -302,7 +302,7 @@ test.describe('Request Check', () => {
 
       // Wait longer for error page to load and render error messages i.e. webkit
       await page.waitForTimeout(3000)
-      
+
       // Check if the page contains an element with ID 'bad-upload'
       const expectedErrors = [
         {
