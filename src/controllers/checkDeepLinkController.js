@@ -1,6 +1,6 @@
 import PageController from './pageController.js'
 
-import { datasets } from '../utils/utils.js'
+import { getDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import * as v from 'valibot'
@@ -42,10 +42,11 @@ function maybeSetReferrer (req, sessionData) {
  * then redirect the user to the "next" page in the wizard
  */
 class CheckDeepLinkController extends PageController {
-  get (req, res, next) {
+  async get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
     const { dataset, orgName, orgId } = req.query
+    const datasets = await getDatasets()
     const validationResult = v.safeParse(QueryParams, req.query)
     if (!(validationResult.success && datasets.has(dataset))) {
       logger.info('DeepLinkController.get(): invalid params for deep link, redirecting to landing page',

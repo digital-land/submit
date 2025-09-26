@@ -75,4 +75,36 @@ test.describe('Dataset overview', () => {
 
     expect(await page.locator('h2.govuk-heading-l').innerText()).toEqual('London Borough of Lambeth’s task list')
   })
+
+  test('Dataset names shown dynamically match names fetched from datasetLoader', async ({ page }) => {
+    const organisationId = 'local-authority:LBH'
+
+    // Mock the expected nameMap to avoid Redis calls
+    const nameMap = {
+      'brownfield-land': 'Brownfield land',
+      'article-4-direction-area': 'Article 4 direction area',
+      'article-4-direction': 'Article 4 direction',
+      'conservation-area': 'Conservation area',
+      'conservation-area-document': 'Conservation area document',
+      tree: 'Tree',
+      'tree-preservation-zone': 'Tree preservation zone',
+      'listed-building': 'Listed building',
+      'listed-building-outline': 'Listed building outline',
+      'tree-preservation-order': 'Tree preservation order'
+    }
+
+    const organisationOverviewPage = new OrganisationOverviewPage(page, { organisationId })
+    await organisationOverviewPage.navigateHere()
+
+    expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
+    const datasetElements = await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').allInnerTexts()
+    const displayedNames = datasetElements
+      .map(text => text.split('\n')[0].trim())
+
+    for (const displayedName of displayedNames) {
+      const matchingKey = Object.keys(nameMap).find(key => nameMap[key] === displayedName)
+      expect(matchingKey).toBeDefined()
+    }
+    expect(displayedNames.length).toEqual(8)
+  })
 })

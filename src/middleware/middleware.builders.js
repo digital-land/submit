@@ -17,13 +17,17 @@ import datasette from '../services/datasette.js'
 import * as v from 'valibot'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 
-import { dataSubjects } from '../utils/utils.js'
+import { getDataSubjects } from '../utils/utils.js'
 
-const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
-  (dataSubject.dataSets || [])
-    .filter((dataset) => dataset.available)
-    .map((dataset) => dataset.value)
-)
+export async function getAvailableDatasets () {
+  const dataSubjects = await getDataSubjects()
+  return Object.values(dataSubjects).flatMap((dataSubject) =>
+    (dataSubject.dataSets || [])
+      .filter((dataset) => dataset.available)
+      .map((dataset) => dataset.value)
+  )
+}
+const availableDatasets = await getAvailableDatasets()
 
 export const FetchOptions = {
   /**
