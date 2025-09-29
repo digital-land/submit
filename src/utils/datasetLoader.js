@@ -4,29 +4,39 @@ import { createClient } from 'redis'
 import logger from '../utils/logger.js'
 
 let redisClient
-
+let redisClientConnecting
 export async function getRedisClient () {
   if (!config.redis) return null
-
-  if (!redisClient) {
-    const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
-    redisClient = createClient({
-      url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
-    })
-
+  // If already have a client that's been created, return it immediately.
+  if (redisClient) return redisClient
+  // Kick off a single connection attempt if none in progress
+  if (!redisClientConnecting) {
+    const scheme = `redis${config.redis.secure ? 's' : ''}`
+    const urlStr = config.redis.url ?? `${scheme}://${config.redis.host}:${config.redis.port}`
+    const url = new URL(urlStr)
+    if (config.redis.username) url.username = config.redis.username
+    if (config.redis.password) url.password = config.redis.password
+    redisClient = createClient({ url: url.toString() })
     redisClient.on('error', (err) => {
       logger.warn(`datasetLoader/redis error: ${err.message}`)
     })
-
-    try {
-      await redisClient.connect()
-    } catch (err) {
-      logger.warn(`datasetLoader/failed to connect to redis: ${err.message}`)
-      redisClient = null
-      return null
-    }
+    // Store the promise for the in-flight connect, log & reset on failure
+    redisClientConnecting = redisClient.connect()
+      .catch((err) => {
+        logger.warn(`datasetLoader/failed to connect to redis: ${err.message}`)
+        redisClient = null
+        throw err
+      })
+      .finally(() => {
+        redisClientConnecting = undefined
+      })
   }
-
+  // Wait for the single connection attempt to finish
+  try {
+    await redisClientConnecting
+  } catch {
+    return null
+  }
   return redisClient
 }
 
