@@ -6,7 +6,7 @@ import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
 import { postUrlRequest } from '../services/asyncRequestApi.js'
 import SubmitUrlController from './submitUrlController.js'
-import { datasets } from '../utils/utils.js'
+import { getDatasets } from '../utils/utils.js'
 
 class CheckAnswersController extends PageController {
   /**
@@ -56,6 +56,7 @@ class CheckAnswersController extends PageController {
       endpoint: req.sessionModel.get('endpoint-url'),
       geomType: req.sessionModel.get('geomType')
     }
+    const datasets = await getDatasets()
     const dataset = req.sessionModel.get('dataset')
     const datasetMeta = datasets.get(dataset) || {}
     const url = req.body.url || req.sessionModel.get('endpoint-url')

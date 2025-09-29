@@ -17,13 +17,40 @@ import datasette from '../services/datasette.js'
 import * as v from 'valibot'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 
-import { dataSubjects } from '../utils/utils.js'
+import { getDataSubjects } from '../utils/utils.js'
 
-const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
-  (dataSubject.dataSets || [])
-    .filter((dataset) => dataset.available)
-    .map((dataset) => dataset.value)
-)
+export async function getAvailableDatasets () {
+  const dataSubjects = await getDataSubjects()
+  return Object.values(dataSubjects).flatMap((dataSubject) =>
+    (dataSubject.dataSets || [])
+      .filter((dataset) => dataset.available)
+      .map((dataset) => dataset.value)
+  )
+}
+
+// Lazy, memoised cache with TTL (default 5m; configurable for tests via env)
+let availableDatasetsCache = null
+let availableDatasetsCachedAt = 0
+const AVAILABLE_DATASETS_TTL_MS = Number(process.env.AVAILABLE_DATASETS_TTL_MS ?? 5 * 60 * 1000)
+let inflight = null
+async function ensureAvailableDatasets () {
+  const now = Date.now()
+  if (availableDatasetsCache && (now - availableDatasetsCachedAt) < AVAILABLE_DATASETS_TTL_MS) {
+    return availableDatasetsCache
+  }
+  if (inflight) return inflight
+  inflight = (async () => {
+    try {
+      const slugs = await getAvailableDatasets()
+      availableDatasetsCache = slugs
+      availableDatasetsCachedAt = Date.now()
+      return slugs
+    } finally {
+      inflight = null
+    }
+  })()
+  return inflight
+}
 
 export const FetchOptions = {
   /**
@@ -150,11 +177,14 @@ export async function fetchManyFn (req, res, next) {
 export async function fetchOneFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
-    const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
+    const availableDatasets = await ensureAvailableDatasets()
+    const promises = availableDatasets.map(async (dataset) => {
+      try {
+        return await datasette.runQuery(query, dataset)
+      } catch (error) {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
-      })
+      }
     })
     const result = await Promise.all(promises)
     req[this.result] = Object.fromEntries(
@@ -191,11 +221,14 @@ export async function fetchOneFromAllDatasetsFn (req, res, next) {
 export async function fetchManyFromAllDatasetsFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
-    const promises = availableDatasets.map((dataset) => {
-      return datasette.runQuery(query, dataset).catch(error => {
+    const availableDatasets = await ensureAvailableDatasets()
+    const promises = availableDatasets.map(async (dataset) => {
+      try {
+        return await datasette.runQuery(query, dataset)
+      } catch (error) {
         logger.error('Query failed for dataset', { dataset, errorMessage: error.message, errorStack: error.stack, type: types.DataFetch })
         throw error
-      })
+      }
     })
     const result = await Promise.all(promises)
     req[this.result] = Object.fromEntries(

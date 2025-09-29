@@ -7,9 +7,7 @@ let redisClient
 let redisClientConnecting
 export async function getRedisClient () {
   if (!config.redis) return null
-  // If already have a client that's been created, return it immediately.
-  if (redisClient) return redisClient
-  // Kick off a single connection attempt if none in progress
+  if (redisClient?.isOpen) return redisClient
   if (!redisClientConnecting) {
     const scheme = `redis${config.redis.secure ? 's' : ''}`
     const urlStr = config.redis.url ?? `${scheme}://${config.redis.host}:${config.redis.port}`
@@ -37,7 +35,7 @@ export async function getRedisClient () {
   } catch {
     return null
   }
-  return redisClient
+  return redisClient?.isOpen ? redisClient : null
 }
 
 const CACHE_TTL = 300 // 5min
@@ -87,9 +85,16 @@ export async function getDatasetNameMap (datasetKeys) {
   }
 
   // fallback → fetch fresh
-  nameMap = await fetchDatasetNames(datasetKeys)
-
-  if (client) {
+  let fetchedNameMap = {}
+  try {
+    fetchedNameMap = await fetchDatasetNames(datasetKeys)
+  } catch (err) {
+    logger.warn(`datasetLoader/fetch error: ${err.message}`)
+  }
+  nameMap = Object.fromEntries(
+    datasetKeys.map(key => [key, fetchedNameMap[key] ?? key])
+  )
+  if (client && Object.keys(fetchedNameMap).length) {
     try {
       await client.setEx(cacheKey, CACHE_TTL, JSON.stringify(nameMap))
     } catch (err) {
