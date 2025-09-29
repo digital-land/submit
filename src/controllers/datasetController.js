@@ -33,7 +33,7 @@ class DatasetController extends PageController {
     try {
       const dataSubjects = await getDataSubjects()
       req.form.options.datasetItems = availableDatasets(dataSubjects)
-      super.locals(req, res, next)
+      return await super.locals(req, res, next)
     } catch (err) {
       req.handlerName = 'DatasetController.locals'
       return next(err)
