@@ -28,7 +28,7 @@ export const postUrlRequest = async (formData) => {
     geom_type: geomType,
     url,
     type: 'check_url',
-    plugin: plugin
+    plugin
   })
 }
 

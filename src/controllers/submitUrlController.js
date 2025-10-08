@@ -13,7 +13,7 @@ const HTTP_STATUS_METHOD_NOT_ALLOWED = 405
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
     const plugin = req.body.plugin ?? null
-    const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url,plugin)
+    const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url, plugin)
 
     if (localValidationErrorType) {
       const error = {
