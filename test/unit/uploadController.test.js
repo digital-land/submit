@@ -14,6 +14,9 @@ describe('UploadController', () => {
 
   it('getBaseFormData', ({ assert }) => {
     const req = {
+      body: {
+        plugin: 'null'  // Add body with plugin property
+      },
       sessionModel: {
         get: (key) => key === 'dataset' ? 'Test dataset' : key === 'data-subject' ? 'Test subject' : 'Test geomType'
       },
@@ -26,5 +29,6 @@ describe('UploadController', () => {
     expect(result.collection).toBe('Test subject')
     expect(result.geomType).toBe('Test geomType')
     expect(result.sessionId).toBe('Test session id')
+    expect(result.plugin).toBe('null')  // Add test for plugin
   })
 })

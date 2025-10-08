@@ -20,14 +20,15 @@ export const postFileRequest = async (formData) => {
 }
 
 export const postUrlRequest = async (formData) => {
-  const { url, dataset, collection, geomType } = formData
-  logger.debug('postUrlRequest', { url, dataset, collection, geomType })
+  const { url, dataset, collection, geomType, plugin } = formData
+  logger.debug('postUrlRequest', { url, dataset, collection, geomType, plugin })
   return await postRequest({
     dataset,
     collection,
     geom_type: geomType,
     url,
-    type: 'check_url'
+    type: 'check_url',
+    plugin: plugin
   })
 }
 

@@ -55,7 +55,8 @@ describe('SubmitUrlController', async () => {
         sessionId: '1234',
         dataset: undefined,
         dataSubject: undefined,
-        geomType: undefined
+        geomType: undefined,
+        plugin: null
       })
     })
 
@@ -81,7 +82,8 @@ describe('SubmitUrlController', async () => {
         sessionId: '1234',
         dataset: undefined,
         dataSubject: undefined,
-        geomType: undefined
+        geomType: undefined,
+        plugin: null
       })
     })
 

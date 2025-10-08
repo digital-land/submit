@@ -12,7 +12,8 @@ const HTTP_STATUS_METHOD_NOT_ALLOWED = 405
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
-    const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url)
+    const plugin = req.body.plugin ?? null
+    const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url,plugin)
 
     if (localValidationErrorType) {
       const error = {
@@ -48,7 +49,7 @@ class SubmitUrlController extends UploadController {
    * @param {string?} url
    * @returns { Promise<string | undefined> }
    */
-  static async localUrlValidation (url) {
+  static async localUrlValidation (url, plugin) {
     const validators = [
       { type: 'required', fn: () => SubmitUrlController.urlIsDefined(url) },
       { type: 'format', fn: () => SubmitUrlController.urlIsValid(url) },
@@ -61,7 +62,7 @@ class SubmitUrlController extends UploadController {
 
     const postValidators = (resp) => ([
       { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) },
-      { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
+      ...(plugin ? [] : [{ type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) }]),
       { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
     ])
     const headResponse = await SubmitUrlController.headRequest(url)
