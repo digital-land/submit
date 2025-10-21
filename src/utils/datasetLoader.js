@@ -14,10 +14,6 @@ export async function getRedisClient () {
       url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
 
-    redisClient.on('error', (err) => {
-      logger.warn(`datasetLoader/redis error: ${err.message}`)
-    })
-
     try {
       await redisClient.connect()
     } catch (err) {
@@ -25,6 +21,13 @@ export async function getRedisClient () {
       redisClient = null
       return null
     }
+  }
+
+  //Catch if it disconnects later
+  if (redisClient && !redisClient.isOpen) {
+    logger.warn('Redis client is disconnected, resetting')
+    redisClient = null
+    return null
   }
 
   return redisClient
@@ -63,7 +66,7 @@ export async function getDatasetNameMap (datasetKeys) {
   // normalize order → consistent cache key
   const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
   const client = await getRedisClient()
-
+  console.log('Redis client:', client)
   if (client) {
     try {
       const cached = await client.get(cacheKey)
