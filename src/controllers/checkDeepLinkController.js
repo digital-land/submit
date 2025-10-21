@@ -63,7 +63,17 @@ class CheckDeepLinkController extends PageController {
 
     this.#addHistoryStep(req, '/check/dataset')
 
-    super.post(req, res, next)
+    // Check if geometry type selection is required instead of calling super.post
+    // bug with Form wizard, with async, super post will load page before running requiresGeometryTypeToBeSelectedViaDeepLink
+    const { requiresGeometryTypeToBeSelectedViaDeepLink } = await import('./datasetController.js')
+    const requiresGeometry = await requiresGeometryTypeToBeSelectedViaDeepLink(req)
+
+    if (requiresGeometry) {
+      return res.redirect('/check/geometry-type')
+    } else {
+      return res.redirect('/check/upload-method')
+    }
+    //super.post(req, res, next)
   }
 
   #addHistoryStep (req, path, next) {
