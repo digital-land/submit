@@ -73,7 +73,7 @@ class CheckDeepLinkController extends PageController {
     } else {
       return res.redirect('/check/upload-method')
     }
-    //super.post(req, res, next)
+    // super.post(req, res, next)
   }
 
   #addHistoryStep (req, path, next) {

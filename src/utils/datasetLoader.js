@@ -23,7 +23,7 @@ export async function getRedisClient () {
     }
   }
 
-  //Catch if it disconnects later
+  // Catch if it disconnects later
   if (redisClient && !redisClient.isOpen) {
     logger.warn('Redis client is disconnected, resetting')
     redisClient = null
