@@ -66,7 +66,7 @@ export async function getDatasetNameMap (datasetKeys) {
   // normalize order → consistent cache key
   const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
   const client = await getRedisClient()
-  console.log('Redis client:', client)
+
   if (client) {
     try {
       const cached = await client.get(cacheKey)
