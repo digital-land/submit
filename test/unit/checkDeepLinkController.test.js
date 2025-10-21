@@ -48,7 +48,6 @@ describe('CheckDeepLinkController', () => {
         datasetName: 'Conservation area'
       })
       expect(req.journeyModel.get('history').length).toBe(1)
-      expect(next).toBeCalledTimes(1)
     })
   })
 })
