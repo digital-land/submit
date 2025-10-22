@@ -2,16 +2,10 @@ import { test } from '@playwright/test'
 import StartPage from '../PageObjectModels/startPage'
 import DatasetPage, { datasets } from '../PageObjectModels/datasetPage'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
-import GeometryTypePage, { geometryTypes } from '../PageObjectModels/geometryTypePage'
 
 test('when the user clicks continue on the geometry-type page without entering a geometry type, the page correctly indicates there\'s an error', async ({ page }) => {
   const startPage = new StartPage(page)
   await startPage.navigateHere()
-
-  const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
-  await serviceStartGeometryTypePage.waitForPage()
-  await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
-  await serviceStartGeometryTypePage.clickContinue()
 
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
   await uploadMethodPage.goBack()
@@ -35,22 +29,13 @@ test('when the user clicks continue on the how do you want to provide your data 
   const startPage = new StartPage(page)
   await startPage.navigateHere()
 
-  const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
-  await serviceStartGeometryTypePage.waitForPage()
-  await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
-  await serviceStartGeometryTypePage.clickContinue()
-
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
   await uploadMethodPage.goBack()
 
   const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
-  await datasetPage.selectDataset(datasets.Tree)
+  await datasetPage.selectDataset(datasets.Conservation_area_dataset)
 
-  const geometryTypePage = await datasetPage.clickContinue()
-  await geometryTypePage.waitForPage()
-  await geometryTypePage.selectGeometryType(geometryTypes.point)
-
-  const uploadMethodPage2 = await geometryTypePage.clickContinue()
+  const uploadMethodPage2 = await datasetPage.clickContinue()
   await uploadMethodPage2.clickContinue(true)
 
   const expectedErrors = [
@@ -66,22 +51,13 @@ test('when the user clicks continue on the file upload page without selecting a 
   const startPage = new StartPage(page)
   await startPage.navigateHere()
 
-  const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
-  await serviceStartGeometryTypePage.waitForPage()
-  await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
-  await serviceStartGeometryTypePage.clickContinue()
-
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
   await uploadMethodPage.goBack()
 
   const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
-  await datasetPage.selectDataset(datasets.Tree)
+  await datasetPage.selectDataset(datasets.Conservation_area_dataset)
 
-  const geometryTypePage = await datasetPage.clickContinue()
-  await geometryTypePage.waitForPage()
-  await geometryTypePage.selectGeometryType(geometryTypes.point)
-
-  const uploadMethodPage2 = await geometryTypePage.clickContinue()
+  const uploadMethodPage2 = await datasetPage.clickContinue()
   await uploadMethodPage2.selectUploadMethod(uploadMethods.File)
 
   const uploadFilePage = await uploadMethodPage2.clickContinue()
@@ -100,22 +76,13 @@ test('when the user clicks continue on the url page without entering a url, the 
   const startPage = new StartPage(page)
   await startPage.navigateHere()
 
-  const serviceStartGeometryTypePage = await startPage.verifyAndReturnPage(GeometryTypePage)
-  await serviceStartGeometryTypePage.waitForPage()
-  await serviceStartGeometryTypePage.selectGeometryType(geometryTypes.polygon)
-  await serviceStartGeometryTypePage.clickContinue()
-
   const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
   await uploadMethodPage.goBack()
 
   const datasetPage = await startPage.verifyAndReturnPage(DatasetPage)
-  await datasetPage.selectDataset(datasets.Tree)
+  await datasetPage.selectDataset(datasets.Conservation_area_dataset)
 
-  const geometryTypePage = await datasetPage.clickContinue()
-  await geometryTypePage.waitForPage()
-  await geometryTypePage.selectGeometryType(geometryTypes.point)
-
-  const uploadMethodPage2 = await geometryTypePage.clickContinue()
+  const uploadMethodPage2 = await datasetPage.clickContinue()
   await uploadMethodPage2.selectUploadMethod(uploadMethods.URL)
 
   const uploadURLPage = await uploadMethodPage2.clickContinue()

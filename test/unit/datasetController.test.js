@@ -59,8 +59,13 @@ describe('DatasetController', () => {
   })
 
   it('Correctly sets the data-subject based on the selected dataset', async () => {
+    // Mock req with sessionModel
+    const mockSessionModel = {
+      set: vi.fn(),
+      get: vi.fn()
+    }
     // Mock req, res, next
-    const req = { body: { dataset: 'B' } }
+    const req = { body: { dataset: 'B' }, sessionModel: mockSessionModel }
     const res = {}
     const next = vi.fn()
 

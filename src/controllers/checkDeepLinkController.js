@@ -5,6 +5,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import * as v from 'valibot'
 import { NonEmptyString } from '../routes/schemas.js'
+import { requiresGeometryTypeToBeSelectedViaDeepLink } from './datasetController.js'
 
 const QueryParams = v.object({
   dataset: NonEmptyString,
@@ -63,17 +64,11 @@ class CheckDeepLinkController extends PageController {
 
     this.#addHistoryStep(req, '/check/dataset')
 
-    // Check if geometry type selection is required instead of calling super.post
-    // bug with Form wizard, with async, super post will load page before running requiresGeometryTypeToBeSelectedViaDeepLink
-    const { requiresGeometryTypeToBeSelectedViaDeepLink } = await import('./datasetController.js')
+    // Pre-calculate geometry requirement to avoid async timing issues in form wizard async conditional routing
     const requiresGeometry = await requiresGeometryTypeToBeSelectedViaDeepLink(req)
+    req.sessionModel.set('requiresGeometryTypeSelection', requiresGeometry)
 
-    if (requiresGeometry) {
-      return res.redirect('/check/geometry-type')
-    } else {
-      return res.redirect('/check/upload-method')
-    }
-    // super.post(req, res, next)
+    super.post(req, res, next)
   }
 
   #addHistoryStep (req, path, next) {

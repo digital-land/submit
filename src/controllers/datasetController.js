@@ -39,8 +39,13 @@ class DatasetController extends PageController {
   async post (req, res, next) {
     const datasets = await getDatasets()
     const dataset = req.body.dataset
-    const { dataSubject } = datasets.get(dataset) || { dataSubject: '' }
+    const dataSet = datasets.get(dataset) || { dataSubject: '' }
+    const { dataSubject } = dataSet
+    console.log('DatasetController.post: setting data-subject to', dataSubject)
     req.body['data-subject'] = dataSubject
+    // Set in session to avoid async next routing issues
+    const requiresGeometry = dataSet?.requiresGeometryTypeSelection || false
+    req.sessionModel.set('requiresGeometryTypeSelection', requiresGeometry)
     super.post(req, res, next)
   }
 }
