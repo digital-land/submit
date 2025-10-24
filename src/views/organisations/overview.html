@@ -14,7 +14,7 @@
 <li class="govuk-task-list__item govuk-task-list__item--with-link" data-dataset="{{ dataset.dataset }}" data-dataset-status="{{ dataset.status }}">
   <div class="govuk-task-list__name-and-hint">
     <h3 class="govuk-heading-m">
-      {% if dataset.status == 'Not submitted' %}
+      {% if dataset.status == 'Not on the platform' %}
       <a class="govuk-link govuk-task-list__link"
          href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/get-started">
         {{dataset.dataset | datasetSlugToReadableName}}
@@ -29,8 +29,8 @@
     <div class="govuk-task-list__hint">
       {% if dataset.notice %}
         <p>{{ noticeCardHint(dataset.notice, dataset.dataset) }}</p>
-      {% elif dataset.status == 'Not submitted' %}
-        <p>Endpoint URL not submitted</p>
+      {% elif dataset.status == 'Not on the platform' %}
+        <p>Endpoint URL not on the platform</p>
       {% elif dataset.status == 'Error' %}
         {% if not dataset.error or dataset.error === '' %}
           <p>There was an error accessing the endpoint URL</p>
@@ -41,7 +41,7 @@
         {% set totalIssues = (dataset.issueCount or 0) + (dataset.endpointErrorCount or 0) %}
         <p>There {{ "is" | pluralise(totalIssues) }} {{ totalIssues }} {{ "issue" | pluralise(totalIssues) }} in this dataset</p>
       {% else %}
-        <p>Endpoint URL submitted</p>
+        <p>Endpoint URL on the platform</p>
       {% endif %}
     </div>
   </div>
@@ -107,7 +107,7 @@
     <div class="dataset-status">
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithEndpoints}}/{{totalDatasets}}</span>
-        datasets submitted
+        datasets on the platform
       </div>
 
       <div class="dataset-status--item">
