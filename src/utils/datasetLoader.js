@@ -9,7 +9,7 @@ export async function getRedisClient () {
   if (!config.redis) return null
 
   if (!redisClient) {
-    const urlPrefix = `redis`
+    const urlPrefix = 'redis'
     redisClient = createClient({
       url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
@@ -64,7 +64,7 @@ export async function getDatasetNameMap (datasetKeys) {
   if (!Array.isArray(datasetKeys) || !datasetKeys.length) return {}
 
   // normalize order → consistent cache key
-  //const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
+  // const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
   const cacheKey = 'datasetNameLookup'
   const client = await getRedisClient()
 
