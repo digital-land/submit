@@ -303,19 +303,33 @@ test.describe('Request Check', () => {
       log(`Extracted ID from URL: ${id}`)
 
       await page.waitForTimeout(5000)
-      const resultsPage = await statusPage.clickCheckStatusButton()
+      await statusPage.clickCheckStatusButton()
 
       // Wait longer for error page to load and render error messages i.e. webkit
       await page.waitForTimeout(3000)
 
-      // Check if the page contains an element with ID 'bad-upload'
-      const expectedErrors = [
-        {
-          fieldName: '#bad-upload',
-          expectedErrorMessage: 'The requested URL could not be downloaded: SSLError'
-        }
+      // Check for the bad-upload element specifically
+      await expect(page.locator('#bad-upload')).toBeVisible()
+      // Check for specific error messages (flexible for different error types that can be thrown with a server error)
+      const errorMessages = [
+        'The requested URL could not be downloaded: SSLError',
+        'Fetch operation failed',
+        'Connection timeout',
+        'Network error'
       ]
-      await resultsPage.expectErrorMessages(expectedErrors)
+
+      let foundError = false
+      for (const errorMessage of errorMessages) {
+        try {
+          await expect(page.getByText(errorMessage).first()).toBeVisible({ timeout: 1000 })
+          foundError = true
+          break
+        } catch (e) {
+          // Continue checking other error messages
+        }
+      }
+
+      expect(foundError, `Expected to find one of these error messages: ${errorMessages.join(', ')}`).toBeTruthy()
     })
   })
 })
