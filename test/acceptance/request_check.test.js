@@ -21,7 +21,7 @@ const navigateToCheck = async (page) => {
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
-// TODO: this file should cause a server error when served to the async. It currently does but is temporary (A linkg that causes a Server Timeout Error or SSL Error is requiered)
+// TODO: this file should cause a server error when served to the async. It currently does but is temporary (A link that causes a Server Timeout Error or SSL Error is requiered)
 const serverErrorFile = 'https://www.tendringdc.gov.uk/sites/default/files/documents/planning/CAD%20csv.csv'
 
 let lastTimestamp = 0
@@ -283,9 +283,10 @@ test.describe('Request Check', () => {
     })
 
     test('request check of a @url that should cause a server error and be displayed', async ({ page }) => {
-      log('equest check of a @url that should cause a server error and be displayed with javascript disabled', true)
+      log('request check of a @url that should cause a server error and be displayed with javascript disabled', true)
 
-      const uploadMethodPage = await navigateToCheck(page)
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()

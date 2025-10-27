@@ -47,7 +47,14 @@ class CheckDeepLinkController extends PageController {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
     const { dataset, orgName, orgId } = req.query
-    const datasets = await getDatasets()
+    let datasets = null
+    try {
+      datasets = await getDatasets()
+    } catch (error) {
+      logger.error('getDatasets Error', error)
+      return res.redirect('/')
+    }
+
     const validationResult = v.safeParse(QueryParams, req.query)
     if (!(validationResult.success && datasets.has(dataset))) {
       logger.info('DeepLinkController.get(): invalid params for deep link, redirecting to landing page',

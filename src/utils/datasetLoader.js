@@ -63,15 +63,12 @@ export async function getDatasetNameMap (datasetKeys) {
   let nameMap = {}
   if (!Array.isArray(datasetKeys) || !datasetKeys.length) return {}
 
-  // normalize order → consistent cache key
-  // const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
-  const cacheKey = 'datasetNameLookup'
+  const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
   const client = await getRedisClient()
 
   if (client) {
     try {
       const cached = await client.get(cacheKey)
-      console.log('Redis cache lookup for', cacheKey, 'found:', Boolean(cached))
       if (cached) {
         nameMap = JSON.parse(cached)
         return nameMap
