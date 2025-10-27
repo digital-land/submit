@@ -1,6 +1,9 @@
 // poll the server for the status of the job
-
-import { finishedProcessingStatuses } from '../../utils/utils.js'
+// Client-side constants, no server dependencies
+const finishedProcessingStatuses = [
+  'COMPLETE',
+  'FAILED'
+]
 import { buttonTexts, buttonAriaLabels, headingTexts, messageTexts } from '../../content/statusPage.js'
 
 export default class StatusPage {

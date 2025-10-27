@@ -9,7 +9,7 @@ export async function getRedisClient () {
   if (!config.redis) return null
 
   if (!redisClient) {
-    const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
+    const urlPrefix = `redis`
     redisClient = createClient({
       url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
@@ -64,12 +64,14 @@ export async function getDatasetNameMap (datasetKeys) {
   if (!Array.isArray(datasetKeys) || !datasetKeys.length) return {}
 
   // normalize order → consistent cache key
-  const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
+  //const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
+  const cacheKey = 'datasetNameLookup'
   const client = await getRedisClient()
 
   if (client) {
     try {
       const cached = await client.get(cacheKey)
+      console.log('Redis cache lookup for', cacheKey, 'found:', Boolean(cached))
       if (cached) {
         nameMap = JSON.parse(cached)
         return nameMap
