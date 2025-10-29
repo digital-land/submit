@@ -2,17 +2,31 @@ import * as util from '../../src/utils/utils.js'
 import { describe, it, expect, beforeAll, vi, afterAll } from 'vitest'
 import { isFeatureEnabled } from '../../src/utils/features.js'
 import * as table from '../../src/utils/table.js'
+import { getDatasetNameMap } from '../../src/utils/datasetLoader.js'
 
-const dataSubjects = {
-  subject1: {
-    available: true,
-    dataSets:
-      [{ available: true, text: 'B', value: 'B', requiresGeometryTypeSelection: true },
-        { available: false, text: 'D', value: 'D' }]
-  },
-  subject2: { available: false, dataSets: [{ available: true, text: 'C', value: 'C', requiresGeometryTypeSelection: false }] },
-  subject3: { available: true, dataSets: [{ available: true, text: 'A', value: 'A', requiresGeometryTypeSelection: true }] }
-}
+vi.mock('../../src/utils/datasetLoader.js', () => ({
+  getDatasetNameMap: vi.fn().mockResolvedValue({
+    A: 'Dataset A',
+    B: 'Dataset B',
+    C: 'Dataset C',
+    D: 'Dataset D'
+  })
+}))
+let dataSubjects = {}
+
+beforeAll(async () => {
+  const datasetName = await getDatasetNameMap()
+  dataSubjects = {
+    subject1: {
+      available: true,
+      dataSets:
+        [{ available: true, text: datasetName.B, value: 'B', requiresGeometryTypeSelection: true },
+          { available: false, text: datasetName.D, value: 'D' }]
+    },
+    subject2: { available: false, dataSets: [{ available: true, text: datasetName.C, value: 'C', requiresGeometryTypeSelection: false }] },
+    subject3: { available: true, dataSets: [{ available: true, text: datasetName.A, value: 'A', requiresGeometryTypeSelection: true }] }
+  }
+})
 
 describe('utils/utils', () => {
   it('makeDatasetsLookup()', () => {

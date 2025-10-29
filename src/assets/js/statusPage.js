@@ -1,7 +1,10 @@
 // poll the server for the status of the job
-
-import { finishedProcessingStatuses } from '../../utils/utils.js'
+// Client-side constants, no server dependencies
 import { buttonTexts, buttonAriaLabels, headingTexts, messageTexts } from '../../content/statusPage.js'
+const finishedProcessingStatuses = [
+  'COMPLETE',
+  'FAILED'
+]
 
 export default class StatusPage {
   constructor (pollingInterval, maxPollAttempts) {
