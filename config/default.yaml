@@ -54,6 +54,11 @@ datasetsConfig:
     entityDisplayName:
       base: article 4 direction
       variable: area
+  local-plan:
+    guidanceUrl: /guidance/specifications/local-plan
+    entityDisplayName:
+      base: local plan
+      variable: area
   article-4-direction-area:
     guidanceUrl: /guidance/specifications/article-4-direction
     entityDisplayName:

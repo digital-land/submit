@@ -5,10 +5,9 @@
  */
 
 import performanceDbApi from '../services/performanceDbApi.js'
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
-import config from '../../config/index.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
@@ -19,8 +18,11 @@ import { isFeatureEnabled } from '../utils/features.js'
  * Fetches datasets which have active endpoints in error state.
  */
 const fetchDatasetErrorStatus = fetchMany({
-  query: ({ params }) => {
-    return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
+  query: ({ params, req }) => {
+    const query = performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: req.availableDatasets })
+    console.log('🔍 fetchDatasetErrorStatus query for LPA:', params.lpa)
+    console.log('🔍 fetchDatasetErrorStatus SQL:', query)
+    return query
   },
   result: 'datasetErrorStatus',
   dataset: FetchOptions.performanceDb
@@ -28,20 +30,41 @@ const fetchDatasetErrorStatus = fetchMany({
 
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
-    const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
-    return /* sql */ `select dataset, project, provision_reason
-       from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
+    const query = /* sql */ `select dataset, project, provision_reason
+       from provision where organisation = '${params.lpa}' `
+    console.log('🔍 fetchProvisions query for LPA:', params.lpa)
+    console.log('� fetchProvisions SQL:', query)
+    return query
   },
   result: 'provisions'
 })
 
 const fetchEntityCounts = fetchOneFromAllDatasets({
-  query: ({ req }) => `
+  query: ({ req }) => {
+    const query = `
     select count(entity) as entity_count
     from entity
-    WHERE organisation_entity = '${req.orgInfo.entity}'`,
+    WHERE organisation_entity = '${req.orgInfo.entity}'`
+    console.log('🔍 fetchEntityCounts query for entity:', req.orgInfo.entity)
+    console.log('� fetchEntityCounts SQL:', query)
+    return query
+  },
   result: 'entityCounts'
 })
+
+/**
+Function middleware to set available datasets based on provision rules, run before some of the fetch tasks, so that filter can be applied.
+**/
+const setProvisionDatasets = (req, res, next) => {
+  const { provisions } = req
+  const filteredProvisions = provisions.filter(p =>
+    p.provision_reason === 'statutory' ||
+    p.provision_reason === 'prospective' ||
+    p.provision_reason === 'expected'
+  )
+  req.availableDatasets = filteredProvisions.map(p => p.dataset)
+  next()
+}
 
 /**
  * Calculates overall "health" of the datasets (not)provided by an organisation.
@@ -124,6 +147,9 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
 
 export function groupResourcesByDataset (req, res, next) {
   const { resources } = req
+
+  console.log('📊 fetchResources result count:', resources?.length || 0)
+  console.log('📊 fetchResources sample data:', JSON.stringify(resources?.slice(0, 2), null, 2))
 
   req.resources = resources.reduce((acc, current) => {
     if (!acc[current.dataset]) {
@@ -258,6 +284,13 @@ export function prepareDatasetObjects (req, res, next) {
 export function prepareOverviewTemplateParams (req, res, next) {
   const { orgInfo: organisation, provisions, datasets, availableDatasets } = req
 
+  console.log('📊 fetchOrgInfo result:', JSON.stringify(organisation, null, 2))
+  console.log('📊 fetchProvisions result count:', provisions?.length || 0)
+  console.log('📊 fetchProvisions sample data:', JSON.stringify(provisions?.slice(0, 3), null, 2))
+  console.log('📊 fetchDatasetErrorStatus result:', JSON.stringify(req.datasetErrorStatus, null, 2))
+  console.log('📊 fetchEntityCounts result:', JSON.stringify(req.entityCounts, null, 2))
+  console.log('📊 setAvailableDatasets result:', availableDatasets)
+
   const provisionData = new Map()
   for (const provision of provisions ?? []) {
     provisionData.set(provision.dataset, provision)
@@ -319,6 +352,11 @@ export const getOverview = renderTemplate({
 export function groupIssuesCountsByDataset (req, res, next) {
   const { entityIssueCounts, entryIssueCounts } = req
 
+  console.log('📊 fetchEntityIssueCounts result count:', entityIssueCounts?.length || 0)
+  console.log('📊 fetchEntityIssueCounts sample data:', JSON.stringify(entityIssueCounts?.slice(0, 2), null, 2))
+  console.log('📊 fetchEntryIssueCounts result count:', entryIssueCounts?.length || 0)
+  console.log('📊 fetchEntryIssueCounts sample data:', JSON.stringify(entryIssueCounts?.slice(0, 2), null, 2))
+
   // merge arrays and handle undefined
   const issueCounts = [...(entityIssueCounts || []), ...(entryIssueCounts || [])]
   req.issues = issueCounts.reduce((acc, current) => {
@@ -334,6 +372,9 @@ export function groupIssuesCountsByDataset (req, res, next) {
 
 export function groupEndpointsByDataset (req, res, next) {
   const { endpoints } = req
+
+  console.log('📊 fetchEndpointSummary result count:', endpoints?.length || 0)
+  console.log('📊 fetchEndpointSummary sample data:', JSON.stringify(endpoints?.slice(0, 2), null, 2))
 
   // merge arrays and handle undefined
   req.endpoints = endpoints.reduce((acc, current) => {
@@ -355,6 +396,8 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
  * Organisation (LPA) overview page middleware chain.
  */
 export default [
+  fetchProvisions,
+  setProvisionDatasets,
   fetchOrgInfo,
   fetchResources,
   fetchDatasetErrorStatus,
@@ -362,7 +405,6 @@ export default [
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   fetchEntityCounts,
-  setAvailableDatasets,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   groupResourcesByDataset,
   groupIssuesCountsByDataset,
@@ -372,7 +414,7 @@ export default [
 
   // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
-  fetchProvisions,
+
   prepareOverviewTemplateParams,
   getOverview,
   logPageError
