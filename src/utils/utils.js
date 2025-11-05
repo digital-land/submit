@@ -63,7 +63,6 @@ export function makeDatasetsLookup (dataSubjects) {
 export async function getDatasets () {
   const dataSubjects = await getDataSubjects()
   const datasets = makeDatasetsLookup(dataSubjects)
-  console.log('datasets:', datasets)
   return datasets
 }
 // export const datasets = makeDatasetsLookup(dataSubjects)
@@ -79,7 +78,6 @@ export function availableDatasets (dataSubjects) {
   const dataSets = Object.values(availableDataSubjects).map(dataSubject => dataSubject.dataSets).flat()
   const availableDatasets = dataSets.filter(dataSet => dataSet.available)
   availableDatasets.sort((a, b) => a.text.localeCompare(b.text))
-  console.log('availableDatasets:', availableDatasets)
   return availableDatasets
 }
 

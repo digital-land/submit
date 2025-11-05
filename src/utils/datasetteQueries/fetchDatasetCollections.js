@@ -34,7 +34,7 @@ export const getDatasetCollectionSlugNameMapping = async (nameMap) => {
     })
     return datasetMapping
   } catch (error) {
-    logger.error('Failed to fetch dataset=>collection mapping')
+    logger.error(`Failed to fetch dataset=>collection mapping: ${error.message}`)
     return null
   }
 }
