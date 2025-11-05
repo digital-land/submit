@@ -116,7 +116,7 @@ const IssueSpecification = v.optional(v.strictObject({
 }))
 
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
-const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
+const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: v.string() })
 const DatasetItem = v.strictObject({
   endpointCount: v.optional(v.number()),
   status: v.enum(datasetStatusEnum),

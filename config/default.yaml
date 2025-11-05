@@ -98,6 +98,11 @@ datasetsConfig:
     entityDisplayName:
       base: listed building
       variable: outline
+# Any dataset that has one of these three previous rules set, will be displayed in the LPA Dashboard to be checked.
+provisionReasons:
+  - statutory
+  - prospective  
+  - expected
 tablePageLength: 50
 jira: {
   requestTypeId: 1

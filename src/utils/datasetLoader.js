@@ -35,6 +35,7 @@ export async function getRedisClient () {
 
 const CACHE_TTL = 300 // 5min
 
+// TODO: future removal of this function in favour of using datasetNameSlug and datasetSubjectLoaded instead.
 export async function fetchDatasetNames (datasetKeys) {
   if (!datasetKeys?.length) return {}
   const params = new URLSearchParams()
