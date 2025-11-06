@@ -9,7 +9,7 @@ export async function getRedisClient () {
   if (!config.redis) return null
 
   if (!redisClient) {
-    const urlPrefix = 'redis'
+    const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
     redisClient = createClient({
       url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
