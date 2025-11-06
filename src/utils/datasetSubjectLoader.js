@@ -6,7 +6,7 @@ import { getDatasetCollectionSlugNameMapping } from './datasetteQueries/fetchDat
 import { getRedisClient } from './datasetLoader.js'
 
 // Use a short TTL in development/staging to make testing changes faster.
-const CACHE_TTL = (['development'].includes(config.environment)) ? 60 : 60 * 60 // 1 minute or 1 hour depending on environment
+const CACHE_TTL = (['development', 'local'].includes(config.environment)) ? 60 : 60 * 60 // 1 minute or 1 hour depending on environment
 
 const fallbackDataSubjects = {
   'article-4-direction': {
@@ -183,6 +183,7 @@ export async function getDataSubjectMap () {
   }
 
   // fallback → fetch fresh
+  logger.info('getDataSubjectMap: Dataset subject map cache miss, rebuilding data subject map')
   dataSubjectMap = await buildDataSubjects()
 
   if (client) {
