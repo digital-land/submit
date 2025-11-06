@@ -169,18 +169,17 @@ export async function getDataSubjectMap () {
   const cacheKey = 'dataset:dataSubjectMap'
   const client = await getRedisClient()
 
-  // Temporary diable caching while we monitor for issues
-  // if (client) {
-  //   try {
-  //     const cached = await client.get(cacheKey)
-  //     if (cached) {
-  //       dataSubjectMap = JSON.parse(cached)
-  //       return dataSubjectMap
-  //     }
-  //   } catch (err) {
-  //     logger.warn(`datasetSubjectLoader/redis get error: ${err.message}`)
-  //   }
-  // }
+  if (client) {
+    try {
+      const cached = await client.get(cacheKey)
+      if (cached) {
+        dataSubjectMap = JSON.parse(cached)
+        return dataSubjectMap
+      }
+    } catch (err) {
+      logger.warn(`datasetSubjectLoader/redis get error: ${err.message}`)
+    }
+  }
 
   // fallback → fetch fresh
   dataSubjectMap = await buildDataSubjects()
