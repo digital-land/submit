@@ -259,7 +259,7 @@ describe('datasetSubjectLoader', () => {
       expect(mockRedisClient.get).toHaveBeenCalledWith('dataset:dataSubjectMap')
       expect(mockRedisClient.setEx).toHaveBeenCalledWith(
         'dataset:dataSubjectMap',
-        6 * 60 * 60, // 6 hours TTL
+        60 * 60, // 1 hours TTL
         JSON.stringify(result)
       )
       expect(result).toHaveProperty('article-4-direction')
