@@ -19,7 +19,7 @@ export const getDatasetCollectionSlugNameMapping = async (nameMap) => {
         await datasette.runQuery('SELECT 1 FROM entity LIMIT 1', row.dataset)
         validDatasets.push(row)
       } catch (error) {
-        logger.warn(`Dataset table '${row.dataset}' does not exist, removing from mapping`, {
+        logger.info(`Dataset table '${row.dataset}' does not exist, removing from mapping`, {
           dataset: row.dataset,
           errorMessage: error.message,
           type: types.DataFetch
