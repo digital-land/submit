@@ -5,7 +5,8 @@ import config from '../../config/index.js'
 import { getDatasetCollectionSlugNameMapping } from './datasetteQueries/fetchDatasetCollections.js'
 import { getRedisClient } from './datasetLoader.js'
 
-const CACHE_TTL = 6 * 60 * 60 // 6 hours
+// Use a short TTL in development/staging to make testing changes faster.
+const CACHE_TTL = (['development'].includes(config.environment)) ? 60 : 60 * 60 // 1 minute or 1 hour depending on environment
 
 const fallbackDataSubjects = {
   'article-4-direction': {
