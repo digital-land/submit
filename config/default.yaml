@@ -88,11 +88,6 @@ datasetsConfig:
     guidanceUrl: /guidance/specifications/tree-preservation-order
     entityDisplayName:
       variable: tree
-  listed-building:
-    guidanceUrl: /guidance/specifications/listed-building
-    entityDisplayName:
-      base: listed
-      variable: building
   listed-building-outline:
     guidanceUrl: /guidance/specifications/listed-building
     entityDisplayName:
