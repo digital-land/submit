@@ -92,7 +92,7 @@ export const fetchOrgInfo = fetchOne({
  * @param {*} res
  * @param {*} next
  */
-export function validateQueryParamsFn(req, res, next) {
+export function validateQueryParamsFn (req, res, next) {
   try {
     req.parsedParams = v.parse(this.schema || v.any(), req.params)
     next()
@@ -102,7 +102,7 @@ export function validateQueryParamsFn(req, res, next) {
   }
 }
 
-export function validateQueryParams(context) {
+export function validateQueryParams (context) {
   return validateQueryParamsFn.bind(context)
 }
 
@@ -207,7 +207,7 @@ export const addEntityCountsToResources = async (req, res, next) => {
 export const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
   result: 'specification',
-  //Set fall back here as some datasets may not have a specification yet, then handle different field name lookup in next middleware
+  // Set fall back here as some datasets may not have a specification yet, then handle different field name lookup in next middleware
   fallbackPolicy: FetchOneFallbackPolicy['set-empty-object']
 })
 
@@ -223,7 +223,7 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   let collectionSpecifications
   if (!specification) {
     logger.info(`No specification found for dataset with collection: ('${req.dataset.collection}') (uses the collection as lookup key for spec table)`)
-    return next();
+    return next()
   }
 
   try {
@@ -528,7 +528,7 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
         AND fr.resource IN ('${newerResources.map(resource => resource.resource).join("','")}')
         ORDER BY fr.start_date desc
         LIMIT 1`,
-        issue.dataset
+      issue.dataset
       )
     })
 
@@ -763,7 +763,7 @@ export const getSetDataRange = (pageLength) => {
   }
 }
 
-export function getErrorSummaryItems(req, res, next) {
+export function getErrorSummaryItems (req, res, next) {
   const { issue_type: issueType, issue_field: issueField, dataset } = req.params
   const { entryIssues, issues: entityIssues, issueCount, entities, resources } = req
 
@@ -785,7 +785,7 @@ export function getErrorSummaryItems(req, res, next) {
   next()
 }
 
-export function getIssueSpecification(req, res, next) {
+export function getIssueSpecification (req, res, next) {
   const { issue_field: issueField } = req.params
   const { specification } = req
 
@@ -926,7 +926,7 @@ export const preventIndexing = (req, res, next) => {
  * @param {*} res response object
  * @param {*} next next function
  */
-export function noop(req, res, next) {
+export function noop (req, res, next) {
   next()
 }
 
@@ -974,7 +974,7 @@ export const expectationFetcher = ({ expectation, result, includeDetails = false
 }
 
 export const CONSTANTS = {
-  async availableDatasets() {
+  async availableDatasets () {
     const dataSubjects = await getDataSubjects()
     return Object.values(dataSubjects).flatMap((dataSubject) => dataSubject.dataSets
       .filter((dataset) => dataset.available)
