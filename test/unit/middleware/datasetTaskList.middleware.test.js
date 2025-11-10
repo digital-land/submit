@@ -302,7 +302,6 @@ describe('entityOutOfBoundsMessage()', () => {
     expect(entityOutOfBoundsMessage('tree-preservation-order', 2)).toBe('You have 2 tree preservation orders outside of your boundary')
     expect(entityOutOfBoundsMessage('tree-preservation-zone', 2)).toBe('You have 2 tree preservation zones outside of your boundary')
     expect(entityOutOfBoundsMessage('tree', 2)).toBe('You have 2 trees outside of your boundary')
-    expect(entityOutOfBoundsMessage('listed-building', 2)).toBe('You have 2 listed buildings outside of your boundary')
     expect(entityOutOfBoundsMessage('listed-building-outline', 2)).toBe('You have 2 listed building outlines outside of your boundary')
   })
   it('Handles missing count', () => {

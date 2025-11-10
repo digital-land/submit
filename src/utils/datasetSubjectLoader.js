@@ -58,16 +58,6 @@ const fallbackDataSubjects = {
     available: true,
     dataSets: [
       {
-        value: 'listed-building',
-        text: 'Listed building',
-        available: false
-      },
-      {
-        value: 'listed-building-grade',
-        text: 'Listed building grade',
-        available: false
-      },
-      {
         value: 'listed-building-outline',
         text: 'Listed building outline',
         available: true
