@@ -1,116 +1,10 @@
-import { getDatasetNameMap } from './datasetLoader.js'
+import { getDataSubjectMap } from './datasetSubjectLoader.js'
 
 export const severityLevels = {
   notice: 'notice',
   informational: 'info',
   warning: 'warning',
   error: 'error'
-}
-
-export async function buildDataSubjects () {
-  const datasetKeys = [
-    'article-4-direction',
-    'article-4-direction-area',
-    'brownfield-land',
-    'brownfield-site',
-    'conservation-area',
-    'conservation-area-document',
-    'listed-building',
-    'listed-building-grade',
-    'listed-building-outline',
-    'tree',
-    'tree-preservation-order',
-    'tree-preservation-zone'
-  ]
-  const nameMap = await getDatasetNameMap(datasetKeys)
-  return {
-    'article-4-direction': {
-      available: true,
-      dataSets: [
-        {
-          value: 'article-4-direction',
-          text: nameMap['article-4-direction'],
-          available: true
-        },
-        {
-          value: 'article-4-direction-area',
-          text: nameMap['article-4-direction-area'],
-          available: true
-        }
-      ]
-    },
-    'brownfield-land': {
-      available: true,
-      dataSets: [
-        {
-          value: 'brownfield-land',
-          text: nameMap['brownfield-land'],
-          available: true
-        },
-        {
-          value: 'brownfield-site',
-          text: nameMap['brownfield-site'],
-          available: false
-        }
-      ]
-    },
-    'conservation-area': {
-      available: true,
-      dataSets: [
-        {
-          value: 'conservation-area',
-          text: nameMap['conservation-area'],
-          available: true
-        },
-        {
-          value: 'conservation-area-document',
-          text: nameMap['conservation-area-document'],
-          available: true
-        }
-      ]
-    },
-    'listed-building': {
-      available: true,
-      dataSets: [
-        {
-          value: 'listed-building',
-          text: nameMap['listed-building'],
-          available: false
-        },
-        {
-          value: 'listed-building-grade',
-          text: nameMap['listed-building-grade'],
-          available: false
-        },
-        {
-          value: 'listed-building-outline',
-          text: nameMap['listed-building-outline'],
-          available: true
-        }
-      ]
-    },
-    'tree-preservation-order': {
-      available: true,
-      dataSets: [
-        {
-          value: 'tree',
-          text: nameMap.tree,
-          available: true,
-          requiresGeometryTypeSelection: true
-        },
-        {
-          value: 'tree-preservation-order',
-          text: nameMap['tree-preservation-order'],
-          available: true
-        },
-        {
-          value: 'tree-preservation-zone',
-          text: nameMap['tree-preservation-zone'],
-          available: true
-        }
-      ]
-    }
-  }
 }
 
 export const entryIssueGroups = [
@@ -128,11 +22,20 @@ export const entryIssueGroups = [
   }
 ]
 
+// Function exposes datasets sorted by collections. (the subjects), pre-flattening done by makeDatasetsLookup.
 export async function getDataSubjects () {
-  const dataSubjects = await buildDataSubjects()
-  return dataSubjects
+  const dataSubjectMap = await getDataSubjectMap()
+  return dataSubjectMap
 }
 
+/**
+ * Flattens the nested dataSubjects object into a two-dimensional Map for quick lookup.
+ * Each entry in the returned Map uses the dataSet's value as the key and an object containing
+ * the dataSet properties along with its parent dataSubject key.
+ *
+ * @param {Object} dataSubjects - An object where each key is a dataSubject and its value contains a dataSets array.
+ * @returns {Map} A Map where each key is a dataSet value and each value is the corresponding dataSet object with an added dataSubject property.
+ */
 export function makeDatasetsLookup (dataSubjects) {
   const lookup = new Map()
   for (const [key, dataSubject] of Object.entries(dataSubjects)) {

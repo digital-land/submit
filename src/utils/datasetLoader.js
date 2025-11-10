@@ -9,7 +9,7 @@ export async function getRedisClient () {
   if (!config.redis) return null
 
   if (!redisClient) {
-    const urlPrefix = 'redis'
+    const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
     redisClient = createClient({
       url: `${urlPrefix}://${config.redis.host}:${config.redis.port}`
     })
@@ -35,6 +35,7 @@ export async function getRedisClient () {
 
 const CACHE_TTL = 300 // 5min
 
+// TODO: future removal of this function in favour of using datasetNameSlug and datasetSubjectLoaded instead.
 export async function fetchDatasetNames (datasetKeys) {
   if (!datasetKeys?.length) return {}
   const params = new URLSearchParams()

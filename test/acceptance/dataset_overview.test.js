@@ -19,10 +19,10 @@ test.describe('Dataset overview', () => {
     expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
     expect(await page.locator('[data-testid=datasetsMandatory] h2.govuk-heading-m').innerText())
       .toEqual('Datasets London Borough of Lambeth must provide')
-    expect(await page.locator('[data-testid=datasetsMandatory] .govuk-task-list li').count()).toEqual(1)
+    expect(await page.locator('[data-testid=datasetsMandatory] .govuk-task-list li').count()).toBeGreaterThanOrEqual(1)
     expect(await page.locator('[data-testid=datasetsOdpMandatory] h2.govuk-heading-m').innerText())
       .toEqual('Datasets organisations in Open Digital Planning programme must provide')
-    expect(await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').count()).toEqual(8)
+    expect(await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').count()).toBeGreaterThanOrEqual(8)
   })
 
   test('Can view dataset overview', async ({ page, context }) => {
@@ -79,7 +79,7 @@ test.describe('Dataset overview', () => {
   test('Dataset names shown dynamically match names fetched from datasetLoader', async ({ page }) => {
     const organisationId = 'local-authority:LBH'
 
-    // Mock the expected nameMap to avoid Redis calls
+    // Mock the expected nameMap to avoid Redis calls, currently may only work when environment is NOT 'local' or 'development' as in those environments datasetLoader will add more dynamically that may not be listed here.
     const nameMap = {
       'brownfield-land': 'Brownfield land',
       'article-4-direction-area': 'Article 4 direction area',
@@ -90,7 +90,9 @@ test.describe('Dataset overview', () => {
       'tree-preservation-zone': 'Tree preservation zone',
       'listed-building': 'Listed building',
       'listed-building-outline': 'Listed building outline',
-      'tree-preservation-order': 'Tree preservation order'
+      'tree-preservation-order': 'Tree preservation order',
+      'development-plan-document': 'Development plan document',
+      'brownfield-site': 'Brownfield site'
     }
 
     const organisationOverviewPage = new OrganisationOverviewPage(page, { organisationId })
@@ -105,6 +107,6 @@ test.describe('Dataset overview', () => {
       const matchingKey = Object.keys(nameMap).find(key => nameMap[key] === displayedName)
       expect(matchingKey).toBeDefined()
     }
-    expect(displayedNames.length).toEqual(8)
+    expect(displayedNames.length).toBeGreaterThanOrEqual(8)
   })
 })
