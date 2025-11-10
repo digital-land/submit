@@ -209,6 +209,10 @@
         <li>
           <a class="govuk-link" href="{{ dataset.dataset | getDatasetGuidanceUrl }}">{{ dataset.name }} guidance</a>
         </li>
+        {% else %}
+        <li>
+          <a class="govuk-link" href="{{ "default" | getDatasetGuidanceUrl }}">Explore our dataset upload guidance</a>
+        </li>
         {% endif %}
       </ul>
     </section>

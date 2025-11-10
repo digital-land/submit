@@ -7,7 +7,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { getDataSubjects, entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { datasetOverride, fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { datasetOverride, fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
@@ -92,7 +92,7 @@ export const fetchOrgInfo = fetchOne({
  * @param {*} res
  * @param {*} next
  */
-export function validateQueryParamsFn (req, res, next) {
+export function validateQueryParamsFn(req, res, next) {
   try {
     req.parsedParams = v.parse(this.schema || v.any(), req.params)
     next()
@@ -102,7 +102,7 @@ export function validateQueryParamsFn (req, res, next) {
   }
 }
 
-export function validateQueryParams (context) {
+export function validateQueryParams(context) {
   return validateQueryParamsFn.bind(context)
 }
 
@@ -206,12 +206,26 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
 export const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
-  result: 'specification'
+  result: 'specification',
+  //Set fall back here as some datasets may not have a specification yet, then handle different field name lookup in next middleware
+  fallbackPolicy: FetchOneFallbackPolicy['set-empty-object']
+})
+
+// Fall back dataset fields if no specification found
+
+export const fetchDatasetFields = fetchMany({
+  query: ({ req }) => `select field from dataset_field where dataset = '${req.dataset.collection}'`,
+  result: 'datasetFields'
 })
 
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
   let collectionSpecifications
+  if (!specification) {
+    logger.info(`No specification found for dataset with collection: ('${req.dataset.collection}') (uses the collection as lookup key for spec table)`)
+    return next();
+  }
+
   try {
     collectionSpecifications = JSON.parse(specification.json)
   } catch (error) {
@@ -280,17 +294,38 @@ export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   next()
 }
 
+// If no specification exists, create a minimal specification table (data such as guidance will be missing) using dataset fields table as a fall back option
+export const constructSpecificationTable = (req, res, next) => {
+  const { datasetFields } = req
+  // Filter out internal system fields that shouldn't be displayed
+  const systemFields = ['entity', 'prefix', 'entry-number', 'organisation-entity']
+
+  req.specification = {
+    fields: datasetFields
+      .filter(fieldObj => !systemFields.includes(fieldObj.field))
+      .map(fieldObj => ({
+        field: fieldObj.field,
+        datasetField: fieldObj.field
+      }))
+  }
+  return next()
+}
+
 /**
  * @name processSpecificationMiddleware
  * @function
- * @description Middleware chain to process the dataset specification and prepare it for the issue table
+ * @description Middleware chain to process the dataset specification and prepare it for the issue table, conditional execution on whether a specification exists
  */
 export const processSpecificationMiddlewares = [
   fetchSpecification,
   pullOutDatasetSpecification,
-  replaceUnderscoreInSpecification,
-  fetchFieldMappings,
-  addDatabaseFieldToSpecification,
+  // When specification exists, use field mappings from transform table
+  onlyIf(req => req.specification, replaceUnderscoreInSpecification),
+  onlyIf(req => req.specification, fetchFieldMappings),
+  onlyIf(req => req.specification, addDatabaseFieldToSpecification),
+  // When no specification exists, use fields from dataset_field table
+  onlyIf(req => !req.specification, fetchDatasetFields),
+  onlyIf(req => !req.specification, constructSpecificationTable),
   getUniqueDatasetFieldsFromSpecification
 ]
 
@@ -493,12 +528,12 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
         AND fr.resource IN ('${newerResources.map(resource => resource.resource).join("','")}')
         ORDER BY fr.start_date desc
         LIMIT 1`,
-      issue.dataset
+        issue.dataset
       )
     })
 
   Promise.allSettled(promises).then((results) => {
-  // results is an array of objects with status (fulfilled or rejected) and value or reason
+    // results is an array of objects with status (fulfilled or rejected) and value or reason
     results.forEach(result => {
       if (result.status === 'fulfilled') {
         if (result.value.formattedData.length > 0) {
@@ -728,7 +763,7 @@ export const getSetDataRange = (pageLength) => {
   }
 }
 
-export function getErrorSummaryItems (req, res, next) {
+export function getErrorSummaryItems(req, res, next) {
   const { issue_type: issueType, issue_field: issueField, dataset } = req.params
   const { entryIssues, issues: entityIssues, issueCount, entities, resources } = req
 
@@ -750,7 +785,7 @@ export function getErrorSummaryItems (req, res, next) {
   next()
 }
 
-export function getIssueSpecification (req, res, next) {
+export function getIssueSpecification(req, res, next) {
   const { issue_field: issueField } = req.params
   const { specification } = req
 
@@ -891,7 +926,7 @@ export const preventIndexing = (req, res, next) => {
  * @param {*} res response object
  * @param {*} next next function
  */
-export function noop (req, res, next) {
+export function noop(req, res, next) {
   next()
 }
 
@@ -939,7 +974,7 @@ export const expectationFetcher = ({ expectation, result, includeDetails = false
 }
 
 export const CONSTANTS = {
-  async availableDatasets () {
+  async availableDatasets() {
     const dataSubjects = await getDataSubjects()
     return Object.values(dataSubjects).flatMap((dataSubject) => dataSubject.dataSets
       .filter((dataset) => dataset.available)
