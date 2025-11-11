@@ -28,9 +28,8 @@ const fetchDatasetErrorStatus = fetchMany({
 
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
-    const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
     return /* sql */ `select dataset, project, provision_reason
-       from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
+       from provision where organisation = '${params.lpa}'`
   },
   result: 'provisions'
 })
@@ -285,6 +284,10 @@ export function prepareOverviewTemplateParams (req, res, next) {
     switch (reason) {
       case 'statutory':
         return 'statutory'
+      case 'expected':
+        return 'expected'
+      case 'prospective':
+        return 'prospective'
       default:
         return 'other'
     }

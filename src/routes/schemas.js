@@ -136,6 +136,8 @@ export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
   datasets: v.object({
     statutory: v.optional(v.array(DatasetItem)),
+    expected: v.optional(v.array(DatasetItem)),
+    prospective: v.optional(v.array(DatasetItem)),
     other: v.optional(v.array(DatasetItem))
   }),
   totalDatasets: v.integer(),
