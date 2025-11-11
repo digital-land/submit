@@ -519,14 +519,14 @@ describe('pullOutDatasetSpecification', () => {
     expect(next).toHaveBeenCalledWith(expect.any(Error))
   })
 
-  it('calls next with an error if dataset specification is missing', () => {
+  it('calls next without error if dataset specification is missing', () => {
     const reqWithoutSpecification = {
       ...req
     }
     const next = vi.fn()
     pullOutDatasetSpecification(reqWithoutSpecification, res, next)
     expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(expect.any(Error))
+    expect(next).toHaveBeenCalledWith()
   })
 
   it('calls next with an error if dataset specification is an empty array', () => {

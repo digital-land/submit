@@ -41,7 +41,8 @@ const fetchColumnSummary = fetchMany({
 
 const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
-  result: 'specification'
+  result: 'specification',
+  fallbackPolicy: FetchOneFallbackPolicy['set-empty-object']
 })
 
 const fetchOutOfBoundsExpectations = expectationFetcher({

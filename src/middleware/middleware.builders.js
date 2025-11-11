@@ -73,6 +73,15 @@ export const FetchOneFallbackPolicy = {
   'not-found-error': fetchOneFallbackPolicy,
 
   /**
+       * Sets an empty object for the result key.
+       * Note: This is called with `this` bound to the fetchOne context.
+       */
+  'set-empty-object': function (req, res, next) {
+    req[this.result] = null
+    next()
+  },
+
+  /**
        * Proceeds by calling `next()`.
        */
   continue: (_req, _res, next) => next()
@@ -98,7 +107,8 @@ async function fetchOneFn (req, res, next) {
     const fallbackPolicy = this.fallbackPolicy ?? FetchOneFallbackPolicy['not-found-error']
     if (result.formattedData.length === 0) {
       // we can make the 404 more informative by informing the use what exactly was "not found"
-      fallbackPolicy(req, res, next)
+      // Bind the context so the fallback policy can access `this.result`
+      fallbackPolicy.call(this, req, res, next)
     } else {
       req[this.result] = result.formattedData[0]
       next()
