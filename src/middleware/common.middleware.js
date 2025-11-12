@@ -618,7 +618,7 @@ export const fetchEntryIssues = fetchMany({
 export const fetchEntityIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
-    const sqlQuery = `
+    return `
       WITH unique_issues AS (
         SELECT DISTINCT
           i.dataset,
@@ -642,8 +642,6 @@ export const fetchEntityIssueCounts = fetchMany({
       FROM unique_issues
       GROUP BY field, issue_type, dataset
     `
-    console.log('sqlQuery', sqlQuery)
-    return sqlQuery
   },
   result: 'entityIssueCounts'
 })
