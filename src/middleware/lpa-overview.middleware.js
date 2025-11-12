@@ -5,10 +5,9 @@
  */
 
 import performanceDbApi from '../services/performanceDbApi.js'
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
-import config from '../../config/index.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
@@ -18,13 +17,13 @@ import { isFeatureEnabled } from '../utils/features.js'
  *
  * Fetches datasets which have active endpoints in error state.
  */
-const fetchDatasetErrorStatus = fetchMany({
-  query: ({ params }) => {
-    return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
-  },
-  result: 'datasetErrorStatus',
-  dataset: FetchOptions.performanceDb
-})
+// const fetchDatasetErrorStatus = fetchMany({
+//   query: ({ params }) => {
+//     return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
+//   },
+//   result: 'datasetErrorStatus',
+//   dataset: FetchOptions.performanceDb
+// })
 
 const fetchDatasetIssuePerformanceDb = fetchMany({
   query: ({ params, req }) => {
@@ -368,9 +367,9 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
 export default [
   fetchOrgInfo,
   fetchResources,
-  //fetchDatasetErrorStatus,
+  // fetchDatasetErrorStatus,
   fetchEndpointSummary,
-  //fetchEntityIssueCounts,
+  // fetchEntityIssueCounts,
   fetchDatasetIssuePerformanceDb,
   fetchEntryIssueCounts,
   fetchEntityCounts,
