@@ -6,28 +6,20 @@
 
 import performanceDbApi from '../services/performanceDbApi.js'
 import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
+import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
 
 /**
- * Middleware. Updates req with 'datasetErrorStatus'.
+ * Middleware. Updates req with 'entityIssueCounts' same as fetchEntityIssueCounts so not to be used together!
  *
- * Fetches datasets which have active endpoints in error state.
+ * Functionally equivalent (for the utilization of the LPA Dashboard) to fetchEntityIssueCounts but using performanceDb
  */
-// const fetchDatasetErrorStatus = fetchMany({
-//   query: ({ params }) => {
-//     return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
-//   },
-//   result: 'datasetErrorStatus',
-//   dataset: FetchOptions.performanceDb
-// })
-
-const fetchDatasetIssuePerformanceDb = fetchMany({
-  query: ({ params, req }) => {
-    return performanceDbApi.endpointDatasetIssueQuery(params.lpa, req.resources)
+const fetchEntityIssueCountsPerformanceDb = fetchMany({
+  query: ({ params }) => {
+    return performanceDbApi.fetchEntityIssueCounts(params.lpa)
   },
   result: 'entityIssueCounts',
   dataset: FetchOptions.performanceDb
@@ -365,14 +357,17 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
  * Organisation (LPA) overview page middleware chain.
  */
 export default [
+  parallel([
   fetchOrgInfo,
   fetchResources,
-  // fetchDatasetErrorStatus,
   fetchEndpointSummary,
-  // fetchEntityIssueCounts,
-  fetchDatasetIssuePerformanceDb,
-  fetchEntryIssueCounts,
-  fetchEntityCounts,
+  fetchEntityIssueCountsPerformanceDb,
+  fetchProvisions
+  ]),
+  parallel([
+  fetchEntryIssueCounts,  // needs fetchResources to complete
+  fetchEntityCounts       // needs fetchOrgInfo to complete
+  ]),
   setAvailableDatasets,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   groupResourcesByDataset,
@@ -383,7 +378,6 @@ export default [
 
   // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
-  fetchProvisions,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError
