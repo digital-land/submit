@@ -19,10 +19,10 @@ test.describe('Dataset overview', () => {
     expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
     expect(await page.locator('[data-testid=datasetsMandatory] h2.govuk-heading-m').innerText())
       .toEqual('Datasets London Borough of Lambeth must provide')
-    expect(await page.locator('[data-testid=datasetsMandatory] .govuk-task-list li').count()).toBeGreaterThanOrEqual(1)
-    expect(await page.locator('[data-testid=datasetsOdpMandatory] h2.govuk-heading-m').innerText())
-      .toEqual('Datasets organisations in Open Digital Planning programme must provide')
-    expect(await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').count()).toBeGreaterThanOrEqual(8)
+    expect(await page.locator('[data-testid=datasetsExpected] .govuk-task-list li').count()).toBeGreaterThanOrEqual(1)
+    expect(await page.locator('[data-testid=datasetsExpected] h2.govuk-heading-m').innerText())
+      .toEqual('Datasets London Borough of Lambeth are expected to provide')
+    expect(await page.locator('[data-testid=datasetsExpected] .govuk-task-list li').count()).toBeGreaterThanOrEqual(8)
   })
 
   test('Can view dataset overview', async ({ page, context }) => {
@@ -99,7 +99,7 @@ test.describe('Dataset overview', () => {
     await organisationOverviewPage.navigateHere()
 
     expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
-    const datasetElements = await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').allInnerTexts()
+    const datasetElements = await page.locator('[data-testid=datasetsExpected] .govuk-task-list li').allInnerTexts()
     const displayedNames = datasetElements
       .map(text => text.split('\n')[0].trim())
 
