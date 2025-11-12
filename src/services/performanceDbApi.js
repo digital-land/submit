@@ -250,6 +250,12 @@ export default {
     AND pipeline = '${datasetId}'`
   },
 
+  endpointDatasetIssueQuery(datasetId, resources) {
+    return /* sql */ `
+    select dataset, field, issue_type, count_issues from endpoint_dataset_issue_type_summary
+     where organisation = '${datasetId}' and resource IN (${resources.map(resource => `'${resource.resource}'`).join(", ")})`
+  },
+
   datasetIssuesQuery,
 
   /**

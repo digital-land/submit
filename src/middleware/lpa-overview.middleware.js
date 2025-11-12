@@ -26,6 +26,14 @@ const fetchDatasetErrorStatus = fetchMany({
   dataset: FetchOptions.performanceDb
 })
 
+const fetchDatasetIssuePerformanceDb = fetchMany({
+  query: ({ params, req }) => {
+    return performanceDbApi.endpointDatasetIssueQuery(params.lpa, req.resources)
+  },
+  result: 'entityIssueCounts',
+  dataset: FetchOptions.performanceDb
+})
+
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
     return /* sql */ `select dataset, project, provision_reason
@@ -360,9 +368,10 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
 export default [
   fetchOrgInfo,
   fetchResources,
-  fetchDatasetErrorStatus,
+  //fetchDatasetErrorStatus,
   fetchEndpointSummary,
-  fetchEntityIssueCounts,
+  //fetchEntityIssueCounts,
+  fetchDatasetIssuePerformanceDb,
   fetchEntryIssueCounts,
   fetchEntityCounts,
   setAvailableDatasets,
