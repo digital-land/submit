@@ -17,7 +17,7 @@ const messages = new Map()
 /**
  * Reads messages from CSV files and populates `messages` map.
  */
-export async function initialiseMessages() {
+export async function initialiseMessages () {
   // the csv parser works streams so we have wrap it with promises
   const fieldIssuesMessages = new Promise((resolve, reject) => {
     fs.createReadStream('src/content/fieldIssueMessages.csv').pipe(csv()).on('data', row => {
@@ -154,7 +154,7 @@ const entityCountSelectFragment = (dataset, resource, entityCount) => `select '$
  * @param {number=} params.entityCounts[].entityCount - Optional entity count
  * @returns {string} The generated SQL query
  */
-export function lpaOverviewQuery(lpa, params) {
+export function lpaOverviewQuery (lpa, params) {
   let datasetClause = ''
   if (params.datasetsFilter) {
     const datasetString = params.datasetsFilter.map(dataset => `'${dataset}'`).join(',')
@@ -251,7 +251,7 @@ export default {
   },
 
   // Query to simulate fetchEntityIssueCounts in common.middleware.js but against performanceDb
-  fetchEntityIssueCounts(datasetId) {
+  fetchEntityIssueCounts (datasetId) {
     return /* sql */ `
     SELECT 
     dataset,
@@ -281,7 +281,7 @@ export default {
      *
      * @throws {Error} If the issue type is unknown
      */
-  getTaskMessage({
+  getTaskMessage ({
     issue_type: issueType,
     num_issues: numIssues,
     rowCount,
@@ -390,7 +390,7 @@ export default {
     * @param {string} resources[].dataset - Dataset identifier
     * @returns {Promise<Array<Object>>} Array of objects containing resource, dataset and optional entityCount
     */
-  async getEntityCounts(resources) {
+  async getEntityCounts (resources) {
     const requests = resources.map(({ resource, dataset }) => {
       const q = datasette.runQuery(this.entityCountQuery(resource), dataset)
       return q
@@ -454,7 +454,7 @@ export default {
      * @param {string} dataset - Dataset identifier
      * @returns {Promise<Array<Object>>} Array of entry objects containing field and value information
      */
-  async getEntry(resourceId, entryNumber, dataset) {
+  async getEntry (resourceId, entryNumber, dataset) {
     logger.debug({ message: 'getEntry()', resourceId, entryNumber, dataset, type: types.App })
     // TODO: why do we order by rowid?
     const sql = /* sql */ `

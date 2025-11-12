@@ -358,15 +358,15 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
  */
 export default [
   parallel([
-  fetchOrgInfo,
-  fetchResources,
-  fetchEndpointSummary,
-  fetchEntityIssueCountsPerformanceDb,
-  fetchProvisions
+    fetchOrgInfo,
+    fetchResources,
+    fetchEndpointSummary,
+    fetchEntityIssueCountsPerformanceDb,
+    fetchProvisions
   ]),
   parallel([
-  fetchEntryIssueCounts,  // needs fetchResources to complete
-  fetchEntityCounts       // needs fetchOrgInfo to complete
+    fetchEntryIssueCounts, // needs fetchResources to complete
+    fetchEntityCounts // needs fetchOrgInfo to complete
   ]),
   setAvailableDatasets,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
