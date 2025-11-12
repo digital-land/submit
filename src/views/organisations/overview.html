@@ -148,7 +148,7 @@
     <div data-testid="datasetsExpected">
       <h2 class="govuk-heading-m">Datasets {{ organisation.name}} are expected to provide</h2>
       <p class="org-membership-info">We expect you to provide these datasets as a condition of your funding with the Open Digital Planning community.</p>
-      <ul class="govuk-task-list" data-reason="expected">
+      <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="expected">
         {% for dataset in datasets.expected %}
           {{ datasetItem(dataset) }}
         {% endfor %}
@@ -159,7 +159,7 @@
   {% if datasets.prospective.length > 0 %}
     <div data-testid="datasetsProspective">
       <h2 class="govuk-heading-m">Datasets {{ organisation.name}} can provide</h2>
-      <p class="org-membership-info">You are the authoritative source of these datasets. Providing this data to the platform ensures it is accurate and up to date.</p>
+      <p class="org-membership-info">Your organisation is the authoritative source of this data. Providing this data to the platform helps ensure it is accurate and up to date.</p>
       <ul class="govuk-task-list" data-reason="prospective">
         {% for dataset in datasets.prospective %}
           {{ datasetItem(dataset) }}
