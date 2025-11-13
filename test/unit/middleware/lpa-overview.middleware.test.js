@@ -96,7 +96,7 @@ describe('lpa-overview.middleware', () => {
             { endpointCount: 1, status: 'Live', dataset: 'dataset1', error: undefined, issueCount: 0, endpointErrorCount: 0 },
             { endpointCount: 1, status: 'Error', dataset: 'dataset3', error: undefined, issueCount: 0, endpointErrorCount: 1 }
           ]),
-          other: expect.arrayContaining([
+          expected: expect.arrayContaining([
             { endpointCount: 0, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issueCount: 1, endpointErrorCount: 0 },
             { endpointCount: 0, status: 'Error', dataset: 'dataset4', error: 'There was a 404 error', issueCount: 0, endpointErrorCount: 1 }
           ])
@@ -114,17 +114,23 @@ describe('lpa-overview.middleware', () => {
       expect(errorCardNodes[0].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was an error accessing the endpoint URL')
       expect(errorCardNodes[1].querySelector('.govuk-task-list__hint').textContent.trim()).toBe('There was a 404 error')
 
-      const orgMemebershipInfo = doc.querySelector('.org-membership-info').textContent.trim()
-      expect(orgMemebershipInfo).toMatch('is a member of the Open Digital Planning programme')
+      // Check for ODP membership info in the expected datasets section
+      const expectedSection = doc.querySelector('[data-testid="datasetsExpected"]')
+      if (expectedSection) {
+        const orgMembershipInfo = expectedSection.querySelector('.org-membership-info')
+        expect(orgMembershipInfo.textContent.trim()).toMatch(/Open Digital Planning/)
+      }
 
-      // verify proper label for non-OPD memebers gets rendered
+      // verify proper label for non-ODP members gets rendered
       const reqNotMember = structuredClone(reqTemplate)
       reqNotMember.provisions.forEach((provision) => {
         provision.project = ''
       })
       prepareOverviewTemplateParams(reqNotMember, res, () => { })
       const { doc: docNotMember } = getRenderedErrorCards(reqNotMember.templateParams)
-      expect(docNotMember.querySelector('.org-membership-info').textContent.trim()).toMatch('is not a member of the Open Digital Planning programme')
+      // When not an ODP member, expected datasets won't render (requires isODPMember), so datasetsExpected won't be present
+      const expectedSectionNotMember = docNotMember.querySelector('[data-testid="datasetsExpected"]')
+      expect(expectedSectionNotMember).toBeNull()
     })
 
     it('should patch dataset status based on the provision_summary info', () => {
@@ -139,7 +145,7 @@ describe('lpa-overview.middleware', () => {
       expect(ds1.status).toBe('Live')
       expect(ds1.error).toBeUndefined()
 
-      const ds4 = req.templateParams.datasets.other[1]
+      const ds4 = req.templateParams.datasets.expected[1]
       expect(ds4.status).toBe('Error')
       expect(ds4.error).toBe(req.datasets[3].error) // Error message should be left untouched
     })

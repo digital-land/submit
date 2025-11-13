@@ -618,7 +618,6 @@ export const fetchEntryIssues = fetchMany({
 export const fetchEntityIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
-
     return `
       WITH unique_issues AS (
         SELECT DISTINCT

@@ -5,32 +5,30 @@
  */
 
 import performanceDbApi from '../services/performanceDbApi.js'
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
+import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
-import config from '../../config/index.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
 
 /**
- * Middleware. Updates req with 'datasetErrorStatus'.
+ * Middleware. Updates req with 'entityIssueCounts' same as fetchEntityIssueCounts so not to be used together!
  *
- * Fetches datasets which have active endpoints in error state.
+ * Functionally equivalent (for the utilization of the LPA Dashboard) to fetchEntityIssueCounts but using performanceDb
  */
-const fetchDatasetErrorStatus = fetchMany({
+const fetchEntityIssueCountsPerformanceDb = fetchMany({
   query: ({ params }) => {
-    return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
+    return performanceDbApi.fetchEntityIssueCounts(params.lpa)
   },
-  result: 'datasetErrorStatus',
+  result: 'entityIssueCounts',
   dataset: FetchOptions.performanceDb
 })
 
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
-    const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
     return /* sql */ `select dataset, project, provision_reason
-       from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
+       from provision where organisation = '${params.lpa}'`
   },
   result: 'provisions'
 })
@@ -285,6 +283,10 @@ export function prepareOverviewTemplateParams (req, res, next) {
     switch (reason) {
       case 'statutory':
         return 'statutory'
+      case 'expected':
+        return 'expected'
+      case 'prospective':
+        return 'prospective'
       default:
         return 'other'
     }
@@ -355,13 +357,17 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
  * Organisation (LPA) overview page middleware chain.
  */
 export default [
-  fetchOrgInfo,
-  fetchResources,
-  fetchDatasetErrorStatus,
-  fetchEndpointSummary,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
-  fetchEntityCounts,
+  parallel([
+    fetchOrgInfo,
+    fetchResources,
+    fetchEndpointSummary,
+    fetchEntityIssueCountsPerformanceDb,
+    fetchProvisions
+  ]),
+  parallel([
+    fetchEntryIssueCounts, // needs fetchResources to complete
+    fetchEntityCounts // needs fetchOrgInfo to complete
+  ]),
   setAvailableDatasets,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   groupResourcesByDataset,
@@ -372,7 +378,6 @@ export default [
 
   // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
-  fetchProvisions,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError

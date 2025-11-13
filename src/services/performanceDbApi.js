@@ -250,6 +250,22 @@ export default {
     AND pipeline = '${datasetId}'`
   },
 
+  // Query to simulate fetchEntityIssueCounts in common.middleware.js but against performanceDb
+  fetchEntityIssueCounts (datasetId) {
+    return /* sql */ `
+    SELECT 
+    dataset,
+    issue_type,
+    field,
+    COUNT(*) AS count 
+    FROM endpoint_dataset_issue_type_summary 
+    WHERE organisation = '${datasetId}'
+        AND severity = 'error' 
+        AND responsibility = 'external' 
+        AND (resource_end_date = '' OR resource_end_date IS NULL)
+    GROUP BY dataset, issue_type, field`
+  },
+
   datasetIssuesQuery,
 
   /**

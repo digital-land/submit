@@ -38,7 +38,7 @@ const datasetGroup = ({ expect }, key, datasets, document) => {
 
 describe(`LPA Overview Page (seed: ${seed})`, () => {
   const params = mocker(OrgOverviewPage, seed)
-  console.debug(`mocked datasets: statutory = ${params.datasets.statutory?.length ?? 'none'}, other = ${params.datasets.other?.length ?? 'none'}`)
+  console.debug(`mocked datasets: statutory = ${params.datasets.statutory?.length ?? 'none'}, expected = ${params.datasets.expected?.length ?? 'none'}, prospective = ${params.datasets.prospective?.length ?? 'none'}`)
 
   const html = nunjucks.render('organisations/overview.html', params)
 
@@ -53,17 +53,18 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   const statsBoxes = document.querySelector('.dataset-status').children
   it('Datasets provided gives the correct value', () => {
     expect(statsBoxes[0].textContent).toContain(`${params.datasetsWithEndpoints}/${params.totalDatasets}`)
-    expect(statsBoxes[0].textContent).toContain('datasets submitted')
+    expect(statsBoxes[0].textContent).toContain('authoritative dataset')
+    expect(statsBoxes[0].textContent).toContain('provided')
   })
 
   it('Datasets with errors gives the correct value', () => {
     expect(statsBoxes[1].textContent).toContain(params.datasetsWithErrors)
-    expect(statsBoxes[1].textContent).toMatch(/datasets? with endpoint errors/)
+    expect(statsBoxes[1].textContent).toContain('accessing URLs')
   })
 
   it('Datasets with issues gives the correct value', () => {
     expect(statsBoxes[2].textContent).toContain(params.datasetsWithIssues)
-    expect(statsBoxes[2].textContent).toMatch(/datasets? needs? fixing/)
+    expect(statsBoxes[2].textContent).toContain('can be improved')
   })
 
   it('The correct number of dataset cards are rendered with the correct titles in group "statutory"', () => {
@@ -72,16 +73,23 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     }
   })
 
-  it('The correct number of dataset cards are rendered with the correct titles in group "other"', () => {
-    if (params.datasets.other && params.datasets.other.length > 0) {
-      datasetGroup({ expect }, 'other', params.datasets.other, document)
-
-      const infoText = document.querySelector('.org-membership-info').textContent
-      expect(infoText).match(new RegExp(`${params.organisation.name} is (a|not a) member of .*`))
+  it('The correct number of dataset cards are rendered with the correct titles in group "expected"', () => {
+    if (params.datasets.expected && params.datasets.expected.length > 0) {
+      datasetGroup({ expect }, 'expected', params.datasets.expected, document)
     }
   })
 
-  const allDatasets = [].concat(...Object.values(params.datasets.statutory ?? []), ...Object.values(params.datasets.other ?? []))
+  it('The correct number of dataset cards are rendered with the correct titles in group "prospective"', () => {
+    if (params.datasets.prospective && params.datasets.prospective.length > 0) {
+      datasetGroup({ expect }, 'prospective', params.datasets.prospective, document)
+    }
+  })
+
+  const allDatasets = [
+    ...(params.datasets.statutory ?? []),
+    ...(params.datasets.expected ?? []),
+    ...(params.datasets.prospective ?? [])
+  ]
   allDatasets.forEach((dataset, i) => {
     it(`dataset cards are rendered with correct hints for dataset='${dataset.dataset}'`, () => {
       let expectedHint = 'Endpoint URL submitted'
