@@ -73,16 +73,12 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     }
   })
 
-  it('The correct number of dataset cards are rendered with the correct titles in group "expected"', () => {
-    if (params.datasets.expected && params.datasets.expected.length > 0) {
-      datasetGroup({ expect }, 'expected', params.datasets.expected, document)
-    }
+  it.skipIf(!params.datasets.expected || params.datasets.expected.length === 0)('The correct number of dataset cards are rendered with the correct titles in group "expected"', () => {
+    datasetGroup({ expect }, 'expected', params.datasets.expected, document)
   })
 
-  it('The correct number of dataset cards are rendered with the correct titles in group "prospective"', () => {
-    if (params.datasets.prospective && params.datasets.prospective.length > 0) {
-      datasetGroup({ expect }, 'prospective', params.datasets.prospective, document)
-    }
+  it.skipIf(!params.datasets.prospective || params.datasets.prospective.length === 0)('The correct number of dataset cards are rendered with the correct titles in group "prospective"', () => {
+    datasetGroup({ expect }, 'prospective', params.datasets.prospective, document)
   })
 
   const allDatasets = [
@@ -136,21 +132,30 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     })
   })
 
-  const datasetCards = document.querySelectorAll('li[data-dataset]:not(:empty)')
-  allDatasets.forEach((dataset, i) => {
+  allDatasets.forEach((dataset) => {
     it(`Renders the correct status on each dataset card for dataset='${dataset.dataset}'`, () => {
+      const datasetCard = document.querySelector(`li[data-dataset="${dataset.dataset}"]`)
+      if (!datasetCard) {
+        throw new Error(`Dataset card for "${dataset.dataset}" not found in rendered HTML`)
+      }
+
       if (!(dataset.status in datasetStatusEnum)) {
         throw new Error(`Unknown dataset status: ${dataset.status}`)
       }
 
       const expectedStatus = datasetStatusEnum[dataset.status]
 
-      const statusIndicator = datasetCards[i].querySelector('.govuk-task-list__status')
+      const statusIndicator = datasetCard.querySelector('.govuk-task-list__status')
       expect(statusIndicator.textContent.trim()).toContain(expectedStatus)
     })
 
     it(`Renders the correct link on each dataset card for dataset='${dataset.dataset}'`, () => {
-      const expectedLink = datasetCards[i].querySelector('.govuk-task-list__link').href
+      const datasetCard = document.querySelector(`li[data-dataset="${dataset.dataset}"]`)
+      if (!datasetCard) {
+        throw new Error(`Dataset card for "${dataset.dataset}" not found in rendered HTML`)
+      }
+
+      const expectedLink = datasetCard.querySelector('.govuk-task-list__link').href
 
       if (dataset.status === 'Not submitted') {
         expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.dataset}/get-started`)
@@ -158,7 +163,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
         expect(expectedLink).toEqual(`/organisations/${params.organisation.organisation}/${dataset.dataset}/overview`)
       }
 
-      const link = datasetCards[i].querySelector('.govuk-link')
+      const link = datasetCard.querySelector('.govuk-link')
       expect(link.href).toContain(expectedLink)
     })
   })
