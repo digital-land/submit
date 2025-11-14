@@ -30,7 +30,8 @@ const validationMessages = {
     length: 'The URL must be less than 2048 characters',
     exists: 'The URL does not exist. Check the URL you\'ve entered is correct',
     filetype: 'The file referenced by URL must be a CSV, GeoJSON, GML or GeoPackage file',
-    size: 'The file referenced by URL must be smaller than 100MB'
+    size: 'The file referenced by URL must be smaller than 100MB',
+    restricted403: 'The URL cannot be accessed automatically. This is likely a server side issue. Please see guidance below for more information'
   },
   validationResult: {
     required: 'Sorry, there is a problem with the service. Try again later'

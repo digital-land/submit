@@ -5,6 +5,7 @@
 {% from 'govuk/components/error-message/macro.njk' import govukErrorMessage %}
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 {% from 'components/dataset-banner.html' import datasetBanner %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% set serviceType = 'Check' %}
 {% set pageName = 'URL' %}
@@ -34,7 +35,7 @@
 
 {% block content %}
 
-  <div class="govuk-grid-row">
+  <div class="govuk-grid-row govuk-!-padding-bottom-4">
 
     <div class="govuk-grid-column-two-thirds">
       {% if error %}
@@ -68,8 +69,27 @@
           text: "Continue"
         }) }}
 
-        <p class="govuk-!-padding-top-4 govuk-!-padding-bottom-4"><a style="color: #fff" href="/no-errors">No errors</a></p>
+
       </form>
     </div>
   </div>
+{% if 'url' in errors and errors['url'].type == 'restricted403' %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukDetails({
+      summaryText: "Why couldn't we access your URL?",
+      html: "<p>We received a response code 403 when trying to access this URL. This could mean:</p>
+      <ul class='govuk-list govuk-list--bullet'>
+        <li>Your server has blocked our service from accessing this endpoint.</li>
+        <li>The resource may require special permissions.</li>
+      </ul>
+      <p class='govuk-!-font-weight-bold'>What you can do:</p>
+      <ul class='govuk-list govuk-list--bullet'>
+        <li>Check the URL allows us to access this endpoint.</li>
+        <li>Contact the data provider if the issue persists.</li>
+      </ul>"
+    }) }}
+  </div>
+</div>
+{% endif %}
 {% endblock %}
