@@ -28,14 +28,33 @@ export const dataviewQueryParams = v.object({
   resourceId: v.optional(v.string())
 })
 
+
+
 const validatedataviewQueryParams = validateQueryParams({
   schema: dataviewQueryParams
+})
+
+/**
+ * Middleware. Updates req with 'entities' same as fetchEntities so not to be used together!
+ *
+ * Fetches entities from the Platform API (mainWebsiteUrl) instead of Datasette.
+ * Uses REST API with query parameters instead of SQL.
+ */
+export const fetchEntitiesPlatformDb = fetchMany({
+  query: ({ req, params }) => ({
+    organisation_entity: req.orgInfo.entity,
+    dataset: params.dataset,
+    limit: req.dataRange.pageLength,
+    offset: req.dataRange.offset
+  }),
+  result: 'entities',
+  dataset: FetchOptions.platformDb
 })
 
 export const fetchEntities = fetchMany({
   query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}`,
   dataset: FetchOptions.fromParams,
-  result: 'entities'
+  result: 'entities' 
 })
 
 export const setRecordCount = (req, res, next) => {
@@ -116,7 +135,7 @@ export default [
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
 
-  fetchEntities,
+  fetchEntitiesPlatformDb,
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,
 
