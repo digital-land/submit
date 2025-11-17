@@ -28,8 +28,6 @@ export const dataviewQueryParams = v.object({
   resourceId: v.optional(v.string())
 })
 
-
-
 const validatedataviewQueryParams = validateQueryParams({
   schema: dataviewQueryParams
 })
@@ -54,7 +52,7 @@ export const fetchEntitiesPlatformDb = fetchMany({
 export const fetchEntities = fetchMany({
   query: ({ req, params }) => `SELECT * FROM entity WHERE organisation_entity = ${req.orgInfo.entity} LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}`,
   dataset: FetchOptions.fromParams,
-  result: 'entities' 
+  result: 'entities'
 })
 
 export const setRecordCount = (req, res, next) => {

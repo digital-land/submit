@@ -140,9 +140,9 @@ export async function fetchManyFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
     const database = datasetOverride(this.dataset, req)
-    
+
     let result
-    
+
     // Platform DB uses REST API instead of SQL, doesn't use Datasette
     if (database === 'platform') {
       if (typeof query !== 'object') {
@@ -152,7 +152,7 @@ export async function fetchManyFn (req, res, next) {
     } else {
       result = await datasette.runQuery(query, database)
     }
-    
+
     req[this.result] = result.formattedData
     logger.debug({ type: types.DataFetch, message: 'fetchMany', resultKey: this.result, resultCount: result.formattedData.length })
     next()

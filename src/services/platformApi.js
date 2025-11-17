@@ -21,7 +21,7 @@ export default {
    */
   fetchEntities: async (params) => {
     const queryParams = new URLSearchParams()
-    
+
     if (params.organisation_entity) queryParams.append('organisation_entity', params.organisation_entity)
     if (params.dataset) queryParams.append('dataset', params.dataset)
     if (params.limit) queryParams.append('limit', params.limit)
@@ -32,20 +32,20 @@ export default {
     try {
       logger.debug({ message: 'Platform API request', type: types.DataFetch, url, params })
       const response = await axios.get(url)
-      
+
       // Platform API returns { entities: [...] }
       const entities = response.data?.entities || []
-      
+
       return {
         data: response.data,
         formattedData: entities
       }
     } catch (error) {
-      logger.warn({ 
-        message: `platformApi.fetchEntities(): ${error.message}`, 
-        type: types.App, 
-        params, 
-        platformUrl: config.mainWebsiteUrl 
+      logger.warn({
+        message: `platformApi.fetchEntities(): ${error.message}`,
+        type: types.App,
+        params,
+        platformUrl: config.mainWebsiteUrl
       })
       throw error
     }
