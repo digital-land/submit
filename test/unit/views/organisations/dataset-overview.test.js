@@ -180,10 +180,13 @@ describe('Dataset Overview Page', () => {
 
     expect(header.textContent.trim()).toEqual('Dataset actions')
 
-    expect(links[0].textContent.trim()).toEqual('Check Article 4 direction area dataset')
-    expect(links[0].querySelector('.govuk-link').href).toEqual('/check/link?dataset=article-4-direction-area&orgName=Mock%20org&orgId=mock-org')
+    expect(links[0].textContent.trim()).toEqual('How to prepare and provide your Article 4 direction area data')
+    expect(links[0].querySelector('.govuk-link').href).toEqual('/organisations/mock-org/article-4-direction-area/get-started')
 
-    expect(links[1].textContent.trim()).toEqual('Article 4 direction area guidance')
-    expect(links[1].querySelector('.govuk-link').href).toEqual('/guidance/specifications/article-4-direction')
+    expect(links[1].textContent.trim()).toEqual('Check Article 4 direction area dataset')
+    expect(links[1].querySelector('.govuk-link').href).toEqual('/check/link?dataset=article-4-direction-area&orgName=Mock%20org&orgId=mock-org')
+
+    expect(links[2].textContent.trim()).toEqual('Article 4 direction area guidance')
+    expect(links[2].querySelector('.govuk-link').href).toEqual('/guidance/specifications/article-4-direction')
   })
 })

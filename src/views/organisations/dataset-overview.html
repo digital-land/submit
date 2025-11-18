@@ -203,6 +203,9 @@
       <h2 class="govuk-heading-m">Dataset actions</h2>
       <ul class="govuk-list">
         <li>
+          <a class="govuk-link" href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/get-started">How to prepare and provide your {{ dataset.name }} data</a>
+        </li>
+        <li>
           <a class="govuk-link" href="{{ organisation | checkToolDeepLink(dataset) }}">Check {{ dataset.name }} dataset</a>
         </li>
         {% if dataset.dataset | getDatasetGuidanceUrl %}
