@@ -21,7 +21,7 @@ export default {
    * @throws {Error} If the query fails or there is an error communicating with the Platform API
    */
   fetchEntities: async (params) => {
-    if (!params.organisation_entity || !params.dataset) {
+    if (!params.organisation_entity && !params.dataset) {
       throw new Error('organisation_entity or dataset are required parameters')
     }
     const queryParams = new URLSearchParams()

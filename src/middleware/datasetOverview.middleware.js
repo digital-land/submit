@@ -219,7 +219,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     endpointErrorIssues +
     (expectationOutOfBounds.length > 0 ? 1 : 0)
 
-  console.log('authority value in dataset overview middleware:', authority)
+  console.log('showMap', showMap)
   req.templateParams = {
     authority,
     showMap,
@@ -263,13 +263,13 @@ const fetchTypology = async (req, res, next) => {
     next()
   } catch (error) {
     logger.warn({
-      message: `prepareAuthority failed: ${error.message}`,
+      message: `fetch typology failed: ${error.message}`,
       type: types.App,
       orgEntity: req.orgInfo?.entity,
       dataset: req.params?.dataset
     })
-    // Default to null on error
-    req.typology = false
+    // Default to false on error
+    req.showMap = false
     next()
   }
 }

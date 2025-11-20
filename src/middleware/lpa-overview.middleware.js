@@ -287,7 +287,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
         return 'expected'
       case 'prospective':
         return 'prospective'
-      case 'encouraged': //Currently adding encouraged datasets to same group as prospective the "can-provide" segment
+      case 'encouraged': // Currently adding encouraged datasets to same group as prospective the "can-provide" segment
         return 'prospective'
       default:
         return 'other'
