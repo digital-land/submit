@@ -143,10 +143,10 @@ export async function fetchManyFn (req, res, next) {
 
     let result
 
-    // Platform DB uses REST API instead of SQL, doesn't use Datasette
+    // Platform DB uses REST API instead of SQL, doesn't use Datasette, future refactor could completely separate this from datasette
     if (database === 'platform') {
-      if (typeof query !== 'object') {
-        throw new Error('Platform DB queries require an object with { organisation_entity, dataset, limit, offset }')
+      if (!query || typeof query !== 'object' || Array.isArray(query)) {
+        throw new Error(`Platform DB queries require an object with { organisation_entity, dataset, limit, offset }, received: ${typeof query}`)
       }
       result = await platformApi.fetchEntities(query)
     } else {

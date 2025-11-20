@@ -21,6 +21,9 @@ export default {
    * @throws {Error} If the query fails or there is an error communicating with the Platform API
    */
   fetchEntities: async (params) => {
+    if (!params.organisation_entity || !params.dataset) {
+      throw new Error('organisation_entity or dataset are required parameters')
+    }
     const queryParams = new URLSearchParams()
 
     if (params.organisation_entity) queryParams.append('organisation_entity', params.organisation_entity)
@@ -33,7 +36,7 @@ export default {
 
     try {
       logger.debug({ message: 'Platform API request', type: types.DataFetch, url, params })
-      const response = await axios.get(url)
+      const response = await axios.get(url, { timeout: 10000 })
 
       // Platform API returns { entities: [...] }
       const entities = response.data?.entities || []
@@ -45,7 +48,7 @@ export default {
     } catch (error) {
       logger.warn({
         message: `platformApi.fetchEntities(): ${error.message}`,
-        type: types.App,
+        type: types.External,
         params,
         platformUrl: config.mainWebsiteUrl
       })
