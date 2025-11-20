@@ -21,7 +21,7 @@ export default {
    */
   fetchEntities: async (params) => {
     if (!params.organisation_entity || !params.dataset) {
-      throw new Error('organisation_entity or dataset are required parameters')  
+      throw new Error('organisation_entity or dataset are required parameters')
     }
     const queryParams = new URLSearchParams()
 
@@ -34,7 +34,7 @@ export default {
 
     try {
       logger.debug({ message: 'Platform API request', type: types.DataFetch, url, params })
-      const response = await axios.get(url)
+      const response = await axios.get(url, { timeout: 10000 })
 
       // Platform API returns { entities: [...] }
       const entities = response.data?.entities || []
@@ -46,7 +46,7 @@ export default {
     } catch (error) {
       logger.warn({
         message: `platformApi.fetchEntities(): ${error.message}`,
-        type: types.App,
+        type: types.External,
         params,
         platformUrl: config.mainWebsiteUrl
       })
