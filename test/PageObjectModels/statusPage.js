@@ -46,29 +46,29 @@ export default class StatusPage extends BasePage {
   async clickCheckStatusButton () {
     // Keep clicking the Continue button until we navigate to results page
     const maxAttempts = 60 // Try for up to 60 seconds
-    
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const currentUrl = await this.page.url()
-      
+
       // Check if we've navigated to results page
       if (/\/check\/results\/.*/.test(currentUrl)) {
         console.log(`Successfully navigated to results page after ${attempt} attempts`)
         break
       }
-      
+
       // Click the button if it's visible
       if (await this.page.isVisible('#js-async-continue-button')) {
         await this.page.click('#js-async-continue-button', { timeout: 5000 })
         console.log(`Clicked continue button (attempt ${attempt + 1})`)
       }
-      
+
       // Wait 1 second before next attempt
       await this.page.waitForTimeout(1000)
     }
-    
+
     // Final check that we're on the results page
     await this.page.waitForURL(/\/check\/results\/.*/, { timeout: 5000 })
-    
+
     return new ResultsPage(this.page)
   }
 
