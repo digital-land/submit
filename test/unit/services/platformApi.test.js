@@ -38,7 +38,8 @@ describe('platformApi.fetchEntities', () => {
 
     expect(axios.get).toHaveBeenCalledTimes(1)
     expect(axios.get).toHaveBeenCalledWith(
-      'https://www.planning.data.gov.uk/entity.json?organisation_entity=12345&dataset=conservation-area&limit=10&offset=50'
+      'https://www.planning.data.gov.uk/entity.json?organisation_entity=12345&dataset=conservation-area&limit=10&offset=50',
+      { timeout: 10000 }
     )
     expect(result).toEqual({
       data: mockResponse.data,
@@ -66,7 +67,8 @@ describe('platformApi.fetchEntities', () => {
 
     expect(axios.get).toHaveBeenCalledTimes(1)
     expect(axios.get).toHaveBeenCalledWith(
-      'https://www.planning.data.gov.uk/entity.json?organisation_entity=67890&dataset=article-4-direction'
+      'https://www.planning.data.gov.uk/entity.json?organisation_entity=67890&dataset=article-4-direction',
+      { timeout: 10000 }
     )
     expect(result).toEqual({
       data: mockResponse.data,
@@ -138,7 +140,8 @@ describe('platformApi.fetchEntities', () => {
     const result = await platformApi.fetchEntities(params)
 
     expect(axios.get).toHaveBeenCalledWith(
-      'https://www.planning.data.gov.uk/entity.json?organisation_entity=55555&dataset=article-4-direction&limit=50&offset=50'
+      'https://www.planning.data.gov.uk/entity.json?organisation_entity=55555&dataset=article-4-direction&limit=50&offset=50',
+      { timeout: 10000 }
     )
     expect(result.formattedData).toHaveLength(2)
   })
