@@ -98,6 +98,7 @@ provisionReasons:
   - statutory
   - prospective  
   - expected
+  - encouraged
 tablePageLength: 50
 jira: {
   requestTypeId: 1
