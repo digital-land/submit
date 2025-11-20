@@ -159,6 +159,8 @@ export const OrgGetStarted = v.strictObject({
 export const OrgDatasetOverview = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
+  showMap: v.boolean(),
+  authority: v.string(),
   taskCount: v.integer(),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
@@ -183,6 +185,7 @@ export const OrgDataView = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   taskCount: v.integer(),
+  authority: v.string(),
   tableParams,
   pagination: PaginationParams,
   dataRange: dataRangeParams

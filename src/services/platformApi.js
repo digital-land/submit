@@ -16,6 +16,7 @@ export default {
    * @param {string} params.dataset - The dataset name
    * @param {number} [params.limit] - Maximum number of results
    * @param {number} [params.offset] - Number of results to skip
+   * @param {string} [params.quality] - The quality level (e.g., 'authoritative', 'some')
    * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted entity data
    * @throws {Error} If the query fails or there is an error communicating with the Platform API
    */
@@ -26,6 +27,7 @@ export default {
     if (params.dataset) queryParams.append('dataset', params.dataset)
     if (params.limit) queryParams.append('limit', params.limit)
     if (params.offset) queryParams.append('offset', params.offset)
+    if (params.quality) queryParams.append('quality', params.quality)
 
     const url = `${config.mainWebsiteUrl}/entity.json?${queryParams.toString()}`
 

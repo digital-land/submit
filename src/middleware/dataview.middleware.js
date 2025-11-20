@@ -15,7 +15,9 @@ import {
   fetchResources,
   fetchEntityCount,
   fetchEntityIssueCounts,
-  fetchEntryIssueCounts
+  fetchEntryIssueCounts,
+  fetchEntitiesPlatformDb,
+  prepareAuthority
 } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -30,23 +32,6 @@ export const dataviewQueryParams = v.object({
 
 const validatedataviewQueryParams = validateQueryParams({
   schema: dataviewQueryParams
-})
-
-/**
- * Middleware. Updates req with 'entities' same as fetchEntities so not to be used together!
- *
- * Fetches entities from the Platform API (mainWebsiteUrl) instead of Datasette.
- * Uses REST API with query parameters instead of SQL.
- */
-export const fetchEntitiesPlatformDb = fetchMany({
-  query: ({ req, params }) => ({
-    organisation_entity: req.orgInfo.entity,
-    dataset: params.dataset,
-    limit: req.dataRange.pageLength,
-    offset: req.dataRange.offset
-  }),
-  result: 'entities',
-  dataset: FetchOptions.platformDb
 })
 
 export const fetchEntities = fetchMany({
@@ -97,10 +82,11 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority } = req
 
   req.templateParams = {
     organisation: orgInfo,
+    authority,
     dataset,
     taskCount: entityIssueCounts.length + entryIssueCounts.length,
     tableParams,
@@ -130,10 +116,12 @@ export default [
 
   fetchEntityCount,
   setRecordCount,
+
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
 
-  fetchEntitiesPlatformDb,
+  prepareAuthority, // Used to see if alternative or authoritative, and update entites fetch accordingly
+  fetchEntitiesPlatformDb, // This technically fetches twice from entities table, could be refactored later
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,
 

@@ -13,6 +13,7 @@ import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
+import platformApi from '../services/platformApi.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -104,6 +105,81 @@ export function validateQueryParamsFn (req, res, next) {
 
 export function validateQueryParams (context) {
   return validateQueryParamsFn.bind(context)
+}
+
+/**
+ * Middleware. Updates req with 'entities' same as fetchEntities so not to be used together!
+ *
+ * Fetches entities from the Platform API (mainWebsiteUrl) instead of Datasette.
+ * Uses REST API with query parameters instead of SQL, made in line with fetch spec pattern to allow easy swapping.
+ */
+export const fetchEntitiesPlatformDb = fetchMany({
+  query: ({ req, params }) => ({
+    organisation_entity: req.orgInfo.entity,
+    dataset: params.dataset,
+    limit: req.dataRange.pageLength,
+    offset: req.dataRange.offset,
+    quality: req.authority && req.authority !== '' ? req.authority : undefined
+  }),
+  result: 'entities',
+  dataset: FetchOptions.platformDb
+})
+
+/**
+ * Middleware to determine authority level based on entity quality
+ * Queries the Platform API twice: first for 'authoritative' quality, then for 'some' quality if needed, only needs 1 result
+ *
+ * @param {Object} req - Request object
+ * @param {Object} req.orgInfo - Organization info with entity
+ * @param {Object} req.params - Route parameters
+ * @param {string} req.params.dataset - Dataset name
+ * @param {string} [req.authority] OUT parameter - Set to 'authoritative', 'some', or '' (empty string)
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ */
+export const prepareAuthority = async (req, res, next) => {
+  try {
+    const { orgInfo, params } = req
+
+    // First query: Check for authoritative quality
+    const authoritativeResult = await platformApi.fetchEntities({
+      organisation_entity: orgInfo.entity,
+      dataset: params.dataset,
+      quality: 'authoritative',
+      limit: 1
+    })
+
+    if (authoritativeResult.formattedData && authoritativeResult.formattedData.length > 0) {
+      req.authority = 'authoritative'
+      return next()
+    }
+
+    // Second query: Check for 'some' quality
+    const someResult = await platformApi.fetchEntities({
+      organisation_entity: orgInfo.entity,
+      dataset: params.dataset,
+      quality: 'some',
+      limit: 1
+    })
+
+    if (someResult.formattedData && someResult.formattedData.length > 0) {
+      req.authority = 'some'
+    } else {
+      req.authority = ''
+    }
+
+    next()
+  } catch (error) {
+    logger.warn({
+      message: `prepareAuthority failed: ${error.message}`,
+      type: types.App,
+      orgEntity: req.orgInfo?.entity,
+      dataset: req.params?.dataset
+    })
+    // Default to empty string on error
+    req.authority = ''
+    next()
+  }
 }
 
 export const fetchLpaDatasetIssues = fetchMany({
@@ -838,6 +914,7 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
   })
 })
 
+// Fetches all currently active data source endpoints for a given organization and dataset, deduplicating by endpoint URL and keeping only the most recently logged entry for each unique endpoint, ordered by when they were last accessed.
 export const fetchSources = fetchMany({
   query: ({ params }) => `
     WITH RankedEndpoints AS (
