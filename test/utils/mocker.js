@@ -3,7 +3,7 @@
 
 import { toJSONSchema } from '@gcornut/valibot-json-schema'
 import { JSONSchemaFaker } from 'json-schema-faker'
-import { date, number, string } from 'valibot'
+import { date, number, string, object } from 'valibot'
 
 export default (schema, seed) => {
   const jsonSchema = toJSONSchema({
@@ -13,7 +13,9 @@ export default (schema, seed) => {
       // Treat set type like an array
       integer: (schema, converter) => converter(number(schema.value)),
       url: (schema, converter) => converter(string(schema.value)),
-      iso_date_time: (schema, converter) => converter(date(schema.value))
+      iso_date_time: (schema, converter) => converter(date(schema.value)),
+      // Convert looseObject to regular object for JSON schema generation
+      loose_object: (schema, converter) => converter(object(schema.entries))
     },
     dateStrategy: 'string'
   })
