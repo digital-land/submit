@@ -63,10 +63,6 @@ jobs:
       - name: Run integration tests
         run: npm run test:integration
       
-      - name: Debug config + port just before acceptance tests
-        run: |
-          node -e "import config from './config/index.js'; console.log('ENVIRONMENT:', config.environment, 'URL:', config.url, 'PORT:', config.port);"
-          curl -v http://localhost:8085/ || echo 'curl failed'
       - name: Run acceptance tests
         run: npm run test:acceptance:ci
 
