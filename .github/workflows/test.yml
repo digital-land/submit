@@ -62,6 +62,7 @@ jobs:
       - uses: ./.github/actions/playwright-setup
       - name: Run integration tests
         run: npm run test:integration
+      
       - name: Run acceptance tests
         run: npm run test:acceptance:ci
 

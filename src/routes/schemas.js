@@ -107,7 +107,7 @@ export const DeadlineNoticeField = v.strictObject({
   deadline: v.string()
 })
 
-const IssueSpecification = v.optional(v.strictObject({
+const IssueSpecification = v.optional(v.looseObject({
   datasetField: NonEmptyString,
   field: NonEmptyString,
   description: v.optional(NonEmptyString),

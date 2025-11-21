@@ -14,6 +14,7 @@ import { types } from '../utils/logging.js'
 import { templateSchema } from '../routes/schemas.js'
 import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
+import platformApi from '../services/platformApi.js'
 import * as v from 'valibot'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 
@@ -37,7 +38,11 @@ export const FetchOptions = {
   /**
    * Use the performance database
    */
-  performanceDb: Symbol('performance-db')
+  performanceDb: Symbol('performance-db'),
+  /**
+   * Use the platform database
+   */
+  platformDb: Symbol('platform-db')
 }
 
 export const datasetOverride = (val, req) => {
@@ -52,6 +57,8 @@ export const datasetOverride = (val, req) => {
     return req.params.dataset
   } else if (val === FetchOptions.performanceDb) {
     return 'performance'
+  } else if (val === FetchOptions.platformDb) {
+    return 'platform'
   } else {
     return val(req)
   }
@@ -132,7 +139,20 @@ async function fetchOneFn (req, res, next) {
 export async function fetchManyFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req))
+    const database = datasetOverride(this.dataset, req)
+
+    let result
+
+    // Platform DB uses REST API instead of SQL, doesn't use Datasette, future refactor could completely separate this from datasette
+    if (database === 'platform') {
+      if (!query || typeof query !== 'object' || Array.isArray(query)) {
+        throw new Error(`Platform DB queries require an object with { organisation_entity, dataset, limit, offset }, received: ${typeof query}`)
+      }
+      result = await platformApi.fetchEntities(query)
+    } else {
+      result = await datasette.runQuery(query, database)
+    }
+
     req[this.result] = result.formattedData
     logger.debug({ type: types.DataFetch, message: 'fetchMany', resultKey: this.result, resultCount: result.formattedData.length })
     next()

@@ -11,6 +11,7 @@ const initDatasetSlugToReadableNameFilter = async () => {
     console.error('Failed to load dataset mapping:', error)
     datasetSlugToReadableName = (slug) => slug // Fallback to using the slug as-is
   }
+  return datasetSlugToReadableName
 }
 
 export {
