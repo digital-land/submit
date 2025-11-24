@@ -219,7 +219,6 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     endpointErrorIssues +
     (expectationOutOfBounds.length > 0 ? 1 : 0)
 
-  console.log('showMap', showMap)
   req.templateParams = {
     authority,
     showMap,
