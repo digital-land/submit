@@ -61,6 +61,7 @@ export function setupNunjucks (opts) {
     dataDesignUrl: config.dataDesignUrl,
     mainWebsiteUrl: config.mainWebsiteUrl,
     govukRebrand: true,
+    env: config.environment,
     ...config.templateContent
   }
 
