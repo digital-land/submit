@@ -1556,7 +1556,7 @@ describe('preventIndexing middleware', () => {
     beforeEach(() => {
       req = {
         orgInfo: { entity: '12345' },
-        params: { dataset: 'conservation-area' }
+        params: { dataset: 'local-plan-boundary' }
       }
       res = {}
       next = vi.fn()
@@ -1572,7 +1572,7 @@ describe('preventIndexing middleware', () => {
 
       expect(platformApi.fetchEntities).toHaveBeenCalledWith({
         organisation_entity: '12345',
-        dataset: 'conservation-area',
+        dataset: 'local-plan-boundary',
         quality: 'authoritative',
         limit: 1
       })
@@ -1591,13 +1591,13 @@ describe('preventIndexing middleware', () => {
       expect(platformApi.fetchEntities).toHaveBeenCalledTimes(2)
       expect(platformApi.fetchEntities).toHaveBeenNthCalledWith(1, {
         organisation_entity: '12345',
-        dataset: 'conservation-area',
+        dataset: 'local-plan-boundary',
         quality: 'authoritative',
         limit: 1
       })
       expect(platformApi.fetchEntities).toHaveBeenNthCalledWith(2, {
         organisation_entity: '12345',
-        dataset: 'conservation-area',
+        dataset: 'local-plan-boundary',
         quality: 'some',
         limit: 1
       })
