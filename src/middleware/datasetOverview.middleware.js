@@ -245,7 +245,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
  * @param {Object} res - Express response object
  * @param {Function} next - Next middleware function
  */
-const fetchTypology = async (req, res, next) => {
+export const fetchTypology = async (req, res, next) => {
   try {
     const { params } = req
 

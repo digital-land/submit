@@ -18,6 +18,9 @@ describe('Dataset Overview Page', () => {
       name: 'World heritage site buffer zone',
       collection: 'world-heritage-site'
     },
+    showMap: false,
+    authority: '',
+    taskCount: 1,
     stats: {
       numberOfRecords: 10,
       endpoints: [
@@ -104,6 +107,7 @@ describe('Dataset Overview Page', () => {
   it('Renders the map section when a mappable dataset is viewed', () => {
     const paramsWithGeometries = {
       ...params,
+      showMap: true,
       dataset: {
         dataset: 'article-4-direction-area',
         name: 'Article 4 direction area',
@@ -188,5 +192,26 @@ describe('Dataset Overview Page', () => {
 
     expect(links[2].textContent.trim()).toEqual('Article 4 direction area guidance')
     expect(links[2].querySelector('.govuk-link').href).toEqual('/guidance/specifications/article-4-direction')
+  })
+
+  it('Renders alternative source notice when authority is "some"', () => {
+    const paramsWithAlternativeSource = {
+      ...params,
+      authority: 'some'
+    }
+    const htmlWithAlternativeSource = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', paramsWithAlternativeSource))
+    const domWithAlternativeSource = new jsdom.JSDOM(htmlWithAlternativeSource)
+    const documentWithAlternativeSource = domWithAlternativeSource.window.document
+
+    const alternativeSourceSection = documentWithAlternativeSource.querySelector('.govuk-grid-column-two-thirds section:last-of-type')
+
+    expect(alternativeSourceSection).not.toBeNull()
+    expect(alternativeSourceSection.textContent).toContain('Your organisation is the authoritative source of this data.')
+    expect(alternativeSourceSection.textContent).toContain('Right now, this data is from an alternative source.')
+    expect(alternativeSourceSection.textContent).toContain('Alternative sources are third party sources which have not been provided by you as the authoritative organisation.')
+    
+    const downloadButton = alternativeSourceSection.querySelector('.govuk-button')
+    expect(downloadButton).not.toBeNull()
+    expect(downloadButton.textContent.trim()).toEqual('Download alternative source data')
   })
 })

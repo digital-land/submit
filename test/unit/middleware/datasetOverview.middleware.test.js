@@ -1,7 +1,14 @@
 /* eslint no-import-assign: 0 */
-import { describe, it, expect, vi } from 'vitest'
-import { prepareDatasetOverviewTemplateParams, setNoticesFromSourceKey } from '../../../src/middleware/datasetOverview.middleware.js'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { prepareDatasetOverviewTemplateParams, setNoticesFromSourceKey, fetchTypology } from '../../../src/middleware/datasetOverview.middleware.js'
 import * as utils from '../../../src/utils/utils.js'
+import platformApi from '../../../src/services/platformApi.js'
+
+vi.mock('../../../src/services/platformApi.js', () => ({
+  default: {
+    fetchEntities: vi.fn()
+  }
+}))
 
 describe('Dataset Overview Middleware', () => {
   const req = {
@@ -221,6 +228,91 @@ describe('Dataset Overview Middleware', () => {
       }
       setNoticesFromSourceKey('foobar')(reqWithoutSource, res, () => {})
       expect(reqWithoutSource.notice).toBeUndefined()
+    })
+  })
+
+  describe('fetchTypology', () => {
+    let req, res, next
+
+    beforeEach(() => {
+      req = {
+        params: { dataset: 'conservation-area' }
+      }
+      res = {}
+      next = vi.fn()
+      vi.clearAllMocks()
+    })
+
+    it('sets req.showMap to true when typology is "geography"', async () => {
+      platformApi.fetchEntities.mockResolvedValueOnce({
+        formattedData: [{ typology: 'geography', entity: '1' }]
+      })
+
+      await fetchTypology(req, res, next)
+
+      expect(platformApi.fetchEntities).toHaveBeenCalledWith({
+        dataset: 'conservation-area',
+        limit: 1
+      })
+      expect(req.showMap).toBe(true)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.showMap to false when typology is not "geography"', async () => {
+      platformApi.fetchEntities.mockResolvedValueOnce({
+        formattedData: [{ typology: 'other', entity: '1' }]
+      })
+
+      await fetchTypology(req, res, next)
+
+      expect(platformApi.fetchEntities).toHaveBeenCalledWith({
+        dataset: 'conservation-area',
+        limit: 1
+      })
+      expect(req.showMap).toBe(false)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.showMap to false when formattedData is empty', async () => {
+      platformApi.fetchEntities.mockResolvedValueOnce({
+        formattedData: []
+      })
+
+      await fetchTypology(req, res, next)
+
+      expect(req.showMap).toBe(false)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.showMap to false when formattedData is null', async () => {
+      platformApi.fetchEntities.mockResolvedValueOnce({
+        formattedData: null
+      })
+
+      await fetchTypology(req, res, next)
+
+      expect(req.showMap).toBe(false)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.showMap to false when formattedData is undefined', async () => {
+      platformApi.fetchEntities.mockResolvedValueOnce({})
+
+      await fetchTypology(req, res, next)
+
+      expect(req.showMap).toBe(false)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.showMap to false when an error occurs', async () => {
+      const error = new Error('Platform API error')
+      platformApi.fetchEntities.mockRejectedValueOnce(error)
+
+      await fetchTypology(req, res, next)
+
+      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(1)
+      expect(req.showMap).toBe(false)
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 })
