@@ -22,7 +22,7 @@ const fetchEntityIssueCountsPerformanceDb = fetchMany({
     return performanceDbApi.fetchEntityIssueCounts(params.lpa)
   },
   result: 'entityIssueCounts',
-  dataset: FetchOptions.performanceDbentityCounts
+  dataset: FetchOptions.performanceDb
 })
 
 const fetchProvisions = fetchMany({
