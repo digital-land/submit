@@ -314,7 +314,7 @@ export const getOverview = renderTemplate({
 })
 
 export function groupIssuesCountsByDataset (req, res, next) {
-  const { entityIssueCounts } = req
+  const { entityIssueCounts = [] } = req
 
   req.issues = entityIssueCounts.reduce((acc, current) => {
     if (!acc[current.dataset]) {
