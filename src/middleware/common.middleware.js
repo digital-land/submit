@@ -139,17 +139,17 @@ export const fetchEntitiesPlatformDb = fetchMany({
  */
 export const prepareAuthority = async (req, res, next) => {
   try {
-    const { orgInfo, params} = req
+    const { orgInfo, params } = req
     // Current hard coded list so only these datasets show non authoritative data
     if (
       ![
-      'local-plan-boundary',
-      'local-plan-document',
-      'local-plan-document-type',
-      'local-plan-event',
-      'local-plan-housing',
-      'local-plan-process',
-      'local-plan-timetable'
+        'local-plan-boundary',
+        'local-plan-document',
+        'local-plan-document-type',
+        'local-plan-event',
+        'local-plan-housing',
+        'local-plan-process',
+        'local-plan-timetable'
       ].includes(params.dataset)
     ) {
       // Default to empty string on error
@@ -194,7 +194,7 @@ export const prepareAuthority = async (req, res, next) => {
     })
     // Default to empty string on error
     req.authority = ''
-     return next()
+    return next()
   }
 }
 
