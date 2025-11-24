@@ -51,7 +51,6 @@
       {% endif %}
       <form novalidate method="post">
         {{ datasetBanner(options.lpa, options.datasetName) }}
-        
         {{ govukInput({
           id: "url",
           name: "url",
@@ -60,6 +59,9 @@
             isPageHeading: true,
             classes: 'govuk-label--l'
           },
+          hint: {
+            html: '<p class="govuk-body">You must host the URL on a server which does not block access due to set permissions.</p><p class="govuk-body">Contact your IT team for support if you need it, referencing a \'HTTP status code 403\' error.</p>'
+          } if ('url' in errors and errors['url'].type == 'restricted403') else undefined,
           value: data.check.url,
           errorMessage: {
             text: errorMessage 
@@ -73,23 +75,4 @@
       </form>
     </div>
   </div>
-{% if 'url' in errors and errors['url'].type == 'restricted403' %}
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
-    {{ govukDetails({
-      summaryText: "Why couldn't we access your URL?",
-      html: "<p>We received a response code 403 when trying to access this URL. This could mean:</p>
-      <ul class='govuk-list govuk-list--bullet'>
-        <li>Your server has blocked our service from accessing this endpoint.</li>
-        <li>The resource may require special permissions.</li>
-      </ul>
-      <p class='govuk-!-font-weight-bold'>What you can do:</p>
-      <ul class='govuk-list govuk-list--bullet'>
-        <li>Check the URL allows us to access this endpoint.</li>
-        <li>Contact the data provider if the issue persists.</li>
-      </ul>"
-    }) }}
-  </div>
-</div>
-{% endif %}
 {% endblock %}
