@@ -5,7 +5,10 @@ import platformApi from '../../../src/services/platformApi.js'
 vi.mock('axios')
 vi.mock('../../../config/index.js', () => ({
   default: {
-    mainWebsiteUrl: 'https://www.planning.data.gov.uk'
+    mainWebsiteUrl: 'https://www.planning.data.gov.uk',
+    checkService: {
+      userAgentInternal: 'test-user-agent'
+    }
   }
 }))
 
@@ -39,7 +42,12 @@ describe('platformApi.fetchEntities', () => {
     expect(axios.get).toHaveBeenCalledTimes(1)
     expect(axios.get).toHaveBeenCalledWith(
       'https://www.planning.data.gov.uk/entity.json?organisation_entity=12345&dataset=conservation-area&limit=10&offset=50',
-      { timeout: 10000 }
+      {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'test-user-agent'
+        }
+      }
     )
     expect(result).toEqual({
       data: mockResponse.data,
@@ -68,7 +76,12 @@ describe('platformApi.fetchEntities', () => {
     expect(axios.get).toHaveBeenCalledTimes(1)
     expect(axios.get).toHaveBeenCalledWith(
       'https://www.planning.data.gov.uk/entity.json?organisation_entity=67890&dataset=article-4-direction',
-      { timeout: 10000 }
+      {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'test-user-agent'
+        }
+      }
     )
     expect(result).toEqual({
       data: mockResponse.data,
@@ -141,7 +154,12 @@ describe('platformApi.fetchEntities', () => {
 
     expect(axios.get).toHaveBeenCalledWith(
       'https://www.planning.data.gov.uk/entity.json?organisation_entity=55555&dataset=article-4-direction&limit=50&offset=50',
-      { timeout: 10000 }
+      {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'test-user-agent'
+        }
+      }
     )
     expect(result.formattedData).toHaveLength(2)
   })

@@ -45,6 +45,31 @@ export const fetchDatasetInfo = fetchOne({
   result: 'dataset'
 })
 
+/** Emulate fetchDatasetInfo but from Platform API and with more detail such as typology
+ *
+ * @param {object} req
+ * @param {object} req.params
+ * @param {*} req.params.dataset
+ * @param {object} req.dataset - populated dataset info
+ *
+ */
+export const fetchDatasetPlatformInfo = async (req, res, next) => {
+  try {
+    const { formattedData } = await platformApi.fetchDatasets({ dataset: req.params.dataset })
+    const datasetInfo = formattedData[0]
+    req.dataset = {
+      collection: datasetInfo.collection,
+      name: datasetInfo.name,
+      dataset: datasetInfo.dataset,
+      typology: datasetInfo.typology
+    }
+  } catch (error) {
+    logger.warn('fetchDatasetPlatformInfo failed', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+    return next(error)
+  }
+  return next()
+}
+
 /**
  * Was the resource accessed successfully via HTTP?
  *

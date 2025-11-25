@@ -4,13 +4,12 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop, prepareAuthority } from './common.middleware.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop, prepareAuthority } from './common.middleware.js'
 import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { isFeatureEnabled } from '../utils/features.js'
-import platformApi from '../services/platformApi.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -186,7 +185,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, showMap, expectationOutOfBounds = [] } = req
+  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, expectationOutOfBounds = [] } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources
@@ -219,6 +218,8 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     endpointErrorIssues +
     (expectationOutOfBounds.length > 0 ? 1 : 0)
 
+  const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
+
   req.templateParams = {
     authority,
     showMap,
@@ -235,44 +236,6 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   next()
 }
 
-/** * Middleware to fetch typology of dataset from Platform API
- * Set req.showMap to true if typology is 'geography'
- *
- * @param {Object} req - Express request object
- * @param {Object} req.params - Request parameters
- * @param {string} req.params.dataset - Dataset name
- * @param {Object} res - Express response object
- * @param {Function} next - Next middleware function
- */
-export const fetchTypology = async (req, res, next) => {
-  try {
-    const { params } = req
-
-    // Check one row for typology for that dataset
-    const typologyLookup = await platformApi.fetchEntities({
-      dataset: params.dataset,
-      limit: 1
-    })
-
-    if (typologyLookup.formattedData && typologyLookup.formattedData.length > 0 && typologyLookup.formattedData[0].typology === 'geography') {
-      req.showMap = true
-    } else {
-      req.showMap = false
-    }
-    next()
-  } catch (error) {
-    logger.warn({
-      message: `fetch typology failed: ${error.message}`,
-      type: types.App,
-      orgEntity: req.orgInfo?.entity,
-      dataset: req.params?.dataset
-    })
-    // Default to false on error
-    req.showMap = false
-    next()
-  }
-}
-
 const getDatasetOverview = renderTemplate(
   {
     templateParams: (req) => req.templateParams,
@@ -283,14 +246,13 @@ const getDatasetOverview = renderTemplate(
 
 export default [
   fetchOrgInfo,
-  fetchDatasetInfo,
+  fetchDatasetPlatformInfo,
   fetchColumnSummary,
   fetchResources,
   fetchSources,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
   fetchSpecification,
-  fetchTypology,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   prepareAuthority, // Determine authority or non authority page, using platform API direclty so breaks the fetch design pattern.
   pullOutDatasetSpecification,

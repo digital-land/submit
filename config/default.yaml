@@ -30,7 +30,8 @@ datasetteUrl: 'https://datasette.planning.data.gov.uk'
 checkService:
     # used as User-Agent header when checking the accessibility
     # of user supplied URLs
-    userAgent: 'GOVUK Planning Data: Check Service'
+    userAgentInternal: 'GOVUK-Planning-Data:Provide'
+    userAgent: 'GOVUK-Planning-Data'
 templateContent:
     feedbackLink: 'https://forms.office.com/Pages/ResponsePage.aspx?id=EGg0v32c3kOociSi7zmVqML0lOlr1nBLv1MaFDrnRRxURThTVTJBSDE0Sk45V1JJQlFSRDI2RzRBMy4u'
     homepageUrl: '/'
