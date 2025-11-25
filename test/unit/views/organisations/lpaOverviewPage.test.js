@@ -73,7 +73,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     }
   })
 
-  it.skipIf(!params.datasets.expected || params.datasets.expected.length === 0)('The correct number of dataset cards are rendered with the correct titles in group "expected"', () => {
+  it.skipIf(!params.datasets.expected || params.datasets.expected.length === 0 || !params.isODPMember)('The correct number of dataset cards are rendered with the correct titles in group "expected"', () => {
     datasetGroup({ expect }, 'expected', params.datasets.expected, document)
   })
 
@@ -83,7 +83,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
 
   const allDatasets = [
     ...(params.datasets.statutory ?? []),
-    ...(params.datasets.expected ?? []),
+    ...(params.isODPMember ? (params.datasets.expected ?? []) : []),
     ...(params.datasets.prospective ?? [])
   ]
   allDatasets.forEach((dataset, i) => {

@@ -9,6 +9,7 @@ import { allowedFileTypes } from '../utils/utils.js'
 import config from '../../config/index.js'
 
 const HTTP_STATUS_METHOD_NOT_ALLOWED = 405
+const HTTP_STATUS_BLOCKED = 403
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
@@ -61,6 +62,7 @@ class SubmitUrlController extends UploadController {
 
     const postValidators = (resp) => ([
       { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) },
+      { type: 'restricted403', fn: () => SubmitUrlController.isNotRestricted(resp) },
       { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
       { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
     ])
@@ -153,6 +155,26 @@ class SubmitUrlController extends UploadController {
   /**
    * @param {AxiosResponse?} response
    * @returns {boolean}
+   * Check for 403 status code
+   */
+  static isNotRestricted (response) {
+    if (!response) {
+      return false
+    }
+
+    try {
+      // Check for 403 status, likely means forbidden due to automated requests restrictions.
+      return response.status !== HTTP_STATUS_BLOCKED
+    } catch (err) {
+      logger.warn(err)
+      return true
+    }
+  }
+
+  /**
+   * @param {AxiosResponse?} response
+   * @returns {boolean}
+   * check for 404 status code
    */
   static isUrlAccessible (response) {
     if (!response) {
