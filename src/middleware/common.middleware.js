@@ -56,6 +56,12 @@ export const fetchDatasetInfo = fetchOne({
 export const fetchDatasetPlatformInfo = async (req, res, next) => {
   try {
     const { formattedData } = await platformApi.fetchDatasets({ dataset: req.params.dataset })
+    //Bounds check TODO move to external bounds handling as in fetchOne
+    if (!formattedData || formattedData.length === 0) {
+      const error = new Error(`Dataset not found: ${req.params.dataset}`)
+      logger.warn('fetchDatasetPlatformInfo: no dataset returned', { type: types.App, dataset: req.params.dataset })
+      return next(error)
+    }
     const datasetInfo = formattedData[0]
     req.dataset = {
       collection: datasetInfo.collection,

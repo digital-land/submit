@@ -49,11 +49,7 @@ export default {
    * Fetches datasets from the Platform API /dataset.json endpoint
    *
    * @param {Object} params - Query params
-   * @param {string} [params.organisation_entity] - The organisation entity ID
    * @param {string} [params.dataset] - The dataset name
-   * @param {number} [params.limit] - Maximum number of results
-   * @param {number} [params.offset] - Number of results to skip
-   * @param {string} [params.quality] - The quality level (e.g., 'authoritative', 'some')
    * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
    * @throws {Error} If the query fails or there is an error communicating with the Platform API
    */
