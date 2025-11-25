@@ -23,17 +23,9 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
 {% from "components/deadlineNotice.html" import deadlineNotice %}
+{% from "components/alternativeSourceNotice.html" import alternativeSourceNotice %}
 
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
-{% set showMap = [
-  "article-4-direction-area",
-  "brownfield-land",
-  "conservation-area",
-  "listed-building",
-  "listed-building-outline",
-  "tree",
-  "tree-preservation-zone"
-].includes(dataset.dataset) %}
 
 {% set serviceType = 'Manage' %}
 {% set pageName %}
@@ -79,99 +71,96 @@
     value: {
       text: stats.numberOfRecords | default(0)
     }
-  },
-  {
+  }
+] %}
+
+{% if authority !== 'some' %}
+  {% set licenceRow = {
     key: {
       text: "Licence"
     },
     value: {
       text: "Open Government Licence"
     }
-  }
-] %}
+  } %}
+  {{ rows.push(licenceRow) }}
 
-{% for endpoint in stats.endpoints %}
-  {% set endpointRow = {
-    key: {
-      text: 'Endpoint URL',
+  {% for endpoint in stats.endpoints %}
+    {% set endpointRow = {
+      key: {
+        text: 'Endpoint URL',
+        classes: 'padding-top'
+      },
+      value: {
+        html: '<a  style="'+urlStyle+'" href="'+endpoint.endpoint_url+'">'+endpoint.endpoint_url+'</a>'
+      },
       classes: 'padding-top'
-    },
-    value: {
-      html: '<a  style="'+urlStyle+'" href="'+endpoint.endpoint_url+'">'+endpoint.endpoint_url+'</a>'
-    },
-    classes: 'padding-top'
-  } %}
-  {{ rows.push(endpointRow) }}
+    } %}
+    {{ rows.push(endpointRow) }}
 
-  {% if endpoint.documentation_url %}
-    {% set documentationRow = {
+    {% if endpoint.documentation_url %}
+      {% set documentationRow = {
+        key: {
+          text: 'Documentation URL'
+        },
+        value: {
+          html: '<a style="'+urlStyle+'" href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
+        }
+      } %}
+      {{ rows.push(documentationRow) }}
+    {% endif %}
+
+    {% if endpoint.error %}
+      {% set lastAccessedRow = {
+        key: {
+          text: 'Endpoint URL last accessed',
+          classes: 'app-inset-text---error'
+        },
+        value: {
+          html: lastAccessedInfo(organisation, dataset, endpoint)
+        }
+      } %}
+    {% else %}
+      {% set lastAccessedRow = {
+        key: {
+          text: 'Endpoint URL last accessed'
+        },
+        value: {
+          text: endpoint.lastAccessed | govukDateTime
+        }
+      } %}
+    {% endif %}
+
+
+    {{ rows.push(lastAccessedRow) }}
+
+    {% set lastUpdatedRow = {
       key: {
-        text: 'Documentation URL'
+        text: 'Endpoint URL last updated'
       },
       value: {
-        html: '<a style="'+urlStyle+'" href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
-      }
-    } %}p
-    {{ rows.push(documentationRow) }}
-  {% endif %}
-
-  {% if endpoint.error %}
-    {% set lastAccessedRow = {
-      key: {
-        text: 'Endpoint URL last accessed',
-        classes: 'app-inset-text---error'
-      },
-      value: {
-        html: lastAccessedInfo(organisation, dataset, endpoint)
+        text: endpoint.lastUpdated and ( endpoint.lastUpdated | govukDateTime )
       }
     } %}
-  {% else %}
-    {% set lastAccessedRow = {
+    {{ rows.push(lastUpdatedRow) }}
+
+    {% set entryDateRow = {
       key: {
-        text: 'Endpoint URL last accessed'
+        text: 'Endpoint entry date'
       },
       value: {
-        text: endpoint.lastAccessed | govukDateTime
+        text: endpoint.entryDate and ( endpoint.entryDate | govukDateTime )
       }
     } %}
-  {% endif %}
+    {{ rows.push(entryDateRow) }}
 
-
-  {{ rows.push(lastAccessedRow) }}
-
-  {% set lastUpdatedRow = {
-    key: {
-      text: 'Endpoint URL last updated'
-    },
-    value: {
-      text: endpoint.lastUpdated and ( endpoint.lastUpdated | govukDateTime )
-    }
-  } %}
-  {{ rows.push(lastUpdatedRow) }}
-
-  {% set entryDateRow = {
-    key: {
-      text: 'Endpoint entry date'
-    },
-    value: {
-      text: endpoint.entryDate and ( endpoint.entryDate | govukDateTime )
-    }
-  } %}
-  {{ rows.push(entryDateRow) }}
-
-{% endfor %}
+  {% endfor %}
+{% endif %}
 
 {% block content %}
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <span class="govuk-caption-xl">{{ organisation.name }}</span>
-        <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
-
-        {% if notice %}
-          {{ deadlineNotice(dataset.dataset, notice, organisation) }}
-        {% endif %}
-    </div>
+    {% include "includes/_dataset-page-header.html" %}
 </div>
 
 <div class="govuk-grid-row">
@@ -197,6 +186,9 @@
       <h2 class="govuk-heading-m">Dataset details</h2>
       {{ govukSummaryList({ rows: rows }) }}
     </section>
+    {% if authority === "some" %}
+      {{ alternativeSourceNotice(organisation, dataset) }}
+    {% endif %}
   </div>
   <div class="govuk-grid-column-one-third">
     <section>
@@ -230,8 +222,9 @@
     <script>
       window.serverContext = {
         containerId: 'map',
-        geoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}&limit=500",
-        boundaryGeoJsonUrl: "/api/lpa-boundary/{{ organisation.organisation | urlencode }}"
+        geoJsonUrl: "https://www.planning.data.gov.uk/entity.geojson?dataset={{ dataset.dataset }}&geometry_curie=statistical-geography:{{ organisation.statistical_geography }}&limit=500{% if authority === "some" or authority === "authoritative" %}&quality={{ authority }}{% endif %}",
+        boundaryGeoJsonUrl: "/api/lpa-boundary/{{ organisation.organisation | urlencode }}",
+        authority: "{{ authority }}"
       }
     </script>
     <script src="/public/js/map.bundle.js"></script>

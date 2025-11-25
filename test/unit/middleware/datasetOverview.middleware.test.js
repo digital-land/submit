@@ -3,6 +3,12 @@ import { describe, it, expect, vi } from 'vitest'
 import { prepareDatasetOverviewTemplateParams, setNoticesFromSourceKey } from '../../../src/middleware/datasetOverview.middleware.js'
 import * as utils from '../../../src/utils/utils.js'
 
+vi.mock('../../../src/services/platformApi.js', () => ({
+  default: {
+    fetchEntities: vi.fn()
+  }
+}))
+
 describe('Dataset Overview Middleware', () => {
   const req = {
     params: {
@@ -40,10 +46,13 @@ describe('Dataset Overview Middleware', () => {
           }
         ],
         entityIssueCounts: [],
-        notice: undefined
+        notice: undefined,
+        authority: ''
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
       expect(reqWithResults.templateParams).toEqual({
+        authority: '',
+        showMap: false,
         organisation: { name: 'mock-org' },
         dataset: reqWithResults.dataset,
         taskCount: 3, // 1 issue + 1 endpoint error + 1 failed 'out of bound' expectation

@@ -15,7 +15,9 @@ import {
   fetchResources,
   fetchEntityCount,
   fetchEntityIssueCounts,
-  fetchEntryIssueCounts
+  fetchEntryIssueCounts,
+  fetchEntitiesPlatformDb,
+  prepareAuthority
 } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -80,10 +82,11 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority } = req
 
   req.templateParams = {
     organisation: orgInfo,
+    authority,
     dataset,
     taskCount: entityIssueCounts.length + entryIssueCounts.length,
     tableParams,
@@ -113,10 +116,12 @@ export default [
 
   fetchEntityCount,
   setRecordCount,
+
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
 
-  fetchEntities,
+  prepareAuthority, // Used to see if alternative or authoritative, and update entites fetch accordingly
+  fetchEntitiesPlatformDb, // This technically fetches twice from entities table, could be refactored later
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,
 

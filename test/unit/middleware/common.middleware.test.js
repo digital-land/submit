@@ -1,12 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities } from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
+import platformApi from '../../../src/services/platformApi.js'
 import { isValiError } from 'valibot'
 import { MiddlewareError } from '../../../src/utils/errors.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
+
+vi.mock('../../../src/services/platformApi.js', () => ({
+  default: {
+    fetchEntities: vi.fn()
+  }
+}))
 
 vi.mock('../../../src/services/datasette.js', () => ({
   default: {
@@ -1540,6 +1547,107 @@ describe('preventIndexing middleware', () => {
 
       expect(datasette.runQuery).toHaveBeenCalledTimes(2)
       expect(next).toHaveBeenCalledWith(error)
+    })
+  })
+
+  describe('prepareAuthority', () => {
+    let req, res, next
+
+    beforeEach(() => {
+      req = {
+        orgInfo: { entity: '12345' },
+        params: { dataset: 'local-plan-boundary' }
+      }
+      res = {}
+      next = vi.fn()
+      vi.clearAllMocks()
+    })
+
+    it('sets req.authority to "authoritative" when authoritative quality entities exist', async () => {
+      platformApi.fetchEntities.mockResolvedValueOnce({
+        formattedData: [{ entity: '1', name: 'Test Entity' }]
+      })
+
+      await prepareAuthority(req, res, next)
+
+      expect(platformApi.fetchEntities).toHaveBeenCalledWith({
+        organisation_entity: '12345',
+        dataset: 'local-plan-boundary',
+        quality: 'authoritative',
+        limit: 1
+      })
+      expect(req.authority).toBe('authoritative')
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.authority to "some" when no authoritative but some quality entities exist', async () => {
+      platformApi.fetchEntities
+        .mockResolvedValueOnce({ formattedData: [] }) // authoritative query returns empty
+        .mockResolvedValueOnce({ formattedData: [{ entity: '2', name: 'Some Quality Entity' }] }) // some query returns data
+
+      await prepareAuthority(req, res, next)
+
+      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(2)
+      expect(platformApi.fetchEntities).toHaveBeenNthCalledWith(1, {
+        organisation_entity: '12345',
+        dataset: 'local-plan-boundary',
+        quality: 'authoritative',
+        limit: 1
+      })
+      expect(platformApi.fetchEntities).toHaveBeenNthCalledWith(2, {
+        organisation_entity: '12345',
+        dataset: 'local-plan-boundary',
+        quality: 'some',
+        limit: 1
+      })
+      expect(req.authority).toBe('some')
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.authority to empty string when neither authoritative nor some quality entities exist', async () => {
+      platformApi.fetchEntities
+        .mockResolvedValueOnce({ formattedData: [] }) // authoritative query returns empty
+        .mockResolvedValueOnce({ formattedData: [] }) // some query returns empty
+
+      await prepareAuthority(req, res, next)
+
+      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(2)
+      expect(req.authority).toBe('')
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('sets req.authority to empty string and calls next when an error occurs', async () => {
+      const error = new Error('Platform API error')
+      platformApi.fetchEntities.mockRejectedValueOnce(error)
+
+      await prepareAuthority(req, res, next)
+
+      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(1)
+      expect(req.authority).toBe('')
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles null formattedData gracefully', async () => {
+      platformApi.fetchEntities
+        .mockResolvedValueOnce({ formattedData: null }) // authoritative query returns null
+        .mockResolvedValueOnce({ formattedData: null }) // some query returns null
+
+      await prepareAuthority(req, res, next)
+
+      expect(req.authority).toBe('')
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles undefined formattedData gracefully', async () => {
+      platformApi.fetchEntities
+        .mockResolvedValueOnce({}) // authoritative query returns no formattedData
+        .mockResolvedValueOnce({}) // some query returns no formattedData
+
+      await prepareAuthority(req, res, next)
+
+      expect(req.authority).toBe('')
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 })

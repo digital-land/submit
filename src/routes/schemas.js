@@ -107,7 +107,7 @@ export const DeadlineNoticeField = v.strictObject({
   deadline: v.string()
 })
 
-const IssueSpecification = v.optional(v.strictObject({
+const IssueSpecification = v.optional(v.looseObject({
   datasetField: NonEmptyString,
   field: NonEmptyString,
   description: v.optional(NonEmptyString),
@@ -116,7 +116,7 @@ const IssueSpecification = v.optional(v.strictObject({
 }))
 
 const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
-const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: v.string() })
+const DatasetNameField = v.looseObject({ name: NonEmptyString, dataset: NonEmptyString, collection: v.string() })
 const DatasetItem = v.strictObject({
   endpointCount: v.optional(v.number()),
   status: v.enum(datasetStatusEnum),
@@ -159,6 +159,8 @@ export const OrgGetStarted = v.strictObject({
 export const OrgDatasetOverview = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
+  showMap: v.boolean(),
+  authority: v.string(),
   taskCount: v.integer(),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
@@ -183,6 +185,7 @@ export const OrgDataView = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   taskCount: v.integer(),
+  authority: v.string(),
   tableParams,
   pagination: PaginationParams,
   dataRange: dataRangeParams
