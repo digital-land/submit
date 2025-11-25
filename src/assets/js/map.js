@@ -43,6 +43,7 @@ export class Map {
     this.opts = opts
     this.limitMaxZoom = opts.limitMaxZoom ?? false
     this.bbox = this.opts.boundingBox ?? null
+    this.authority = opts.authority ?? null
     this.map = new maplibregl.Map({
       container: this.opts.containerId,
       style: this.opts.style ?? defaultOsMapStyle,
@@ -287,7 +288,21 @@ export class Map {
         features.forEach(feature => {
           // create inset
           const inset = document.createElement('li')
-          inset.classList.add('app-c-map__popup-list-item')
+
+          if (this.authority === 'some') {
+            const insetAlternate = document.createElement('li')
+            insetAlternate.classList.add('app-c-map__popup-list-item')
+            const textContent = document.createElement('p')
+            textContent.classList.add('govuk-body-s', 'govuk-!-margin-top-0', 'govuk-!-margin-bottom-0')
+            textContent.style.color = '#1d70b8' // GOV.UK blue colour
+            textContent.innerHTML = `This ${startCase(feature.properties.dataset).toLowerCase() || ''} is from an alternative source`
+
+            insetAlternate.appendChild(textContent)
+            list.appendChild(insetAlternate)
+          } else {
+            // Design to have blue tab on left only if not alternative source
+            inset.classList.add('app-c-map__popup-list-item')
+          }
 
           // feature text content
           const textContent = document.createElement('p')
@@ -441,14 +456,15 @@ export const generateBoundingBox = async (boundaryGeoJsonUrl) => {
 }
 
 export const createMapFromServerContext = async () => {
-  const { containerId, geometries, mapType, geoJsonUrl, boundaryGeoJsonUrl } = window.serverContext
+  const { containerId, geometries, mapType, geoJsonUrl, boundaryGeoJsonUrl, authority } = window.serverContext
   const options = {
     containerId,
     data: geometries,
     boundaryGeoJsonUrl,
     interactive: mapType !== 'static',
     wktFormat: geoJsonUrl === undefined,
-    limitMaxZoom: mapType !== 'interactive'
+    limitMaxZoom: mapType !== 'interactive',
+    authority
   }
 
   // fetch initial token

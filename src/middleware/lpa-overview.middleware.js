@@ -5,8 +5,8 @@
  */
 
 import performanceDbApi from '../services/performanceDbApi.js'
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets, parallel } from './middleware.builders.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
+import { fetchMany, FetchOptions, renderTemplate, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
@@ -31,14 +31,6 @@ const fetchProvisions = fetchMany({
        from provision where organisation = '${params.lpa}'`
   },
   result: 'provisions'
-})
-
-const fetchEntityCounts = fetchOneFromAllDatasets({
-  query: ({ req }) => `
-    select count(entity) as entity_count
-    from entity
-    WHERE organisation_entity = '${req.orgInfo.entity}'`,
-  result: 'entityCounts'
 })
 
 /**
@@ -70,6 +62,8 @@ const orgStatsReducer = (accumulator, dataset) => {
  * @description
  * This middleware function checks if a dataset has been submitted within a certain timeframe
  * and sets flags for due and overdue notices accordingly.
+ *
+ * Does not work and not used currently, TODO: fix or delete
  */
 export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   const { resources } = req
@@ -120,6 +114,7 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   next()
 }
 
+// TODO: Not used, fix or delete
 export function groupResourcesByDataset (req, res, next) {
   const { resources } = req
 
@@ -287,6 +282,8 @@ export function prepareOverviewTemplateParams (req, res, next) {
         return 'expected'
       case 'prospective':
         return 'prospective'
+      case 'encouraged': // Currently adding encouraged datasets to same group as prospective the "can-provide" segment
+        return 'prospective'
       default:
         return 'other'
     }
@@ -319,11 +316,9 @@ export const getOverview = renderTemplate({
 })
 
 export function groupIssuesCountsByDataset (req, res, next) {
-  const { entityIssueCounts, entryIssueCounts } = req
+  const { entityIssueCounts = [] } = req
 
-  // merge arrays and handle undefined
-  const issueCounts = [...(entityIssueCounts || []), ...(entryIssueCounts || [])]
-  req.issues = issueCounts.reduce((acc, current) => {
+  req.issues = entityIssueCounts.reduce((acc, current) => {
     if (!acc[current.dataset]) {
       acc[current.dataset] = []
     }
@@ -359,18 +354,13 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
 export default [
   parallel([
     fetchOrgInfo,
-    fetchResources,
     fetchEndpointSummary,
     fetchEntityIssueCountsPerformanceDb,
     fetchProvisions
   ]),
-  parallel([
-    fetchEntryIssueCounts, // needs fetchResources to complete
-    fetchEntityCounts // needs fetchOrgInfo to complete
-  ]),
+
   setAvailableDatasets,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
-  groupResourcesByDataset,
   groupIssuesCountsByDataset,
   groupEndpointsByDataset,
 

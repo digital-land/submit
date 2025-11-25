@@ -4,7 +4,7 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop } from './common.middleware.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop, prepareAuthority } from './common.middleware.js'
 import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
@@ -185,7 +185,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, expectationOutOfBounds = [] } = req
+  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, expectationOutOfBounds = [] } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources
@@ -218,7 +218,11 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     endpointErrorIssues +
     (expectationOutOfBounds.length > 0 ? 1 : 0)
 
+  const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
+
   req.templateParams = {
+    authority,
+    showMap,
     organisation: orgInfo,
     dataset,
     taskCount,
@@ -242,7 +246,7 @@ const getDatasetOverview = renderTemplate(
 
 export default [
   fetchOrgInfo,
-  fetchDatasetInfo,
+  fetchDatasetPlatformInfo,
   fetchColumnSummary,
   fetchResources,
   fetchSources,
@@ -250,6 +254,7 @@ export default [
   fetchEntryIssueCounts,
   fetchSpecification,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
+  prepareAuthority, // Determine authority or non authority page, using platform API direclty so breaks the fetch design pattern.
   pullOutDatasetSpecification,
   // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchEntityCount,
