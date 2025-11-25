@@ -38,7 +38,7 @@ const reqTemplate = {
       issueCount: 0,
       endpointCount: 0,
       error: undefined,
-      status: 'Needs fixing',
+      status: 'Needs improving',
       endpointErrorCount: 0
     },
     {
@@ -97,7 +97,7 @@ describe('lpa-overview.middleware', () => {
             { endpointCount: 1, status: 'Error', dataset: 'dataset3', error: undefined, issueCount: 0, endpointErrorCount: 1 }
           ]),
           expected: expect.arrayContaining([
-            { endpointCount: 0, status: 'Needs fixing', dataset: 'dataset2', error: undefined, issueCount: 1, endpointErrorCount: 0 },
+            { endpointCount: 0, status: 'Needs improving', dataset: 'dataset2', error: undefined, issueCount: 1, endpointErrorCount: 0 },
             { endpointCount: 0, status: 'Error', dataset: 'dataset4', error: 'There was a 404 error', issueCount: 0, endpointErrorCount: 1 }
           ])
         },
@@ -159,7 +159,7 @@ describe('lpa-overview.middleware', () => {
       prepareOverviewTemplateParams(req, res, () => { })
 
       const { doc } = getRenderedErrorCards(req.templateParams)
-      const hint = doc.querySelector('[data-dataset-status="Needs fixing"] .govuk-task-list__hint')
+      const hint = doc.querySelector('[data-dataset-status="Needs improving"] .govuk-task-list__hint')
 
       expect(hint?.textContent.trim()).toBe('There are 3 issues in this dataset')
     })
@@ -172,7 +172,7 @@ describe('lpa-overview.middleware', () => {
       prepareOverviewTemplateParams(req, res, () => { })
 
       const { doc } = getRenderedErrorCards(req.templateParams)
-      const hint = doc.querySelector('[data-dataset-status="Needs fixing"] .govuk-task-list__hint')
+      const hint = doc.querySelector('[data-dataset-status="Needs improving"] .govuk-task-list__hint')
 
       expect(hint?.textContent.trim()).toBe('There is 1 issue in this dataset')
     })
@@ -194,7 +194,7 @@ describe('lpa-overview.middleware', () => {
 
       expect(req.datasets[0].error).toBeUndefined()
       expect(req.datasets[0].issueCount).toBe(1)
-      expect(req.datasets[0].status).toBe('Needs fixing')
+      expect(req.datasets[0].status).toBe('Needs improving')
     })
     it('should not show an error if atleast one endpoint is 200', () => {
       const req = {
@@ -209,7 +209,7 @@ describe('lpa-overview.middleware', () => {
       prepareDatasetObjects(req, res, () => { })
 
       expect(req.datasets[0].error).toBeUndefined()
-      expect(req.datasets[0].status).toBe('Needs fixing')
+      expect(req.datasets[0].status).toBe('Needs improving')
     })
     it('should show an error all endpoints have status !== 200', () => {
       const req = {
@@ -261,7 +261,7 @@ describe('lpa-overview.middleware', () => {
           ],
           other: [
             { endpointCount: 1, status: 'Live', dataset: 'dataset1' },
-            { endpointCount: 1, status: 'Needs fixing', dataset: 'dataset2' },
+            { endpointCount: 1, status: 'Needs improving', dataset: 'dataset2' },
             { endpointCount: 1, status: 'Error', dataset: 'dataset3' }
           ]
         },

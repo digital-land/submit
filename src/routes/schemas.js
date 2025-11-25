@@ -93,7 +93,7 @@ export const tableParams = v.strictObject({
  */
 export const datasetStatusEnum = {
   Live: 'Live',
-  'Needs fixing': 'Needs fixing',
+  'Needs improving': 'Needs improving',
   Warning: 'Warning',
   Error: 'Error',
   'Not submitted': 'Not submitted'
@@ -153,7 +153,9 @@ export const OrgFindPage = v.strictObject({
 
 export const OrgGetStarted = v.strictObject({
   organisation: OrgField,
-  dataset: DatasetNameField
+  dataset: DatasetNameField,
+  authority: v.string(),
+  numberOfRecords: v.optional(v.integer())
 })
 
 export const OrgDatasetOverview = v.strictObject({

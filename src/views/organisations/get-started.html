@@ -1,4 +1,6 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Manage' %}
@@ -34,14 +36,44 @@
 
 {% endblock %}
 
+{% set rows = [
+  {
+    key: {
+      text: "Number of records"
+    },
+    value: {
+      text: numberOfRecords | default(0)
+    }
+  }
+] %}
+
 {% block content %}
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <span class="govuk-caption-xl">{{ organisation.name }}</span>
-        <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
-    </div>
+  {% include "includes/_dataset-page-header.html" %}
 </div>
+
+{% if authority and authority === "some" %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    {{ govukErrorSummary({
+      titleText: 'There is a problem',
+      errorList: [
+        {
+          text: 'This dataset is not authoritative',
+          href: ''
+        }
+      ]
+    }) }}
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+   <div class="govuk-grid-column-two-thirds">
+      {{ govukSummaryList({ rows: rows }) }}
+   </div>
+</div>
+{% endif %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
