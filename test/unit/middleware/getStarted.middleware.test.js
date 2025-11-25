@@ -11,10 +11,10 @@ describe('get-started', () => {
 
   it('should render the get-started template with the correct params', async () => {
     const req = {
-      params: { lpa: 'example-lpa', dataset: 'example-dataset'},
+      params: { lpa: 'example-lpa', dataset: 'example-dataset' },
       orgInfo: exampleLpa.formattedData[0],
       dataset: exampleDataset,
-      authority: '',
+      authority: ''
     }
     const res = { render: vi.fn() }
     const next = vi.fn()
@@ -23,9 +23,9 @@ describe('get-started', () => {
 
     expect(res.render).toHaveBeenCalledTimes(1)
     expect(res.render).toHaveBeenCalledWith('organisations/get-started.html', {
-      organisation: { name: 'Example LPA', organisation: 'LPA'},
+      organisation: { name: 'Example LPA', organisation: 'LPA' },
       dataset: exampleDataset,
-      authority: '', 
+      authority: '',
       numberOfRecords: 0
     })
   })

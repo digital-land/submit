@@ -208,8 +208,8 @@ export function prepareDatasetObjects (req, res, next) {
     const datasetIssues = issues[dataset]
 
     // If data found is provided by alternative source, Needs improving is 'hard coded in' as 1 task Needs improving: submit authoritive data
-    if(datasetAuthority && datasetAuthority[dataset] === "some") {
-      return { status: 'Needs improving', endpointCount: 0, dataset, issueCount: 1}
+    if (datasetAuthority && datasetAuthority[dataset] === 'some') {
+      return { status: 'Needs improving', endpointCount: 0, dataset, issueCount: 1 }
     }
 
     if (!datasetEndpoints) {
@@ -317,7 +317,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
 /**
  * Batch version of prepareAuthority for LPA overview dashboard
  * Checks authority status for all datasets in parallel
- * 
+ *
  * @param {Object} req - Request object
  * @param {Object} req.orgInfo - Organization info with entity
  * @param {Object} req.datasets - Object with dataset keys and their data
@@ -389,7 +389,7 @@ export const prepareAuthorityBatch = async (req, res, next) => {
       }
     })
 
-    // Wait for all authority checks 
+    // Wait for all authority checks
     const results = await Promise.all(authorityPromises)
 
     // Convert results array to dictionary for easier lookup
@@ -468,7 +468,7 @@ export default [
   groupIssuesCountsByDataset,
   groupEndpointsByDataset,
 
-  prepareAuthorityBatch,  //Fetch Platform API authority status for all datasets
+  prepareAuthorityBatch, // Fetch Platform API authority status for all datasets
   prepareDatasetObjects,
 
   // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)

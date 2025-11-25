@@ -109,16 +109,16 @@ export const prepareTasks = (req, res, next) => {
   const { entryIssueCounts, entityIssueCounts, expectationOutOfBounds = [] } = req
 
   // First check, if non authoritative dataset, only one task to show: Provide authoritative data
-  if(authority && authority === 'some') {
+  if (authority && authority === 'some') {
     req.taskList = [{
       title: {
-        text: "Provide authoritative data"
+        text: 'Provide authoritative data'
       },
       href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/get-started`,
       status: getStatusTag('Needs improving')
     }]
     return next()
-  }  
+  }
   let issues = [...entryIssueCounts, ...entityIssueCounts]
 
   issues = issues.filter(
