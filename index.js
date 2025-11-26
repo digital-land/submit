@@ -12,19 +12,18 @@ import { setupErrorHandlers } from './src/serverSetup/errorHandlers.js'
 import { setupSession } from './src/serverSetup/session.js'
 import { setupNunjucks } from './src/serverSetup/nunjucks.js'
 import { setupSentry } from './src/serverSetup/sentry.js'
-import { getDatasetSlugNameMapping } from './src/utils/datasetteQueries/getDatasetSlugNameMapping.js'
 import { initDatasetSlugToReadableNameFilter } from './src/utils/datasetSlugToReadableName.js'
 
 dotenv.config()
 
-await initDatasetSlugToReadableNameFilter()
+const datasetSlugToReadableName = await initDatasetSlugToReadableNameFilter()
 const app = express()
 
 setupMiddlewares(app)
 await setupSession(app)
 setupNunjucks({
   app,
-  datasetNameMapping: await getDatasetSlugNameMapping()
+  datasetNameMapping: datasetSlugToReadableName
 })
 setupRoutes(app)
 setupSentry(app)
