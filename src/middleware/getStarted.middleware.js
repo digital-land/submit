@@ -1,17 +1,5 @@
 import { fetchDatasetInfo, fetchOrgInfo, logPageError, prepareAuthority } from './common.middleware.js'
-import { renderTemplate, fetchOne, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
-
-// Duplication from datasetTaskList due to edits not allowing common milddlware import
-export const fetchEntityCount = fetchOne({
-  query: ({ req }) => `
-    select count(entity) as entity_count
-    from entity
-    WHERE organisation_entity = '${req.orgInfo.entity}'
-  `,
-  result: 'entityCount',
-  dataset: FetchOptions.fromParams,
-  fallbackPolicy: FetchOneFallbackPolicy.continue
-})
+import { renderTemplate } from './middleware.builders.js'
 
 export const getGetStarted = renderTemplate({
   templateParams (req) {
@@ -25,7 +13,6 @@ export const getGetStarted = renderTemplate({
 export default [
   fetchOrgInfo,
   fetchDatasetInfo,
-  fetchEntityCount,
   prepareAuthority,
   getGetStarted,
   logPageError

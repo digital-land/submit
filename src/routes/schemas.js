@@ -125,6 +125,7 @@ const DatasetItem = v.strictObject({
   error: v.optional(v.nullable(NonEmptyString)),
   issue: v.optional(NonEmptyString),
   entityCount: v.optional(v.number()),
+  authority: v.optional(v.string()),
   project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
   numIssues: v.optional(v.number()),

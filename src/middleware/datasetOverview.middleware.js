@@ -213,10 +213,16 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
       }
     })
 
-  const taskCount = (entryIssueCounts ? entryIssueCounts.length : 0) +
+  // Hard code task count for 'some' authority
+  let taskCount = 0
+  if (authority === 'some') {
+    taskCount = 1
+  } else {
+    taskCount = (entryIssueCounts ? entryIssueCounts.length : 0) +
     (entityIssueCounts ? entityIssueCounts.length : 0) +
     endpointErrorIssues +
     (expectationOutOfBounds.length > 0 ? 1 : 0)
+  }
 
   const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
 

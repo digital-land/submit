@@ -84,11 +84,14 @@ export const constructTableParams = (req, res, next) => {
 export const prepareTemplateParams = (req, res, next) => {
   const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority } = req
 
+  // Hard code task count for 'some' authority
+  const taskCount = authority !== 'some' ? entityIssueCounts.length + entryIssueCounts.length : 1
+
   req.templateParams = {
     organisation: orgInfo,
     authority,
     dataset,
-    taskCount: entityIssueCounts.length + entryIssueCounts.length,
+    taskCount,
     tableParams,
     pagination,
     dataRange

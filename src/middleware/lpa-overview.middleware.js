@@ -209,7 +209,7 @@ export function prepareDatasetObjects (req, res, next) {
 
     // If data found is provided by alternative source, Needs improving is 'hard coded in' as 1 task Needs improving: submit authoritive data
     if (datasetAuthority && datasetAuthority[dataset] === 'some') {
-      return { status: 'Needs improving', endpointCount: 0, dataset, issueCount: 1 }
+      return { status: 'Needs improving', endpointCount: 0, dataset, issueCount: 1, authority: 'some' }
     }
 
     if (!datasetEndpoints) {
@@ -234,7 +234,9 @@ export function prepareDatasetObjects (req, res, next) {
       status = 'Live'
     }
 
-    return { dataset, error, issueCount, status, endpointCount, endpointErrorCount }
+    const authority = datasetAuthority[dataset] || ''
+
+    return { dataset, error, issueCount, status, endpointCount, endpointErrorCount, authority }
   })
 
   next()
@@ -281,6 +283,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
   const isODPMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
+  console.log(datasets)
   const datasetsByReason = _.groupBy(datasets, (ds) => {
     const reason = provisionData.get(ds.dataset)?.provision_reason
     switch (reason) {
@@ -325,6 +328,9 @@ export function prepareOverviewTemplateParams (req, res, next) {
  * @param {Function} next - Next middleware function
  */
 export const prepareAuthorityBatch = async (req, res, next) => {
+  // Initialize with empty object to prevent downstream failures
+  req.datasetAuthority = {}
+
   try {
     const { orgInfo, availableDatasets } = req
 
@@ -406,6 +412,7 @@ export const prepareAuthorityBatch = async (req, res, next) => {
       orgEntity: req.orgInfo?.entity,
       errorStack: error.stack
     })
+    // req.datasetAuthority already initialized to {} at the top so okay future use
     return next()
   }
 }
