@@ -99,7 +99,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
         }
       } else if (dataset.status === 'Not submitted') {
         expectedHint = 'Endpoint URL not submitted'
-      } else if (dataset.status === 'Needs fixing') {
+      } else if (dataset.status === 'Needs improving') {
         expectedHint = 'in this dataset'
       } else if (dataset.status === 'Error') {
         expectedHint = dataset.error || ''

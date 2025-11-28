@@ -93,7 +93,7 @@ export const tableParams = v.strictObject({
  */
 export const datasetStatusEnum = {
   Live: 'Live',
-  'Needs fixing': 'Needs fixing',
+  'Needs improving': 'Needs improving',
   Warning: 'Warning',
   Error: 'Error',
   'Not submitted': 'Not submitted'
@@ -125,6 +125,7 @@ const DatasetItem = v.strictObject({
   error: v.optional(v.nullable(NonEmptyString)),
   issue: v.optional(NonEmptyString),
   entityCount: v.optional(v.number()),
+  authority: v.optional(v.string()),
   project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
   numIssues: v.optional(v.number()),
@@ -153,7 +154,9 @@ export const OrgFindPage = v.strictObject({
 
 export const OrgGetStarted = v.strictObject({
   organisation: OrgField,
-  dataset: DatasetNameField
+  dataset: DatasetNameField,
+  authority: v.string(),
+  numberOfRecords: v.optional(v.integer())
 })
 
 export const OrgDatasetOverview = v.strictObject({
@@ -203,6 +206,7 @@ export const OrgDatasetTaskList = v.strictObject({
     })
   })),
   organisation: OrgField,
+  authority: v.string(),
   dataset: v.strictObject({
     dataset: v.optional(NonEmptyString),
     name: NonEmptyString,

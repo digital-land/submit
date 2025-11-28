@@ -12,6 +12,7 @@ aws: {
 googleAnalytics: {
   measurementId: 'G-TEST-CODE'
 }
+mainWebsiteUrl: http://localhost:8001
 features:
   submitEndpointForm:
     enabled: true

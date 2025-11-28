@@ -12,11 +12,12 @@ describe('datasetTaskList.middleware.js', () => {
       const req = {
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset', collection: 'collection 1' },
+        authority: 'authoritative',
         taskList: [
           {
             title: { text: 'task message goes here' },
             href: '/foo/bar',
-            status: { tag: { classes: 'some-class', text: 'Needs fixing' } }
+            status: { tag: { classes: 'some-class', text: 'Needs improving' } }
           }]
       }
       const res = { render: vi.fn() }
@@ -28,7 +29,8 @@ describe('datasetTaskList.middleware.js', () => {
       const templateParams = {
         taskList: req.taskList,
         organisation: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1' }
+        dataset: { name: 'Example Dataset', collection: 'collection 1' },
+        authority: 'authoritative'
       }
       v.parse(S.OrgDatasetTaskList, templateParams)
 
@@ -84,7 +86,7 @@ describe('datasetTaskList.middleware.js', () => {
           status: {
             tag: {
               classes: 'govuk-tag--yellow',
-              text: 'Needs fixing'
+              text: 'Needs improving'
             }
           }
         },
@@ -96,7 +98,7 @@ describe('datasetTaskList.middleware.js', () => {
           status: {
             tag: {
               classes: 'govuk-tag--yellow',
-              text: 'Needs fixing'
+              text: 'Needs improving'
             }
           }
         }
@@ -144,7 +146,7 @@ describe('datasetTaskList.middleware.js', () => {
           status: {
             tag: {
               classes: 'govuk-tag--yellow',
-              text: 'Needs fixing'
+              text: 'Needs improving'
             }
           }
         }
@@ -204,7 +206,7 @@ describe('datasetTaskList.middleware.js', () => {
         {
           title: { text: '1 issue of type issue-type1' }, // Or some default text if error is handled that way
           href: '/organisations/some-lpa/some-dataset/issue-type1/field1',
-          status: { tag: { classes: 'govuk-tag--yellow', text: 'Needs fixing' } }
+          status: { tag: { classes: 'govuk-tag--yellow', text: 'Needs improving' } }
         }
       ])
 
@@ -281,7 +283,7 @@ describe('datasetTaskList.middleware.js', () => {
       expect(req.taskList.length).toBe(1)
       const { href, status: { tag: { text } } } = req.taskList[0]
       expect(href).toMatch('/organisations/some-lpa/some-dataset/expectation/out-of-bounds')
-      expect(text).toBe('Needs fixing')
+      expect(text).toBe('Needs improving')
 
       expect(next).toHaveBeenCalledTimes(1)
     })

@@ -111,7 +111,7 @@ const datasetIssuesQuery = (resource, datasetId) => {
           WHEN it.severity == 'error' THEN 1
           ELSE null
         END
-      ) > 0 THEN 'Needs fixing'
+      ) > 0 THEN 'Needs improving'
       ELSE 'Live'
     END AS status,
     COUNT(i.issue_type) as num_issues
@@ -129,7 +129,7 @@ const datasetIssuesQuery = (resource, datasetId) => {
 
 /**
  * @typedef {Object} Dataset
- * @property {string} status - One of: 'Not submitted', 'Error', 'Needs fixing', 'Warning', 'Live'
+ * @property {string} status - One of: 'Not submitted', 'Error', 'Needs improving', 'Warning', 'Live'
  * @property {string} endpoint
  * @property {number} issue_count
  * @property {?string} error
@@ -194,7 +194,7 @@ SELECT
   case
       when (rle.latest_status is null) then 'Not submitted'
       when (rle.latest_status != '200') then 'Error'
-      when (i.severity = 'error') then 'Needs fixing'
+      when (i.severity = 'error') then 'Needs improving'
       else 'Live'
   end as status,
   case

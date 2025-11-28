@@ -63,11 +63,13 @@ describe(`Dataset Task List Page (seed: ${seed})`, () => {
     const organisation = { name: 'Test Organisation', statistical_geography: '12345678', organisation: 'test organisation' }
     const dataset = { name: 'Test Dataset', dataset: 'test-dataset', collection: 'test-dataset' }
     const taskList = []
+    const authority = 'authoritative'
 
     const html = nunjucks.render('organisations/datasetTaskList.html', {
       organisation,
       dataset,
-      taskList
+      taskList,
+      authority
     })
 
     const paragraphText = `There are no issues with ${organisation.name}'s ${dataset.name} dataset.`
