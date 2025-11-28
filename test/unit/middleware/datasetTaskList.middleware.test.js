@@ -12,6 +12,7 @@ describe('datasetTaskList.middleware.js', () => {
       const req = {
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
         dataset: { name: 'Example Dataset', collection: 'collection 1' },
+        authority: 'authoritative',
         taskList: [
           {
             title: { text: 'task message goes here' },
@@ -28,7 +29,8 @@ describe('datasetTaskList.middleware.js', () => {
       const templateParams = {
         taskList: req.taskList,
         organisation: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1' }
+        dataset: { name: 'Example Dataset', collection: 'collection 1' },
+        authority: 'authoritative'
       }
       v.parse(S.OrgDatasetTaskList, templateParams)
 

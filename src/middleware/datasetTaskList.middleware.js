@@ -185,6 +185,7 @@ export const prepareTasks = (req, res, next) => {
     })
   }
 
+  console.log(taskList)
   req.taskList = taskList
 
   next()
@@ -206,11 +207,12 @@ export const prepareTasks = (req, res, next) => {
  * @param {*} next
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { taskList, dataset, orgInfo: organisation } = req
+  const { taskList, dataset, orgInfo: organisation, authority } = req
 
   req.templateParams = {
     taskList,
     organisation,
+    authority,
     dataset
   }
   next()

@@ -1,9 +1,16 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
-import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareDatasetObjects, prepareOverviewTemplateParams } from '../../../src/middleware/lpa-overview.middleware.js'
+import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareDatasetObjects, prepareOverviewTemplateParams, prepareAuthorityBatch } from '../../../src/middleware/lpa-overview.middleware.js'
 import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
+import platformApi from '../../../src/services/platformApi.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
+
+vi.mock('../../../src/services/platformApi.js', () => ({
+  default: {
+    fetchEntities: vi.fn()
+  }
+}))
 
 vi.mock('../../../src/utils/utils.js', async (importOriginal) => {
   /** @type {Object} */
@@ -185,7 +192,8 @@ describe('lpa-overview.middleware', () => {
         issues: {},
         endpoints: { datasetA: [{ latest_status: '200' }] },
         availableDatasets: ['datasetA'],
-        datasets: undefined
+        datasets: undefined,
+        datasetAuthority: {}
       }
       req.expectationOutOfBounds = [{ passed: false, dataset: 'datasetA' }]
       const res = { render: vi.fn() }
@@ -202,7 +210,8 @@ describe('lpa-overview.middleware', () => {
         issues: {},
         endpoints: { datasetA: [{ latest_status: '200' }, { latest_status: '504' }, { latest_status: '504' }] },
         availableDatasets: ['datasetA'],
-        datasets: undefined
+        datasets: undefined,
+        datasetAuthority: {}
       }
       const res = { render: vi.fn() }
 
@@ -217,7 +226,8 @@ describe('lpa-overview.middleware', () => {
         issues: {},
         endpoints: { datasetA: [{ latest_status: '504' }, { latest_status: '504' }] },
         availableDatasets: ['datasetA'],
-        datasets: undefined
+        datasets: undefined,
+        datasetAuthority: {}
       }
       const res = { render: vi.fn() }
 
@@ -236,7 +246,8 @@ describe('lpa-overview.middleware', () => {
             { latest_status: '200' }]
         },
         availableDatasets: ['datasetA'],
-        datasets: undefined
+        datasets: undefined,
+        datasetAuthority: {}
       }
       const res = { render: vi.fn() }
 
@@ -408,6 +419,85 @@ describe('lpa-overview.middleware', () => {
     it('calls next function', () => {
       addNoticesToDatasets(req, res, next)
       expect(next).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('prepareAuthorityBatch', () => {
+    let req, res, next
+
+    beforeEach(() => {
+      req = {
+        orgInfo: { entity: '123' },
+        availableDatasets: ['dataset1', 'dataset2']
+      }
+      res = {}
+      next = vi.fn()
+      vi.clearAllMocks()
+    })
+
+    it('should populate req.datasetAuthority with authoritative status', async () => {
+      platformApi.fetchEntities.mockImplementation(async ({ quality }) => {
+        if (quality === 'authoritative') {
+          return { formattedData: [{ id: 1 }] }
+        }
+        return { formattedData: [] }
+      })
+
+      await prepareAuthorityBatch(req, res, next)
+
+      expect(req.datasetAuthority).toEqual({
+        dataset1: 'authoritative',
+        dataset2: 'authoritative'
+      })
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('should populate req.datasetAuthority with some status if authoritative is missing', async () => {
+      platformApi.fetchEntities.mockImplementation(async ({ quality }) => {
+        if (quality === 'some') {
+          return { formattedData: [{ id: 1 }] }
+        }
+        return { formattedData: [] }
+      })
+
+      await prepareAuthorityBatch(req, res, next)
+
+      expect(req.datasetAuthority).toEqual({
+        dataset1: 'some',
+        dataset2: 'some'
+      })
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('should populate req.datasetAuthority with empty string if no data found', async () => {
+      platformApi.fetchEntities.mockResolvedValue({ formattedData: [] })
+
+      await prepareAuthorityBatch(req, res, next)
+
+      expect(req.datasetAuthority).toEqual({
+        dataset1: '',
+        dataset2: ''
+      })
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('should handle errors gracefully and continue', async () => {
+      platformApi.fetchEntities.mockRejectedValue(new Error('API Error'))
+
+      await prepareAuthorityBatch(req, res, next)
+
+      expect(req.datasetAuthority).toEqual({
+        dataset1: '',
+        dataset2: ''
+      })
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('should skip processing if no available datasets', async () => {
+      req.availableDatasets = []
+      await prepareAuthorityBatch(req, res, next)
+      expect(platformApi.fetchEntities).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalled()
     })
   })
 })
