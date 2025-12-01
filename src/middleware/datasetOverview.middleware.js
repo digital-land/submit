@@ -226,7 +226,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   }
 
   const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
-  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?orgEntity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
 
   req.templateParams = {
     downloadUrl,
