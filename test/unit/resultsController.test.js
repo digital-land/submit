@@ -256,7 +256,7 @@ describe('getFileNameOrUrlAndCheckedTime', () => {
         requestData: {
           params: {
             type: 'file',
-            fileName: 'example.txt',
+            original_filename: 'example.txt',
             url: 'http://example.com/file'
           },
           modified: '2023-10-01T12:00:00Z'
