@@ -181,8 +181,8 @@ describe('dataview.middleware.test.js', () => {
   describe('prepareTemplateParams', () => {
     it('prepares template parameters with correct properties', () => {
       const req = {
-        orgInfo: { name: 'Mock Org' },
-        dataset: { name: 'Mock Dataset' },
+        orgInfo: { name: 'Mock Org', entity: 'mock-entity' },
+        dataset: { name: 'Mock Dataset', dataset: 'mock-dataset' },
         tableParams: { columns: ['foo'], fields: ['foo'] },
         entityIssueCounts: [],
         entryIssueCounts: [],
@@ -193,7 +193,8 @@ describe('dataview.middleware.test.js', () => {
           minRow: 1,
           maxRow: 1,
           totalRows: 1
-        }
+        },
+        authority: 'mock-authority'
       }
       const res = {}
       const next = vi.fn()
@@ -201,8 +202,10 @@ describe('dataview.middleware.test.js', () => {
       prepareTemplateParams(req, res, next)
 
       expect(req.templateParams).toEqual({
-        organisation: { name: 'Mock Org' },
-        dataset: { name: 'Mock Dataset' },
+        downloadUrl: 'https://download.planning.data.gov.uk/mock-dataset.csv?orgEntity=mock-entity&quality=mock-authority',
+        organisation: { name: 'Mock Org', entity: 'mock-entity' },
+        dataset: { name: 'Mock Dataset', dataset: 'mock-dataset' },
+        authority: 'mock-authority',
         taskCount: 0,
         tableParams: { columns: ['foo'], fields: ['foo'] },
         pagination: {},

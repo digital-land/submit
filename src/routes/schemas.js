@@ -159,7 +159,7 @@ export const OrgGetStarted = v.strictObject({
 })
 
 export const OrgDatasetOverview = v.strictObject({
-  downloadUrl: v.url(),
+  downloadUrl: v.optional(v.url()),
   organisation: OrgField,
   dataset: DatasetNameField,
   showMap: v.boolean(),
@@ -185,7 +185,7 @@ export const OrgDatasetOverview = v.strictObject({
 })
 
 export const OrgDataView = v.strictObject({
-  downloadUrl: v.url(),
+  downloadUrl: v.optional(v.url()),
   organisation: OrgField,
   dataset: DatasetNameField,
   taskCount: v.integer(),

@@ -25,8 +25,7 @@ describe('get-started', () => {
     expect(res.render).toHaveBeenCalledWith('organisations/get-started.html', {
       organisation: { name: 'Example LPA', organisation: 'LPA' },
       dataset: exampleDataset,
-      authority: '',
-      numberOfRecords: 0
+      authority: ''
     })
   })
 

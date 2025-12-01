@@ -235,7 +235,7 @@ export function prepareDatasetObjects (req, res, next) {
       status = 'Live'
     }
 
-    const authority = datasetAuthority[dataset] || ''
+    const authority = datasetAuthority?.[dataset] || ''
 
     return { dataset, error, issueCount, status, endpointCount, endpointErrorCount, authority }
   })

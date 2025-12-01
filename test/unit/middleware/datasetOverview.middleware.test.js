@@ -27,7 +27,7 @@ describe('Dataset Overview Middleware', () => {
     it('should prepare template params for dataset overview', async () => {
       const reqWithResults = {
         ...req,
-        orgInfo: { name: 'mock-org' },
+        orgInfo: { name: 'mock-org', entity: 'mock-entity' },
         datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
@@ -51,9 +51,10 @@ describe('Dataset Overview Middleware', () => {
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
       expect(reqWithResults.templateParams).toEqual({
+        downloadUrl: 'https://download.planning.data.gov.uk/mock-dataset.csv?orgEntity=mock-entity&quality=',
         authority: '',
         showMap: false,
-        organisation: { name: 'mock-org' },
+        organisation: { name: 'mock-org', entity: 'mock-entity' },
         dataset: reqWithResults.dataset,
         taskCount: 3, // 1 issue + 1 endpoint error + 1 failed 'out of bound' expectation
         stats: {
