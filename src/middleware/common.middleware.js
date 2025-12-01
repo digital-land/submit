@@ -520,7 +520,7 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
       entity = Object.assign({}, parsedJson, entity)
     } catch (err) {
       logger.warn('common.middleware/extractJsonField: Error parsing JSON',
-        { type: types.App, json: jsonField, entity: entity.entity, errorMessage: err.message })
+        { type: types.App, json: jsonField, entity: entity.entity, errorMessage: err?.message })
     }
     return entity
   })

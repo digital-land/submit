@@ -76,10 +76,10 @@ test.describe('Dataset overview', () => {
     expect(await page.locator('h2.govuk-heading-l').innerText()).toEqual('London Borough of Lambeth’s task list')
   })
 
-  test('Dataset names shown dynamically match names fetched from datasetLoader', async ({ page }) => {
+  test('Dataset names shown dynamically match names fetched from redisLoader', async ({ page }) => {
     const organisationId = 'local-authority:LBH'
 
-    // Mock the expected nameMap to avoid Redis calls, currently may only work when environment is NOT 'local' or 'development' as in those environments datasetLoader will add more dynamically that may not be listed here.
+    // Mock the expected nameMap to avoid Redis calls, currently may only work when environment is NOT 'local' or 'development' as in those environments redisLoader will add more dynamically that may not be listed here.
     const nameMap = {
       'brownfield-land': 'Brownfield land',
       'article-4-direction-area': 'Article 4 direction area',

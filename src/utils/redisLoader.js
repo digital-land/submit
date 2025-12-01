@@ -1,4 +1,4 @@
-// src/utils/datasetLoader.js
+// src/utils/redisLoader.js
 import config from '../../config/index.js'
 import { createClient } from 'redis'
 import logger from '../utils/logger.js'
@@ -17,7 +17,7 @@ export async function getRedisClient () {
     try {
       await redisClient.connect()
     } catch (err) {
-      logger.warn(`datasetLoader/failed to connect to redis: ${err.message}`)
+      logger.warn(`redisLoader/failed to connect to redis: ${err.message}`)
       redisClient = null
       return null
     }
@@ -75,7 +75,7 @@ export async function getDatasetNameMap (datasetKeys) {
         return nameMap
       }
     } catch (err) {
-      logger.warn(`datasetLoader/redis get error: ${err.message}`)
+      logger.warn(`redisLoader/redis get error: ${err.message}`)
     }
   }
 
@@ -86,8 +86,42 @@ export async function getDatasetNameMap (datasetKeys) {
     try {
       await client.setEx(cacheKey, CACHE_TTL, JSON.stringify(nameMap))
     } catch (err) {
-      logger.warn(`datasetLoader/redis set error: ${err.message}`)
+      logger.warn(`redisLoader/redis set error: ${err.message}`)
     }
   }
   return nameMap
+}
+
+// Get organisation list, with Redis caching
+export async function getOrganisationList () {
+  const cacheKey = 'dataset:organisationList'
+  const client = await getRedisClient()
+
+  if (client) {
+    try {
+      const cached = await client.get(cacheKey)
+      if (cached) {
+        return JSON.parse(cached)
+      } else {
+        return false
+      }
+    } catch (err) {
+      logger.warn(`organisationList/redis get error: ${err.message}`)
+    }
+  }
+  return false
+}
+
+// Set organisation list, with Redis caching
+export async function setOrganisationList (organisationList) {
+  const cacheKey = 'dataset:organisationList'
+  const client = await getRedisClient()
+
+  if (client) {
+    try {
+      await client.setEx(cacheKey, 60 * 60 * 6, JSON.stringify(organisationList)) // 6 hours
+    } catch (err) {
+      logger.warn(`setOrganisationList/redis set error: ${err.message}`)
+    }
+  }
 }

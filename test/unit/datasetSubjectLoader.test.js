@@ -6,7 +6,7 @@ import { getDataSubjectMap, buildDataSubjects, makeDatasetSubjectMap } from '../
 import fetchDatasetsFromProvisions from '../../src/utils/datasetteQueries/fetchDatasetsFromProvisions.js'
 import { datasetSlugToReadableName } from '../../src/utils/datasetSlugToReadableName.js'
 import { getDatasetCollectionSlugNameMapping } from '../../src/utils/datasetteQueries/fetchDatasetCollections.js'
-import { getRedisClient } from '../../src/utils/datasetLoader.js'
+import { getRedisClient } from '../../src/utils/redisLoader.js'
 import logger from '../../src/utils/logger.js'
 
 // Mock dependencies
@@ -22,7 +22,7 @@ vi.mock('../../src/utils/datasetteQueries/fetchDatasetCollections.js', () => ({
   getDatasetCollectionSlugNameMapping: vi.fn()
 }))
 
-vi.mock('../../src/utils/datasetLoader.js', () => ({
+vi.mock('../../src/utils/redisLoader.js', () => ({
   getRedisClient: vi.fn()
 }))
 
