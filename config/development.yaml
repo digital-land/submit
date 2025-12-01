@@ -6,6 +6,7 @@ aws: {
     bucket: 'development-pub-async-request-files',
 }
 datasetteUrl: https://datasette.development.planning.data.gov.uk
+downloadUrl: 'https://download.development.planning.data.gov.uk' 
 redis: {
     secure: true,
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
@@ -17,4 +18,11 @@ jira: {
 }
 features:
   submitEndpointForm:
+    enabled: true
+  provisionBasedDatasets:
+    # This feature will load datasets based on provisionReasons
+    enabled: true
+  nonAuthPages:
+    # This feature enables pages to show non-authoritative datasets
+    # If off, it will still check for local-plan datasets.
     enabled: true

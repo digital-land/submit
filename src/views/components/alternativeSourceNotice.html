@@ -1,6 +1,6 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% macro alternativeSourceNotice(organisation, dataset) %}
+{% macro alternativeSourceNotice(organisation, dataset, downloadUrl) %}
   <section>
     <p class="govuk-body">Your organisation is the authoritative source of this data.</p>
     <p class="govuk-body">Right now, this data is from an alternative source.</p>
@@ -10,7 +10,7 @@
     <p class="govuk-body">If you need to, you can edit the data before you publish it on your website.</p>
     {{ govukButton({
       text: "Download alternative source data",
-      href: "" 
+      href: downloadUrl
     }) }}
   </section>
 {% endmacro %}

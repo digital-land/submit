@@ -10,6 +10,7 @@ import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import config from '../../config/index.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -225,8 +226,10 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   }
 
   const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?orgEntity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
 
   req.templateParams = {
+    downloadUrl,
     authority,
     showMap,
     organisation: orgInfo,

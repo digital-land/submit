@@ -13,6 +13,7 @@ import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import platformApi from '../services/platformApi.js'
 import { types } from '../utils/logging.js'
+import config from '../../config/index.js'
 
 /**
  * Middleware. Updates req with 'entityIssueCounts' same as fetchEntityIssueCounts so not to be used together!
@@ -283,7 +284,6 @@ export function prepareOverviewTemplateParams (req, res, next) {
   const isODPMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
   const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
-  console.log(datasets)
   const datasetsByReason = _.groupBy(datasets, (ds) => {
     const reason = provisionData.get(ds.dataset)?.provision_reason
     switch (reason) {
@@ -335,22 +335,24 @@ export const prepareAuthorityBatch = async (req, res, next) => {
     const { orgInfo, availableDatasets } = req
 
     // Datasets that are currently enabled for authority checking i.e. local plans
-    // const authorityEnabledDatasets = [
-    //   'local-plan-boundary',
-    //   'local-plan-document',
-    //   'local-plan-document-type',
-    //   'local-plan-event',
-    //   'local-plan-housing',
-    //   'local-plan-process',
-    //   'local-plan-timetable'
-    // ]
-
-    // const datasetsToCheck = availableDatasets.filter(dataset =>
-    //   authorityEnabledDatasets.includes(dataset)
-    // )
-
-    // Use when all datasets are to be checked
-    const datasetsToCheck = availableDatasets
+    const authorityEnabledDatasets = [
+      'local-plan-boundary',
+      'local-plan-document',
+      'local-plan-document-type',
+      'local-plan-event',
+      'local-plan-housing',
+      'local-plan-process',
+      'local-plan-timetable'
+    ]
+    let datasetsToCheck = []
+    if (config.features.nonAuthPages.enabled) {
+      // Use when all datasets are to be checked
+      datasetsToCheck = availableDatasets
+    } else {
+      datasetsToCheck = availableDatasets.filter(dataset =>
+        authorityEnabledDatasets.includes(dataset)
+      )
+    }
 
     if (datasetsToCheck.length === 0) {
       return next()
@@ -385,7 +387,7 @@ export const prepareAuthorityBatch = async (req, res, next) => {
 
         return { dataset, authority: '' }
       } catch (error) {
-        logger.info({
+        logger.warn({
           message: `prepareAuthorityBatch failed for dataset ${dataset}: ${error.message}`,
           type: types.App,
           orgEntity: orgInfo.entity,

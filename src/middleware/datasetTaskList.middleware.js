@@ -185,7 +185,6 @@ export const prepareTasks = (req, res, next) => {
     })
   }
 
-  console.log(taskList)
   req.taskList = taskList
 
   next()

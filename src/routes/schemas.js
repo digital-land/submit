@@ -155,11 +155,11 @@ export const OrgFindPage = v.strictObject({
 export const OrgGetStarted = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  authority: v.string(),
-  numberOfRecords: v.optional(v.integer())
+  authority: v.string()
 })
 
 export const OrgDatasetOverview = v.strictObject({
+  downloadUrl: v.url(),
   organisation: OrgField,
   dataset: DatasetNameField,
   showMap: v.boolean(),
@@ -185,6 +185,7 @@ export const OrgDatasetOverview = v.strictObject({
 })
 
 export const OrgDataView = v.strictObject({
+  downloadUrl: v.url(),
   organisation: OrgField,
   dataset: DatasetNameField,
   taskCount: v.integer(),

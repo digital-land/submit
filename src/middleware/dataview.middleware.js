@@ -86,8 +86,10 @@ export const prepareTemplateParams = (req, res, next) => {
 
   // Hard code task count for 'some' authority
   const taskCount = authority !== 'some' ? entityIssueCounts.length + entryIssueCounts.length : 1
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?orgEntity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
 
   req.templateParams = {
+    downloadUrl,
     organisation: orgInfo,
     authority,
     dataset,
