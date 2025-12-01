@@ -490,7 +490,7 @@ export function getFileNameOrUrlAndCheckedTime (req, res, next) {
   const { requestData } = req.locals
   req.locals.uploadInfo = {
     type: requestData?.params?.type,
-    fileName: requestData?.params?.fileName,
+    fileName: requestData?.params?.original_filename,
     url: requestData?.params?.url,
     checkedTime: requestData?.modified
   }
