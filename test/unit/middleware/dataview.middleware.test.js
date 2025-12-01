@@ -202,7 +202,7 @@ describe('dataview.middleware.test.js', () => {
       prepareTemplateParams(req, res, next)
 
       expect(req.templateParams).toEqual({
-        downloadUrl: 'https://download.planning.data.gov.uk/mock-dataset.csv?orgEntity=mock-entity&quality=mock-authority',
+        downloadUrl: 'https://download.planning.data.gov.uk/mock-dataset.csv?organisation-entity=mock-entity&quality=',
         organisation: { name: 'Mock Org', entity: 'mock-entity' },
         dataset: { name: 'Mock Dataset', dataset: 'mock-dataset' },
         authority: 'mock-authority',

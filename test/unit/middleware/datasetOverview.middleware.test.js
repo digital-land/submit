@@ -51,7 +51,7 @@ describe('Dataset Overview Middleware', () => {
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
       expect(reqWithResults.templateParams).toEqual({
-        downloadUrl: 'https://download.planning.data.gov.uk/mock-dataset.csv?orgEntity=mock-entity&quality=',
+        downloadUrl: 'https://download.planning.data.gov.uk/mock-dataset.csv?organisation-entity=mock-entity&quality=',
         authority: '',
         showMap: false,
         organisation: { name: 'mock-org', entity: 'mock-entity' },
