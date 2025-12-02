@@ -2,6 +2,7 @@ import { logPageError } from './common.middleware.js'
 import { fetchMany, onlyIf, renderTemplate } from './middleware.builders.js'
 import { setOrganisationList, getOrganisationList } from '../utils/redisLoader.js'
 import logger from '../utils/logger.js'
+import config from '../../config/index.js'
 
 const fetchOrganisations = fetchMany({
   query: ({ req, params }) => `
@@ -23,7 +24,7 @@ const fetchOrganisations = fetchMany({
         OR p.end_date >= CURRENT_TIMESTAMP
       )
       AND (
-        p.provision_reason IN ('expected', 'statutory', 'prospective', 'encouraged')
+        p.provision_reason IN (${config.provisionReasons.map(reason => `'${reason}'`).join(', ')})
       );
   `,
   result: 'organisations'
