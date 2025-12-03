@@ -1,0 +1,19 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/entity.json.*quality=authoritative.*"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "entities": [{
+        "entity": 123,
+        "name": "Authoritative Entity",
+        "dataset": "some-dataset",
+        "quality": "authoritative"
+      }],
+      "count": 1
+    }
+  }
+}

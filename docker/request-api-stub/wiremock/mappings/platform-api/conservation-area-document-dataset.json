@@ -1,0 +1,20 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/dataset.json.*dataset=conservation-area-document.*"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "datasets": [
+        {
+          "dataset": "conservation-area-document",
+          "name": "Conservation area document",
+          "collection": "conservation-area",
+          "typology": "document"
+        }
+      ]
+    }
+  }
+}

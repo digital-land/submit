@@ -360,6 +360,19 @@ describe('fieldToColumnMapping()', () => {
 
 describe('fetchDatasetTypology()', () => {
   it('datasets should include typology', async () => {
+    const mockDatasets = {
+      datasets: [
+        { dataset: 'd1', typology: 'geography' },
+        { dataset: 'd2', typology: 'document' }
+      ]
+    }
+
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockDatasets)
+      })
+    )
+
     const response = await fetch(`${config.mainWebsiteUrl}/dataset.json`)
     const responseJSON = await response.json()
     const datasets = responseJSON.datasets || []

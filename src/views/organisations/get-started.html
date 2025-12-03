@@ -37,17 +37,16 @@
 {% block content %}
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-        <span class="govuk-caption-xl">{{ organisation.name }}</span>
-        <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
-    </div>
+  {% include "includes/_dataset-page-header.html" %}
 </div>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-
-    <h2 class="govuk-heading-l">How to prepare and provide your {{ dataset.name }} data</h2>
-
+    {% if authority and authority === "some" %}
+      <h2 class="govuk-heading-m">How to improve {{ organisation.name }}'s data</h2>
+    {% else %}
+      <h2 class="govuk-heading-l">How to prepare and provide your {{ dataset.name }} data</h2>
+    {% endif %}
     <div data-module="appstepnav" id="step-by-step-navigation" class="gem-c-step-nav js-hidden gem-c-step-nav--large"
       data-show-text="Show" data-hide-text="Hide" data-show-all-text="Show all steps"
       data-hide-all-text="Hide all steps">
@@ -76,7 +75,7 @@
               data is required</a>. Start with
               the fields you already have, you can update and
               improve your data over time.</p>
-            {% if env !== 'production' %}
+            {% if authority and authority === "some" %}
             <p class="gem-c-step-nav__paragraph">
               If we have data from alternative sources, you can download this from your <a
                 href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/overview">dataset details</a> page to help you get started.

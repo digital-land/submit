@@ -18,6 +18,7 @@ aws: {
 url: 'https://provide.planning.data.gov.uk'
 mainWebsiteUrl: https://www.planning.data.gov.uk
 dataDesignUrl: https://design.planning.data.gov.uk
+downloadUrl: 'https://download.planning.data.gov.uk' 
 # NOTE: this property is deprecated, use serviceNames instead
 serviceName: 'Check and provide planning data'
 # NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
@@ -116,4 +117,11 @@ features:
     # this feature includes violated 'out of bounds' expectations
     # as 'tasks' on LPA overview pages etc.
     # https://github.com/digital-land/submit/issues/921
+    enabled: true
+  provisionBasedDatasets:
+    # This feature will load datasets based on provisionReasons
+    enabled: true
+  nonAuthPages:
+    # This feature enables pages to show non-authoritative datasets
+    # If off, it will still check for local-plan datasets.
     enabled: true

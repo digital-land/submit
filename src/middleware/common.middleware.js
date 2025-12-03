@@ -14,6 +14,7 @@ import datasette from '../services/datasette.js'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
+import config from '../../config/index.js'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -171,21 +172,23 @@ export const fetchEntitiesPlatformDb = fetchMany({
 export const prepareAuthority = async (req, res, next) => {
   try {
     const { orgInfo, params } = req
-    // Current hard coded list so only these datasets show non authoritative data
-    if (
-      ![
-        'local-plan-boundary',
-        'local-plan-document',
-        'local-plan-document-type',
-        'local-plan-event',
-        'local-plan-housing',
-        'local-plan-process',
-        'local-plan-timetable'
-      ].includes(params.dataset)
-    ) {
-      // Default to empty string on error
-      req.authority = ''
-      return next()
+    // If config.features.nonAuthPages disabled, hard coded list to only shows these datasets (local plans) if they have non authoritative data
+    if (!config.features.nonAuthPages?.enabled) {
+      if (
+        ![
+          'local-plan-boundary',
+          'local-plan-document',
+          'local-plan-document-type',
+          'local-plan-event',
+          'local-plan-housing',
+          'local-plan-process',
+          'local-plan-timetable'
+        ].includes(params.dataset)
+      ) {
+        // Default to empty string on error
+        req.authority = ''
+        return next()
+      }
     }
 
     // First query: Check for authoritative quality

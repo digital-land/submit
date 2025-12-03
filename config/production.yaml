@@ -31,3 +31,10 @@ features:
     enabled: false
   expectationOutOfBoundsTask:
     enabled: false
+  provisionBasedDatasets:
+    # This feature will load datasets based on provisionReasons
+    enabled: false
+  nonAuthPages:
+    # This feature enables pages to show non-authoritative datasets
+    # If off, it will still check for local-plan datasets.
+    enabled: false

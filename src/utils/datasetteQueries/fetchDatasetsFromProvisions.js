@@ -14,8 +14,8 @@ export const fetchDatasetsRequiredForLocalAuthority = async () => {
     )
 
     let availableDatasets
-    // Test environment currently uses fall back
-    if (config.environment === 'development' || config.environment === 'local') {
+    // Feature flag provisionBasedDatasets to toggle between using provisions or hard coded datasets
+    if (config.features.provisionBasedDatasets.enabled) {
       logger.info('fetchDatasetsForLocalAuthority: Using filtered provisions for available datasets in development/local environment')
       availableDatasets = filteredProvisions.map(p => p.dataset)
     } else {

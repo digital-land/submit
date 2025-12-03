@@ -11,6 +11,9 @@ import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import platformApi from '../services/platformApi.js'
+import { types } from '../utils/logging.js'
+import config from '../../config/index.js'
 
 /**
  * Middleware. Updates req with 'entityIssueCounts' same as fetchEntityIssueCounts so not to be used together!
@@ -47,7 +50,7 @@ const fetchProvisions = fetchMany({
  */
 const orgStatsReducer = (accumulator, dataset) => {
   if (dataset.endpointCount > 0) accumulator[0]++
-  if (dataset.status === 'Needs fixing') accumulator[1]++
+  if (dataset.status === 'Needs improving') accumulator[1]++
   if (dataset.status === 'Error') accumulator[2]++
   return accumulator
 }
@@ -199,11 +202,17 @@ export const addNoticesToDatasets = (req, res, next) => {
  * @param {*} next
  */
 export function prepareDatasetObjects (req, res, next) {
-  const { issues, endpoints, expectationOutOfBounds, availableDatasets } = req
+  const { issues, endpoints, expectationOutOfBounds, availableDatasets, datasetAuthority } = req
   const outOfBoundsViolations = new Set((expectationOutOfBounds ?? []).map(o => o.dataset))
   req.datasets = availableDatasets.map((dataset) => {
     const datasetEndpoints = endpoints[dataset]
     const datasetIssues = issues[dataset]
+
+    // If data found is provided by alternative source, Needs improving is 'hard coded in' as 1 task Needs improving: submit authoritive data
+    if (datasetAuthority && datasetAuthority[dataset] === 'some') {
+      return { status: 'Needs improving', endpointCount: 0, dataset, issueCount: 1, authority: 'some' }
+    }
+
     if (!datasetEndpoints) {
       return { status: 'Not submitted', endpointCount: 0, dataset }
     }
@@ -221,12 +230,14 @@ export function prepareDatasetObjects (req, res, next) {
     if (allError) {
       status = 'Error'
     } else if (someError || issueCount > 0) {
-      status = 'Needs fixing'
+      status = 'Needs improving'
     } else {
       status = 'Live'
     }
 
-    return { dataset, error, issueCount, status, endpointCount, endpointErrorCount }
+    const authority = datasetAuthority?.[dataset] || ''
+
+    return { dataset, error, issueCount, status, endpointCount, endpointErrorCount, authority }
   })
 
   next()
@@ -306,6 +317,108 @@ export function prepareOverviewTemplateParams (req, res, next) {
   next()
 }
 
+/**
+ * Batch version of prepareAuthority for LPA overview dashboard
+ * Checks authority status for all datasets in parallel
+ *
+ * @param {Object} req - Request object
+ * @param {Object} req.orgInfo - Organization info with entity
+ * @param {Object} req.datasets - Object with dataset keys and their data
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ */
+export const prepareAuthorityBatch = async (req, res, next) => {
+  // Initialize with empty object to prevent downstream failures
+  req.datasetAuthority = {}
+
+  try {
+    const { orgInfo, availableDatasets } = req
+
+    // Datasets that are currently enabled for authority checking i.e. local plans
+    const authorityEnabledDatasets = [
+      'local-plan-boundary',
+      'local-plan-document',
+      'local-plan-document-type',
+      'local-plan-event',
+      'local-plan-housing',
+      'local-plan-process',
+      'local-plan-timetable'
+    ]
+    let datasetsToCheck = []
+    if (config.features.nonAuthPages.enabled) {
+      // Use when all datasets are to be checked
+      datasetsToCheck = availableDatasets
+    } else {
+      datasetsToCheck = availableDatasets.filter(dataset =>
+        authorityEnabledDatasets.includes(dataset)
+      )
+    }
+
+    if (datasetsToCheck.length === 0) {
+      return next()
+    }
+
+    // Create parallel promises for all datasets
+    const authorityPromises = datasetsToCheck.map(async (dataset) => {
+      try {
+        // Check for authoritative quality
+        const authoritativeResult = await platformApi.fetchEntities({
+          organisation_entity: orgInfo.entity,
+          dataset,
+          quality: 'authoritative',
+          limit: 1
+        })
+
+        if (authoritativeResult.formattedData && authoritativeResult.formattedData.length > 0) {
+          return { dataset, authority: 'authoritative' }
+        }
+
+        // Check for 'some' quality
+        const someResult = await platformApi.fetchEntities({
+          organisation_entity: orgInfo.entity,
+          dataset,
+          quality: 'some',
+          limit: 1
+        })
+
+        if (someResult.formattedData && someResult.formattedData.length > 0) {
+          return { dataset, authority: 'some' }
+        }
+
+        return { dataset, authority: '' }
+      } catch (error) {
+        logger.warn({
+          message: `prepareAuthorityBatch failed for dataset ${dataset}: ${error.message}`,
+          type: types.App,
+          orgEntity: orgInfo.entity,
+          dataset
+        })
+        return { dataset, authority: '' }
+      }
+    })
+
+    // Wait for all authority checks
+    const results = await Promise.all(authorityPromises)
+
+    // Convert results array to dictionary for easier lookup
+    req.datasetAuthority = results.reduce((acc, { dataset, authority }) => {
+      acc[dataset] = authority
+      return acc
+    }, {})
+
+    return next()
+  } catch (error) {
+    logger.error({
+      message: `prepareAuthorityBatch failed: ${error.message}`,
+      type: types.App,
+      orgEntity: req.orgInfo?.entity,
+      errorStack: error.stack
+    })
+    // req.datasetAuthority already initialized to {} at the top so okay future use
+    return next()
+  }
+}
+
 export const getOverview = renderTemplate({
   templateParams (req) {
     if (!req.templateParams) throw new Error('missing templateParams')
@@ -364,6 +477,7 @@ export default [
   groupIssuesCountsByDataset,
   groupEndpointsByDataset,
 
+  prepareAuthorityBatch, // Fetch Platform API authority status for all datasets
   prepareDatasetObjects,
 
   // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)

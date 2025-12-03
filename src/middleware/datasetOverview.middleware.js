@@ -10,6 +10,7 @@ import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import config from '../../config/index.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -213,14 +214,22 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
       }
     })
 
-  const taskCount = (entryIssueCounts ? entryIssueCounts.length : 0) +
+  // Hard code task count for 'some' authority
+  let taskCount = 0
+  if (authority === 'some') {
+    taskCount = 1
+  } else {
+    taskCount = (entryIssueCounts ? entryIssueCounts.length : 0) +
     (entityIssueCounts ? entityIssueCounts.length : 0) +
     endpointErrorIssues +
     (expectationOutOfBounds.length > 0 ? 1 : 0)
+  }
 
   const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
 
   req.templateParams = {
+    downloadUrl,
     authority,
     showMap,
     organisation: orgInfo,

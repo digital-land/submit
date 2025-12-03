@@ -24,7 +24,8 @@ import {
   fetchOrgInfo, fetchResources, fetchSources,
   logPageError,
   noop,
-  validateOrgAndDatasetQueryParams
+  validateOrgAndDatasetQueryParams,
+  prepareAuthority
 } from './common.middleware.js'
 import { fetchOne, renderTemplate } from './middleware.builders.js'
 import performanceDbApi from '../services/performanceDbApi.js'
@@ -53,7 +54,7 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
 /**
  * Returns a status tag object with a text label and a CSS class based on the status.
  *
- * @param {string} status - The status to generate a tag for (e.g. "Error", "Needs fixing", etc.)
+ * @param {string} status - The status to generate a tag for (e.g. "Error", "Needs improving", etc.)
  * @returns {object} - An object with a `tag` property containing the text label and CSS class.
  */
 function getStatusTag (status) {
@@ -104,9 +105,20 @@ export function entityOutOfBoundsMessage (dataset, count) {
  */
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
-  const { entityCount, resources, sources } = req
+  const { entityCount, resources, sources, authority } = req
   const { entryIssueCounts, entityIssueCounts, expectationOutOfBounds = [] } = req
 
+  // First check, if non authoritative dataset, only one task to show: Provide authoritative data
+  if (authority && authority === 'some') {
+    req.taskList = [{
+      title: {
+        text: 'Provide authoritative data'
+      },
+      href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/get-started`,
+      status: getStatusTag('Needs improving')
+    }]
+    return next()
+  }
   let issues = [...entryIssueCounts, ...entityIssueCounts]
 
   issues = issues.filter(
@@ -146,7 +158,7 @@ export const prepareTasks = (req, res, next) => {
         text: title
       },
       href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(type)}/${encodeURIComponent(field)}`,
-      status: getStatusTag('Needs fixing')
+      status: getStatusTag('Needs improving')
     }
   })
 
@@ -169,7 +181,7 @@ export const prepareTasks = (req, res, next) => {
         text: entityOutOfBoundsMessage(dataset, expectationOutOfBounds[0].actual)
       },
       href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/expectation/${encodeURIComponent(expectations.entitiesOutOfBounds.slug)}`,
-      status: getStatusTag('Needs fixing')
+      status: getStatusTag('Needs improving')
     })
   }
 
@@ -194,11 +206,12 @@ export const prepareTasks = (req, res, next) => {
  * @param {*} next
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { taskList, dataset, orgInfo: organisation } = req
+  const { taskList, dataset, orgInfo: organisation, authority } = req
 
   req.templateParams = {
     taskList,
     organisation,
+    authority,
     dataset
   }
   next()
@@ -216,6 +229,7 @@ export default [
   fetchSources,
   fetchDatasetInfo,
   fetchResources,
+  prepareAuthority,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   addEntityCountsToResources,
   fetchEntityCount,
