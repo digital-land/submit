@@ -3,7 +3,7 @@ import { datasetSlugToReadableName } from './datasetSlugToReadableName.js'
 import logger from './logger.js'
 import config from '../../config/index.js'
 import { getDatasetCollectionSlugNameMapping } from './datasetteQueries/fetchDatasetCollections.js'
-import { getRedisClient } from './datasetLoader.js'
+import { getRedisClient } from './redisLoader.js'
 
 // Use a short TTL in development
 const CACHE_TTL = (['development', 'local'].includes(config.environment)) ? 60 : 60 * 60 // 1 minute or 1 hour depending on environment

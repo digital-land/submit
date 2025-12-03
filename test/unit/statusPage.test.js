@@ -13,7 +13,7 @@ describe('StatusPage', () => {
     global.fetch = vi.fn()
     global.fetch = vi.fn((url) => {
       if (url.includes('/dataset.json')) {
-        // mock the https://www.planning.data.gov.uk/dataset.json fetch used in utils/datasetLoader.js
+        // mock the https://www.planning.data.gov.uk/dataset.json fetch used in utils/redisLoader.js
         return Promise.resolve({
           ok: true,
           json: () => Promise.resolve({

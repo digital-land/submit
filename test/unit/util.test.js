@@ -2,9 +2,9 @@ import * as util from '../../src/utils/utils.js'
 import { describe, it, expect, beforeAll, vi, afterAll } from 'vitest'
 import { isFeatureEnabled } from '../../src/utils/features.js'
 import * as table from '../../src/utils/table.js'
-import { getDatasetNameMap } from '../../src/utils/datasetLoader.js'
+import { getDatasetNameMap } from '../../src/utils/redisLoader.js'
 
-vi.mock('../../src/utils/datasetLoader.js', () => ({
+vi.mock('../../src/utils/redisLoader.js', () => ({
   getDatasetNameMap: vi.fn().mockResolvedValue({
     A: 'Dataset A',
     B: 'Dataset B',

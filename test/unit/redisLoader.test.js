@@ -1,5 +1,5 @@
 import { vi, it, describe, expect, beforeEach, afterEach } from 'vitest'
-import { getDatasetNameMap } from '../../src/utils/datasetLoader'
+import { getDatasetNameMap } from '../../src/utils/redisLoader'
 import config from '../../config'
 
 describe('getDatasetNameMap', () => {
