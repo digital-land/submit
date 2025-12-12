@@ -8,6 +8,7 @@ class UploadController extends PageController {
 
   getBaseFormData (req) {
     return {
+      organisationName: req.sessionModel.get('deep-link-session-key')?.orgName,
       dataset: req.sessionModel.get('dataset'),
       collection: req.sessionModel.get('data-subject'),
       geomType: req.sessionModel.get('geomType'),

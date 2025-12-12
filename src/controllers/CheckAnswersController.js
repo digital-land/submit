@@ -4,7 +4,7 @@ import { attachFileToIssue, createCustomerRequest } from '../services/jiraServic
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
-import { postUrlRequest } from '../services/asyncRequestApi.js'
+import { postUrlRequest, getRequestData } from '../services/asyncRequestApi.js'
 import SubmitUrlController from './submitUrlController.js'
 import { getDatasets } from '../utils/utils.js'
 
@@ -75,6 +75,7 @@ class CheckAnswersController extends PageController {
 
     const formData = {
       url,
+      organisationName: req.sessionModel.get('lpa'),
       dataset: req.sessionModel.get('dataset'),
       collection: datasetMeta.dataSubject,
       geomType: req.sessionModel.get('geomType')
@@ -124,11 +125,24 @@ class CheckAnswersController extends PageController {
       return null
     }
 
-    // Create CSV to attach to Jira issue
+    // Create CSV to attach to Jira issue, query to request data API to get plugin used
+    let requestData
+    if (requestId) {
+      try {
+        requestData = await getRequestData(requestId)
+      } catch (error) {
+        logger.error(`Failed get request data info for  ${requestId}`, {
+          errorMessage: error.message,
+          errorStack: error,
+          type: types.External
+        })
+        requestData = null
+      }
+    }
     const dateNow = new Date().toISOString().split('T')[0]
     const csvData = [
-      ['organisation', 'pipelines', 'documentation-url', 'endpoint-url', 'start-date', 'licence'],
-      [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, 'ogl3']
+      ['organisation', 'pipelines', 'documentation-url', 'endpoint-url', 'start-date', 'plugin', 'licence'],
+      [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, requestData?.getPlugin(), 'ogl3']
     ]
     const csv = stringify(csvData)
 

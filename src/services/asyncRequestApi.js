@@ -7,11 +7,12 @@ import { types } from '../utils/logging.js'
 const requestsEndpoint = `${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}`
 
 export const postFileRequest = async (formData) => {
-  const { uploadedFilename, originalFilename, dataset, collection, geomType } = formData
+  const { uploadedFilename, originalFilename, dataset, collection, geomType, organisationName } = formData
 
   return await postRequest({
     dataset,
     collection,
+    organisationName,
     geom_type: geomType,
     uploaded_filename: uploadedFilename,
     original_filename: originalFilename,
@@ -20,12 +21,13 @@ export const postFileRequest = async (formData) => {
 }
 
 export const postUrlRequest = async (formData) => {
-  const { url, dataset, collection, geomType } = formData
-  logger.debug('postUrlRequest', { url, dataset, collection, geomType })
+  const { url, dataset, collection, geomType, organisationName } = formData
+  logger.debug('postUrlRequest', { url, dataset, collection, geomType, organisationName })
   return await postRequest({
     dataset,
     collection,
     geom_type: geomType,
+    organisationName,
     url,
     type: 'check_url'
   })

@@ -130,6 +130,14 @@ export default class ResultData {
   getId () {
     return this.id
   }
+
+  getPlugin () {
+    if (!this.response || !this.response.data) {
+      logger.warn('trying to get plugin when response data is missing', { requestId: this.id })
+      return null
+    }
+    return this.response.data['plugin'] ?? null
+  }
 }
 
 /**

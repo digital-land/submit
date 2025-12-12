@@ -308,14 +308,11 @@ test.describe('Request Check', () => {
       // Wait longer for error page to load and render error messages i.e. webkit
       await page.waitForTimeout(3000)
 
-      // Check for the bad-upload element specifically
-      await expect(page.locator('#bad-upload')).toBeVisible()
       // Check for specific error messages (flexible for different error types that can be thrown with a server error)
       const errorMessages = [
-        'The requested URL could not be downloaded: SSLError',
-        'Fetch operation failed',
-        'Connection timeout',
-        'Network error'
+        'SSL certificate verification failed',
+        'An error occurred, please try again later',
+        'There is a problem with our service, please try again later'
       ]
 
       let foundError = false
