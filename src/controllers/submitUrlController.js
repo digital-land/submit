@@ -61,9 +61,10 @@ class SubmitUrlController extends UploadController {
     }
 
     const postValidators = (resp) => ([
-      { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) },
-      { type: 'restricted403', fn: () => SubmitUrlController.isNotRestricted(resp) },
-      { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
+      { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) }, // block 404
+      { type: 'restricted403', fn: () => SubmitUrlController.isNotRestricted(resp) }, // block 403
+      // TODO: Permanently remove filetype front end check, plugin URL's will not work with this check.
+      // { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
       { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
     ])
     const headResponse = await SubmitUrlController.headRequest(url)
@@ -75,6 +76,7 @@ class SubmitUrlController extends UploadController {
       return null
     }
 
+    // 405 skip post validators
     if (headResponse?.status === HTTP_STATUS_METHOD_NOT_ALLOWED) {
       // HEAD request not allowed, return null or a specific error message
       logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head as it was not allowed (405) skipping post validators', {

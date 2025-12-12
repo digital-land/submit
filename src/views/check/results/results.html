@@ -45,7 +45,7 @@ panel: { html: tableTab } } } %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    {{ datasetBanner(null, options.datasetName or options.requestParams.dataset) }}
+    {{ datasetBanner(options.requestParams.organisationName, options.datasetName or options.requestParams.dataset) }}
 
     <h1 class="govuk-heading-l">
       {{pageName}}
