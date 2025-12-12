@@ -197,7 +197,7 @@ describe('CheckAnswersController', () => {
       }
       getRequestData.mockResolvedValue(mockRequestData)
       postUrlRequest.mockResolvedValue('requestId')
-      
+
       req.sessionModel.get.mockImplementation((key) => {
         const data = {
           name: 'John Doe',
@@ -210,13 +210,13 @@ describe('CheckAnswersController', () => {
         }
         return data[key]
       })
-      
+
       const response = { data: { issueKey: 'TEST-123' } }
       createCustomerRequest.mockResolvedValue(response)
       attachFileToIssue.mockResolvedValue({ data: {} })
 
       const result = await controller.createJiraServiceRequest(req, res, next)
-      
+
       expect(getRequestData).toHaveBeenCalledWith('requestId')
       expect(mockRequestData.getPlugin).toHaveBeenCalled()
       expect(attachFileToIssue).toHaveBeenCalledWith(
@@ -224,14 +224,14 @@ describe('CheckAnswersController', () => {
         expect.any(File),
         expect.any(String)
       )
-      
+
       // Verify the CSV file contains the plugin value
       const attachFileCall = attachFileToIssue.mock.calls[0]
       const csvFile = attachFileCall[1]
       const csvContent = await csvFile.text()
       expect(csvContent).toContain('wfs')
       expect(csvContent).toContain('plugin')
-      
+
       expect(result).toEqual(response.data)
     })
 
