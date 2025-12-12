@@ -61,7 +61,7 @@ const postRequest = async (formData) => {
 export const getRequestData = async (resultId, opts = undefined) => {
   const url = new URL(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${resultId}`)
   try {
-    const response = await axios.get(url)
+    const response = await axios.get(url, { timeout: 15000 })
     return new ResultData(response.data)
   } catch (error) {
     if (error?.response?.status === 404) {

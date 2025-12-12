@@ -63,7 +63,7 @@ class SubmitUrlController extends UploadController {
     const postValidators = (resp) => ([
       { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) }, // block 404
       { type: 'restricted403', fn: () => SubmitUrlController.isNotRestricted(resp) }, // block 403
-      // TODO: Permentantly remove filetype front end check, plugin URL's will not work with this check.
+      // TODO: Permanently remove filetype front end check, plugin URL's will not work with this check.
       // { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
       { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
     ])
