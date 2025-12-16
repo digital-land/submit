@@ -13,9 +13,6 @@ redis: {
     port: 6379
 }
 url: 'https://provide.development.planning.data.gov.uk/'
-jira: {
-  requestTypeId: 37
-}
 features:
   submitEndpointForm:
     enabled: true

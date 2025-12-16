@@ -103,7 +103,7 @@ provisionReasons:
   - encouraged
 tablePageLength: 50
 jira: {
-  requestTypeId: 1
+  requestTypeId: 28
 }
 features:
   submitEndpointForm:

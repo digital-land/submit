@@ -174,8 +174,12 @@ Then edit the .env file with the correct values.
 
 ### How to create a test Jira Service Desk for local development
 
+Ideally use the Jira Sandbox URL, this only requires the three env parameters for JIRA to be filled in, The JIRA_BASIC_AUTH and JIRA_SERVICE_DESK_ID are the same as the production environment, only the URL needs to be changed to use the Sandbox Jira environment.
+
+#### Alternative Local Spinup
+
 1. Go to [JIRA Service Desk](https://www.atlassian.com/software/jira/service-desk/try)
-2. Click on "Try for free"
+2. Click on "Try for free"Create a "Customer Desk" Project
 3. Fill in the form and create a test instance
 4. In the "Users" section, create a new user
 5. In the "Projects" section, create a new project

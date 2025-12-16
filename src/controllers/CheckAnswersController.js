@@ -125,39 +125,79 @@ class CheckAnswersController extends PageController {
       return null
     }
 
-    // Create CSV to attach to Jira issue, query to request data API to get plugin used
-    let requestData
+    this.attachFileToIssue(requestId, data, description, response).catch((error) => {
+      logger.error('CheckAnswersController.attachFileToIssue(): Failed to attach CSV to Jira issue', {
+        errorMessage: error.message,
+        errorStack: error,
+        type: types.External
+      })
+    })
+
+    return response.data
+  }
+
+  /**
+   * Asynchronously generates and attaches a CSV file to the created Jira issue.
+   *
+   * This method polls the request API to retrieve the plugin information,
+   * constructs a CSV with the request details, and attaches it to the Jira issue.
+   * It is designed to run in the background without blocking the main response.
+   *
+   * @param {string} requestId - The ID of the request to poll for plugin data.
+   * @param {Object} data - The data object containing request details (organisation, dataset, etc.).
+   * @param {string} description - The description of the issue (used as a comment for the attachment).
+   * @param {Object} response - The response object from the Jira issue creation, containing the issue key.
+   * @returns {Promise<void>}
+   */
+  async attachFileToIssue (requestId, data, description, response) {
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+    let requestData = null
+    let plugin = null
+    let retry = 0
+
+    // Request data may not be immediately available, poll until we have it from Async Request API for plugin value
     if (requestId) {
-      try {
-        requestData = await getRequestData(requestId)
-      } catch (error) {
-        logger.error(`Failed get request data info for  ${requestId}`, {
-          errorMessage: error.message,
-          errorStack: error,
-          type: types.External
-        })
-        requestData = null
+      while (plugin == null && retry < 6 && requestData?.isComplete?.() !== true) {
+        try {
+          requestData = await getRequestData(requestId)
+        } catch (error) {
+          logger.error(`Failed get request data info for ${requestId}`, {
+            errorMessage: error.message,
+            errorStack: error,
+            type: types.External
+          })
+          requestData = null
+        }
+
+        plugin = requestData?.getPlugin?.()
+
+        if (plugin == null) {
+          retry += 1
+          await sleep(5000)
+        }
       }
     }
+
+    // Create Parameters for CSV attachment
     const dateNow = new Date().toISOString().split('T')[0]
     const csvData = [
       ['organisation', 'pipelines', 'documentation-url', 'endpoint-url', 'start-date', 'plugin', 'licence'],
-      [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, requestData?.getPlugin(), 'ogl3']
+      [data.organisationId, data.dataset, data.documentationUrl, data.endpoint, dateNow, plugin, 'ogl3']
     ]
     const csv = stringify(csvData)
 
+    // Send attachment to Jira issue
     const file = new File([csv], `request-${data.organisationId}-${data.dataset}-${dateNow}.csv`, { type: 'text/csv' })
     const attachmentResponse = await attachFileToIssue(response.data.issueKey, file, description)
 
     if (attachmentResponse.error || !attachmentResponse.data) {
-      logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to attach file to Jira issue', {
+      logger.error('jiraService.attachFileToIssue(): Failed to attach file to Jira issue', {
         errorMessage: attachmentResponse.error.message,
         errorStack: attachmentResponse.error,
         type: types.External
       })
-      return null
     }
-    return response.data
   }
 }
 
