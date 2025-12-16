@@ -179,7 +179,7 @@ Ideally use the Jira Sandbox URL, this only requires the three env parameters fo
 #### Alternative Local Spinup
 
 1. Go to [JIRA Service Desk](https://www.atlassian.com/software/jira/service-desk/try)
-2. Click on "Try for free"Create a "Customer Desk" Project
+2. Click on Try for free and "Create a 'Customer Desk' Project"
 3. Fill in the form and create a test instance
 4. In the "Users" section, create a new user
 5. In the "Projects" section, create a new project

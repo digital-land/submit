@@ -53,10 +53,10 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
     {% elif err.errorDetail is iterable and err.errorDetail is not string %}
       {% for detail in err.errorDetail %}
-        <p class="govuk-body">{{ detail }}</p>
+        <p class="govuk-body"{% if loop.first %} id="bad-upload" tabindex="-1"{% endif %}>{{ detail }}</p>
       {% endfor %}
     {% elif err.errorDetail %}
-      <p class="govuk-body">{{ err.errorDetail }}</p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">{{ err.errorDetail }}</p>
     {% else %}
     <p class="govuk-body" id="bad-upload" tabindex="-1">
       Error: {{ err.message }}
