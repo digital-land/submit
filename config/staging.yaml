@@ -11,9 +11,6 @@ redis: {
     port: 6379
 }
 url: 'https://provide.staging.planning.data.gov.uk/'
-jira: {
-  requestTypeId: 37
-}
 features:
   submitEndpointForm:
     enabled: true

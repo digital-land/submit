@@ -21,8 +21,9 @@ const navigateToCheck = async (page) => {
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
-// TODO: this file should cause a server error when served to the async. It currently does but is temporary (A link that causes a Server Timeout Error or SSL Error is requiered)
+// TODO: this file should cause a SSL Certificate error when served to the async. It currently does but is temporary (A link that causes a Server Timeout Error or SSL Error is required)
 const serverErrorFile = 'https://www.tendringdc.gov.uk/sites/default/files/documents/planning/CAD%20csv.csv'
+const htmlFile = 'https://en.wikipedia.org/wiki/John_Doe'
 
 let lastTimestamp = 0
 
@@ -282,8 +283,8 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageHasTabs(false)
     })
 
-    test('request check of a @url that should cause a server error and be displayed', async ({ page }) => {
-      log('request check of a @url that should cause a server error and be displayed with javascript disabled', true)
+    test('request check of a @url that should cause a SSL error and display custom content', async ({ page }) => {
+      log('request check of a @url that should cause a SSL error and display custom content', true)
 
       const startPage = await navigateToCheck(page)
       const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
@@ -308,28 +309,38 @@ test.describe('Request Check', () => {
       // Wait longer for error page to load and render error messages i.e. webkit
       await page.waitForTimeout(3000)
 
-      // Check for the bad-upload element specifically
-      await expect(page.locator('#bad-upload')).toBeVisible()
-      // Check for specific error messages (flexible for different error types that can be thrown with a server error)
-      const errorMessages = [
-        'The requested URL could not be downloaded: SSLError',
-        'Fetch operation failed',
-        'Connection timeout',
-        'Network error'
-      ]
+      // Check for specific error message content
+      await expect(page.getByText('While it may open in some browsers').first()).toBeVisible({ timeout: 1000 })
+    })
 
-      let foundError = false
-      for (const errorMessage of errorMessages) {
-        try {
-          await expect(page.getByText(errorMessage).first()).toBeVisible({ timeout: 1000 })
-          foundError = true
-          break
-        } catch (e) {
-          // Continue checking other error messages
-        }
-      }
+    test('request check of a @url that should cause a incorrect content type error return from async', async ({ page }) => {
+      log('request check of a @url that should cause a SSL error and display custom content', true)
 
-      expect(foundError, `Expected to find one of these error messages: ${errorMessages.join(', ')}`).toBeTruthy()
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL(htmlFile)
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+
+      const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
+
+      await page.waitForTimeout(5000)
+      await statusPage.clickCheckStatusButton()
+
+      // Wait longer for error page to load and render error messages i.e. webkit
+      await page.waitForTimeout(3000)
+
+      // Check for specific error message content
+      await expect(page.getByText('a direct link to the data file in one of the following formats').first()).toBeVisible({ timeout: 1000 })
     })
   })
 })

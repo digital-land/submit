@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
-import { postUrlRequest } from '../../src/services/asyncRequestApi.js'
+import { postUrlRequest, getRequestData } from '../../src/services/asyncRequestApi.js'
 import SubmitUrlController from '../../src/controllers/submitUrlController.js'
 
 vi.mock('../../src/services/jiraService.js')
@@ -49,7 +49,7 @@ describe('CheckAnswersController', () => {
 
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'Failed to create Jira issue.' }])
+      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
       expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
       expect(next).not.toHaveBeenCalled()
     })
@@ -69,6 +69,7 @@ describe('CheckAnswersController', () => {
     it('should create a Jira service request and attach a file', async () => {
       config.jira.requestTypeId = '1'
       postUrlRequest.mockResolvedValue('requestId')
+      const attachSpy = vi.spyOn(controller, 'attachFileToIssue').mockResolvedValue()
       req.sessionModel.get.mockImplementation((key) => {
         const data = {
           name: 'John Doe',
@@ -105,10 +106,21 @@ describe('CheckAnswersController', () => {
         },
         config.jira.requestTypeId
       )
-      expect(attachFileToIssue).toHaveBeenCalledWith(
-        'TEST-123',
-        expect.any(File),
-        expect.stringContaining('A new dataset request has been made by *John Doe* from *Test Organisation (test-org)* for the dataset *Test Dataset*.')
+
+      // Attachment happens asynchronously in the background; verify we trigger it.
+      expect(attachSpy).toHaveBeenCalledWith(
+        'requestId',
+        expect.objectContaining({
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          organisationId: 'test-org',
+          organisationName: 'Test Organisation',
+          dataset: 'Test Dataset',
+          documentationUrl: 'http://example.com/doc',
+          endpoint: 'http://example.com/endpoint'
+        }),
+        expect.any(String),
+        response
       )
       expect(result).toEqual(response.data)
     })
@@ -151,11 +163,12 @@ describe('CheckAnswersController', () => {
 
       const response = { data: { issueKey: 'TEST-123' } }
       createCustomerRequest.mockResolvedValue(response)
-      attachFileToIssue.mockResolvedValue({ error: 'Error' })
+      vi.spyOn(controller, 'attachFileToIssue').mockRejectedValue(new Error('Attachment failed'))
 
       const result = await controller.createJiraServiceRequest(req, res, next)
 
-      expect(result).toBeNull()
+      // Attachment failures are logged but do not fail the Jira request creation.
+      expect(result).toEqual(response.data)
     })
 
     it('should add geomtry type for dataset is tree', async () => {
@@ -187,6 +200,51 @@ describe('CheckAnswersController', () => {
         }),
         config.jira.requestTypeId
       )
+      expect(result).toEqual(response.data)
+    })
+
+    it('should include plugin in CSV attachment when plugin is retrieved', async () => {
+      config.jira.requestTypeId = '1'
+      const mockRequestData = {
+        getPlugin: vi.fn().mockReturnValue('wfs')
+      }
+      getRequestData.mockResolvedValue(mockRequestData)
+      postUrlRequest.mockResolvedValue('requestId')
+
+      req.sessionModel.get.mockImplementation((key) => {
+        const data = {
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          orgId: 'test-org',
+          lpa: 'Test Organisation',
+          dataset: 'conservation-area',
+          'documentation-url': 'http://example.com/doc',
+          'endpoint-url': 'http://example.com/endpoint'
+        }
+        return data[key]
+      })
+
+      const response = { data: { issueKey: 'TEST-123' } }
+      createCustomerRequest.mockResolvedValue(response)
+      attachFileToIssue.mockResolvedValue({ data: {} })
+
+      const result = await controller.createJiraServiceRequest(req, res, next)
+
+      expect(getRequestData).toHaveBeenCalledWith('requestId')
+      expect(mockRequestData.getPlugin).toHaveBeenCalled()
+      expect(attachFileToIssue).toHaveBeenCalledWith(
+        'TEST-123',
+        expect.any(File),
+        expect.any(String)
+      )
+
+      // Verify the CSV file contains the plugin value
+      const attachFileCall = attachFileToIssue.mock.calls[0]
+      const csvFile = attachFileCall[1]
+      const csvContent = await csvFile.text()
+      expect(csvContent).toContain('wfs')
+      expect(csvContent).toContain('plugin')
+
       expect(result).toEqual(response.data)
     })
 

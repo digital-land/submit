@@ -1,5 +1,8 @@
+import dotenv from 'dotenv'
 import HmpoConfig from 'hmpo-config'
 import { combineConfigs, validateConfig } from './util.js'
+
+dotenv.config()
 
 /**
  *

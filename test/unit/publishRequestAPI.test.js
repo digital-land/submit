@@ -103,7 +103,7 @@ describe('asyncRequestApi', () => {
 
       const result = await getRequestData(resultId)
 
-      expect(axios.get).toHaveBeenCalledWith(new URL(expectedUrl))
+      expect(axios.get).toHaveBeenCalledWith(new URL(expectedUrl), { timeout: 15000 })
       expect(result).toBeInstanceOf(RequestData)
     })
 

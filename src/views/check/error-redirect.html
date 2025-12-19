@@ -20,9 +20,48 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+    {# Display specific error details for certain errors else show detail if available #}
+    {% if err.message == "SSL certificate verification failed" %}
+      <p class="govuk-body" id="bad-upload" tabindex="-1">
+        The link we’re trying to access is not loading using a secure connection. We could not verify the Secure Sockets Layer (SSL) certificate.
+      </p>
+
+      <p class="govuk-body">
+        While it may open in some browsers, our security checks require a complete certificate chain.
+      </p>
+
+      <p class="govuk-body">You must make sure:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>the URL includes an ’s’ as part of ‘https://'</li>
+        <li>the website’s SSL certificate is correctly installed</li>
+      </ul>
+
+      <p class="govuk-body">Contact your IT team for support if you need it.</p>
+    {% elif err.message == "The selected file must be a CSV, GeoJSON, GML or GeoPackage file" %}
+      <p class="govuk-body" id="bad-upload" tabindex="-1">The URL returns a HTML webpage. This must be a data file.</p>
+
+      <p class="govuk-body">Provide a direct link to the data file in one of the following formats:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>CSV</li>
+        <li>GeoJSON</li>
+        <li>GML</li>
+        <li>GeoPackage</li>
+        <li>ArcGIS</li>
+        <li>WFS</li>
+      </ul>
+
+      <p class="govuk-body">Contact your IT team for support if you need it.</p>
+    {% elif err.errorDetail is iterable and err.errorDetail is not string %}
+      {% for detail in err.errorDetail %}
+        <p class="govuk-body"{% if loop.first %} id="bad-upload" tabindex="-1"{% endif %}>{{ detail }}</p>
+      {% endfor %}
+    {% elif err.errorDetail %}
+      <p class="govuk-body" id="bad-upload" tabindex="-1">{{ err.errorDetail }}</p>
+    {% else %}
     <p class="govuk-body" id="bad-upload" tabindex="-1">
       Error: {{ err.message }}
     </p>
+    {% endif %}
     <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
         href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>
   </div>
