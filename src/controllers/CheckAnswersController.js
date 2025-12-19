@@ -27,7 +27,7 @@ class CheckAnswersController extends PageController {
         req.sessionModel.set('errors', [])
         req.sessionModel.set('processing', true)
       } else {
-        req.sessionModel.set('errors', [{ text: 'Failed to create Jira issue.' }])
+        req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
 
         return res.redirect('/submit/check-answers') // Redirect on error
       }

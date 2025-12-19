@@ -49,7 +49,7 @@ describe('CheckAnswersController', () => {
 
       await controller.post(req, res, next)
 
-      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'Failed to create Jira issue.' }])
+      expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
       expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
       expect(next).not.toHaveBeenCalled()
     })
