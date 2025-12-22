@@ -8,11 +8,12 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 {% endblock %}
 
 {% block content %}
+{% set errorMessage = err.message | default("An error occurred, please try again later.", true) %}
 {{ govukErrorSummary({
           titleText: "There’s a problem",
           errorList: [
             {
-              text: err.message,
+              text: errorMessage,
               href: "#bad-upload"
             }
           ]
@@ -21,7 +22,7 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {# Display specific error details for certain errors else show detail if available #}
-    {% if err.message == "SSL certificate verification failed" %}
+    {% if errorMessage == "SSL certificate verification failed" %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">
         The link we’re trying to access is not loading using a secure connection. We could not verify the Secure Sockets Layer (SSL) certificate.
       </p>
@@ -37,7 +38,7 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       </ul>
 
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
-    {% elif err.message == "The selected file must be a CSV, GeoJSON, GML or GeoPackage file" %}
+    {% elif errorMessage == "The selected file must be a CSV, GeoJSON, GML or GeoPackage file" %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">The URL returns a HTML webpage. This must be a data file.</p>
 
       <p class="govuk-body">Provide a direct link to the data file in one of the following formats:</p>
@@ -51,15 +52,9 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       </ul>
 
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
-    {% elif err.errorDetail is iterable and err.errorDetail is not string %}
-      {% for detail in err.errorDetail %}
-        <p class="govuk-body"{% if loop.first %} id="bad-upload" tabindex="-1"{% endif %}>{{ detail }}</p>
-      {% endfor %}
-    {% elif err.errorDetail %}
-      <p class="govuk-body" id="bad-upload" tabindex="-1">{{ err.errorDetail }}</p>
     {% else %}
     <p class="govuk-body" id="bad-upload" tabindex="-1">
-      Error: {{ err.message }}
+      Error: {{ errorMessage }}
     </p>
     {% endif %}
     <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
