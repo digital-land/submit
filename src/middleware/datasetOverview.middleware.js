@@ -4,7 +4,7 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetPlatformInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop, prepareAuthority } from './common.middleware.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
 import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
@@ -186,7 +186,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, expectationOutOfBounds = [] } = req
+  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, alternateSources, expectationOutOfBounds = [] } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources
@@ -235,6 +235,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     organisation: orgInfo,
     dataset,
     taskCount,
+    alternateSources,
     stats: {
       numberOfRecords: entityCount.entity_count,
       endpoints
@@ -263,7 +264,7 @@ export default [
   fetchEntryIssueCounts,
   fetchSpecification,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
-  prepareAuthority, // Determine authority or non authority page, using platform API direclty so breaks the fetch design pattern.
+  ...processAuthoritativeMiddlewares,
   pullOutDatasetSpecification,
   // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchEntityCount,

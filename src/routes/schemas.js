@@ -165,6 +165,7 @@ export const OrgDatasetOverview = v.strictObject({
   showMap: v.boolean(),
   authority: v.string(),
   taskCount: v.integer(),
+  alternateSources: v.optional(v.array(v.strictObject({ name: NonEmptyString }))),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
     endpoints: v.array(v.strictObject({
@@ -192,7 +193,8 @@ export const OrgDataView = v.strictObject({
   authority: v.string(),
   tableParams,
   pagination: PaginationParams,
-  dataRange: dataRangeParams
+  dataRange: dataRangeParams,
+  alternateSources: v.optional(v.array(v.strictObject({ name: NonEmptyString })))
 })
 
 export const OrgDatasetTaskList = v.strictObject({
