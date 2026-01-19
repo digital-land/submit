@@ -53,8 +53,8 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
     {% elif errorMessage == "The URL must be accessible" %}
-      <p class="govuk-body" id="bad-upload" tabindex="-1">"You must host the URL on a server which does not block access due to set permissions."</p>
-      <p class="govuk-body" id="bad-upload" tabindex="-1">"Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error."</p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">You must host the URL on a server which does not block access due to set permissions.</p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
     {% else %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">
         Error: {{ errorMessage }}

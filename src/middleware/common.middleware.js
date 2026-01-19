@@ -432,6 +432,17 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
   next()
 }
 
+export const filterOutSystemFields = (req, res, next) => {
+  const { specification } = req
+  const systemFields = ['organisation'] // Currentl only organisation is not a field we want to show
+
+  req.specification.fields = specification.fields.filter(
+    fieldObj => !systemFields.includes(fieldObj.field)
+  )
+
+  next()
+}
+
 export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   const { specification } = req
 
@@ -473,6 +484,7 @@ export const processSpecificationMiddlewares = [
   onlyIf(req => req.specification, replaceUnderscoreInSpecification),
   onlyIf(req => req.specification, fetchFieldMappings),
   onlyIf(req => req.specification, addDatabaseFieldToSpecification),
+  onlyIf(req => req.specification, filterOutSystemFields),
   // When no specification exists, use fields from dataset_field table
   onlyIf(req => !req.specification, fetchDatasetFields),
   onlyIf(req => !req.specification, constructSpecificationTable),
