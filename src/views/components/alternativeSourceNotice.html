@@ -1,9 +1,15 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% macro alternativeSourceNotice(organisation, dataset, downloadUrl) %}
+{% macro alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) %}
   <section>
     <p class="govuk-body">Alternative sources are third party sources which have not been provided by you as the authoritative organisation.</p>
-    <p class="govuk-body">Ministry of Housing, Communities and Local Government is listed as an alternative source when we have collected the information from public sources.</p>
+    {% if alternateSources and alternateSources.length > 0 %}
+      {% for source in alternateSources %}
+        {% if source.name == "Ministry of Housing, Communities & Local Government" %}
+          <p class="govuk-body">Ministry of Housing, Communities and Local Government is listed as an alternative source when we have collected the information from public sources.</p>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
     <h2 class="govuk-heading-m">Become the authoritative source</h2>
     <p class="govuk-body"><a href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/get-started">Follow the steps</a> to publish the data on your website and let us know where we can collect it.</p>
     <p class="govuk-body">To help you get started, you can download the data to review it. This can take longer for larger files.</p>

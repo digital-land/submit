@@ -217,7 +217,7 @@
       {{ govukSummaryList({ rows: rows }) }}
     </section>
     {% if authority === "some" %}
-      {{ alternativeSourceNotice(organisation, dataset, downloadUrl) }}
+      {{ alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
     {% endif %}
   </div>
   <div class="govuk-grid-column-one-third">

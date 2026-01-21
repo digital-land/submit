@@ -4,7 +4,7 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetPlatformInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, pullOutDatasetSpecification, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
 import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
@@ -186,7 +186,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, alternateSources, expectationOutOfBounds = [] } = req
+  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [] } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources
@@ -226,7 +226,11 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   }
 
   const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
-  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
+  // Build the fields query parameter and download url
+  const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
+    ? uniqueDatasetFields.map(field => `fields=${encodeURIComponent(field)}`).join('&')
+    : ''
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
 
   req.templateParams = {
     downloadUrl,
@@ -265,7 +269,7 @@ export default [
   fetchSpecification,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   ...processAuthoritativeMiddlewares,
-  pullOutDatasetSpecification,
+  ...processSpecificationMiddlewares,
   // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   fetchEntityCount,
   prepareDatasetOverviewTemplateParams,

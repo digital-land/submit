@@ -82,11 +82,15 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority, alternateSources } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
 
   // Hard code task count for 'some' authority
   const taskCount = authority !== 'some' ? entityIssueCounts.length + entryIssueCounts.length : 1
-  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
+  // Build the fields query parameter and download url
+  const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
+    ? uniqueDatasetFields.map(field => `fields=${encodeURIComponent(field)}`).join('&')
+    : ''
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
 
   req.templateParams = {
     downloadUrl,
