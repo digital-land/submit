@@ -63,7 +63,7 @@ class SubmitUrlController extends UploadController {
     const postValidators = (resp) => ([
       { type: 'exists', fn: () => SubmitUrlController.isUrlAccessible(resp) }, // block 404
       { type: 'restricted403', fn: () => SubmitUrlController.isNotRestricted(resp) }, // block 403
-      // TODO: Permanently remove filetype front end check, plugin URL's will not work with this check.
+      // TODO: Permanently remove filetype front end check, plugin URL's such as arcgis will not work with this check.
       // { type: 'filetype', fn: () => SubmitUrlController.validateAcceptedFileType(resp) },
       { type: 'size', fn: () => SubmitUrlController.urlResponseIsNotTooLarge(resp) }
     ])
@@ -112,19 +112,60 @@ class SubmitUrlController extends UploadController {
 
   /**
    * Performs a HEAD request and returns the response object or null (when the URL couldn't be accessed).
+   * If HEAD returns 403 (common with signed URLs), falls back to a GET request with minimal range.
    *
    * @param {string} url
    * @returns {Promise<AxiosResponse?>}
    */
   static async headRequest (url) {
+    const axiosConfig = {
+      headers: { 'User-Agent': config.checkService.userAgent },
+      maxRedirects: 5,
+      timeout: 10000 // 10 second timeout
+    }
+
     try {
-      return await axios.head(url, { headers: { 'User-Agent': config.checkService.userAgent } })
+      return await axios.head(url, axiosConfig)
     } catch (err) {
       const response = err?.response
       const tags = { code: err.code, url }
       if (response) {
         tags.responseStatus = response.status
         Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
+
+        // If HEAD returns 403, try a GET request with Range header (signed URLs often don't support HEAD)
+        if (response.status === HTTP_STATUS_BLOCKED) {
+          try {
+            const getResponse = await axios.get(url, {
+              ...axiosConfig,
+              headers: {
+                ...axiosConfig.headers,
+                Range: 'bytes=0-0' // Request only 1 byte to minimize data transfer
+              },
+              maxContentLength: 1024,
+              validateStatus: (status) => status < 500
+            })
+            // If GET succeeds (2xx or 3xx or even 416 Range Not Satisfiable), return it instead of 403
+            if (getResponse.status < 400 || getResponse.status === 416) {
+              logger.info({
+                message: 'SubmitUrlController.headRequest(): GET request succeeded after HEAD 403',
+                type: types.App,
+                url,
+                getStatus: getResponse.status
+              })
+              return getResponse
+            }
+          } catch (getErr) {
+            logger.info({
+              message: 'SubmitUrlController.headRequest(): GET fallback also failed',
+              type: types.App,
+              url,
+              getError: getErr.code
+            })
+            // Fall through to return original HEAD response
+          }
+        }
+
         return response
       }
       Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
