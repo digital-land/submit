@@ -88,7 +88,7 @@ export const prepareTemplateParams = (req, res, next) => {
   const taskCount = authority !== 'some' ? entityIssueCounts.length + entryIssueCounts.length : 1
   // Build the fields query parameter and download url
   const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
-    ? uniqueDatasetFields.map(field => `fields=${encodeURIComponent(field)}`).join('&')
+    ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
     : ''
   const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
 
