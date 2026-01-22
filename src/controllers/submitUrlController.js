@@ -145,6 +145,12 @@ class SubmitUrlController extends UploadController {
               maxContentLength: 1024,
               validateStatus: (status) => status < 500
             })
+            // Allow content size validation to work correctly
+            const contentRange = getResponse.headers?.['content-range']
+            const totalBytes = contentRange && /\/(\d+)$/.exec(contentRange)?.[1]
+            if (totalBytes) {
+              getResponse.headers['content-length'] = totalBytes
+            }
             // If GET succeeds (2xx or 3xx or even 416 Range Not Satisfiable), return it instead of 403
             if (getResponse.status < 400 || getResponse.status === 416) {
               logger.info({
