@@ -21,7 +21,7 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    {# Display specific error details for certain errors else show detail if available #}
+    {# Display specific error details for certain errors else show error message if available #}
     {% if errorMessage == "SSL certificate verification failed" %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">
         The link we’re trying to access is not loading using a secure connection. We could not verify the Secure Sockets Layer (SSL) certificate.
@@ -52,10 +52,13 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       </ul>
 
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
+    {% elif errorMessage == "The URL must be accessible" %}
+      <p class="govuk-body" id="bad-upload" tabindex="-1">You must host the URL on a server which does not block access due to set permissions.</p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
     {% else %}
-    <p class="govuk-body" id="bad-upload" tabindex="-1">
-      Error: {{ errorMessage }}
-    </p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">
+        Error: {{ errorMessage }}
+      </p>
     {% endif %}
     <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
         href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>

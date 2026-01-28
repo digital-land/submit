@@ -4,6 +4,7 @@ import {
   extractJsonFieldFromEntities,
   fetchDatasetInfo,
   fetchOrgInfo,
+  processAuthoritativeMiddlewares,
   processSpecificationMiddlewares,
   replaceUnderscoreInEntities,
   setDefaultParams,
@@ -16,8 +17,7 @@ import {
   fetchEntityCount,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
-  fetchEntitiesPlatformDb,
-  prepareAuthority
+  fetchEntitiesPlatformDb
 } from './common.middleware.js'
 import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
@@ -82,11 +82,15 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
 
   // Hard code task count for 'some' authority
   const taskCount = authority !== 'some' ? entityIssueCounts.length + entryIssueCounts.length : 1
-  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}`
+  // Build the fields query parameter and download url
+  const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
+    ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
+    : ''
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
 
   req.templateParams = {
     downloadUrl,
@@ -96,7 +100,8 @@ export const prepareTemplateParams = (req, res, next) => {
     taskCount,
     tableParams,
     pagination,
-    dataRange
+    dataRange,
+    alternateSources
   }
   next()
 }
@@ -125,7 +130,7 @@ export default [
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
 
-  prepareAuthority, // Used to see if alternative or authoritative, and update entites fetch accordingly
+  ...processAuthoritativeMiddlewares, // Used to see if alternative or authoritative, and update entites fetch accordingly
   fetchEntitiesPlatformDb, // This technically fetches twice from entities table, could be refactored later
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,

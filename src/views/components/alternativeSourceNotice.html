@@ -1,16 +1,23 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
-{% macro alternativeSourceNotice(organisation, dataset, downloadUrl) %}
+{% macro alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) %}
   <section>
-    <p class="govuk-body">Your organisation is the authoritative source of this data.</p>
-    <p class="govuk-body">Right now, this data is from an alternative source.</p>
     <p class="govuk-body">Alternative sources are third party sources which have not been provided by you as the authoritative organisation.</p>
-    <p class="govuk-body">To become the authoritative source of this data, <a href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/get-started">follow the steps</a> to publish it on your website and let us know where we can collect it.</p>
-    <p class="govuk-body">To help you get started, you can download the data to review it.</p>
+    {% if alternateSources and alternateSources.length > 0 %}
+      {% for source in alternateSources %}
+        {% if source.name == "Ministry of Housing, Communities & Local Government" %}
+          <p class="govuk-body">Ministry of Housing, Communities & Local Government is listed as an alternative source when we have collected the information from public sources.</p>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    <h2 class="govuk-heading-m">Become the authoritative source</h2>
+    <p class="govuk-body"><a href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/get-started">Follow the steps</a> to publish the data on your website and let us know where we can collect it.</p>
+    <p class="govuk-body">To help you get started, you can download the data to review it. This can take longer for larger files.</p>
     <p class="govuk-body">If you need to, you can edit the data before you publish it on your website.</p>
     {{ govukButton({
-      text: "Download alternative source data",
-      href: downloadUrl
+      text: "Download alternative source data (CSV)",
+      href: downloadUrl,
+      preventDoubleClick: true
     }) }}
   </section>
 {% endmacro %}

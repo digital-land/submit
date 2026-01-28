@@ -206,12 +206,11 @@ describe('Dataset Overview Page', () => {
     const alternativeSourceSection = documentWithAlternativeSource.querySelector('.govuk-grid-column-two-thirds section:last-of-type')
 
     expect(alternativeSourceSection).not.toBeNull()
-    expect(alternativeSourceSection.textContent).toContain('Your organisation is the authoritative source of this data.')
-    expect(alternativeSourceSection.textContent).toContain('Right now, this data is from an alternative source.')
+    expect(alternativeSourceSection.textContent).toContain('Alternative sources are third party sources which have not been')
     expect(alternativeSourceSection.textContent).toContain('Alternative sources are third party sources which have not been provided by you as the authoritative organisation.')
 
     const downloadButton = alternativeSourceSection.querySelector('.govuk-button')
     expect(downloadButton).not.toBeNull()
-    expect(downloadButton.textContent.trim()).toEqual('Download alternative source data')
+    expect(downloadButton.textContent.trim()).toEqual('Download alternative source data (CSV)')
   })
 })

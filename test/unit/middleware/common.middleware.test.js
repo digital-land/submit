@@ -1598,8 +1598,7 @@ describe('preventIndexing middleware', () => {
       expect(platformApi.fetchEntities).toHaveBeenNthCalledWith(2, {
         organisation_entity: '12345',
         dataset: 'local-plan-boundary',
-        quality: 'some',
-        limit: 1
+        quality: 'some'
       })
       expect(req.authority).toBe('some')
       expect(next).toHaveBeenCalledTimes(1)

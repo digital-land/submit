@@ -208,12 +208,14 @@ export const prepareAuthority = async (req, res, next) => {
     const someResult = await platformApi.fetchEntities({
       organisation_entity: orgInfo.entity,
       dataset: params.dataset,
-      quality: 'some',
-      limit: 1
+      quality: 'some'
     })
 
     if (someResult.formattedData && someResult.formattedData.length > 0) {
       req.authority = 'some'
+      // Set list of alternate entities provided in req for later use
+      const rows = someResult.formattedData || []
+      req.alternateEntityList = rows.map(({ entity }) => entity)
     } else {
       req.authority = ''
     }
@@ -231,6 +233,28 @@ export const prepareAuthority = async (req, res, next) => {
     return next()
   }
 }
+
+// Fetches organisation names for all alternate entity sources stored in req.alternateEntityList
+export const fetchAlternateSources = fetchMany({
+  query: ({ req }) => {
+    const alternateEntityList = Array.isArray(req.alternateEntityList) ? req.alternateEntityList : []
+
+    const entityIds = [...new Set(
+      alternateEntityList
+        .map((id) => typeof id === 'string' ? parseInt(id, 10) : id)
+        .filter((id) => Number.isInteger(id))
+    )]
+
+    return `
+      SELECT DISTINCT o.name
+      FROM lookup l
+      LEFT JOIN organisation o ON l.organisation = o.organisation
+      WHERE l.entity IN (${entityIds.join(', ')})
+        AND o.organisation != '${req.orgInfo.organisation}'
+    `
+  },
+  result: 'alternateSources'
+})
 
 export const fetchLpaDatasetIssues = fetchMany({
   query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
@@ -408,6 +432,17 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
   next()
 }
 
+export const filterOutSystemFields = (req, res, next) => {
+  const { specification } = req
+  const systemFields = ['organisation'] // Currentl only organisation is not a field we want to show
+
+  req.specification.fields = specification.fields.filter(
+    fieldObj => !systemFields.includes(fieldObj.field)
+  )
+
+  next()
+}
+
 export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   const { specification } = req
 
@@ -424,7 +459,7 @@ export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
 export const constructSpecificationTable = (req, res, next) => {
   const { datasetFields } = req
   // Filter out internal system fields that shouldn't be displayed
-  const systemFields = ['entity', 'prefix', 'entry-number', 'organisation-entity']
+  const systemFields = ['entity', 'prefix', 'entry-number', 'organisation-entity', 'organisation']
 
   req.specification = {
     fields: datasetFields
@@ -449,10 +484,16 @@ export const processSpecificationMiddlewares = [
   onlyIf(req => req.specification, replaceUnderscoreInSpecification),
   onlyIf(req => req.specification, fetchFieldMappings),
   onlyIf(req => req.specification, addDatabaseFieldToSpecification),
+  onlyIf(req => req.specification, filterOutSystemFields),
   // When no specification exists, use fields from dataset_field table
   onlyIf(req => !req.specification, fetchDatasetFields),
   onlyIf(req => !req.specification, constructSpecificationTable),
   getUniqueDatasetFieldsFromSpecification
+]
+
+export const processAuthoritativeMiddlewares = [
+  prepareAuthority,
+  onlyIf((req) => req.authority === 'some', fetchAlternateSources)
 ]
 
 // Entities

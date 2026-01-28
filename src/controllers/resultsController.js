@@ -257,9 +257,16 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
 
   req.issues = issues.map(issue => {
     const issueType = issueTypeMap.get(issue['issue-type'])
+    let qualityLevel = issueType ? issueType.quality_criteria_level : null
+
+    // Field-specific override for 'missing value' issues on 'reference' field
+    if (issue['issue-type'] === 'missing value' && issue.field === 'reference') {
+      qualityLevel = 2
+    }
+
     return {
       ...issue,
-      quality_criteria_level: issueType ? issueType.quality_criteria_level : null
+      quality_criteria_level: qualityLevel
     }
   })
 

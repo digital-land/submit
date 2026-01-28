@@ -74,6 +74,36 @@
   }
 ] %}
 
+{% if alternateSources and alternateSources | length > 0 %}
+  {% if alternateSources | length == 1 %}
+    {% set alternateSourcesRow = {
+      key: {
+        text: "Alternative source"
+      },
+      value: {
+        text: alternateSources[0].name
+      }
+    } %}
+  {% else %}
+    {% set sourcesList %}
+      <ul class="govuk-list govuk-list--bullet">
+        {% for source in alternateSources %}
+          <li>{{ source.name }}</li>
+        {% endfor %}
+      </ul>
+    {% endset %}
+    {% set alternateSourcesRow = {
+      key: {
+        text: "Alternative sources"
+      },
+      value: {
+        html: sourcesList
+      }
+    } %}
+  {% endif %}
+  {% set _ = rows.push(alternateSourcesRow) %}
+{% endif %}
+
 {% if authority !== 'some' %}
   {% set licenceRow = {
     key: {
@@ -187,7 +217,7 @@
       {{ govukSummaryList({ rows: rows }) }}
     </section>
     {% if authority === "some" %}
-      {{ alternativeSourceNotice(organisation, dataset, downloadUrl) }}
+      {{ alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
     {% endif %}
   </div>
   <div class="govuk-grid-column-one-third">
