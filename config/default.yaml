@@ -95,6 +95,26 @@ datasetsConfig:
     entityDisplayName:
       base: listed building
       variable: outline
+  developer-agreement-transaction:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: developer conntributions
+      variable: transaction
+  developer-agreement:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: developer conntributions
+      variable: document
+  developer-agreement-contribution:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: developer conntributions
+      variable: document
+  infrastructure-funding-statement:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: infrastructure funding statement
+      variable: statement
 # Any dataset that has one of these three previous rules set, will be displayed in the LPA Dashboard to be checked.
 provisionReasons:
   - statutory
@@ -120,7 +140,7 @@ features:
     enabled: true
   provisionBasedDatasets:
     # This feature will load datasets based on provisionReasons
-    enabled: true
+    enabled: false
   nonAuthPages:
     # This feature enables pages to show non-authoritative datasets
     # If off, it will still check for local-plan datasets.
