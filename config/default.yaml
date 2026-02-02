@@ -98,17 +98,17 @@ datasetsConfig:
   developer-agreement-transaction:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
-      base: developer conntributions
+      base: developer contributions
       variable: transaction
   developer-agreement:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
-      base: developer conntributions
+      base: developer contributions
       variable: document
   developer-agreement-contribution:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
-      base: developer conntributions
+      base: developer contributions
       variable: document
   infrastructure-funding-statement:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
