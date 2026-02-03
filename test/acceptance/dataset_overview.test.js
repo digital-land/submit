@@ -45,7 +45,7 @@ test.describe('Dataset overview', () => {
 
     expect(await page.getByRole('h2', { name: 'Dataset actions' })).toBeDefined()
     expect(await page.locator('.govuk-grid-column-one-third .govuk-list').count()).toEqual(1)
-    expect(await page.locator('.govuk-grid-column-one-third .govuk-list li').count()).toEqual(4)
+    expect(await page.locator('.govuk-grid-column-one-third .govuk-list li').count()).toEqual(3)
   })
 
   test('Can view dataset tables', async ({ page, context }) => {
