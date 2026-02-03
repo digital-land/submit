@@ -73,7 +73,11 @@ export const ConfigSchema = v.object({
       'tree-preservation-order',
       'tree-preservation-zone',
       'tree',
-      'listed-building-outline'
+      'listed-building-outline',
+      'developer-agreement-transaction',
+      'infrastructure-funding-statement',
+      'developer-agreement',
+      'developer-agreement-contribution'
     ].reduce((acc, key) => {
       acc[key] = v.object({
         guidanceUrl: v.string(),
