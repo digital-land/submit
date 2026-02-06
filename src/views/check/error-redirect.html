@@ -55,13 +55,21 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
     {% elif errorMessage == "The URL must be accessible" %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">You must host the URL on a server which does not block access due to set permissions.</p>
       <p class="govuk-body" id="bad-upload" tabindex="-1">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
+    {% elif errorMessage == "URL must be the data layer" %}
+      <p class="govuk-body" id="bad-upload" tabindex="-1">The URL you have provided is an ArcGIS link, which is not the data layer.</p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">The link to the data layer ends with a forward slash, followed by a number. For example, /8.</p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">If you believe you have provided the information correctly and the the problem persists, contact us at <a
+        href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</p>
     {% else %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">
         Error: {{ errorMessage }}
       </p>
     {% endif %}
-    <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
-        href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>
+    {# Specific case where we don't want duplication of contact reasons #}
+    {% if errorMessage != "URL must be the data layer" %}
+      <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
+          href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>
+    {% endif %}
   </div>
 </div>
 

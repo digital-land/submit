@@ -140,7 +140,7 @@ features:
     enabled: true
   provisionBasedDatasets:
     # This feature will load datasets based on provisionReasons
-    enabled: false
+    enabled: true
   nonAuthPages:
     # This feature enables pages to show non-authoritative datasets
     # If off, it will still check for local-plan datasets.
