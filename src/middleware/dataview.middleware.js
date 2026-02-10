@@ -15,8 +15,7 @@ import {
   logPageError,
   fetchResources,
   fetchEntityCount,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchEntityIssueCountsPerformanceDb,
   fetchEntitiesPlatformDb
 } from './common.middleware.js'
 import { fetchMany, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
@@ -82,10 +81,10 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
 
   // Hard code task count for 'some' authority
-  const taskCount = authority !== 'some' ? entityIssueCounts.length + entryIssueCounts.length : 1
+  const taskCount = authority !== 'some' ? entityIssueCounts.length : 1
   // Build the fields query parameter and download url
   const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
     ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
@@ -121,8 +120,7 @@ export default [
   fetchDatasetInfo,
 
   fetchResources,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchEntityIssueCountsPerformanceDb,
 
   ...processAuthoritativeMiddlewares, // Sets authority and entityCount from Platform API
 

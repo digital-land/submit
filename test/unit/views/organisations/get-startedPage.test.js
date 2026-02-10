@@ -13,7 +13,6 @@ const seed = new Date().getTime()
 
 describe(`Get Started Page (seed: ${seed})`, () => {
   const params = mocker(OrgGetStarted, seed)
-
   const html = nunjucks.render('organisations/get-started.html', params)
 
   const dom = new jsdom.JSDOM(html)

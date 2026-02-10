@@ -4,9 +4,8 @@
  * @description Middleware for oragnisation (LPA) overview page
  */
 
-import performanceDbApi from '../services/performanceDbApi.js'
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate, parallel } from './middleware.builders.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchEntityIssueCountsPerformanceDb } from './common.middleware.js'
+import { fetchMany, renderTemplate, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
@@ -14,19 +13,6 @@ import { isFeatureEnabled } from '../utils/features.js'
 import platformApi from '../services/platformApi.js'
 import { types } from '../utils/logging.js'
 import config from '../../config/index.js'
-
-/**
- * Middleware. Updates req with 'entityIssueCounts' same as fetchEntityIssueCounts so not to be used together!
- *
- * Functionally equivalent (for the utilization of the LPA Dashboard) to fetchEntityIssueCounts but using performanceDb
- */
-const fetchEntityIssueCountsPerformanceDb = fetchMany({
-  query: ({ params }) => {
-    return performanceDbApi.fetchEntityIssueCounts(params.lpa)
-  },
-  result: 'entityIssueCounts',
-  dataset: FetchOptions.performanceDb
-})
 
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
