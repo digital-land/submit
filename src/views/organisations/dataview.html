@@ -6,7 +6,7 @@
 
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Submit'%}
-{% set pageName %}{{organisation.name}} - {{dataset.name}} - Dataset table{% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Dataset table{% endset %}
 
 {% extends "layouts/main.html" %}
 

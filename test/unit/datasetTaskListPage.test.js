@@ -11,7 +11,6 @@ const seed = new Date().getTime()
 
 describe(`Dataset Task List Page (seed: ${seed})`, () => {
   const params = mocker(OrgDatasetTaskList, seed)
-
   const html = nunjucks.render('organisations/datasetTaskList.html', params)
 
   const dom = new jsdom.JSDOM(html)

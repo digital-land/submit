@@ -27,7 +27,7 @@
 {% block content %}
 
 {% set pageHeader %}
-<span class="govuk-caption-l">{{ options.lpa }} — {{ options.datasetName }}</span>
+<span class="govuk-caption-l">{{ options.lpa }} — {{ options.datasetName | capitalize }}</span>
 <h1 class="govuk-heading-l">
   {{ pageName }}
 </h1>

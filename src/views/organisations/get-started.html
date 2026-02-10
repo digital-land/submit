@@ -3,7 +3,7 @@
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Manage' %}
 {% set pageName %}
-    {{organisation.name}} - {{dataset.name}} - Get started
+    {{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Get started
 {% endset %}
 
 {% extends "layouts/main.html" %}

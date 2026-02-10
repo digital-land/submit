@@ -127,7 +127,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
     // const multiPageDocument = multiPageDom.window.document
     const paginationTitleSection = params.issueEntitiesCount > 1 ? `(Page ${params.pageNumber} of ${params.issueEntitiesCount}) ` : ''
     runGenericPageTests(multiPageHtml, {
-      pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues ${paginationTitleSection}- ${config.serviceNames.submit}`,
+      pageTitle: `${params.organisation.name} - ${params.dataset.dataset} - Issues ${paginationTitleSection}- ${config.serviceNames.submit}`,
       breadcrumbs: [
         { text: 'Home', href: '/' },
         { text: 'Organisations', href: '/organisations' },
