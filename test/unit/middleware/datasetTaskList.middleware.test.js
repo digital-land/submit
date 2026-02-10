@@ -49,8 +49,10 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1', 'entity2'],
         entityCount: { count: 2 },
         resources: [{ entry_count: 10 }],
-        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
-        entityIssueCounts: [{ field: 'field2', issue_type: 'issue-type2', count: 1 }]
+        entityIssueCounts: [
+          { field: 'field1', issue_type: 'issue-type1', count: 1 },
+          { field: 'field2', issue_type: 'issue-type2', count: 1 }
+        ]
       }
 
       const res = {
@@ -117,8 +119,7 @@ describe('datasetTaskList.middleware.js', () => {
         entities: [],
         entityCount: { count: 0 },
         resources: [{ entry_count: 10 }],
-        entryIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique', count: 1 }],
-        entityIssueCounts: []
+        entityIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique', count: 1 }]
       }
 
       const res = {
@@ -164,7 +165,6 @@ describe('datasetTaskList.middleware.js', () => {
         sources: [],
         entities: ['entity1'],
         resources: [{ entry_count: 10 }],
-        entryIssueCounts: [],
         entityIssueCounts: []
       }
 
@@ -193,8 +193,7 @@ describe('datasetTaskList.middleware.js', () => {
         entityCount: { count: 1 },
         sources: [],
         resources: [{ entry_count: 10 }],
-        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
-        entityIssueCounts: []
+        entityIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }]
       }
 
       const res = { status: vi.fn() }
@@ -222,8 +221,7 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1'],
         sources: [],
         resources: [{ entry_count: 10 }],
-        entryIssueCounts: [{ field: 'field1', issue_type: '', count: 1 }], // Invalid issue type (empty string)
-        entityIssueCounts: []
+        entityIssueCounts: [{ field: 'field1', issue_type: '', count: 1 }] // Invalid issue type (empty string)
       }
 
       const res = { status: vi.fn() }
@@ -245,8 +243,7 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1'],
         resources: [{ entry_count: 10 }],
         sources: [],
-        entryIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
-        entityIssueCounts: []
+        entityIssueCounts: [{ issue_type: 'issue-type1', count: 1 }] // Missing field
       }
 
       const res = { status: vi.fn() }
@@ -268,8 +265,7 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1'],
         resources: [{ entry_count: 10 }],
         sources: [],
-        entryIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
-        entityIssueCounts: [],
+        entityIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
         expectationOutOfBounds: [
           { dataset: 'some-dataset', passed: 'False', details: { actual: 3, expected: 0 } }
         ]
