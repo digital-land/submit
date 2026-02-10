@@ -166,6 +166,8 @@ export const fetchEntitiesPlatformDb = fetchMany({
  * @param {Object} req.params - Route parameters
  * @param {string} req.params.dataset - Dataset name
  * @param {string} [req.authority] OUT parameter - Set to 'authoritative', 'some', or '' (empty string)
+ * @param {{entity_count: number}} [req.entityCount] OUT parameter - Set to count from API data
+ * @param {Array<number>} [req.alternateEntityList] OUT parameter - List of alternate entity IDs when quality is 'some'
  * @param {Object} res - Response object
  * @param {Function} next - Next middleware function
  */
@@ -201,6 +203,12 @@ export const prepareAuthority = async (req, res, next) => {
 
     if (authoritativeResult.formattedData && authoritativeResult.formattedData.length > 0) {
       req.authority = 'authoritative'
+      // Set record count to only show authoritative count if authoritative data exists
+      const count = authoritativeResult?.data?.count
+      if (count !== undefined) {
+        req.entityCount = { entity_count: count }
+      }
+      console.log(`Authoritative data found with count ${count}, skipping non-authoritative check`)
       return next()
     }
 
@@ -216,6 +224,11 @@ export const prepareAuthority = async (req, res, next) => {
       // Set list of alternate entities provided in req for later use
       const rows = someResult.formattedData || []
       req.alternateEntityList = rows.map(({ entity }) => entity)
+      // Also set record count here if available
+      const someCount = someResult?.data?.count
+      if (someCount !== undefined) {
+        req.entityCount = { entity_count: someCount }
+      }
     } else {
       req.authority = ''
     }
@@ -384,8 +397,9 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   }
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   if (!datasetSpecification) {
-    logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
-    return next(new MiddlewareError('Dataset specification not found', 404))
+    logger.info('Dataset specification not found, clearing specification and falling back to dataset fields', { dataset: req.dataset.dataset })
+    req.specification = null
+    return next()
   }
   req.specification = datasetSpecification
   next()

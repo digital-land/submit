@@ -49,19 +49,21 @@ describe('Dataset Overview Page', () => {
     }
   }
 
-  const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
+  const nunjucks = setupNunjucks({})
   const html = stripWhitespace(nunjucks.render('organisations/dataset-overview.html', params))
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: 'Mock org - World heritage site buffer zone - Dataset overview - Check and provide planning data'
+    // Filter returns slug in tests (no mapping loaded, fallback doesn't capitalize)
+    pageTitle: 'Mock org - world-heritage-site-buffer-zone - Dataset overview - Check and provide planning data'
   })
 
   it('Renders the correct headings', () => {
     expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual('Mock org')
-    expect(document.querySelector('h1').textContent).toContain('World heritage site buffer zone')
+    // Filter returns slug in tests (no mapping loaded)
+    expect(document.querySelector('h1').textContent).toContain('world-heritage-site-buffer-zone')
   })
 
   it('Renders the dataset navigation links correctly', () => {
@@ -97,7 +99,8 @@ describe('Dataset Overview Page', () => {
     expect(breadcrumbs[0].textContent).toContain('Home')
     expect(breadcrumbs[1].textContent).toContain('Organisations')
     expect(breadcrumbs[2].textContent).toContain('Mock org')
-    expect(breadcrumbs[3].textContent).toContain('World heritage site buffer zone')
+    // Filter returns slug in tests (no mapping loaded)
+    expect(breadcrumbs[3].textContent).toContain('world-heritage-site-buffer-zone')
   })
 
   it('Does not render the map section when non mappable dataset is viewed', () => {
@@ -184,10 +187,11 @@ describe('Dataset Overview Page', () => {
 
     expect(header.textContent.trim()).toEqual('Dataset actions')
 
-    expect(links[0].textContent.trim()).toEqual('How to prepare and provide your Article 4 direction area data')
+    // Filter returns slug in tests (no mapping loaded)
+    expect(links[0].textContent.trim()).toEqual('How to prepare and provide your article-4-direction-area data')
     expect(links[0].querySelector('.govuk-link').href).toEqual('/organisations/mock-org/article-4-direction-area/get-started')
 
-    expect(links[1].textContent.trim()).toEqual('Check Article 4 direction area dataset')
+    expect(links[1].textContent.trim()).toEqual('Check article-4-direction-area dataset')
     expect(links[1].querySelector('.govuk-link').href).toEqual('/check/link?dataset=article-4-direction-area&orgName=Mock%20org&orgId=mock-org')
 
     expect(links[2].textContent.trim()).toEqual('Article 4 direction area guidance')

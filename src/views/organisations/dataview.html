@@ -30,7 +30,7 @@
       href: '/organisations/' + organisation.organisation
     },
     {
-      text: dataset.name | capitalize
+      text: dataset.dataset | datasetSlugToReadableName(true)
     }
   ]
 }) }}

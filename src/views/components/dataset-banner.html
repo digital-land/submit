@@ -1,11 +1,11 @@
 {% macro datasetBanner(orgName, datasetName) %}
 <span class="govuk-caption-xl" data-testid="dataset-banner">
   {% if orgName and datasetName %}
-  {{ orgName }} — {{ datasetName | datasetSlugToReadableName }}
+  {{ orgName }} — {{ datasetName | datasetSlugToReadableName(true) }}
   {% elif orgName %}
   {{ orgName }}
   {% elif datasetName %}
-  {{ datasetName | datasetSlugToReadableName }}
+  {{ datasetName | datasetSlugToReadableName(true) }}
   {% endif %}
 </span>
 {% endmacro %}

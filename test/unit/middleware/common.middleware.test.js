@@ -5,7 +5,6 @@ import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
 import platformApi from '../../../src/services/platformApi.js'
 import { isValiError } from 'valibot'
-import { MiddlewareError } from '../../../src/utils/errors.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
@@ -536,19 +535,18 @@ describe('pullOutDatasetSpecification', () => {
     expect(next).toHaveBeenCalledWith()
   })
 
-  it('calls next with an error if dataset specification is an empty array', () => {
+  it('falls back gracefully if dataset specification is an empty array', () => {
     const reqWithEmptySpecification = {
       ...req,
       specification: {
         json: JSON.stringify([])
       }
     }
-    const errors = []
-    const next = vi.fn().mockImplementation((val) => errors.push(val))
+    const next = vi.fn()
     pullOutDatasetSpecification(reqWithEmptySpecification, res, next)
     expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith(expect.any(MiddlewareError))
-    expect(errors[0].statusCode).toBe(404)
+    expect(next).toHaveBeenCalledWith()
+    expect(reqWithEmptySpecification.specification).toBeNull()
   })
 })
 

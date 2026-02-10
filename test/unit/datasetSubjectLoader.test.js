@@ -189,8 +189,8 @@ describe('datasetSubjectLoader', () => {
       const result = await buildDataSubjects()
 
       expect(fetchDatasetsFromProvisions).toHaveBeenCalled()
-      expect(datasetSlugToReadableName).toHaveBeenCalledWith('article-4-direction')
-      expect(datasetSlugToReadableName).toHaveBeenCalledWith('tree')
+      expect(datasetSlugToReadableName).toHaveBeenCalledWith('article-4-direction', true)
+      expect(datasetSlugToReadableName).toHaveBeenCalledWith('tree', true)
 
       expect(result).toHaveProperty('article-4-direction')
       expect(result).toHaveProperty('tree-preservation-order')
@@ -211,9 +211,9 @@ describe('datasetSubjectLoader', () => {
       await buildDataSubjects()
 
       expect(logger.warn).toHaveBeenCalledWith('buildDataSubjects: Error fetching dataset keys roll back to defaults')
-      expect(datasetSlugToReadableName).toHaveBeenCalledWith('article-4-direction')
-      expect(datasetSlugToReadableName).toHaveBeenCalledWith('conservation-area')
-      expect(datasetSlugToReadableName).toHaveBeenCalledWith('tree')
+      expect(datasetSlugToReadableName).toHaveBeenCalledWith('article-4-direction', true)
+      expect(datasetSlugToReadableName).toHaveBeenCalledWith('conservation-area', true)
+      expect(datasetSlugToReadableName).toHaveBeenCalledWith('tree', true)
     })
   })
 

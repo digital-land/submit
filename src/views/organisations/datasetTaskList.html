@@ -28,7 +28,7 @@
       href: '/organisations/' + organisation.organisation
     },
     {
-      text: dataset.name
+      text: dataset.dataset | datasetSlugToReadableName(true)
     }
   ]
 }) }}
@@ -59,7 +59,7 @@
     </h2>
 
     {% if taskList.length == 0 %}
-      <p class="govuk-body">There are no issues with {{ organisation.name }}'s {{ dataset.name }} dataset.</p>
+      <p class="govuk-body">There are no issues with {{ organisation.name }}'s {{ dataset.dataset | datasetSlugToReadableName }} dataset.</p>
     {% else %}
 
 

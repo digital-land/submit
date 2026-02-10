@@ -14,13 +14,13 @@ test('The LPA Dashboard reflects both auth and non-auth data, and the non-auth d
   // Navigate to LPA Dashboard
   await page.goto('/organisations/local-authority:SLF')
 
-  await expect(page.getByText('Data is not from an authoritative source')).toBeVisible()
+  await expect(page.getByText('Data is not from an authoritative source').first()).toBeVisible()
 
   // Go to that dataset page
   await page.getByRole('link', { name: 'Conservation area document' }).click()
 
   // Check that this is shown in the title with review alternate data
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Review alternative source of Conservation area document data')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Review alternative source of conservation area document data')
   // Go to task list
   await page.locator('a.govuk-service-navigation__link', { hasText: 'Task list' }).click()
   await expect(page.getByText('Provide authoritative data')).toBeVisible()
