@@ -58,8 +58,8 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
     {% elif errorMessage == "URL must be the data layer" %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">The URL you have provided is an ArcGIS link, which is not the data layer.</p>
       <p class="govuk-body" id="bad-upload" tabindex="-1">The link to the data layer ends with a forward slash, followed by a number. For example, /8.</p>
-      <p class="govuk-body" id="bad-upload" tabindex="-1">If you believe you have provided the information correctly and the the problem persists, contact us at <a
-        href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</p>
+      <p class="govuk-body" id="bad-upload" tabindex="-1">If you believe you have provided the information correctly and the problem persists, contact us at <a
+        href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a></p>
     {% else %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">
         Error: {{ errorMessage }}
