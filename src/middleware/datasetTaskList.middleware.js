@@ -19,7 +19,8 @@ import {
   expectations,
   fetchDatasetInfo,
   fetchEntityCount,
-  fetchEntityIssueCountsPerformanceDb,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
   fetchOrgInfo, fetchResources, fetchSources,
   logPageError,
   noop,
@@ -105,7 +106,7 @@ export function entityOutOfBoundsMessage (dataset, count) {
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
   const { entityCount, resources, sources, authority } = req
-  const { entityIssueCounts, expectationOutOfBounds = [] } = req
+  const { entryIssueCounts, entityIssueCounts, expectationOutOfBounds = [] } = req
 
   // First check, if non authoritative dataset, only one task to show: Provide authoritative data
   if (authority && authority === 'some') {
@@ -118,7 +119,7 @@ export const prepareTasks = (req, res, next) => {
     }]
     return next()
   }
-  let issues = [...entityIssueCounts]
+  let issues = [...entryIssueCounts, ...entityIssueCounts]
 
   issues = issues.filter(
     issue => issue.issue_type !== '' &&
@@ -232,7 +233,8 @@ export default [
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   addEntityCountsToResources,
   fetchEntityCount,
-  fetchEntityIssueCountsPerformanceDb,
+  fetchEntityIssueCounts,
+  fetchEntryIssueCounts,
   prepareTasks,
   prepareDatasetTaskListTemplateParams,
   getDatasetTaskList,

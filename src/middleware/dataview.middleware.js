@@ -84,7 +84,7 @@ export const prepareTemplateParams = (req, res, next) => {
   const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
 
   // Hard code task count for 'some' authority
-  const taskCount = authority !== 'some' ? entityIssueCounts.length : 1
+  const taskCount = authority !== 'some' ? (entityIssueCounts ? entityIssueCounts.length : 0) : 1
   // Build the fields query parameter and download url
   const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
     ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')

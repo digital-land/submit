@@ -11,7 +11,7 @@ describe('datasetTaskList.middleware.js', () => {
     it('sets the correct template params on the request object', async () => {
       const req = {
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1', dataset: 'example-dataset' },
+        dataset: { dataset: 'example-dataset', name: 'Example Dataset', collection: 'collection 1' },
         authority: 'authoritative',
         taskList: [
           {
@@ -29,7 +29,7 @@ describe('datasetTaskList.middleware.js', () => {
       const templateParams = {
         taskList: req.taskList,
         organisation: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1', dataset: 'example-dataset' },
+        dataset: { dataset: 'example-dataset', name: 'Example Dataset', collection: 'collection 1' },
         authority: 'authoritative'
       }
       v.parse(S.OrgDatasetTaskList, templateParams)
@@ -49,10 +49,8 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1', 'entity2'],
         entityCount: { count: 2 },
         resources: [{ entry_count: 10 }],
-        entityIssueCounts: [
-          { field: 'field1', issue_type: 'issue-type1', count: 1 },
-          { field: 'field2', issue_type: 'issue-type2', count: 1 }
-        ]
+        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
+        entityIssueCounts: [{ field: 'field2', issue_type: 'issue-type2', count: 1 }]
       }
 
       const res = {
@@ -119,7 +117,8 @@ describe('datasetTaskList.middleware.js', () => {
         entities: [],
         entityCount: { count: 0 },
         resources: [{ entry_count: 10 }],
-        entityIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique', count: 1 }]
+        entryIssueCounts: [{ field: 'field1', issue_type: 'reference values are not unique', count: 1 }],
+        entityIssueCounts: []
       }
 
       const res = {
@@ -165,6 +164,7 @@ describe('datasetTaskList.middleware.js', () => {
         sources: [],
         entities: ['entity1'],
         resources: [{ entry_count: 10 }],
+        entryIssueCounts: [],
         entityIssueCounts: []
       }
 
@@ -193,7 +193,8 @@ describe('datasetTaskList.middleware.js', () => {
         entityCount: { count: 1 },
         sources: [],
         resources: [{ entry_count: 10 }],
-        entityIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }]
+        entryIssueCounts: [{ field: 'field1', issue_type: 'issue-type1', count: 1 }],
+        entityIssueCounts: []
       }
 
       const res = { status: vi.fn() }
@@ -221,7 +222,8 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1'],
         sources: [],
         resources: [{ entry_count: 10 }],
-        entityIssueCounts: [{ field: 'field1', issue_type: '', count: 1 }] // Invalid issue type (empty string)
+        entryIssueCounts: [{ field: 'field1', issue_type: '', count: 1 }], // Invalid issue type (empty string)
+        entityIssueCounts: []
       }
 
       const res = { status: vi.fn() }
@@ -243,7 +245,8 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1'],
         resources: [{ entry_count: 10 }],
         sources: [],
-        entityIssueCounts: [{ issue_type: 'issue-type1', count: 1 }] // Missing field
+        entryIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
+        entityIssueCounts: []
       }
 
       const res = { status: vi.fn() }
@@ -265,7 +268,8 @@ describe('datasetTaskList.middleware.js', () => {
         entities: ['entity1'],
         resources: [{ entry_count: 10 }],
         sources: [],
-        entityIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
+        entryIssueCounts: [{ issue_type: 'issue-type1', count: 1 }], // Missing field
+        entityIssueCounts: [],
         expectationOutOfBounds: [
           { dataset: 'some-dataset', passed: 'False', details: { actual: 3, expected: 0 } }
         ]
