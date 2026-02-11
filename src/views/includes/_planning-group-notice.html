@@ -1,0 +1,17 @@
+{% if planningGroupProvisions and planningGroupProvisions | length > 0 %}
+<div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-notice-title" data-module="govuk-notification-banner">
+  <div class="govuk-notification-banner__header">
+    <h2 class="govuk-notification-banner__title" id="planning-group-notice-title">
+      Important
+    </h2>
+  </div>
+  <div class="govuk-notification-banner__content">
+    <p class="govuk-body">This organisation is also attached to a planning group which is also provisioned to provide this data:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      {% for provision in planningGroupProvisions %}
+        <li>{{ provision.organisation }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}

@@ -4,7 +4,7 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetPlatformInfo, fetchEntityIssueCountsPerformanceDb, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCountsPerformanceDb, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares, fetchLocalPlanningGroups } from './common.middleware.js'
 import { fetchOne, fetchMany, onlyIf, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
@@ -186,7 +186,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, entityIssueCounts, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [] } = req
+  const { orgInfo, entityCount, sources, dataset, entityIssueCounts, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [], provisions = [] } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources
@@ -231,6 +231,10 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     : ''
   const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
 
+  const planningGroupProvisions = provisions.length > 1
+    ? provisions.filter(p => p.organisation !== req.params.lpa)
+    : []
+
   req.templateParams = {
     downloadUrl,
     authority,
@@ -239,6 +243,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     dataset,
     taskCount,
     alternateSources,
+    planningGroupProvisions: planningGroupProvisions.length > 0 ? planningGroupProvisions : undefined,
     stats: {
       numberOfRecords: entityCount.entity_count,
       endpoints
@@ -257,8 +262,25 @@ const getDatasetOverview = renderTemplate(
   }
 )
 
+// TODO: MOVE COMMON AND LPA???
+const fetchProvisionsByOrgsAndDatasets = fetchMany({
+  query: ({ params, req }) => {
+    const orgs = [params.lpa]
+    if (req.localPlanningGroups) {
+      orgs.push(...req.localPlanningGroups.map(g => g.organisation))
+    }
+    const inClause = orgs.map(o => `'${o}'`).join(', ')
+    return /* sql */ `select dataset, project, provision_reason, organisation
+       from provision where organisation IN (${inClause})
+       AND dataset = '${params.dataset}'`
+  },
+  result: 'provisions'
+})
+
 export default [
   fetchOrgInfo,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
   fetchDatasetPlatformInfo,
   fetchColumnSummary,
   fetchResources,

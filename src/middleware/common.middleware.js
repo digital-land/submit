@@ -1180,3 +1180,34 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
   result: 'entityIssueCounts',
   dataset: FetchOptions.performanceDb
 })
+
+/**
+ * Middleware, query platformApi for all local planning groups
+ * look if a given org code is within any local planning groups 'organisations' column
+ * return list of local planning group(s) the org belongs to in req.localPlanningGroups / null if none
+ * @param {Object} req request object
+ * @param {Object} req.orgInfo organisation info
+ * @param {string} req.orgInfo.organisation organisation code e.g. 'local-authority:BOL'
+ * @param {Object[]|null} req.localPlanningGroups OUT - list of local planning groups the org belongs to
+ * @param {*} res
+ * @param {*} next
+ */
+export const fetchLocalPlanningGroups = async (req, res, next) => {
+  try {
+    const orgCode = req.orgInfo.organisation
+    const { formattedData: groups } = await platformApi.fetchEntities({ prefix: 'local-planning-group' })
+
+    const matches = groups.filter(group => {
+      const orgs = (group.organisations || '').split(';')
+      return orgs.includes(orgCode)
+    })
+
+    req.localPlanningGroups = matches.length > 0
+      ? matches.map(g => ({ entity: g['organisation-entity'], name: g.name, organisation: `${g.prefix}:${g.reference}` }))
+      : null
+  } catch (error) {
+    logger.warn({ message: `fetchLocalPlanningGroups(): ${error.message}`, type: types.App })
+    req.localPlanningGroups = null
+  }
+  next()
+}

@@ -182,6 +182,12 @@ export const OrgDatasetOverview = v.strictObject({
       }))
     }))
   }),
+  planningGroupProvisions: v.optional(v.array(v.strictObject({
+    organisation: NonEmptyString,
+    dataset: NonEmptyString,
+    project: v.nullable(v.string()),
+    provision_reason: v.nullable(v.string())
+  }))),
   notice: v.optional(DeadlineNoticeField)
 })
 
