@@ -147,7 +147,7 @@ export async function buildDataSubjects () {
   // Use existing datasetSlugToReadableName to create lookup of dataset keys to readable names
   const nameMap = {}
   for (const key of datasetKeys) {
-    nameMap[key] = datasetSlugToReadableName(key)
+    nameMap[key] = datasetSlugToReadableName(key, true)
   }
 
   return makeDatasetSubjectMap(nameMap)

@@ -75,7 +75,7 @@ const preparePaginationInfo = (req, res, next) => {
  * @returns {undefined}
  */
 const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo: organisation, dataset, expectationOutOfBounds, entity, dataRange, pagination } = req
+  const { orgInfo: organisation, dataset, expectationOutOfBounds, entity, dataRange, pagination, parsedParams } = req
 
   const entityAugmented = prepareEntityForTable(entity)
 
@@ -100,6 +100,7 @@ const prepareTemplateParams = (req, res, next) => {
         }
       })
     },
+    pageNumber: parsedParams.pageNumber,
     dataRange,
     pagination
   }

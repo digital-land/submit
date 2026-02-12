@@ -166,6 +166,8 @@ export const fetchEntitiesPlatformDb = fetchMany({
  * @param {Object} req.params - Route parameters
  * @param {string} req.params.dataset - Dataset name
  * @param {string} [req.authority] OUT parameter - Set to 'authoritative', 'some', or '' (empty string)
+ * @param {{entity_count: number}} [req.entityCount] OUT parameter - Set to count from API data
+ * @param {Array<number>} [req.alternateEntityList] OUT parameter - List of alternate entity IDs when quality is 'some'
  * @param {Object} res - Response object
  * @param {Function} next - Next middleware function
  */
@@ -201,6 +203,12 @@ export const prepareAuthority = async (req, res, next) => {
 
     if (authoritativeResult.formattedData && authoritativeResult.formattedData.length > 0) {
       req.authority = 'authoritative'
+      // Set record count to only show authoritative count if authoritative data exists
+      const count = authoritativeResult?.data?.count
+      if (count !== undefined) {
+        req.entityCount = { entity_count: count }
+      }
+      logger.info(`Authoritative data found with count ${count}, skipping non-authoritative check`)
       return next()
     }
 
@@ -216,6 +224,11 @@ export const prepareAuthority = async (req, res, next) => {
       // Set list of alternate entities provided in req for later use
       const rows = someResult.formattedData || []
       req.alternateEntityList = rows.map(({ entity }) => entity)
+      // Also set record count here if available
+      const someCount = someResult?.data?.count
+      if (someCount !== undefined) {
+        req.entityCount = { entity_count: someCount }
+      }
     } else {
       req.authority = ''
     }
@@ -384,8 +397,9 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   }
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   if (!datasetSpecification) {
-    logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
-    return next(new MiddlewareError('Dataset specification not found', 404))
+    logger.info('Dataset specification not found, clearing specification and falling back to dataset fields', { dataset: req.dataset.dataset })
+    req.specification = null
+    return next()
   }
   req.specification = datasetSpecification
   next()
@@ -786,28 +800,18 @@ export const fetchEntityIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
     return `
-      WITH unique_issues AS (
-        SELECT DISTINCT
-          i.dataset,
-          i.field,
-          i.issue_type,
-          i.entity
-        FROM issue i
-        LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-        WHERE resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
-          AND COALESCE(entity, '') <> ''
-          AND (i.end_date = '' OR i.end_date IS NULL)
-          AND it.responsibility = 'external'
-          AND it.severity = 'error'
-          ${datasetClause}
-      )
       SELECT
-        dataset,
-        field,
-        issue_type,
-        COUNT(*) AS count
-      FROM unique_issues
-      GROUP BY field, issue_type, dataset
+        i.dataset,
+        i.field,
+        i.issue_type,
+        COUNT(DISTINCT i.entity) AS count
+      FROM issue i
+      WHERE i.resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
+        AND i.entity IS NOT NULL AND i.entity <> ''
+        AND (i.end_date = '' OR i.end_date IS NULL)
+        AND i.issue_type IN (SELECT it.issue_type FROM issue_type it WHERE it.responsibility = 'external' AND it.severity = 'error')
+        ${datasetClause}
+      GROUP BY i.field, i.issue_type, i.dataset
     `
   },
   result: 'entityIssueCounts'
@@ -1161,3 +1165,16 @@ export const setAvailableDatasets = async (req, res, next) => {
   req.availableDatasets = await CONSTANTS.availableDatasets()
   next()
 }
+
+/**
+ * Middleware. Updates req with 'entityIssueCounts' same as fetchEntityIssueCounts so not to be used together!
+ *
+ * Functionally equivalent (for the utilization of the LPA Dashboard) to fetchEntityIssueCounts but using performanceDb
+ */
+export const fetchEntityIssueCountsPerformanceDb = fetchMany({
+  query: ({ params }) => {
+    return performanceDbApi.fetchEntityIssueCounts(params.lpa, params.dataset)
+  },
+  result: 'entityIssueCounts',
+  dataset: FetchOptions.performanceDb
+})

@@ -15,11 +15,10 @@ import {
   logPageError,
   fetchResources,
   fetchEntityCount,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchEntityIssueCountsPerformanceDb,
   fetchEntitiesPlatformDb
 } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { fetchMany, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { splitByLeading } from '../utils/table.js'
 
@@ -41,7 +40,7 @@ export const fetchEntities = fetchMany({
 })
 
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req?.entityCount?.count || 0
+  req.recordCount = req?.entityCount?.entity_count ?? req?.entityCount?.count ?? 0
   next()
 }
 
@@ -82,10 +81,10 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
 
   // Hard code task count for 'some' authority
-  const taskCount = authority !== 'some' ? entityIssueCounts.length + entryIssueCounts.length : 1
+  const taskCount = authority !== 'some' ? (entityIssueCounts ? entityIssueCounts.length : 0) : 1
   // Build the fields query parameter and download url
   const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
     ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
@@ -121,17 +120,17 @@ export default [
   fetchDatasetInfo,
 
   fetchResources,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchEntityIssueCountsPerformanceDb,
 
-  fetchEntityCount,
+  ...processAuthoritativeMiddlewares, // Sets authority and entityCount from Platform API
+
+  onlyIf(req => req.entityCount === undefined, fetchEntityCount), // fallback
   setRecordCount,
 
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
 
-  ...processAuthoritativeMiddlewares, // Used to see if alternative or authoritative, and update entites fetch accordingly
-  fetchEntitiesPlatformDb, // This technically fetches twice from entities table, could be refactored later
+  fetchEntitiesPlatformDb, // Fetches entities filtered by authority quality
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,
 

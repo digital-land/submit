@@ -251,18 +251,20 @@ export default {
   },
 
   // Query to simulate fetchEntityIssueCounts in common.middleware.js but against performanceDb
-  fetchEntityIssueCounts (datasetId) {
+  fetchEntityIssueCounts (lpa, dataset) {
+    const datasetClause = dataset ? `AND dataset = '${dataset}'` : ''
     return /* sql */ `
-    SELECT 
+    SELECT
     dataset,
     issue_type,
     field,
-    COUNT(*) AS count 
-    FROM endpoint_dataset_issue_type_summary 
-    WHERE organisation = '${datasetId}'
-        AND severity = 'error' 
-        AND responsibility = 'external' 
+    COUNT(*) AS count
+    FROM endpoint_dataset_issue_type_summary
+    WHERE organisation = '${lpa}'
+        AND severity = 'error'
+        AND responsibility = 'external'
         AND (resource_end_date = '' OR resource_end_date IS NULL)
+        ${datasetClause}
     GROUP BY dataset, issue_type, field`
   },
 

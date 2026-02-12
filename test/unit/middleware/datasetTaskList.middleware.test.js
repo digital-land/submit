@@ -11,7 +11,7 @@ describe('datasetTaskList.middleware.js', () => {
     it('sets the correct template params on the request object', async () => {
       const req = {
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1' },
+        dataset: { dataset: 'example-dataset', name: 'Example Dataset', collection: 'collection 1' },
         authority: 'authoritative',
         taskList: [
           {
@@ -29,7 +29,7 @@ describe('datasetTaskList.middleware.js', () => {
       const templateParams = {
         taskList: req.taskList,
         organisation: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1' },
+        dataset: { dataset: 'example-dataset', name: 'Example Dataset', collection: 'collection 1' },
         authority: 'authoritative'
       }
       v.parse(S.OrgDatasetTaskList, templateParams)

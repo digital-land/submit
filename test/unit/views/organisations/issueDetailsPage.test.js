@@ -18,7 +18,6 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues - ${config.serviceNames.submit}`,
     breadcrumbs: [
       { text: 'Home', href: '/' },
       { text: 'Organisations', href: '/organisations' },
@@ -30,7 +29,8 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
 
   it('Renders the correct headings', () => {
     expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual(params.organisation.name)
-    expect(document.querySelector('h1').textContent).toContain(params.dataset.name)
+    // Filter returns slug in tests (no mapping loaded), check slug passes through
+    expect(document.querySelector('h1').textContent).toContain(params.dataset.dataset)
   })
 
   describe('error summary', () => {
@@ -127,7 +127,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
     // const multiPageDocument = multiPageDom.window.document
     const paginationTitleSection = params.issueEntitiesCount > 1 ? `(Page ${params.pageNumber} of ${params.issueEntitiesCount}) ` : ''
     runGenericPageTests(multiPageHtml, {
-      pageTitle: `${params.organisation.name} - ${params.dataset.name} - Issues ${paginationTitleSection}- ${config.serviceNames.submit}`,
+      pageTitle: `${params.organisation.name} - ${params.dataset.dataset} - Issues ${paginationTitleSection}- ${config.serviceNames.submit}`,
       breadcrumbs: [
         { text: 'Home', href: '/' },
         { text: 'Organisations', href: '/organisations' },

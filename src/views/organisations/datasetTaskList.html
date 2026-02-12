@@ -3,7 +3,7 @@
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
 
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
-{% set pageName %}{{organisation.name}} - {{dataset.name}} - Task list{% endset %}
+{% set pageName %}{{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Task list{% endset %}
 {% set serviceType = 'Manage' %}
 
 {% extends "layouts/main.html" %}
@@ -28,7 +28,7 @@
       href: '/organisations/' + organisation.organisation
     },
     {
-      text: dataset.name
+      text: dataset.dataset | datasetSlugToReadableName(true)
     }
   ]
 }) }}
@@ -59,7 +59,7 @@
     </h2>
 
     {% if taskList.length == 0 %}
-      <p class="govuk-body">There are no issues with {{ organisation.name }}'s {{ dataset.name }} dataset.</p>
+      <p class="govuk-body">There are no issues with {{ organisation.name }}'s {{ dataset.dataset | datasetSlugToReadableName }} dataset.</p>
     {% else %}
 
 

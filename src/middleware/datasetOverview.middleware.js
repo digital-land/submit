@@ -4,8 +4,8 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetPlatformInfo, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
-import { fetchOne, fetchMany, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCountsPerformanceDb, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
+import { fetchOne, fetchMany, onlyIf, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
@@ -186,7 +186,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, entryIssueCounts, entityIssueCounts, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [] } = req
+  const { orgInfo, entityCount, sources, dataset, entityIssueCounts, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [] } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources
@@ -219,8 +219,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
   if (authority === 'some') {
     taskCount = 1
   } else {
-    taskCount = (entryIssueCounts ? entryIssueCounts.length : 0) +
-    (entityIssueCounts ? entityIssueCounts.length : 0) +
+    taskCount = (entityIssueCounts ? entityIssueCounts.length : 0) +
     endpointErrorIssues +
     (expectationOutOfBounds.length > 0 ? 1 : 0)
   }
@@ -264,14 +263,14 @@ export default [
   fetchColumnSummary,
   fetchResources,
   fetchSources,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchEntityIssueCountsPerformanceDb,
   fetchSpecification,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   ...processAuthoritativeMiddlewares,
   ...processSpecificationMiddlewares,
   // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
-  fetchEntityCount,
+  // Currently fallback entity count all records if authority entity count fails
+  onlyIf(req => req.entityCount === undefined, fetchEntityCount),
   prepareDatasetOverviewTemplateParams,
   getDatasetOverview,
   logPageError

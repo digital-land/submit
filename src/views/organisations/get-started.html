@@ -3,7 +3,7 @@
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Manage' %}
 {% set pageName %}
-    {{organisation.name}} - {{dataset.name}} - Get started
+    {{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Get started
 {% endset %}
 
 {% extends "layouts/main.html" %}
@@ -45,7 +45,7 @@
     {% if authority and authority === "some" %}
       <h2 class="govuk-heading-m">How to improve {{ organisation.name }}'s data</h2>
     {% else %}
-      <h2 class="govuk-heading-l">How to prepare and provide your {{ dataset.name }} data</h2>
+      <h2 class="govuk-heading-l">How to prepare and provide your {{ dataset.dataset | datasetSlugToReadableName }} data</h2>
     {% endif %}
     <div data-module="appstepnav" id="step-by-step-navigation" class="gem-c-step-nav js-hidden gem-c-step-nav--large"
       data-show-text="Show" data-hide-text="Hide" data-show-all-text="Show all steps"

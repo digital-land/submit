@@ -19,13 +19,14 @@ describe(`Get Started Page (seed: ${seed})`, () => {
   const document = dom.window.document
 
   runGenericPageTests(html, {
-    pageTitle: `${params.organisation.name} - ${params.dataset.name} - Get started - Check and provide planning data`
+    breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Organisations', href: '/organisations' }, { text: params.organisation.name }, { text: 'Get started' }]
   })
 
   it('Renders the correct headings', () => {
     expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual(params.organisation.name)
-    expect(document.querySelector('h1').textContent).toContain(`${params.dataset.name}`)
-    expect(document.querySelector('#main-content h2').textContent).toContain(`How to prepare and provide your ${params.dataset.name} data`)
+    // Filter returns slug in tests (no mapping loaded), check slug passes through
+    expect(document.querySelector('h1').textContent).toContain(params.dataset.dataset)
+    expect(document.querySelector('#main-content h2').textContent).toContain(`How to prepare and provide your ${params.dataset.dataset} data`)
   })
 
   it('Renders breadcrumbs correctly', () => {

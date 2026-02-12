@@ -1,10 +1,10 @@
 <div class="govuk-grid-column-two-thirds">
 {% if authority and authority === "some" %}
   <span class="govuk-caption-xl">{{ organisation.name }}</span>
-  <h1 class="govuk-heading-xl">Review alternative source of {{ dataset.name }} data</h1>
+  <h1 class="govuk-heading-xl">Review alternative source of {{ dataset.dataset | datasetSlugToReadableName }} data</h1>
 {% else %}
   <span class="govuk-caption-xl">{{ organisation.name }}</span>
-  <h1 class="govuk-heading-xl">{{ dataset.name }}</h1>
+  <h1 class="govuk-heading-xl">{{ dataset.dataset | datasetSlugToReadableName(true) }}</h1>
 
   {% if notice %}
     {{ deadlineNotice(dataset.dataset, notice, organisation) }}

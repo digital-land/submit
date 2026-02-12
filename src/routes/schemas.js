@@ -211,7 +211,7 @@ export const OrgDatasetTaskList = v.strictObject({
   organisation: OrgField,
   authority: v.string(),
   dataset: v.strictObject({
-    dataset: v.optional(NonEmptyString),
+    dataset: NonEmptyString,
     name: NonEmptyString,
     collection: NonEmptyString
   })
