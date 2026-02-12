@@ -806,12 +806,10 @@ export const fetchEntityIssueCounts = fetchMany({
         i.issue_type,
         COUNT(DISTINCT i.entity) AS count
       FROM issue i
-      JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE i.resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
         AND i.entity IS NOT NULL AND i.entity <> ''
         AND (i.end_date = '' OR i.end_date IS NULL)
-        AND it.responsibility = 'external'
-        AND it.severity = 'error'
+        AND i.issue_type IN (SELECT it.issue_type FROM issue_type it WHERE it.responsibility = 'external' AND it.severity = 'error')
         ${datasetClause}
       GROUP BY i.field, i.issue_type, i.dataset
     `
