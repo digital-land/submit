@@ -111,7 +111,7 @@ panel: { html: tableTab } } } %}
           text: "Found"
         },
         value: {
-          text: options.totalRows + " rows"
+          text: options.totalRows + (" row" if options.totalRows === 1 else " rows")
         }
       }
     ] %}

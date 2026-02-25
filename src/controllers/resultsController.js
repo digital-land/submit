@@ -15,7 +15,7 @@ const failedUrlRequestTemplate = 'results/failedUrlRequest'
 const resultsTemplate = 'results/results'
 
 class ResultsController extends PageController {
-  /* Custom middleware, currently the controler can load results/results, results/failedFileRequest and results/failedUrlRequest templates */
+  /* Custom middleware, currently the controller can load results/results, results/failedFileRequest and results/failedUrlRequest templates */
   middlewareSetup () {
     super.middlewareSetup()
     this.use(validateParams)
@@ -129,7 +129,7 @@ export async function fetchResponseDetails (req, res, next) {
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
       const detailsOpts = req.locals.detailsOptions ?? {}
-      // Original code used a if statement to check template and filter by error severity accordingly, but move to always showing all details in reults/results template
+      // Original code used a if statement to check template and filter by error severity accordingly, but move to always showing all details in results/results template
       const responseDetails = await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { ...detailsOpts })
       req.locals.responseDetails = responseDetails
     }
@@ -159,7 +159,7 @@ export const fieldToColumnMapping = ({ columns }) => {
 export function setupTableParams (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.responseDetails
-    // Optinonally filter out all non - error rows from dataset
+    // Optionally filter out all non - error rows from dataset
     let rows = responseDetails.getRowsWithVerboseColumns(false)
     // remove any issues that aren't of severity error
     rows = rows.map((row) => {
