@@ -495,13 +495,8 @@ export const processSpecificationMiddlewares = [
   fetchSpecification,
   pullOutDatasetSpecification,
   // When specification exists, use field mappings from transform table
-  onlyIf(req => req.specification, replaceUnderscoreInSpecification),
-  onlyIf(req => req.specification, fetchFieldMappings),
-  onlyIf(req => req.specification, addDatabaseFieldToSpecification),
-  onlyIf(req => req.specification, filterOutSystemFields),
-  // When no specification exists, use fields from dataset_field table
-  onlyIf(req => !req.specification, fetchDatasetFields),
-  onlyIf(req => !req.specification, constructSpecificationTable),
+  fetchDatasetFields,
+  constructSpecificationTable,
   getUniqueDatasetFieldsFromSpecification
 ]
 
