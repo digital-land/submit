@@ -107,10 +107,10 @@ function geometryProps (rows) {
   const geometries = []
   for (const { columns } of rows) {
     if ('point' in columns) {
-      geometries.push({ geo: columns.point.value, reference: columns.reference.html, type: 'point' })
+      geometries.push({ geo: columns.point.value, reference: columns.reference?.html, type: 'point' })
     }
     if ('geometry' in columns) {
-      geometries.push({ geo: columns.geometry.value, reference: columns.reference.html, type: 'geometry' })
+      geometries.push({ geo: columns.geometry.value, reference: columns.reference?.html, type: 'geometry' })
     }
   }
   return geometries
