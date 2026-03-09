@@ -106,10 +106,10 @@ export const prepareTableParams = (req, res, next) => {
 function geometryProps (rows) {
   const geometries = []
   for (const { columns } of rows) {
-    if ('point' in columns) {
+    if ('point' in columns && columns.point.value) {
       geometries.push({ geo: columns.point.value, reference: columns.reference?.html, type: 'point' })
     }
-    if ('geometry' in columns) {
+    if ('geometry' in columns && columns.geometry.value) {
       geometries.push({ geo: columns.geometry.value, reference: columns.reference?.html, type: 'geometry' })
     }
   }
