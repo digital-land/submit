@@ -1191,7 +1191,7 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
  */
 export const fetchLocalPlanningGroups = async (req, res, next) => {
   try {
-    const { formattedData: groups } = await platformApi.fetchEntities({ prefix: 'local-planning-group' })
+    const { formattedData: groups } = await platformApi.fetchAllEntities({ prefix: 'local-planning-group' })
     const orgCode = req.orgInfo.organisation
 
     const parentMatches = groups.filter(g => (g.organisations || '').split(';').includes(orgCode))

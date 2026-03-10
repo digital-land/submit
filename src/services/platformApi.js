@@ -56,6 +56,33 @@ export default {
    * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
    * @throws {Error} If the query fails or there is an error communicating with the Platform API
    */
+  /**
+   * Fetches all entities from the Platform API /entity.json endpoint, paginating through all results.
+   * Accepts the same params as fetchEntities (except limit/offset which are managed internally).
+   */
+  fetchAllEntities: async (params) => {
+    const pageSize = 100
+    let offset = 0
+    let allEntities = []
+
+    while (true) {
+      const queryParams = new URLSearchParams()
+      if (params.organisation_entity) queryParams.append('organisation_entity', params.organisation_entity)
+      if (params.dataset) queryParams.append('dataset', params.dataset)
+      if (params.prefix) queryParams.append('prefix', params.prefix)
+      if (params.organisation) queryParams.append('organisation', params.organisation)
+      queryParams.append('limit', pageSize)
+      queryParams.append('offset', offset)
+      const data = await queryPlatformAPI(`${config.mainWebsiteUrl}/entity.json?${queryParams.toString()}`, params)
+      const entities = data?.entities || []
+      allEntities = allEntities.concat(entities)
+      if (!data?.links?.next || entities.length < pageSize) break
+      offset += pageSize
+    }
+
+    return { formattedData: allEntities }
+  },
+
   fetchDatasets: async (params) => {
     const queryParams = new URLSearchParams()
 
