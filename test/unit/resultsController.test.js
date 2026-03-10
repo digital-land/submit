@@ -299,15 +299,11 @@ describe('getPassedChecks()', () => {
     totalRows: 99,
     missingColumnTasks: []
   }
-  it('displays correct number of rows', () => {
+  it('shows all data is valid when no errors', () => {
     const req = structuredClone(reqTemplate)
     getPassedChecks(req, {}, vi.fn())
 
     expect(req.locals.passedChecks).toMatchObject([
-      {
-        status: { tag: { text: 'Passed' } },
-        title: { text: 'Found 99 rows' }
-      },
       {
         status: { tag: { text: 'Passed' } },
         title: { text: 'All data is valid' }

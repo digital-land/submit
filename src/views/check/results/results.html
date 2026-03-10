@@ -105,6 +105,14 @@ panel: { html: tableTab } } } %}
         value: {
           text: options.uploadInfo.checkedTime | govukDateTime
         }
+      },
+      {
+        key: {
+          text: "Found"
+        },
+        value: {
+          text: options.totalRows + (" row" if options.totalRows === 1 else " rows")
+        }
       }
     ] %}
     

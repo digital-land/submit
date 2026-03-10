@@ -22,7 +22,7 @@ describe(`issueDetails.html(seed: ${seed})`, () => {
       { text: 'Home', href: '/' },
       { text: 'Organisations', href: '/organisations' },
       { text: params.organisation.name, href: `/organisations/${params.organisation.organisation}` },
-      { text: params.dataset.dataset, href: `/organisations/${params.organisation.organisation}/${params.dataset.dataset}` },
+      { text: params.dataset.name, href: `/organisations/${params.organisation.organisation}/${params.dataset.dataset}` },
       { text: 'mock issue' }
     ]
   })
