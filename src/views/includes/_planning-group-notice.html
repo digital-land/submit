@@ -9,7 +9,7 @@
     <p class="govuk-body">This organisation is also attached to a planning group which is also provisioned to provide this data:</p>
     <ul class="govuk-list govuk-list--bullet">
       {% for provision in planningGroupProvisions %}
-        <li>{{ provision.organisation }}</li>
+        <li><a class="govuk-link" href="/organisations/{{ provision.organisation }}">{{ provision.name or provision.organisation }}</a></li>
       {% endfor %}
     </ul>
   </div>

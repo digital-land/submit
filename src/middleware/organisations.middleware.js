@@ -17,6 +17,7 @@ const fetchOrganisations = fetchMany({
         p.organisation LIKE 'local-authority:%'
         OR p.organisation LIKE 'national-park-authority:%'
         OR p.organisation LIKE 'development-corporation:%'
+        OR p.organisation LIKE 'local-planning-group:%'
       )
       AND (
         p.end_date IS NULL

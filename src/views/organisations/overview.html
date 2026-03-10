@@ -133,6 +133,36 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+  {% if planningGroupMembers %}
+  <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-members-title" data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="planning-group-members-title">Important</h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-body">This joint planning group is formed up from these {{ "organisation" | pluralise(planningGroupMembers | length) }}:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for member in planningGroupMembers %}
+          <li><a class="govuk-link" href="/organisations/{{ member.organisation }}">{{ member.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+  {% if parentGroup %}
+  <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-notice-title" data-module="govuk-notification-banner">
+    <div class="govuk-notification-banner__header">
+      <h2 class="govuk-notification-banner__title" id="planning-group-notice-title">Important</h2>
+    </div>
+    <div class="govuk-notification-banner__content">
+      <p class="govuk-body">This organisation is also attached to these joint planning {{ "group" | pluralise(parentGroup | length) }}:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        {% for group in parentGroup %}
+          <li><a class="govuk-link" href="/organisations/{{ group.organisation }}">{{ group.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
 
   {% if datasets.statutory.length > 0 %}
     <div data-testid="datasetsMandatory">
@@ -169,6 +199,8 @@
       </ul>
     </div>
   {% endif %}
+
+  
 
   </div>
 </div>

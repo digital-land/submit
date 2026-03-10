@@ -1180,32 +1180,45 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
 })
 
 /**
- * Middleware, query platformApi for all local planning groups
- * look if a given org code is within any local planning groups 'organisations' column
- * return list of local planning group(s) the org belongs to in req.localPlanningGroups / null if none
- * @param {Object} req request object
- * @param {Object} req.orgInfo organisation info
- * @param {string} req.orgInfo.organisation organisation code e.g. 'local-authority:BOL'
- * @param {Object[]|null} req.localPlanningGroups OUT - list of local planning groups the org belongs to
- * @param {*} res
- * @param {*} next
+ * Middleware. Fetches all local-planning-group entities from the Platform API in a single call and derives two outputs:
+ *
+ * - req.parentGroup {Object[]|null} - If this org is a member of any planning group(s), returns an array of those
+ *   groups with { entity, name, organisation }. Null if this org belongs to no planning groups.
+ *
+ * - req.planningGroupMembers {Object[]|null} - If this org IS a planning group, returns an array of its member
+ *   organisations with { organisation, name }, where name is resolved via a parallel Platform API lookup.
+ *   Falls back to the org code as name if the lookup fails. Null if this org is not a planning group.
  */
 export const fetchLocalPlanningGroups = async (req, res, next) => {
   try {
-    const orgCode = req.orgInfo.organisation
     const { formattedData: groups } = await platformApi.fetchEntities({ prefix: 'local-planning-group' })
+    const orgCode = req.orgInfo.organisation
 
-    const matches = groups.filter(group => {
-      const orgs = (group.organisations || '').split(';')
-      return orgs.includes(orgCode)
-    })
-
-    req.localPlanningGroups = matches.length > 0
-      ? matches.map(g => ({ entity: g['organisation-entity'], name: g.name, organisation: `${g.prefix}:${g.reference}` }))
+    const parentMatches = groups.filter(g => (g.organisations || '').split(';').includes(orgCode))
+    req.parentGroup = parentMatches.length > 0
+      ? parentMatches.map(g => ({ entity: g['organisation-entity'], name: g.name, organisation: `${g.prefix}:${g.reference}` }))
       : null
+
+    const ownGroup = groups.find(g => String(g['organisation-entity']) === String(req.orgInfo.entity))
+    if (ownGroup) {
+      const orgCodes = (ownGroup.organisations || '').split(';').filter(Boolean)
+      const resolved = await Promise.all(orgCodes.map(async (organisation) => {
+        try {
+          const { formattedData: entities } = await platformApi.fetchEntities({ organisation })
+          const name = entities[0]?.name ?? organisation
+          return { organisation, name }
+        } catch {
+          return { organisation, name: organisation }
+        }
+      }))
+      req.planningGroupMembers = resolved
+    } else {
+      req.planningGroupMembers = null
+    }
   } catch (error) {
     logger.warn({ message: `fetchLocalPlanningGroups(): ${error.message}`, type: types.App })
-    req.localPlanningGroups = null
+    req.parentGroup = null
+    req.planningGroupMembers = null
   }
   next()
 }

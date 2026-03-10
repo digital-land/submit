@@ -186,7 +186,7 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, entityIssueCounts, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [], provisions = [] } = req
+  const { orgInfo, entityCount, sources, dataset, entityIssueCounts, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [], provisions = [], parentGroup } = req
 
   let endpointErrorIssues = 0
   const endpoints = sources
@@ -244,6 +244,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
     taskCount,
     alternateSources,
     planningGroupProvisions: planningGroupProvisions.length > 0 ? planningGroupProvisions : undefined,
+    parentGroup,
     stats: {
       numberOfRecords: entityCount.entity_count,
       endpoints
@@ -262,17 +263,22 @@ const getDatasetOverview = renderTemplate(
   }
 )
 
-// TODO: MOVE COMMON AND LPA???
+/* TODO: MOVE COMMON AND LPA???
+* Loooks to see if local planning authorities are also provisioned against the same dataset
+* surfaces that information on the dataset overview page.
+*/
 const fetchProvisionsByOrgsAndDatasets = fetchMany({
   query: ({ params, req }) => {
     const orgs = [params.lpa]
-    if (req.localPlanningGroups) {
-      orgs.push(...req.localPlanningGroups.map(g => g.organisation))
+    if (req.parentGroup) {
+      orgs.push(...req.parentGroup.map(g => g.organisation))
     }
     const inClause = orgs.map(o => `'${o}'`).join(', ')
-    return /* sql */ `select dataset, project, provision_reason, organisation
-       from provision where organisation IN (${inClause})
-       AND dataset = '${params.dataset}'`
+    return /* sql */ `select p.dataset, p.project, p.provision_reason, p.organisation, o.name
+       from provision p
+       left join organisation o on o.organisation = p.organisation
+       where p.organisation IN (${inClause})
+       AND p.dataset = '${params.dataset}'`
   },
   result: 'provisions'
 })

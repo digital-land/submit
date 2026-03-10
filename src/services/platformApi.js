@@ -22,14 +22,15 @@ export default {
    * @throws {Error} If the query fails or there is an error communicating with the Platform API
    */
   fetchEntities: async (params) => {
-    if (!params.organisation_entity && !params.dataset && !params.prefix) {
-      throw new Error('organisation_entity, dataset, or prefix are required parameters')
+    if (!params.organisation_entity && !params.dataset && !params.prefix && !params.organisation) {
+      throw new Error('organisation_entity, dataset, prefix, or organisation are required parameters')
     }
     const queryParams = new URLSearchParams()
 
     if (params.organisation_entity) queryParams.append('organisation_entity', params.organisation_entity)
     if (params.dataset) queryParams.append('dataset', params.dataset)
     if (params.prefix) queryParams.append('prefix', params.prefix)
+    if (params.organisation) queryParams.append('organisation', params.organisation)
     if (params.limit) queryParams.append('limit', params.limit)
     if (params.offset) queryParams.append('offset', params.offset)
     if (params.quality) queryParams.append('quality', params.quality)

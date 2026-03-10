@@ -145,7 +145,16 @@ export const OrgOverviewPage = v.strictObject({
   datasetsWithEndpoints: v.integer(),
   datasetsWithIssues: v.integer(),
   datasetsWithErrors: v.integer(),
-  isODPMember: v.boolean()
+  isODPMember: v.boolean(),
+  parentGroup: v.optional(v.nullable(v.array(v.strictObject({
+    entity: NonEmptyString,
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  })))),
+  planningGroupMembers: v.optional(v.nullable(v.array(v.strictObject({
+    organisation: NonEmptyString,
+    name: NonEmptyString
+  }))))
 })
 
 export const OrgFindPage = v.strictObject({
@@ -184,10 +193,16 @@ export const OrgDatasetOverview = v.strictObject({
   }),
   planningGroupProvisions: v.optional(v.array(v.strictObject({
     organisation: NonEmptyString,
+    name: v.nullable(v.string()),
     dataset: NonEmptyString,
     project: v.nullable(v.string()),
     provision_reason: v.nullable(v.string())
   }))),
+  parentGroup: v.optional(v.nullable(v.array(v.strictObject({
+    entity: NonEmptyString,
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  })))),
   notice: v.optional(DeadlineNoticeField)
 })
 
