@@ -1232,7 +1232,7 @@ export const fetchLocalPlanningGroups = async (req, res, next) => {
  *
  * Requires: req.params.lpa, req.params.dataset, req.parentGroup (set by fetchLocalPlanningGroups)
  * Sets: req.provisions — array of { dataset, project, provision_reason, organisation, name }
- * 
+ *
  * TODO: Does it need fetchMany any more, would allow an append of Org Name to fetchLocalPlanningGroups result
  */
 export const fetchProvisionsByOrgsAndDatasets = fetchMany({
