@@ -118,7 +118,7 @@ export class Map {
     for (let index = 0; index < geometriesWkt.length; ++index) {
       const item = geometriesWkt[index]
       const geometryWkt = (typeof item === 'string') ? { geo: item } : item
-      const geometry = parse(geometryWkt.geo)
+      const geometry = geometryWkt.geo ? parse(geometryWkt.geo) : null
 
       if (!geometry) {
         console.error('Invalid WKT geometry format', geometryWkt)
