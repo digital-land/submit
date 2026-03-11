@@ -4,7 +4,7 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetPlatformInfo, fetchEntityIssueCountsPerformanceDb, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares, fetchLocalPlanningGroups } from './common.middleware.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCountsPerformanceDb, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares, fetchLocalPlanningGroups, fetchProvisionsByOrgsAndDatasets } from './common.middleware.js'
 import { fetchOne, fetchMany, onlyIf, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
@@ -262,26 +262,6 @@ const getDatasetOverview = renderTemplate(
     handlerName: 'datasetOverview'
   }
 )
-
-/*
-* Loooks to see if any local planning authorities are also provisioned against the same dataset
-* surfaces that information on the dataset overview page as an Notice Banner
-*/
-const fetchProvisionsByOrgsAndDatasets = fetchMany({
-  query: ({ params, req }) => {
-    const orgs = [params.lpa]
-    if (req.parentGroup) {
-      orgs.push(...req.parentGroup.map(g => g.organisation))
-    }
-    const inClause = orgs.map(o => `'${o}'`).join(', ')
-    return /* sql */ `select p.dataset, p.project, p.provision_reason, p.organisation, o.name
-       from provision p
-       left join organisation o on o.organisation = p.organisation
-       where p.organisation IN (${inClause})
-       AND p.dataset = '${params.dataset}'`
-  },
-  result: 'provisions'
-})
 
 export default [
   fetchOrgInfo,

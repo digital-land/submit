@@ -181,7 +181,7 @@
     {% if planningGroupMembers %}
     <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-members-title" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="planning-group-members-title">Group {{ "Membership" | pluralise(planningGroupMembers | length) }}</h2>
+        <h2 class="govuk-notification-banner__title" id="planning-group-members-title">Membership</h2>
       </div>
       <div class="govuk-notification-banner__content">
         <ul class="govuk-list govuk-list--bullet">
@@ -195,7 +195,7 @@
     {% if parentGroup %}
     <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-notice-title" data-module="govuk-notification-banner">
       <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="planning-group-notice-title">Membership of</h2>
+        <h2 class="govuk-notification-banner__title" id="planning-group-notice-title">Group {{ "Membership" | pluralise(parentGroup | length) }}</h2>
       </div>
       <div class="govuk-notification-banner__content">
         <ul class="govuk-list govuk-list--bullet">

@@ -1181,7 +1181,7 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
 
 /**
  * Middleware. Fetches all local-planning-group entities from the Platform API in a single call and derives two outputs:
- *
+ *. - takes org code and:
  * - req.parentGroup {Object[]|null} - If this org is a member of any planning group(s), returns an array of those
  *   groups with { entity, name, organisation }. Null if this org belongs to no planning groups.
  *
@@ -1225,3 +1225,28 @@ export const fetchLocalPlanningGroups = async (req, res, next) => {
   }
   next()
 }
+
+/**
+ * Fetches provision records for the current organisation and any planning groups it belongs to,
+ * filtered to the current dataset. Includes the organisation name via a JOIN on the organisation table.
+ *
+ * Requires: req.params.lpa, req.params.dataset, req.parentGroup (set by fetchLocalPlanningGroups)
+ * Sets: req.provisions — array of { dataset, project, provision_reason, organisation, name }
+ * 
+ * TODO: Does it need fetchMany any more, would allow an append of Org Name to fetchLocalPlanningGroups result
+ */
+export const fetchProvisionsByOrgsAndDatasets = fetchMany({
+  query: ({ params, req }) => {
+    const orgs = [params.lpa]
+    if (req.parentGroup) {
+      orgs.push(...req.parentGroup.map(g => g.organisation))
+    }
+    const inClause = orgs.map(o => `'${o}'`).join(', ')
+    return /* sql */ `select p.dataset, p.project, p.provision_reason, p.organisation, o.name
+       from provision p
+       left join organisation o on o.organisation = p.organisation
+       where p.organisation IN (${inClause})
+       AND p.dataset = '${params.dataset}'`
+  },
+  result: 'provisions'
+})

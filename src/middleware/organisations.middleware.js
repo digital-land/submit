@@ -71,16 +71,14 @@ export const prepareGetOrganisationsTemplateParams = (req, res, next) => {
     return a.name.localeCompare(b.name)
   })
 
-  const datasetAlphabetisedOrgs = sortedResults.reduce((acc, current) => {
+  const orgsByDataset = sortedResults.reduce((acc, current) => {
     const datasetKey = current.dataset || 'other'
-    if (!acc[datasetKey]) acc[datasetKey] = {}
-    const firstLetter = current.name.charAt(0).toUpperCase()
-    acc[datasetKey][firstLetter] = acc[datasetKey][firstLetter] || []
-    acc[datasetKey][firstLetter].push(current)
+    acc[datasetKey] = acc[datasetKey] || []
+    acc[datasetKey].push(current)
     return acc
   }, {})
 
-  req.templateParams = { datasetAlphabetisedOrgs }
+  req.templateParams = { orgsByDataset }
 
   next()
 }
