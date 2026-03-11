@@ -263,9 +263,9 @@ const getDatasetOverview = renderTemplate(
   }
 )
 
-/* TODO: MOVE COMMON AND LPA???
-* Loooks to see if local planning authorities are also provisioned against the same dataset
-* surfaces that information on the dataset overview page.
+/*
+* Loooks to see if any local planning authorities are also provisioned against the same dataset
+* surfaces that information on the dataset overview page as an Notice Banner
 */
 const fetchProvisionsByOrgsAndDatasets = fetchMany({
   query: ({ params, req }) => {

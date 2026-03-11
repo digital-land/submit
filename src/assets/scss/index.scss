@@ -93,7 +93,7 @@ $govuk-global-styles: true;
 }
 
 .big-number {
-  @include govuk-font($size: 80, $weight: bold);
+  @include govuk-font($size: 48, $weight: bold);
   display: block;
 }
 

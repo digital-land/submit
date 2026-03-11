@@ -8,7 +8,8 @@ const fetchOrganisations = fetchMany({
   query: ({ req, params }) => `
     SELECT DISTINCT
       p.organisation,
-      o.name
+      o.name,
+      o.dataset
     FROM
       provision p
       LEFT JOIN organisation o ON p.organisation = o.organisation
@@ -70,14 +71,16 @@ export const prepareGetOrganisationsTemplateParams = (req, res, next) => {
     return a.name.localeCompare(b.name)
   })
 
-  const alphabetisedOrgs = sortedResults.reduce((acc, current) => {
+  const datasetAlphabetisedOrgs = sortedResults.reduce((acc, current) => {
+    const datasetKey = current.dataset || 'other'
+    if (!acc[datasetKey]) acc[datasetKey] = {}
     const firstLetter = current.name.charAt(0).toUpperCase()
-    acc[firstLetter] = acc[firstLetter] || []
-    acc[firstLetter].push(current)
+    acc[datasetKey][firstLetter] = acc[datasetKey][firstLetter] || []
+    acc[datasetKey][firstLetter].push(current)
     return acc
   }, {})
 
-  req.templateParams = { alphabetisedOrgs }
+  req.templateParams = { datasetAlphabetisedOrgs }
 
   next()
 }

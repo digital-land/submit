@@ -83,6 +83,26 @@ export default {
     return { formattedData: allEntities }
   },
 
+  /**
+   * Fetches organisations from /organisation.json.
+   *
+   * @param {Object} [params]
+   * @param {string} [params.organisations] - Optional dataset type to filter by (e.g. 'local-authority')
+   * @returns {Promise<{data: object, grouped: object, flat: object[]}>}
+   *   - data: raw response
+   *   - grouped: organisations keyed by dataset type
+   *   - flat: all organisations as a flat array across all types
+   */
+  fetchOrganisations: async (params = {}) => {
+    const queryParams = new URLSearchParams()
+    if (params.organisations) queryParams.append('organisations', params.organisations)
+    const url = `${config.mainWebsiteUrl}/organisation.json${queryParams.toString() ? '?' + queryParams.toString() : ''}`
+    const data = await queryPlatformAPI(url, params)
+    const grouped = data?.organisations || {}
+    const flat = Object.values(grouped).flat()
+    return { data, grouped, flat }
+  },
+
   fetchDatasets: async (params) => {
     const queryParams = new URLSearchParams()
 

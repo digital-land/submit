@@ -110,7 +110,7 @@ export const takeResourceIdFromParams = (req) => {
 
 export const fetchOrgInfo = fetchOne({
   query: ({ params }) => {
-    return `SELECT name, organisation, entity, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
+    return `SELECT name, organisation, entity, statistical_geography, dataset FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
@@ -212,8 +212,8 @@ export const prepareAuthority = async (req, res, next) => {
       return next()
     }
 
-    // Second query: Check for 'some' quality
-    const someResult = await platformApi.fetchEntities({
+    // Second query: Check for 'some' quality, need all, if stroing alternateEntityList
+    const someResult = await platformApi.fetchAllEntities({
       organisation_entity: orgInfo.entity,
       dataset: params.dataset,
       quality: 'some'
@@ -1191,27 +1191,30 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
  */
 export const fetchLocalPlanningGroups = async (req, res, next) => {
   try {
-    const { formattedData: groups } = await platformApi.fetchAllEntities({ prefix: 'local-planning-group' })
+    const { formattedData: allGroups } = await platformApi.fetchAllEntities({ prefix: 'local-planning-group' })
+    // Remove all end-dated planning groups
+    const today = new Date().toISOString().slice(0, 10)
+    const groups = allGroups.filter(g => !g['end-date'] || g['end-date'] > today)
     const orgCode = req.orgInfo.organisation
 
+    // Find any groups this org is within the organisations field.
     const parentMatches = groups.filter(g => (g.organisations || '').split(';').includes(orgCode))
     req.parentGroup = parentMatches.length > 0
       ? parentMatches.map(g => ({ entity: g['organisation-entity'], name: g.name, organisation: `${g.prefix}:${g.reference}` }))
       : null
 
+    // Look to see if this org is a local-planning group
     const ownGroup = groups.find(g => String(g['organisation-entity']) === String(req.orgInfo.entity))
+
+    // if group get all members, and resolve their names in a single call to the Platform API, then map back to the org codes
     if (ownGroup) {
       const orgCodes = (ownGroup.organisations || '').split(';').filter(Boolean)
-      const resolved = await Promise.all(orgCodes.map(async (organisation) => {
-        try {
-          const { formattedData: entities } = await platformApi.fetchEntities({ organisation })
-          const name = entities[0]?.name ?? organisation
-          return { organisation, name }
-        } catch {
-          return { organisation, name: organisation }
-        }
+      const { flat: allOrgs } = await platformApi.fetchOrganisations()
+      const nameMap = new Map(allOrgs.map(o => [o.organisation, o.name]))
+      req.planningGroupMembers = orgCodes.map(organisation => ({
+        organisation,
+        name: nameMap.get(organisation) ?? organisation
       }))
-      req.planningGroupMembers = resolved
     } else {
       req.planningGroupMembers = null
     }

@@ -115,7 +115,7 @@ const IssueSpecification = v.optional(v.looseObject({
   guidance: v.optional(NonEmptyString)
 }))
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()), dataset: v.optional(v.string()) })
 const DatasetNameField = v.looseObject({ name: NonEmptyString, dataset: NonEmptyString, collection: v.string() })
 const DatasetItem = v.strictObject({
   endpointCount: v.optional(v.number()),
@@ -158,7 +158,7 @@ export const OrgOverviewPage = v.strictObject({
 })
 
 export const OrgFindPage = v.strictObject({
-  alphabetisedOrgs: v.record(NonEmptyString, v.array(OrgField))
+  datasetAlphabetisedOrgs: v.record(NonEmptyString, v.record(NonEmptyString, v.array(OrgField)))
 })
 
 export const OrgGetStarted = v.strictObject({
