@@ -115,8 +115,15 @@ const IssueSpecification = v.optional(v.looseObject({
   guidance: v.optional(NonEmptyString)
 }))
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()), dataset: v.optional(v.string()) })
 const DatasetNameField = v.looseObject({ name: NonEmptyString, dataset: NonEmptyString, collection: v.string() })
+const PlanningGroupProvisionsField = v.optional(v.array(v.strictObject({
+  organisation: NonEmptyString,
+  name: v.nullable(v.string()),
+  dataset: NonEmptyString,
+  project: v.nullable(v.string()),
+  provision_reason: v.nullable(v.string())
+})))
 const DatasetItem = v.strictObject({
   endpointCount: v.optional(v.number()),
   status: v.enum(datasetStatusEnum),
@@ -145,17 +152,27 @@ export const OrgOverviewPage = v.strictObject({
   datasetsWithEndpoints: v.integer(),
   datasetsWithIssues: v.integer(),
   datasetsWithErrors: v.integer(),
-  isODPMember: v.boolean()
+  isODPMember: v.boolean(),
+  parentGroup: v.optional(v.nullable(v.array(v.strictObject({
+    entity: NonEmptyString,
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  })))),
+  planningGroupMembers: v.optional(v.nullable(v.array(v.strictObject({
+    organisation: NonEmptyString,
+    name: NonEmptyString
+  }))))
 })
 
 export const OrgFindPage = v.strictObject({
-  alphabetisedOrgs: v.record(NonEmptyString, v.array(OrgField))
+  orgsByDataset: v.record(NonEmptyString, v.array(OrgField))
 })
 
 export const OrgGetStarted = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
-  authority: v.string()
+  authority: v.string(),
+  planningGroupProvisions: PlanningGroupProvisionsField
 })
 
 export const OrgDatasetOverview = v.strictObject({
@@ -182,6 +199,12 @@ export const OrgDatasetOverview = v.strictObject({
       }))
     }))
   }),
+  planningGroupProvisions: PlanningGroupProvisionsField,
+  parentGroup: v.optional(v.nullable(v.array(v.strictObject({
+    entity: NonEmptyString,
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  })))),
   notice: v.optional(DeadlineNoticeField)
 })
 
@@ -194,7 +217,8 @@ export const OrgDataView = v.strictObject({
   tableParams,
   pagination: PaginationParams,
   dataRange: dataRangeParams,
-  alternateSources: v.optional(v.array(v.strictObject({ name: NonEmptyString })))
+  alternateSources: v.optional(v.array(v.strictObject({ name: NonEmptyString }))),
+  planningGroupProvisions: PlanningGroupProvisionsField
 })
 
 export const OrgDatasetTaskList = v.strictObject({
@@ -214,7 +238,8 @@ export const OrgDatasetTaskList = v.strictObject({
     dataset: NonEmptyString,
     name: NonEmptyString,
     collection: NonEmptyString
-  })
+  }),
+  planningGroupProvisions: PlanningGroupProvisionsField
 })
 
 export const OrgEndpointError = v.strictObject({

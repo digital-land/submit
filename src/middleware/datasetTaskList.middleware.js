@@ -21,6 +21,8 @@ import {
   fetchEntityCount,
   fetchEntityIssueCounts,
   fetchEntryIssueCounts,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
   fetchOrgInfo, fetchResources, fetchSources,
   logPageError,
   noop,
@@ -206,13 +208,17 @@ export const prepareTasks = (req, res, next) => {
  * @param {*} next
  */
 export const prepareDatasetTaskListTemplateParams = (req, res, next) => {
-  const { taskList, dataset, orgInfo: organisation, authority } = req
+  const { taskList, dataset, orgInfo: organisation, authority, provisions } = req
+  const planningGroupProvisions = provisions?.length > 1
+    ? provisions.filter(p => p.organisation !== req.params.lpa)
+    : []
 
   req.templateParams = {
     taskList,
     organisation,
     authority,
-    dataset
+    dataset,
+    planningGroupProvisions: planningGroupProvisions.length > 0 ? planningGroupProvisions : undefined
   }
   next()
 }
@@ -226,6 +232,8 @@ const getDatasetTaskList = renderTemplate({
 export default [
   validateOrgAndDatasetQueryParams,
   fetchOrgInfo,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
   fetchSources,
   fetchDatasetInfo,
   fetchResources,

@@ -8,7 +8,8 @@ const fetchOrganisations = fetchMany({
   query: ({ req, params }) => `
     SELECT DISTINCT
       p.organisation,
-      o.name
+      o.name,
+      o.dataset
     FROM
       provision p
       LEFT JOIN organisation o ON p.organisation = o.organisation
@@ -17,6 +18,7 @@ const fetchOrganisations = fetchMany({
         p.organisation LIKE 'local-authority:%'
         OR p.organisation LIKE 'national-park-authority:%'
         OR p.organisation LIKE 'development-corporation:%'
+        OR p.organisation LIKE 'local-planning-group:%'
       )
       AND (
         p.end_date IS NULL
@@ -69,14 +71,14 @@ export const prepareGetOrganisationsTemplateParams = (req, res, next) => {
     return a.name.localeCompare(b.name)
   })
 
-  const alphabetisedOrgs = sortedResults.reduce((acc, current) => {
-    const firstLetter = current.name.charAt(0).toUpperCase()
-    acc[firstLetter] = acc[firstLetter] || []
-    acc[firstLetter].push(current)
+  const orgsByDataset = sortedResults.reduce((acc, current) => {
+    const datasetKey = current.dataset || 'other'
+    acc[datasetKey] = acc[datasetKey] || []
+    acc[datasetKey].push(current)
     return acc
   }, {})
 
-  req.templateParams = { alphabetisedOrgs }
+  req.templateParams = { orgsByDataset }
 
   next()
 }
