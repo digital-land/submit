@@ -10,7 +10,7 @@
  */
 
 import config from '../../config/index.js'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchOrgInfo, fetchResources, filterOutEntitiesWithoutIssues, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, processEntitiesMiddlewares, processRelevantIssuesMiddlewares, createSpecificationFieldsMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { entryIssueGroups } from '../utils/utils.js'
@@ -161,7 +161,7 @@ export default [
   fetchResources,
   ...processEntitiesMiddlewares,
   ...processRelevantIssuesMiddlewares,
-  ...processSpecificationMiddlewares,
+  ...createSpecificationFieldsMiddlewares,
   onlyIf(notIssueHasEntity, redirectToEntityView),
   filterOutEntitiesWithoutIssues,
   setRecordCount,

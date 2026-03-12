@@ -14,7 +14,7 @@ import {
   validateQueryParams,
   fetchDatasetInfo,
   fetchOrgInfo,
-  processSpecificationMiddlewares,
+  createSpecificationFieldsMiddlewares,
   getIssueSpecification,
   show404IfPageNumberNotInRange
 } from './common.middleware.js'
@@ -189,7 +189,7 @@ export default [
   deserialiseEntityIds,
   fetchEntities,
   deserialiseEntities,
-  ...processSpecificationMiddlewares,
+  ...createSpecificationFieldsMiddlewares,
   getIssueSpecification,
   preparePaginationInfo,
   show404IfPageNumberNotInRange,
