@@ -5,7 +5,7 @@ import {
   fetchDatasetInfo,
   fetchOrgInfo,
   processAuthoritativeMiddlewares,
-  processSpecificationMiddlewares,
+  createSpecificationFieldsMiddlewares,
   replaceUnderscoreInEntities,
   setDefaultParams,
   validateQueryParams,
@@ -21,6 +21,7 @@ import {
 import { fetchMany, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { splitByLeading } from '../utils/table.js'
+import logger from '../utils/logger.js'
 
 export const dataviewQueryParams = v.object({
   lpa: v.string(),
@@ -46,6 +47,7 @@ export const setRecordCount = (req, res, next) => {
 
 export const constructTableParams = (req, res, next) => {
   const { entities, uniqueDatasetFields } = req
+  logger.info('Constructing table params', uniqueDatasetFields)
   const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: uniqueDatasetFields })
   const orderedDatasetFields = [...leadingFields, ...trailingFields]
   const columns = orderedDatasetFields
@@ -89,6 +91,8 @@ export const prepareTemplateParams = (req, res, next) => {
   const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
     ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
     : ''
+
+  logger.info('fieldsParams', { fieldsParams, uniqueDatasetFields })
   const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
 
   req.templateParams = {
@@ -134,7 +138,7 @@ export default [
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,
 
-  ...processSpecificationMiddlewares,
+  ...createSpecificationFieldsMiddlewares,
 
   constructTableParams,
 

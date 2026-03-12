@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, createSpecificationFieldsMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
 import { issueErrorMessageHtml } from '../utils/utils.js'
@@ -143,7 +143,7 @@ export default [
   fetchDatasetInfo,
   fetchResources,
   fetchResourceMetaData,
-  ...processSpecificationMiddlewares,
+  ...createSpecificationFieldsMiddlewares,
   getIssueSpecification,
   addResourceMetaDataToResources,
   fetchIssueCount,

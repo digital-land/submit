@@ -4,7 +4,7 @@
  * @description Middleware for dataset overview page (under /oranisations/:lpa/:dataset/overview)
  */
 
-import { fetchDatasetPlatformInfo, fetchEntityIssueCountsPerformanceDb, fetchOrgInfo, fetchResources, fetchSources, logPageError, processSpecificationMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
+import { fetchDatasetPlatformInfo, fetchEntityIssueCountsPerformanceDb, fetchOrgInfo, fetchResources, fetchSources, logPageError, createSpecificationFieldsMiddlewares, expectationFetcher, expectations, noop, processAuthoritativeMiddlewares } from './common.middleware.js'
 import { fetchOne, fetchMany, onlyIf, renderTemplate, FetchOptions, FetchOneFallbackPolicy } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
@@ -267,7 +267,7 @@ export default [
   fetchSpecification,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   ...processAuthoritativeMiddlewares,
-  ...processSpecificationMiddlewares,
+  ...createSpecificationFieldsMiddlewares,
   // setNoticesFromSourceKey('resources'), // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   // Currently fallback entity count all records if authority entity count fails
   onlyIf(req => req.entityCount === undefined, fetchEntityCount),

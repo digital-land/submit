@@ -377,7 +377,7 @@ export const fetchSpecification = fetchOne({
 // Fall back dataset fields if no specification found
 
 export const fetchDatasetFields = fetchMany({
-  query: ({ req }) => `select field from dataset_field where dataset = '${req.dataset.collection}'`,
+  query: ({ req }) => `select field from dataset_field where dataset = '${req.dataset.dataset}'`,
   result: 'datasetFields'
 })
 
@@ -405,57 +405,15 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   next()
 }
 
-export const replaceUnderscoreInSpecification = (req, res, next) => {
-  req.specification.fields = req.specification.fields.map((spec) => {
-    if (spec.datasetField) {
-      spec.datasetField = spec.datasetField.replace(/_/g, '-')
-    }
-    return spec
-  })
-
-  next()
-}
-
 export const fetchFieldMappings = fetchMany({
   query: () => 'select * from transform',
   result: 'fieldMappings'
 })
 
-export const addDatabaseFieldToSpecification = (req, res, next) => {
-  const { specification, fieldMappings } = req
-
-  req.specification.fields = specification.fields.flatMap(fieldObj => {
-    if (['GeoX', 'GeoY'].includes(fieldObj.field)) { // special case for brownfield land
-      return { datasetField: 'point', ...fieldObj }
-    }
-
-    const fieldMappingsForField = fieldMappings.filter(mapping => mapping.field === fieldObj.field)
-
-    const datasetFields = fieldMappingsForField.map(mapping => mapping.replacement_field).filter(Boolean)
-
-    if (datasetFields.length === 0) {
-      // no dataset fields found, add the field anyway with datasetField set to the same value as fieldObj.field
-      return { datasetField: fieldObj.field, ...fieldObj }
-    }
-
-    // sometimes a field maps to more than one dataset field, so we need to account for that
-    const specificationEntriesWithDatasetFields = datasetFields.map(datasetField => ({ datasetField, ...fieldObj }))
-    return specificationEntriesWithDatasetFields
-  })
-
-  next()
-}
-
-export const filterOutSystemFields = (req, res, next) => {
-  const { specification } = req
-  const systemFields = ['organisation'] // Currentl only organisation is not a field we want to show
-
-  req.specification.fields = specification.fields.filter(
-    fieldObj => !systemFields.includes(fieldObj.field)
-  )
-
-  next()
-}
+export const fetchDatasetFieldMappings = fetchMany({
+  query: ({ req }) => `select * from transform where dataset = '${req.dataset.dataset}'`,
+  result: 'fieldMappings'
+})
 
 export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   const { specification } = req
@@ -487,21 +445,46 @@ export const constructSpecificationTable = (req, res, next) => {
 }
 
 /**
+ * Normalises fields by resolving any CamelCase source field names to their kebab-case equivalents
+ * using the transform table (e.g. OrganisationURI → organisation). Deduplicates after mapping,
+ * so fields that already exist in kebab-case are not doubled up. GeoX/GeoY are always merged into `point`.
+ */
+export const normaliseFields = (req, res, next) => {
+  const { fieldMappings } = req
+
+  const mapped = req.specification.fields.map(fieldObj => {
+    if (['GeoX', 'GeoY'].includes(fieldObj.field)) {
+      return { ...fieldObj, field: 'point', datasetField: 'point' }
+    }
+    const match = fieldMappings.find(m => m.field === fieldObj.field)
+    if (match?.replacement_field) {
+      return { ...fieldObj, field: match.replacement_field, datasetField: match.replacement_field }
+    }
+    return fieldObj
+  })
+
+  const seen = new Set()
+  req.specification.fields = mapped.filter(f => {
+    if (seen.has(f.field)) return false
+    seen.add(f.field)
+    return true
+  })
+
+  next()
+}
+
+/**
  * @name processSpecificationMiddleware
  * @function
- * @description Middleware chain to process the dataset specification and prepare it for the issue table, conditional execution on whether a specification exists
+ * @description Middleware chain to create field kebab-case names,
+ * frontend prettify field names, historically uses the specification table,
+ * but a move to use the dataset_field table was preferred
  */
-export const processSpecificationMiddlewares = [
-  fetchSpecification,
-  pullOutDatasetSpecification,
-  // When specification exists, use field mappings from transform table
-  onlyIf(req => req.specification, replaceUnderscoreInSpecification),
-  onlyIf(req => req.specification, fetchFieldMappings),
-  onlyIf(req => req.specification, addDatabaseFieldToSpecification),
-  onlyIf(req => req.specification, filterOutSystemFields),
-  // When no specification exists, use fields from dataset_field table
-  onlyIf(req => !req.specification, fetchDatasetFields),
-  onlyIf(req => !req.specification, constructSpecificationTable),
+export const createSpecificationFieldsMiddlewares = [
+  fetchDatasetFields,
+  constructSpecificationTable,
+  fetchDatasetFieldMappings,
+  normaliseFields,
   getUniqueDatasetFieldsFromSpecification
 ]
 
