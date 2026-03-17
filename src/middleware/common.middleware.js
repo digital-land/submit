@@ -466,7 +466,6 @@ export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   }
 
   req.uniqueDatasetFields = [...new Set(specification.fields.map(field => field.datasetField))]
-  logger.info('Unique dataset fields extracted from specification', { dataset: req.dataset.dataset, uniqueDatasetFields: req.uniqueDatasetFields })
 
   next()
 }
