@@ -448,10 +448,11 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
 
 export const filterOutSystemFields = (req, res, next) => {
   const { specification } = req
-  const systemFields = ['organisation'] // Currentl only organisation is not a field we want to show
+  const systemFields = ['organisation'] // Currently only organisation is not a field we want to show
 
+  // Slightly odd filter of looking at fields from dataset_fields and spec fields in the filter out.
   req.specification.fields = specification.fields.filter(
-    fieldObj => !systemFields.includes(fieldObj.field)
+    fieldObj => !systemFields.includes(fieldObj.field) && !systemFields.includes(fieldObj.datasetField)
   )
 
   next()
