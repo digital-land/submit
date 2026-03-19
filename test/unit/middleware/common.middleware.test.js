@@ -10,7 +10,8 @@ vi.mock('../../../src/services/performanceDbApi.js')
 
 vi.mock('../../../src/services/platformApi.js', () => ({
   default: {
-    fetchEntities: vi.fn()
+    fetchEntities: vi.fn(),
+    fetchAllEntities: vi.fn()
   }
 }))
 
@@ -1580,20 +1581,20 @@ describe('preventIndexing middleware', () => {
     })
 
     it('sets req.authority to "some" when no authoritative but some quality entities exist', async () => {
-      platformApi.fetchEntities
-        .mockResolvedValueOnce({ formattedData: [] }) // authoritative query returns empty
-        .mockResolvedValueOnce({ formattedData: [{ entity: '2', name: 'Some Quality Entity' }] }) // some query returns data
+      platformApi.fetchEntities.mockResolvedValueOnce({ formattedData: [] }) // authoritative query returns empty
+      platformApi.fetchAllEntities.mockResolvedValueOnce({ formattedData: [{ entity: '2', name: 'Some Quality Entity' }] }) // some query returns data
 
       await prepareAuthority(req, res, next)
 
-      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(2)
-      expect(platformApi.fetchEntities).toHaveBeenNthCalledWith(1, {
+      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(1)
+      expect(platformApi.fetchEntities).toHaveBeenCalledWith({
         organisation_entity: '12345',
         dataset: 'local-plan-boundary',
         quality: 'authoritative',
         limit: 1
       })
-      expect(platformApi.fetchEntities).toHaveBeenNthCalledWith(2, {
+      expect(platformApi.fetchAllEntities).toHaveBeenCalledTimes(1)
+      expect(platformApi.fetchAllEntities).toHaveBeenCalledWith({
         organisation_entity: '12345',
         dataset: 'local-plan-boundary',
         quality: 'some'
@@ -1603,13 +1604,13 @@ describe('preventIndexing middleware', () => {
     })
 
     it('sets req.authority to empty string when neither authoritative nor some quality entities exist', async () => {
-      platformApi.fetchEntities
-        .mockResolvedValueOnce({ formattedData: [] }) // authoritative query returns empty
-        .mockResolvedValueOnce({ formattedData: [] }) // some query returns empty
+      platformApi.fetchEntities.mockResolvedValueOnce({ formattedData: [] }) // authoritative query returns empty
+      platformApi.fetchAllEntities.mockResolvedValueOnce({ formattedData: [] }) // some query returns empty
 
       await prepareAuthority(req, res, next)
 
-      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(2)
+      expect(platformApi.fetchEntities).toHaveBeenCalledTimes(1)
+      expect(platformApi.fetchAllEntities).toHaveBeenCalledTimes(1)
       expect(req.authority).toBe('')
       expect(next).toHaveBeenCalledTimes(1)
     })
@@ -1626,9 +1627,8 @@ describe('preventIndexing middleware', () => {
     })
 
     it('handles null formattedData gracefully', async () => {
-      platformApi.fetchEntities
-        .mockResolvedValueOnce({ formattedData: null }) // authoritative query returns null
-        .mockResolvedValueOnce({ formattedData: null }) // some query returns null
+      platformApi.fetchEntities.mockResolvedValueOnce({ formattedData: null }) // authoritative query returns null
+      platformApi.fetchAllEntities.mockResolvedValueOnce({ formattedData: null }) // some query returns null
 
       await prepareAuthority(req, res, next)
 
@@ -1637,9 +1637,8 @@ describe('preventIndexing middleware', () => {
     })
 
     it('handles undefined formattedData gracefully', async () => {
-      platformApi.fetchEntities
-        .mockResolvedValueOnce({}) // authoritative query returns no formattedData
-        .mockResolvedValueOnce({}) // some query returns no formattedData
+      platformApi.fetchEntities.mockResolvedValueOnce({}) // authoritative query returns no formattedData
+      platformApi.fetchAllEntities.mockResolvedValueOnce({}) // some query returns no formattedData
 
       await prepareAuthority(req, res, next)
 
