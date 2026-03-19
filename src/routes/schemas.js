@@ -154,7 +154,7 @@ export const OrgOverviewPage = v.strictObject({
   datasetsWithErrors: v.integer(),
   isODPMember: v.boolean(),
   parentGroup: v.optional(v.nullable(v.array(v.strictObject({
-    entity: NonEmptyString,
+    entity: v.integer(),
     name: NonEmptyString,
     organisation: NonEmptyString
   })))),
@@ -201,7 +201,7 @@ export const OrgDatasetOverview = v.strictObject({
   }),
   planningGroupProvisions: PlanningGroupProvisionsField,
   parentGroup: v.optional(v.nullable(v.array(v.strictObject({
-    entity: NonEmptyString,
+    entity: v.integer(),
     name: NonEmptyString,
     organisation: NonEmptyString
   })))),

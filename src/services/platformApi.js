@@ -71,6 +71,7 @@ export default {
       if (params.dataset) queryParams.append('dataset', params.dataset)
       if (params.prefix) queryParams.append('prefix', params.prefix)
       if (params.organisation) queryParams.append('organisation', params.organisation)
+      if (params.quality) queryParams.append('quality', params.quality)
       queryParams.append('limit', pageSize)
       queryParams.append('offset', offset)
       const data = await queryPlatformAPI(`${config.mainWebsiteUrl}/entity.json?${queryParams.toString()}`, params)
