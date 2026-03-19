@@ -473,8 +473,6 @@ export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
 export const constructSpecificationTable = (req, res, next) => {
   const { datasetFields } = req
   // Filter out internal system fields that shouldn't be displayed
-  logger.info('No specification found, constructing specification from dataset fields', { dataset: req.dataset.dataset, datasetFields: datasetFields.map(df => df.field) })
-  logger.info('pulling from collection field dataset_field where dataset = dataset.collection, so using collection as lookup key for dataset fields table, not dataset name', { collection: req.dataset.collection })
   const systemFields = ['entity', 'prefix', 'entry-number', 'organisation-entity', 'organisation']
 
   req.specification = {
@@ -493,32 +491,17 @@ export const constructSpecificationTable = (req, res, next) => {
  * @function
  * @description Middleware chain to process the dataset specification and prepare it for the issue table, conditional execution on whether a specification exists
  */
-/** @param {string} step */
-const logSpecStep = (step) => (/** @type {any} */ req, /** @type {any} */ _res, /** @type {Function} */ next) => {
-  logger.debug({ message: `processSpecification: ${step}`, type: types.App, dataset: req.params?.dataset, collection: req.dataset?.collection, hasSpecification: !!req.specification })
-  next()
-}
-
 export const processSpecificationMiddlewares = [
-  logSpecStep('fetchSpecification'),
   fetchSpecification,
-  logSpecStep('pullOutDatasetSpecification'),
   pullOutDatasetSpecification,
   // When specification exists, use field mappings from transform table
-  logSpecStep('replaceUnderscoreInSpecification'),
   onlyIf(req => req.specification, replaceUnderscoreInSpecification),
-  logSpecStep('fetchFieldMappings'),
   onlyIf(req => req.specification, fetchFieldMappings),
-  logSpecStep('addDatabaseFieldToSpecification'),
   onlyIf(req => req.specification, addDatabaseFieldToSpecification),
-  logSpecStep('filterOutSystemFields'),
   onlyIf(req => req.specification, filterOutSystemFields),
   // When no specification exists, use fields from dataset_field table
-  logSpecStep('fetchDatasetFields'),
   onlyIf(req => !req.specification, fetchDatasetFields),
-  logSpecStep('constructSpecificationTable'),
   onlyIf(req => !req.specification, constructSpecificationTable),
-  logSpecStep('getUniqueDatasetFieldsFromSpecification'),
   getUniqueDatasetFieldsFromSpecification
 ]
 
