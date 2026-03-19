@@ -40,13 +40,12 @@ describe(`Organisations Find Page (seed: ${seed})`, () => {
 
   it('Renders the correct organisation list with appropriate attributes', () => {
     const organisationList = document.querySelector('#search_results')
-    expect(organisationList.children.length).toBe(Object.keys(params.alphabetisedOrgs).length)
+    expect(organisationList.children.length).toBe(Object.keys(params.orgsByDataset).length)
 
-    Object.keys(params.alphabetisedOrgs).forEach((letter, i) => {
+    Object.keys(params.orgsByDataset).forEach((datasetType, i) => {
       const organisationSection = organisationList.children[i]
-      expect(organisationSection.querySelector('.blockHeading').textContent).toBe(letter)
-      const organisationListItems = organisationSection.querySelector('.govuk-list').children
-      params.alphabetisedOrgs[letter].forEach((organisation, j) => {
+      const organisationListItems = organisationSection.querySelectorAll('[data-filter="item"]')
+      params.orgsByDataset[datasetType].forEach((organisation, j) => {
         expect(organisationListItems[j].textContent).toContain(organisation.name)
         expect(organisationListItems[j].getAttribute('data-filter')).toEqual('item')
         expect(organisationListItems[j].getAttribute('data-filter-terms')).toEqual(organisation.name)

@@ -21,21 +21,13 @@ describe('organisations.middleware.js', () => {
       prepareGetOrganisationsTemplateParams(req, res, next)
 
       const expectedTemplatePrams = {
-        alphabetisedOrgs: {
-          A: [
-            { name: 'Aardvark Healthcare', organisation: 'Aardvark Healthcare' }
-          ],
-          B: [
+        orgsByDataset: {
+          other: [
+            { name: 'Aardvark Healthcare', organisation: 'Aardvark Healthcare' },
             { name: 'Bath NHS Trust', organisation: 'Bath NHS Trust' },
-            { name: 'Bristol Hospital', organisation: 'Bristol Hospital' }
-          ],
-          C: [
-            { name: 'Cardiff Health Board', organisation: 'Cardiff Health Board' }
-          ],
-          D: [
-            { name: 'Derbyshire Healthcare', organisation: 'Derbyshire Healthcare' }
-          ],
-          E: [
+            { name: 'Bristol Hospital', organisation: 'Bristol Hospital' },
+            { name: 'Cardiff Health Board', organisation: 'Cardiff Health Board' },
+            { name: 'Derbyshire Healthcare', organisation: 'Derbyshire Healthcare' },
             { name: 'East Sussex NHS Trust', organisation: 'East Sussex NHS Trust' }
           ]
         }
@@ -52,22 +44,10 @@ describe('organisations.middleware.js', () => {
     const next = vi.fn()
 
     req.templateParams = {
-      alphabetisedOrgs: {
-        A: [
-          { name: 'Aardvark Healthcare', organisation: 'Aardvark Healthcare' }
-        ],
-        B: [
-          { name: 'Bath NHS Trust', organisation: 'Bath NHS Trust' },
-          { name: 'Bristol Hospital', organisation: 'Bristol Hospital' }
-        ],
-        C: [
-          { name: 'Cardiff Health Board', organisation: 'Cardiff Health Board' }
-        ],
-        D: [
-          { name: 'Derbyshire Healthcare', organisation: 'Derbyshire Healthcare' }
-        ],
-        E: [
-          { name: 'East Sussex NHS Trust', organisation: 'East Sussex NHS Trust' }
+      orgsByDataset: {
+        other: [
+          { name: 'Aardvark Healthcare', organisation: 'Aardvark Healthcare' },
+          { name: 'Bath NHS Trust', organisation: 'Bath NHS Trust' }
         ]
       }
     }
