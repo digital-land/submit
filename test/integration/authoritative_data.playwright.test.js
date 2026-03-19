@@ -1,9 +1,12 @@
 import { test, expect } from '@playwright/test'
 
 const resetWiremock = async () => {
-  await fetch('http://localhost:8001/__admin/mappings/reset', {
+  const response = await fetch('http://localhost:8001/__admin/mappings/reset', {
     method: 'POST'
   })
+  if (!response.ok) {
+    throw new Error(`Failed to reset WireMock mappings: ${response.status} ${await response.text()}`)
+  }
 }
 
 test.beforeEach(async () => {
