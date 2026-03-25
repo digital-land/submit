@@ -115,24 +115,20 @@ datasetsConfig:
     entityDisplayName:
       base: infrastructure funding statement
       variable: statement
-  development-plan-document:
-    guidanceUrl: /guidance/specifications/development-plan
-    entityDisplayName:
-      variable: plan
-  development-plan-timetable:
-    guidanceUrl: /guidance/specifications/development-plan
+  plan-timetable:
+    guidanceUrl: /guidance/specifications/plan
     entityDisplayName:
       variable: plan
   local-plan:
-    guidanceUrl: /guidance/specifications/development-plan
+    guidanceUrl: /guidance/specifications/plan
     entityDisplayName:
       variable: plan
   minerals-plan:
-    guidanceUrl: /guidance/specifications/development-plan
+    guidanceUrl: /guidance/specifications/plan
     entityDisplayName:
       variable: plan
   waste-plan:
-    guidanceUrl: /guidance/specifications/development-plan
+    guidanceUrl: /guidance/specifications/plan
     entityDisplayName:
       variable: plan
   
