@@ -115,23 +115,6 @@ datasetsConfig:
     entityDisplayName:
       base: infrastructure funding statement
       variable: statement
-  plan-timetable:
-    guidanceUrl: /guidance/specifications/plan
-    entityDisplayName:
-      variable: plan
-  local-plan:
-    guidanceUrl: /guidance/specifications/plan
-    entityDisplayName:
-      variable: plan
-  minerals-plan:
-    guidanceUrl: /guidance/specifications/plan
-    entityDisplayName:
-      variable: plan
-  waste-plan:
-    guidanceUrl: /guidance/specifications/plan
-    entityDisplayName:
-      variable: plan
-  
 # Any dataset that has one of these three previous rules set, will be displayed in the LPA Dashboard to be checked.
 provisionReasons:
   - statutory
