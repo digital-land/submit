@@ -1,5 +1,6 @@
 import { makeDatasetSlugToReadableNameFilter } from '../filters/makeDatasetSlugToReadableNameFilter.js'
 import { getDatasetSlugNameMapping } from './datasetteQueries/getDatasetSlugNameMapping.js'
+import logger from './logger.js'
 
 const RETRY_INTERVAL_MS = 30_000
 
@@ -12,7 +13,7 @@ const retryUntilLoaded = async () => {
       datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(mapping)
       return
     } catch (error) {
-      console.error(`Failed to load dataset mapping, retrying in ${RETRY_INTERVAL_MS / 1000}s:`, error)
+      logger.warn(`Failed to load dataset mapping, retrying in ${RETRY_INTERVAL_MS / 1000}s:`, error)
       await new Promise(resolve => setTimeout(resolve, RETRY_INTERVAL_MS))
     }
   }
