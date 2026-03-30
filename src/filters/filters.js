@@ -32,7 +32,8 @@ export function statusToTagClass (status) {
 const { govukMarkdown, govukDateTime } = xGovFilters
 
 const addFilters = (nunjucksEnv) => {
-  nunjucksEnv.addFilter('datasetSlugToReadableName', datasetSlugToReadableName)
+  // Wrapper function for datasetSlugToReadableName filter to allow working with async loading of the mapping data
+  nunjucksEnv.addFilter('datasetSlugToReadableName', (...args) => datasetSlugToReadableName(...args))
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
   nunjucksEnv.addFilter('govukDateTime', govukDateTime)
