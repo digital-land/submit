@@ -26,7 +26,7 @@ describe(`Get Started Page (seed: ${seed})`, () => {
     expect(document.querySelector('span.govuk-caption-xl').textContent).toEqual(params.organisation.name)
     // Filter returns slug in tests (no mapping loaded), check slug passes through
     expect(document.querySelector('h1').textContent).toContain(params.dataset.dataset)
-    expect(document.querySelector('#main-content h2').textContent).toContain(`How to prepare and provide your ${params.dataset.dataset} data`)
+    expect(document.querySelector('#main-content h2.govuk-heading-l').textContent).toContain(`How to prepare and provide your ${params.dataset.dataset} data`)
   })
 
   it('Renders breadcrumbs correctly', () => {

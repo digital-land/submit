@@ -1,3 +1,7 @@
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
 asyncRequestApi: {
     url: http://production-pub-async-api-lb-636110663.eu-west-2.elb.amazonaws.com
 }

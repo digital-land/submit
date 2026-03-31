@@ -3,6 +3,8 @@ import {
   createPaginationTemplateParams,
   extractJsonFieldFromEntities,
   fetchDatasetInfo,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
   fetchOrgInfo,
   processAuthoritativeMiddlewares,
   processSpecificationMiddlewares,
@@ -81,7 +83,7 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, authority, alternateSources, uniqueDatasetFields } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, authority, alternateSources, uniqueDatasetFields, provisions } = req
 
   // Hard code task count for 'some' authority
   const taskCount = authority !== 'some' ? (entityIssueCounts ? entityIssueCounts.length : 0) : 1
@@ -90,6 +92,10 @@ export const prepareTemplateParams = (req, res, next) => {
     ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
     : ''
   const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
+
+  const planningGroupProvisions = provisions?.length > 1
+    ? provisions.filter(p => p.organisation !== req.params.lpa)
+    : []
 
   req.templateParams = {
     downloadUrl,
@@ -100,7 +106,8 @@ export const prepareTemplateParams = (req, res, next) => {
     tableParams,
     pagination,
     dataRange,
-    alternateSources
+    alternateSources,
+    planningGroupProvisions: planningGroupProvisions.length > 0 ? planningGroupProvisions : undefined
   }
   next()
 }
@@ -117,6 +124,8 @@ export default [
 
   getSetBaseSubPath(['data']),
   fetchOrgInfo,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
   fetchDatasetInfo,
 
   fetchResources,

@@ -23,6 +23,7 @@ jobs:
     environment: development
     env:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
+      TESTCONTAINERS_REUSE_ENABLE: true
     steps:
       - uses: actions/checkout@v4
       - name: Install AWS CLI
