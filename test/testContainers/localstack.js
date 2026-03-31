@@ -16,7 +16,6 @@ export default class Localstack {
   async stop () {
     console.log('Stopping LocalstackContainer')
     this.container = await new LocalstackContainer(this.image).withReuse(true).start()
-    this.container.stop()
     await this.container.stop()
   }
 
