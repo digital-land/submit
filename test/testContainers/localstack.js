@@ -3,7 +3,7 @@ import { S3Client, CreateBucketCommand } from '@aws-sdk/client-s3'
 
 export default class Localstack {
   constructor () {
-    this.image = 'localstack/localstack:latest'
+    this.image = 'localstack/localstack:3.1'
     this.buckets = []
   }
 

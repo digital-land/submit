@@ -12,6 +12,10 @@ setup('Global setup', async () => {
 
   await new Wiremock().start()
 
-  localstack = await new Localstack().start()
-  await localstack.createBucket(config.aws.bucket)
+  // In CI, LocalStack is provided by docker-compose with bucket already created via bootstrap script.
+  // Only start the testcontainer locally where docker-compose is not running.
+  if (!process.env.CI) {
+    localstack = await new Localstack().start()
+    await localstack.createBucket(config.aws.bucket)
+  }
 })
