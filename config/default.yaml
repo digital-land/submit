@@ -116,9 +116,14 @@ datasetsConfig:
       base: infrastructure funding statement
       variable: statement
 # Any dataset that has one of these three previous rules set, will be displayed in the LPA Dashboard to be checked.
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
+  - local-planning-group
 provisionReasons:
   - statutory
-  - prospective  
+  - prospective
   - expected
   - encouraged
 tablePageLength: 50

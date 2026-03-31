@@ -15,10 +15,7 @@ const fetchOrganisations = fetchMany({
       LEFT JOIN organisation o ON p.organisation = o.organisation
     WHERE
       (
-        p.organisation LIKE 'local-authority:%'
-        OR p.organisation LIKE 'national-park-authority:%'
-        OR p.organisation LIKE 'development-corporation:%'
-        OR p.organisation LIKE 'local-planning-group:%'
+        ${config.organisationTypes.map(type => `p.organisation LIKE '${type}:%'`).join('\n        OR ')}
       )
       AND (
         p.end_date IS NULL
