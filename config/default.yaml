@@ -120,7 +120,6 @@ organisationTypes:
   - local-authority
   - national-park-authority
   - development-corporation
-  - local-planning-group
 provisionReasons:
   - statutory
   - prospective
