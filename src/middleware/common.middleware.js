@@ -110,7 +110,7 @@ export const takeResourceIdFromParams = (req) => {
 
 export const fetchOrgInfo = fetchOne({
   query: ({ params }) => {
-    return `SELECT name, organisation, entity, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
+    return `SELECT name, organisation, entity, statistical_geography, dataset FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
@@ -212,8 +212,8 @@ export const prepareAuthority = async (req, res, next) => {
       return next()
     }
 
-    // Second query: Check for 'some' quality
-    const someResult = await platformApi.fetchEntities({
+    // Second query: Check for 'some' quality, need all, if stroing alternateEntityList
+    const someResult = await platformApi.fetchAllEntities({
       organisation_entity: orgInfo.entity,
       dataset: params.dataset,
       quality: 'some'
@@ -377,7 +377,7 @@ export const fetchSpecification = fetchOne({
 // Fall back dataset fields if no specification found
 
 export const fetchDatasetFields = fetchMany({
-  query: ({ req }) => `select field from dataset_field where dataset = '${req.dataset.collection}'`,
+  query: ({ req }) => `select field from dataset_field where dataset = '${req.dataset.dataset}'`,
   result: 'datasetFields'
 })
 
@@ -1178,4 +1178,76 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
   },
   result: 'entityIssueCounts',
   dataset: FetchOptions.performanceDb
+})
+
+/**
+ * Middleware. Fetches all local-planning-group entities from the Platform API in a single call and derives two outputs:
+ *. - takes org code and:
+ * - req.parentGroup {Object[]|null} - If this org is a member of any planning group(s), returns an array of those
+ *   groups with { entity, name, organisation }. Null if this org belongs to no planning groups.
+ *
+ * - req.planningGroupMembers {Object[]|null} - If this org IS a planning group, returns an array of its member
+ *   organisations with { organisation, name }, where name is resolved via a parallel Platform API lookup.
+ *   Falls back to the org code as name if the lookup fails. Null if this org is not a planning group.
+ */
+export const fetchLocalPlanningGroups = async (req, res, next) => {
+  try {
+    const { formattedData: allGroups } = await platformApi.fetchAllEntities({ prefix: 'local-planning-group' })
+    // Remove all end-dated planning groups
+    const today = new Date().toISOString().slice(0, 10)
+    const groups = allGroups.filter(g => !g['end-date'] || g['end-date'] > today)
+    const orgCode = req.orgInfo.organisation
+
+    // Find any groups this org is within the organisations field.
+    const parentMatches = groups.filter(g => (g.organisations || '').split(';').includes(orgCode))
+    req.parentGroup = parentMatches.length > 0
+      ? parentMatches.map(g => ({ entity: g['organisation-entity'], name: g.name, organisation: `${g.prefix}:${g.reference}` }))
+      : null
+
+    // Look to see if this org is a local-planning group
+    const ownGroup = groups.find(g => String(g['organisation-entity']) === String(req.orgInfo.entity))
+
+    // if group get all members, and resolve their names in a single call to the Platform API, then map back to the org codes
+    if (ownGroup) {
+      const orgCodes = (ownGroup.organisations || '').split(';').filter(Boolean)
+      const { flat: allOrgs } = await platformApi.fetchOrganisations()
+      const nameMap = new Map(allOrgs.map(o => [o.organisation, o.name]))
+      req.planningGroupMembers = orgCodes.map(organisation => ({
+        organisation,
+        name: nameMap.get(organisation) ?? organisation
+      }))
+    } else {
+      req.planningGroupMembers = null
+    }
+  } catch (error) {
+    logger.warn({ message: `fetchLocalPlanningGroups(): ${error.message}`, type: types.App })
+    req.parentGroup = null
+    req.planningGroupMembers = null
+  }
+  next()
+}
+
+/**
+ * Fetches provision records for the current organisation and any planning groups it belongs to,
+ * filtered to the current dataset. Includes the organisation name via a JOIN on the organisation table.
+ *
+ * Requires: req.params.lpa, req.params.dataset, req.parentGroup (set by fetchLocalPlanningGroups)
+ * Sets: req.provisions — array of { dataset, project, provision_reason, organisation, name }
+ *
+ * TODO: Does it need fetchMany any more, would allow an append of Org Name to fetchLocalPlanningGroups result
+ */
+export const fetchProvisionsByOrgsAndDatasets = fetchMany({
+  query: ({ params, req }) => {
+    const orgs = [params.lpa]
+    if (req.parentGroup) {
+      orgs.push(...req.parentGroup.map(g => g.organisation))
+    }
+    const inClause = orgs.map(o => `'${o}'`).join(', ')
+    return /* sql */ `select p.dataset, p.project, p.provision_reason, p.organisation, o.name
+       from provision p
+       left join organisation o on o.organisation = p.organisation
+       where p.organisation IN (${inClause})
+       AND p.dataset = '${params.dataset}'`
+  },
+  result: 'provisions'
 })

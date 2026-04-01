@@ -12,6 +12,11 @@ redis: {
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
     port: 6379
 }
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
+  - local-planning-group
 url: 'https://provide.development.planning.data.gov.uk/'
 features:
   submitEndpointForm:

@@ -3,7 +3,7 @@ import { S3Client, CreateBucketCommand } from '@aws-sdk/client-s3'
 
 export default class Localstack {
   constructor () {
-    this.image = 'localstack/localstack:latest'
+    this.image = 'localstack/localstack:3.1'
     this.buckets = []
   }
 
@@ -16,7 +16,6 @@ export default class Localstack {
   async stop () {
     console.log('Stopping LocalstackContainer')
     this.container = await new LocalstackContainer(this.image).withReuse(true).start()
-    this.container.stop()
     await this.container.stop()
   }
 

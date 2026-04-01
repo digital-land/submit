@@ -10,5 +10,8 @@ teardown('Global teardown', async () => {
 
   await new Wiremock().stop()
 
-  await new Localstack().stop()
+  // Only stop the testcontainer locally — in CI it was never started (docker-compose handles LocalStack).
+  if (!process.env.CI) {
+    await new Localstack().stop()
+  }
 })

@@ -4,7 +4,7 @@
  * @description Middleware for oragnisation (LPA) overview page
  */
 
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchEntityIssueCountsPerformanceDb } from './common.middleware.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchEntityIssueCountsPerformanceDb, fetchLocalPlanningGroups } from './common.middleware.js'
 import { fetchMany, renderTemplate, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import _ from 'lodash'
@@ -246,7 +246,7 @@ export function prepareDatasetObjects (req, res, next) {
  * @returns {void}
  */
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { orgInfo: organisation, provisions, datasets, availableDatasets } = req
+  const { orgInfo: organisation, provisions, datasets, availableDatasets, parentGroup, planningGroupMembers } = req
 
   const provisionData = new Map()
   for (const provision of provisions ?? []) {
@@ -268,7 +268,6 @@ export function prepareOverviewTemplateParams (req, res, next) {
   })
 
   const isODPMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
-  const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
   const datasetsByReason = _.groupBy(datasets, (ds) => {
     const reason = provisionData.get(ds.dataset)?.provision_reason
@@ -285,6 +284,7 @@ export function prepareOverviewTemplateParams (req, res, next) {
         return 'other'
     }
   })
+  const totalDatasets = (datasetsByReason.statutory?.length ?? 0) + (datasetsByReason.expected?.length ?? 0) + (datasetsByReason.prospective?.length ?? 0)
 
   for (const coll of Object.values(datasetsByReason)) {
     coll.sort((a, b) => a.dataset.localeCompare(b.dataset))
@@ -297,7 +297,9 @@ export function prepareOverviewTemplateParams (req, res, next) {
     datasetsWithEndpoints,
     datasetsWithIssues,
     datasetsWithErrors,
-    isODPMember
+    isODPMember,
+    parentGroup,
+    planningGroupMembers
   }
 
   next()
@@ -453,6 +455,7 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
 export default [
   fetchOrgInfo,
   parallel([
+    fetchLocalPlanningGroups,
     fetchEndpointSummary,
     fetchEntityIssueCountsPerformanceDb,
     fetchProvisions
