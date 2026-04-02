@@ -15,6 +15,7 @@ import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
 import config from '../../config/index.js'
+import planFallback from '../../config/plan-fallback.json'
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
@@ -381,6 +382,28 @@ export const fetchDatasetFields = fetchMany({
   result: 'datasetFields'
 })
 
+/**
+ * @name checkSpecificationFallback
+ * @function
+ * @description Middleware that overrides the specification with a local fallback for plan datasets
+ * that are not yet in a production-ready format in the specification table. When the fetched
+ * specification is for 'local-plan', it checks whether the current dataset exists in the
+ * plan-fallback.json config and, if so, replaces req.specification with the fallback data
+ * so that pullOutDatasetSpecification can extract the correct dataset-specific fields.
+ */
+export const checkSpecificationFallback = (req, res, next) => {
+  const { specification } = req
+
+  if (specification && specification.specification === 'local-plan') {
+    const fallbackDataset = planFallback.datasets.find(d => d.dataset === req.dataset.dataset)
+    if (fallbackDataset) {
+      req.specification = { json: JSON.stringify(planFallback.datasets) }
+    }
+  }
+
+  return next()
+}
+
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
   let collectionSpecifications
@@ -494,6 +517,8 @@ export const constructSpecificationTable = (req, res, next) => {
  */
 export const processSpecificationMiddlewares = [
   fetchSpecification,
+  // Certain Specification are not at production level format, so override here
+  checkSpecificationFallback,
   pullOutDatasetSpecification,
   // When specification exists, use field mappings from transform table
   onlyIf(req => req.specification, replaceUnderscoreInSpecification),
