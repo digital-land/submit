@@ -15,8 +15,9 @@ import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
 import config from '../../config/index.js'
-import planFallback from '../../config/plan-fallback.json' with { type: 'json' }
+import { readFileSync } from 'node:fs'
 
+const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
  * the function that threw the error.
