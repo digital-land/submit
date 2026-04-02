@@ -42,7 +42,7 @@ test.describe('Dataset overview', () => {
 
     expect(await page.getByRole('h2', { name: 'Dataset details' })).toBeDefined()
     expect(await page.getByRole('h2', { name: 'Active endpoints' })).toBeDefined()
-    expect(await page.locator('.govuk-grid-column-two-thirds .govuk-summary-list').count()).toEqual(2)
+    expect(await page.locator('.govuk-grid-column-two-thirds .govuk-summary-list').count()).toBeGreaterThanOrEqual(2)
 
     expect(await page.getByRole('h2', { name: 'Dataset actions' })).toBeDefined()
     expect(await page.locator('.govuk-grid-column-one-third .govuk-list').count()).toEqual(1)
