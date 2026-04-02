@@ -15,7 +15,7 @@ import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
 import config from '../../config/index.js'
-import planFallback from '../../config/plan-fallback.json'
+import planFallback from '../../config/plan-fallback.json' with { type: 'json' }
 
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
