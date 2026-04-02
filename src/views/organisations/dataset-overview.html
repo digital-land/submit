@@ -11,12 +11,11 @@
 {% endmacro %}
 
 {% macro lastAccessedInfo(organisation, dataset, endpoint) %}
-  {{endpoint.lastAccessed | govukDateTime}}
-  <br>
   <p class="govuk-error-message">
-    <a href="{{ datasetUrl(organisation, dataset, endpoint) }}">{{ endpointErrorMessage(endpoint) }}</a>
+   {{ endpointErrorMessage(endpoint) }}
   </p>
-  <p class="app-inset-text__error"></p>
+  <a style="{{ urlStyle}}" href="{{endpoint.endpoint_url}}">{{endpoint.endpoint_url}}</a>
+
 {% endmacro %}
 
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
@@ -66,7 +65,7 @@
 {% set rows = [
   {
     key: {
-      text: "Number of records"
+      text: "Number of records supplied"
     },
     value: {
       text: stats.numberOfRecords | default(0)
@@ -103,7 +102,6 @@
   {% endif %}
   {% set _ = rows.push(alternateSourcesRow) %}
 {% endif %}
-
 {% if authority !== 'some' %}
   {% set licenceRow = {
     key: {
@@ -114,79 +112,7 @@
     }
   } %}
   {{ rows.push(licenceRow) }}
-
-  {% for endpoint in stats.endpoints %}
-    {% set endpointRow = {
-      key: {
-        text: 'Endpoint URL',
-        classes: 'padding-top'
-      },
-      value: {
-        html: '<a  style="'+urlStyle+'" href="'+endpoint.endpoint_url+'">'+endpoint.endpoint_url+'</a>'
-      },
-      classes: 'padding-top'
-    } %}
-    {{ rows.push(endpointRow) }}
-
-    {% if endpoint.documentation_url %}
-      {% set documentationRow = {
-        key: {
-          text: 'Documentation URL'
-        },
-        value: {
-          html: '<a style="'+urlStyle+'" href="'+endpoint.documentation_url+'">'+endpoint.documentation_url+'</a>'
-        }
-      } %}
-      {{ rows.push(documentationRow) }}
-    {% endif %}
-
-    {% if endpoint.error %}
-      {% set lastAccessedRow = {
-        key: {
-          text: 'Endpoint URL last accessed',
-          classes: 'app-inset-text---error'
-        },
-        value: {
-          html: lastAccessedInfo(organisation, dataset, endpoint)
-        }
-      } %}
-    {% else %}
-      {% set lastAccessedRow = {
-        key: {
-          text: 'Endpoint URL last accessed'
-        },
-        value: {
-          text: endpoint.lastAccessed | govukDateTime
-        }
-      } %}
-    {% endif %}
-
-
-    {{ rows.push(lastAccessedRow) }}
-
-    {% set lastUpdatedRow = {
-      key: {
-        text: 'Endpoint URL last updated'
-      },
-      value: {
-        text: endpoint.lastUpdated and ( endpoint.lastUpdated | govukDateTime )
-      }
-    } %}
-    {{ rows.push(lastUpdatedRow) }}
-
-    {% set entryDateRow = {
-      key: {
-        text: 'Endpoint entry date'
-      },
-      value: {
-        text: endpoint.entryDate and ( endpoint.entryDate | govukDateTime )
-      }
-    } %}
-    {{ rows.push(entryDateRow) }}
-
-  {% endfor %}
 {% endif %}
-
 {% block content %}
 
 <div class="govuk-grid-row">
@@ -218,6 +144,59 @@
       <h2 class="govuk-heading-m">Dataset details</h2>
       {{ govukSummaryList({ rows: rows }) }}
     </section>
+    {% if authority !== 'some' %}
+    <section>
+      <h2 class="govuk-heading-m">Active endpoints</h2>
+      {% set endpointCount = stats.endpoints | length %}
+      <p class="govuk-body">You have {{ endpointCount }} endpoint{% if endpointCount != 1 %}s{% endif %} we are currently checking for data.</p>
+            {% for endpoint in stats.endpoints %}
+        {% set endpointRows = [] %}
+        {% if endpoint.error %}
+          {% set _ = endpointRows.push({
+            key: { text: "Endpoint URL" },
+            value: {  html: lastAccessedInfo(organisation, dataset, endpoint) },
+            classes: 'app-inset-text---error'
+          }) %}
+        {% else %}
+        {% set _ = endpointRows.push({
+            key: { text: "Endpoint URL" },
+            value: { html: '<a style="' + urlStyle + '" href="' + endpoint.endpoint_url + '">' + endpoint.endpoint_url + '</a>' }
+          }) %}
+        {% endif %}
+        {% if endpoint.documentation_url is not defined or endpoint.documentation_url == "" %}
+          {% set _ = endpointRows.push({
+            key: { text: "Webpage URL" },
+            value: { html: '<p class="govuk-error-message" > Documentation URL missing</p>' },
+            classes: 'app-inset-text---error'
+          }) %}
+        {% else %}
+          {% set _ = endpointRows.push({
+            key: { text: "Webpage URL" },
+            value: { html: '<a style="' + urlStyle + '" href="' + endpoint.documentation_url + '">' + endpoint.documentation_url + '</a>' }
+          }) %}
+        {% endif %}
+        {% set _ = endpointRows.push({
+          key: { text: "Date added" },
+          value: { text: endpoint.entryDate and (endpoint.entryDate | govukDateTime) }
+        }) %}
+          {% set _ = endpointRows.push({
+            key: { text: "Endpoint last accessed" },
+            value: { text: endpoint.lastAccessed | govukDateTime }
+          }) %}
+        {% set _ = endpointRows.push({
+          key: { text: "Endpoint last updated" },
+          value: { text: endpoint.lastUpdated and (endpoint.lastUpdated | govukDateTime) }
+        }) %}
+        {% set endpointDisplayIndex = endpointCount - loop.index0 %}
+        {{ govukSummaryList({
+          card: {
+            title: { text: "Endpoint " ~ endpointDisplayIndex }
+          },
+          rows: endpointRows
+        }) }}
+      {% endfor %}
+    </section>
+    {% endif %}
     {% if authority === "some" %}
       {{ alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
     {% endif %}

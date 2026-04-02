@@ -151,3 +151,5 @@ npm-audit-report.json
 .cursor/rules/*
 
 github-pages
+
+.history
