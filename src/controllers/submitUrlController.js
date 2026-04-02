@@ -13,6 +13,7 @@ const HTTP_STATUS_BLOCKED = 403
 
 class SubmitUrlController extends UploadController {
   async post (req, res, next) {
+    Sentry.metrics.count('url_submission.begun', 1)
     const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url)
 
     if (localValidationErrorType) {
@@ -33,14 +34,17 @@ class SubmitUrlController extends UploadController {
       return next(errors)
     }
 
+    const url = (req.body?.url ?? '').trim()
     try {
-      const url = (req.body?.url ?? '').trim()
       const id = await postUrlRequest({ ...this.getBaseFormData(req), url })
       req.body.request_id = id
     } catch (error) {
+      Sentry.metrics.count('url_submission.async_request_failure', 1, { attributes: { error_code: error.code, response_status: error.response?.status } })
+      logger.warn({ message: 'url_submission.async_request_failure', event: 'url_submission_failure', type: types.External, submittedUrl: url, errorMessage: error.message })
       next(error)
       return
     }
+    Sentry.metrics.count('url_submission.accepted', 1)
     super.post(req, res, next)
   }
 
@@ -57,6 +61,8 @@ class SubmitUrlController extends UploadController {
     ]
     const preCheckFailure = validators.find(validator => !validator.fn())
     if (preCheckFailure) {
+      Sentry.metrics.count('url_submission.validation_failure', 1, { attributes: { failure_type: preCheckFailure.type } })
+      logger.warn({ message: 'url_submission.validation_failure', event: 'url_submission_failure', type: types.DataValidation, failure_type: preCheckFailure.type, submittedUrl: url })
       return preCheckFailure.type
     }
 
@@ -70,22 +76,24 @@ class SubmitUrlController extends UploadController {
     const headResponse = await SubmitUrlController.headRequest(url)
 
     if (!headResponse) {
-      logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head, skipping post validators', {
-        type: types.DataFetch
-      })
+      Sentry.metrics.count('url_submission.head_request_error', 1, { attributes: { reason: 'network_error' } })
+      logger.warn({ message: 'url_submission.head_request_error', event: 'url_submission_failure', type: types.DataFetch, reason: 'network_error', submittedUrl: url })
       return null
     }
 
     // 405 skip post validators
     if (headResponse?.status === HTTP_STATUS_METHOD_NOT_ALLOWED) {
-      // HEAD request not allowed, return null or a specific error message
-      logger.warn('submitUrlController/localUrlValidation: failed to get the submitted urls head as it was not allowed (405) skipping post validators', {
-        type: types.DataFetch
-      })
+      Sentry.metrics.count('url_submission.head_request_error', 1, { attributes: { reason: 'method_not_allowed' } })
+      logger.warn({ message: 'url_submission.head_request_error', event: 'url_submission_failure', type: types.DataFetch, reason: 'method_not_allowed', submittedUrl: url })
       return null
     }
 
-    return postValidators(headResponse).find(validator => !validator.fn())?.type
+    const postCheckFailure = postValidators(headResponse).find(validator => !validator.fn())
+    if (postCheckFailure) {
+      Sentry.metrics.count('url_submission.validation_failure', 1, { attributes: { failure_type: postCheckFailure.type } })
+      logger.warn({ message: 'url_submission.validation_failure', type: types.DataValidation, failure_type: postCheckFailure.type, submittedUrl: url })
+    }
+    return postCheckFailure?.type
   }
 
   static urlIsDefined (url) {
@@ -128,11 +136,7 @@ class SubmitUrlController extends UploadController {
       return await axios.head(url, axiosConfig)
     } catch (err) {
       const response = err?.response
-      const tags = { code: err.code, url }
       if (response) {
-        tags.responseStatus = response.status
-        Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
-
         // If HEAD returns 403, try a GET request with Range header (signed URLs often don't support HEAD)
         if (response.status === HTTP_STATUS_BLOCKED) {
           try {
@@ -174,7 +178,6 @@ class SubmitUrlController extends UploadController {
 
         return response
       }
-      Sentry.metrics.increment('SubmitUrlController.headRequest: error', 1, { tags })
       logger.info({ message: `SubmitUrlController.headRequest(): err.code=${err.code}`, type: types.App, url })
       return null
     }
