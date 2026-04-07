@@ -153,7 +153,7 @@
     }) %}
     {% set _ = endpointRows.push({
       key: { text: "Endpoint last accessed" },
-      value: { text: endpoint.lastAccessed | govukDateTime }
+      value: { text: endpoint.lastAccessed and (endpoint.lastAccessed | govukDateTime) }
     }) %}
     {% set _ = endpointRows.push({
       key: { text: "Endpoint last updated" },
