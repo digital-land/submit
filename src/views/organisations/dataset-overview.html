@@ -10,11 +10,12 @@
   /organisations/{{ organisation.organisation | urlencode }}/{{ dataset.dataset | urlencode }}/endpoint-error/{{ endpoint.endpoint | urlencode }}
 {% endmacro %}
 
-{% macro lastAccessedInfo(organisation, dataset, endpoint) %}
+{% macro endpointUrlInfo(organisation, dataset, endpoint) %}
+  <a style="{{ urlStyle}}" href="{{endpoint.endpoint_url}}">{{endpoint.endpoint_url}}</a>
+
   <p class="govuk-error-message">
    {{ endpointErrorMessage(endpoint) }}
   </p>
-  <a style="{{ urlStyle}}" href="{{endpoint.endpoint_url}}">{{endpoint.endpoint_url}}</a>
 
 {% endmacro %}
 
@@ -123,7 +124,7 @@
     {% if endpoint.error %}
       {% set _ = endpointRows.push({
         key: { text: "Endpoint URL" },
-        value: { html: lastAccessedInfo(organisation, dataset, endpoint) },
+        value: { html: endpointUrlInfo(organisation, dataset, endpoint) },
         classes: 'app-inset-text---error dl-summary-card-list__row--error'
       }) %}
     {% else %}
