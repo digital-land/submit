@@ -1,3 +1,7 @@
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
 asyncRequestApi: {
     url: http://staging-pub-async-api-lb-12493311.eu-west-2.elb.amazonaws.com
 }
@@ -11,9 +15,13 @@ redis: {
     port: 6379
 }
 url: 'https://provide.staging.planning.data.gov.uk/'
-jira: {
-  requestTypeId: 37
-}
 features:
   submitEndpointForm:
+    enabled: true
+  provisionBasedDatasets:
+    # This feature will load datasets based on provisionReasons
+    enabled: false
+  nonAuthPages:
+    # This feature enables pages to show non-authoritative datasets
+    # If off, it will still check for local-plan datasets.
     enabled: true

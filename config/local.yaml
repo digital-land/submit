@@ -7,6 +7,12 @@ aws: {
     endpoint: 'http://localhost:4566',
     s3ForcePathStyle: true,
 }
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
+  - local-planning-group
+downloadUrl: 'https://download.development.planning.data.gov.uk' 
 redis: {
     secure: false,
     host: 'localhost',

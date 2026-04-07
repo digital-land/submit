@@ -3,7 +3,10 @@ import {
   createPaginationTemplateParams,
   extractJsonFieldFromEntities,
   fetchDatasetInfo,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
   fetchOrgInfo,
+  processAuthoritativeMiddlewares,
   processSpecificationMiddlewares,
   replaceUnderscoreInEntities,
   setDefaultParams,
@@ -14,10 +17,10 @@ import {
   logPageError,
   fetchResources,
   fetchEntityCount,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts
+  fetchEntityIssueCountsPerformanceDb,
+  fetchEntitiesPlatformDb
 } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { fetchMany, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { splitByLeading } from '../utils/table.js'
 
@@ -39,7 +42,7 @@ export const fetchEntities = fetchMany({
 })
 
 export const setRecordCount = (req, res, next) => {
-  req.recordCount = req?.entityCount?.count || 0
+  req.recordCount = req?.entityCount?.entity_count ?? req?.entityCount?.count ?? 0
   next()
 }
 
@@ -80,15 +83,31 @@ export const constructTableParams = (req, res, next) => {
 }
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, entryIssueCounts } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, authority, alternateSources, uniqueDatasetFields, provisions } = req
+
+  // Hard code task count for 'some' authority
+  const taskCount = authority !== 'some' ? (entityIssueCounts ? entityIssueCounts.length : 0) : 1
+  // Build the fields query parameter and download url
+  const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
+    ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
+    : ''
+  const downloadUrl = config.downloadUrl + `/${encodeURIComponent(dataset.dataset)}.csv?organisation-entity=${encodeURIComponent(orgInfo.entity)}&quality=${encodeURIComponent(authority)}${fieldsParams ? '&' + fieldsParams : ''}`
+
+  const planningGroupProvisions = provisions?.length > 1
+    ? provisions.filter(p => p.organisation !== req.params.lpa)
+    : []
 
   req.templateParams = {
+    downloadUrl,
     organisation: orgInfo,
+    authority,
     dataset,
-    taskCount: entityIssueCounts.length + entryIssueCounts.length,
+    taskCount,
     tableParams,
     pagination,
-    dataRange
+    dataRange,
+    alternateSources,
+    planningGroupProvisions: planningGroupProvisions.length > 0 ? planningGroupProvisions : undefined
   }
   next()
 }
@@ -105,18 +124,22 @@ export default [
 
   getSetBaseSubPath(['data']),
   fetchOrgInfo,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
   fetchDatasetInfo,
 
   fetchResources,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchEntityIssueCountsPerformanceDb,
 
-  fetchEntityCount,
+  ...processAuthoritativeMiddlewares, // Sets authority and entityCount from Platform API
+
+  onlyIf(req => req.entityCount === undefined, fetchEntityCount), // fallback
   setRecordCount,
+
   getSetDataRange(config.tablePageLength),
   show404IfPageNumberNotInRange,
 
-  fetchEntities,
+  fetchEntitiesPlatformDb, // Fetches entities filtered by authority quality
   extractJsonFieldFromEntities,
   replaceUnderscoreInEntities,
 

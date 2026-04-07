@@ -32,7 +32,7 @@ describe('Share Results Page', () => {
 
   it('Displays the dataset banner with correct information', () => {
     const banner = document.querySelector('[data-testid="dataset-banner"]')
-    expect(banner.textContent).toContain('Test LPA')
+    // expect(banner.textContent).toContain('Test LPA') Removed as LPA data is no longer loaded from session
     expect(banner.textContent).toContain('Test Dataset')
   })
 

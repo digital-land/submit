@@ -1,5 +1,4 @@
 {% from 'govuk/components/footer/macro.njk' import govukFooter %}
-{% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner %}
 
 {% set footerHtml %}
   <h2 class="govuk-heading-m">Get help</h2>
@@ -26,14 +25,6 @@
     </li>
   </ul>
 {% endset %}
-
-{{ govukPhaseBanner({
-  tag: {
-    text: "BETA"
-  },
-  html: 'This is a new service – your <a class="govuk-link" href="' + feedbackLink + '">feedback</a> will help us to improve it.',
-  classes: 'govuk-width-container app-phase-banner--footer'
-}) }}
 
 {{ govukFooter({
   meta: {

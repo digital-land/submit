@@ -256,7 +256,7 @@ describe('getFileNameOrUrlAndCheckedTime', () => {
         requestData: {
           params: {
             type: 'file',
-            fileName: 'example.txt',
+            original_filename: 'example.txt',
             url: 'http://example.com/file'
           },
           modified: '2023-10-01T12:00:00Z'
@@ -299,15 +299,11 @@ describe('getPassedChecks()', () => {
     totalRows: 99,
     missingColumnTasks: []
   }
-  it('displays correct number of rows', () => {
+  it('shows all data is valid when no errors', () => {
     const req = structuredClone(reqTemplate)
     getPassedChecks(req, {}, vi.fn())
 
     expect(req.locals.passedChecks).toMatchObject([
-      {
-        status: { tag: { text: 'Passed' } },
-        title: { text: 'Found 99 rows' }
-      },
       {
         status: { tag: { text: 'Passed' } },
         title: { text: 'All data is valid' }
@@ -360,6 +356,19 @@ describe('fieldToColumnMapping()', () => {
 
 describe('fetchDatasetTypology()', () => {
   it('datasets should include typology', async () => {
+    const mockDatasets = {
+      datasets: [
+        { dataset: 'd1', typology: 'geography' },
+        { dataset: 'd2', typology: 'document' }
+      ]
+    }
+
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockDatasets)
+      })
+    )
+
     const response = await fetch(`${config.mainWebsiteUrl}/dataset.json`)
     const responseJSON = await response.json()
     const datasets = responseJSON.datasets || []

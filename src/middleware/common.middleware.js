@@ -5,15 +5,20 @@
  */
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-import { dataSubjects, entryIssueGroups } from '../utils/utils.js'
+import { getDataSubjects, entryIssueGroups } from '../utils/utils.js'
 import performanceDbApi from '../services/performanceDbApi.js'
-import { fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, renderTemplate } from './middleware.builders.js'
+import { datasetOverride, fetchMany, fetchOne, FetchOneFallbackPolicy, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
 import * as v from 'valibot'
 import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
 import datasette from '../services/datasette.js'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
+import platformApi from '../services/platformApi.js'
+import config from '../../config/index.js'
+import { readFileSync } from 'node:fs'
 
+const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
+const PLAN_FALLBACK_DATASETS_JSON = JSON.stringify(planFallback.datasets)
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
  * the function that threw the error.
@@ -43,6 +48,37 @@ export const fetchDatasetInfo = fetchOne({
   },
   result: 'dataset'
 })
+
+/** Emulate fetchDatasetInfo but from Platform API and with more detail such as typology
+ *
+ * @param {object} req
+ * @param {object} req.params
+ * @param {*} req.params.dataset
+ * @param {object} req.dataset - populated dataset info
+ *
+ */
+export const fetchDatasetPlatformInfo = async (req, res, next) => {
+  try {
+    const { formattedData } = await platformApi.fetchDatasets({ dataset: req.params.dataset })
+    // Bounds check TODO move to external bounds handling as in fetchOne
+    if (!formattedData || formattedData.length === 0) {
+      const error = new Error(`Dataset not found: ${req.params.dataset}`)
+      logger.warn('fetchDatasetPlatformInfo: no dataset returned', { type: types.App, dataset: req.params.dataset })
+      return next(error)
+    }
+    const datasetInfo = formattedData[0]
+    req.dataset = {
+      collection: datasetInfo.collection,
+      name: datasetInfo.name,
+      dataset: datasetInfo.dataset,
+      typology: datasetInfo.typology
+    }
+  } catch (error) {
+    logger.warn('fetchDatasetPlatformInfo failed', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+    return next(error)
+  }
+  return next()
+}
 
 /**
  * Was the resource accessed successfully via HTTP?
@@ -77,7 +113,7 @@ export const takeResourceIdFromParams = (req) => {
 
 export const fetchOrgInfo = fetchOne({
   query: ({ params }) => {
-    return `SELECT name, organisation, entity, statistical_geography FROM organisation WHERE organisation = '${params.lpa}'`
+    return `SELECT name, organisation, entity, statistical_geography, dataset FROM organisation WHERE organisation = '${params.lpa}'`
   },
   result: 'orgInfo'
 })
@@ -105,6 +141,136 @@ export function validateQueryParamsFn (req, res, next) {
 export function validateQueryParams (context) {
   return validateQueryParamsFn.bind(context)
 }
+
+/**
+ * Middleware. Updates req with 'entities' same as fetchEntities so not to be used together!
+ *
+ * Fetches entities from the Platform API (mainWebsiteUrl) instead of Datasette.
+ * Uses REST API with query parameters instead of SQL, made in line with fetch spec pattern to allow easy swapping.
+ */
+export const fetchEntitiesPlatformDb = fetchMany({
+  query: ({ req, params }) => ({
+    organisation_entity: req.orgInfo.entity,
+    dataset: params.dataset,
+    limit: req.dataRange.pageLength,
+    offset: req.dataRange.offset,
+    quality: req.authority && req.authority !== '' ? req.authority : undefined
+  }),
+  result: 'entities',
+  dataset: FetchOptions.platformDb
+})
+
+/**
+ * Middleware to determine authority level based on entity quality
+ * Queries the Platform API twice: first for 'authoritative' quality, then for 'some' quality if needed, only needs 1 result
+ *
+ * @param {Object} req - Request object
+ * @param {Object} req.orgInfo - Organization info with entity
+ * @param {Object} req.params - Route parameters
+ * @param {string} req.params.dataset - Dataset name
+ * @param {string} [req.authority] OUT parameter - Set to 'authoritative', 'some', or '' (empty string)
+ * @param {{entity_count: number}} [req.entityCount] OUT parameter - Set to count from API data
+ * @param {Array<number>} [req.alternateEntityList] OUT parameter - List of alternate entity IDs when quality is 'some'
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ */
+export const prepareAuthority = async (req, res, next) => {
+  try {
+    const { orgInfo, params } = req
+    // If config.features.nonAuthPages disabled, hard coded list to only shows these datasets (local plans) if they have non authoritative data
+    if (!config.features.nonAuthPages?.enabled) {
+      if (
+        ![
+          'local-plan-boundary',
+          'local-plan-document',
+          'local-plan-document-type',
+          'local-plan-event',
+          'local-plan-housing',
+          'local-plan-process',
+          'local-plan-timetable'
+        ].includes(params.dataset)
+      ) {
+        // Default to empty string on error
+        req.authority = ''
+        return next()
+      }
+    }
+
+    // First query: Check for authoritative quality
+    const authoritativeResult = await platformApi.fetchEntities({
+      organisation_entity: orgInfo.entity,
+      dataset: params.dataset,
+      quality: 'authoritative',
+      limit: 1
+    })
+
+    if (authoritativeResult.formattedData && authoritativeResult.formattedData.length > 0) {
+      req.authority = 'authoritative'
+      // Set record count to only show authoritative count if authoritative data exists
+      const count = authoritativeResult?.data?.count
+      if (count !== undefined) {
+        req.entityCount = { entity_count: count }
+      }
+      logger.info(`Authoritative data found with count ${count}, skipping non-authoritative check`)
+      return next()
+    }
+
+    // Second query: Check for 'some' quality, need all, if stroing alternateEntityList
+    const someResult = await platformApi.fetchAllEntities({
+      organisation_entity: orgInfo.entity,
+      dataset: params.dataset,
+      quality: 'some'
+    })
+
+    if (someResult.formattedData && someResult.formattedData.length > 0) {
+      req.authority = 'some'
+      // Set list of alternate entities provided in req for later use
+      const rows = someResult.formattedData || []
+      req.alternateEntityList = rows.map(({ entity }) => entity)
+      // Also set record count here if available
+      const someCount = someResult?.data?.count
+      if (someCount !== undefined) {
+        req.entityCount = { entity_count: someCount }
+      }
+    } else {
+      req.authority = ''
+    }
+
+    return next()
+  } catch (error) {
+    logger.warn({
+      message: `prepareAuthority failed: ${error.message}`,
+      type: types.App,
+      orgEntity: req.orgInfo?.entity,
+      dataset: req.params?.dataset
+    })
+    // Default to empty string on error
+    req.authority = ''
+    return next()
+  }
+}
+
+// Fetches organisation names for all alternate entity sources stored in req.alternateEntityList
+export const fetchAlternateSources = fetchMany({
+  query: ({ req }) => {
+    const alternateEntityList = Array.isArray(req.alternateEntityList) ? req.alternateEntityList : []
+
+    const entityIds = [...new Set(
+      alternateEntityList
+        .map((id) => typeof id === 'string' ? parseInt(id, 10) : id)
+        .filter((id) => Number.isInteger(id))
+    )]
+
+    return `
+      SELECT DISTINCT o.name
+      FROM lookup l
+      LEFT JOIN organisation o ON l.organisation = o.organisation
+      WHERE l.entity IN (${entityIds.join(', ')})
+        AND o.organisation != '${req.orgInfo.organisation}'
+    `
+  },
+  result: 'alternateSources'
+})
 
 export const fetchLpaDatasetIssues = fetchMany({
   query: ({ params, req }) => performanceDbApi.datasetIssuesQuery(req.resourceStatus.resource, params.dataset),
@@ -167,7 +333,9 @@ export const fetchResources = fetchMany({
       LEFT JOIN resource_dataset rd ON rd.resource = r.resource
       LEFT JOIN reporting_historic_endpoints rhe ON r.resource = rhe.resource
       LEFT JOIN source s ON s.endpoint = rhe.endpoint_url
-      WHERE r.end_date = ''
+      WHERE (r.end_date = '' OR r.end_date IS NULL)
+      AND rhe.endpoint_url != ''
+      AND rhe.endpoint_url IS NOT NULL
       ${lpaClause}
       ${datasetClause}
       ORDER BY r.start_date desc`
@@ -204,12 +372,48 @@ export const addEntityCountsToResources = async (req, res, next) => {
 
 export const fetchSpecification = fetchOne({
   query: ({ req }) => `select * from specification WHERE specification = '${req.dataset.collection}'`,
-  result: 'specification'
+  result: 'specification',
+  // Set fall back here as some datasets may not have a specification yet, then handle different field name lookup in next middleware
+  fallbackPolicy: FetchOneFallbackPolicy['set-empty-object']
 })
+
+// Fall back dataset fields if no specification found
+
+export const fetchDatasetFields = fetchMany({
+  query: ({ req }) => `select field from dataset_field where dataset = '${req.dataset.dataset}'`,
+  result: 'datasetFields'
+})
+
+/**
+ * @name checkSpecificationFallback
+ * @function
+ * @description Middleware that overrides the specification with a local fallback for plan datasets
+ * that are not yet in a production-ready format in the specification table. When the fetched
+ * specification is for 'local-plan', it checks whether the current dataset exists in the
+ * plan-fallback.json config and, if so, replaces req.specification with the fallback data
+ * so that pullOutDatasetSpecification can extract the correct dataset-specific fields.
+ */
+export const checkSpecificationFallback = (req, res, next) => {
+  const { specification } = req
+
+  if (specification && specification.specification === 'local-plan') {
+    const fallbackDataset = planFallback.datasets.find(d => d.dataset === req.dataset.dataset)
+    if (fallbackDataset) {
+      req.specification = { json: PLAN_FALLBACK_DATASETS_JSON }
+    }
+  }
+
+  return next()
+}
 
 export const pullOutDatasetSpecification = (req, res, next) => {
   const { specification } = req
   let collectionSpecifications
+  if (!specification) {
+    logger.info(`No specification found for dataset with collection: ('${req.dataset.collection}') (uses the collection as lookup key for spec table)`)
+    return next()
+  }
+
   try {
     collectionSpecifications = JSON.parse(specification.json)
   } catch (error) {
@@ -218,8 +422,9 @@ export const pullOutDatasetSpecification = (req, res, next) => {
   }
   const datasetSpecification = collectionSpecifications.find((spec) => spec.dataset === req.dataset.dataset)
   if (!datasetSpecification) {
-    logger.error('Dataset specification not found', { dataset: req.dataset.dataset })
-    return next(new MiddlewareError('Dataset specification not found', 404))
+    logger.info('Dataset specification not found, clearing specification and falling back to dataset fields', { dataset: req.dataset.dataset })
+    req.specification = null
+    return next()
   }
   req.specification = datasetSpecification
   next()
@@ -266,6 +471,18 @@ export const addDatabaseFieldToSpecification = (req, res, next) => {
   next()
 }
 
+export const filterOutSystemFields = (req, res, next) => {
+  const { specification } = req
+  const systemFields = ['organisation'] // Currently only organisation is not a field we want to show
+
+  // Slightly odd filter of looking at fields from dataset_fields and spec fields in the filter out.
+  req.specification.fields = specification.fields.filter(
+    fieldObj => !systemFields.includes(fieldObj.field) && !systemFields.includes(fieldObj.datasetField)
+  )
+
+  next()
+}
+
 export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   const { specification } = req
 
@@ -278,29 +495,85 @@ export const getUniqueDatasetFieldsFromSpecification = (req, res, next) => {
   next()
 }
 
+// If no specification exists, create a minimal specification table (data such as guidance will be missing) using dataset fields table as a fall back option
+export const constructSpecificationTable = (req, res, next) => {
+  const { datasetFields } = req
+  // Filter out internal system fields that shouldn't be displayed
+  const systemFields = ['entity', 'prefix', 'entry-number', 'organisation-entity', 'organisation']
+
+  req.specification = {
+    fields: datasetFields
+      .filter(fieldObj => !systemFields.includes(fieldObj.field))
+      .map(fieldObj => ({
+        field: fieldObj.field,
+        datasetField: fieldObj.field
+      }))
+  }
+  return next()
+}
+
 /**
  * @name processSpecificationMiddleware
  * @function
- * @description Middleware chain to process the dataset specification and prepare it for the issue table
+ * @description Middleware chain to process the dataset specification and prepare it for the issue table, conditional execution on whether a specification exists
  */
 export const processSpecificationMiddlewares = [
   fetchSpecification,
+  // Certain Specification are not at production level format, so override here
+  checkSpecificationFallback,
   pullOutDatasetSpecification,
-  replaceUnderscoreInSpecification,
-  fetchFieldMappings,
-  addDatabaseFieldToSpecification,
+  // When specification exists, use field mappings from transform table
+  onlyIf(req => req.specification, replaceUnderscoreInSpecification),
+  onlyIf(req => req.specification, fetchFieldMappings),
+  onlyIf(req => req.specification, addDatabaseFieldToSpecification),
+  onlyIf(req => req.specification, filterOutSystemFields),
+  // When no specification exists, use fields from dataset_field table
+  onlyIf(req => !req.specification, fetchDatasetFields),
+  onlyIf(req => !req.specification, constructSpecificationTable),
   getUniqueDatasetFieldsFromSpecification
+]
+
+export const processAuthoritativeMiddlewares = [
+  prepareAuthority,
+  onlyIf((req) => req.authority === 'some', fetchAlternateSources)
 ]
 
 // Entities
 
-export const fetchEntities = fetchMany({
-  query: ({ req }) => `
-    SELECT * FROM entity e
-    WHERE e.organisation_entity = ${req.orgInfo.entity}`,
-  dataset: FetchOptions.fromParams,
-  result: 'entities'
-})
+export const fetchEntities = async (req, res, next) => {
+  try {
+    let entities = []
+    const limit = 1000
+
+    // get count of entities for the organisation
+    const {
+      formattedData: [{ count }]
+    } = await datasette.runQuery(
+      `SELECT COUNT(*) as count FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity}`,
+      datasetOverride(FetchOptions.fromParams, req)
+    )
+
+    // fetch entities in batches of `limit` until we have fetched all entities
+    // datasette limits the number of rows returned to 1000 by default
+    if (count && count > 0) {
+      for (let offset = 0; offset < count; offset += limit) {
+        const query = `SELECT * FROM entity e WHERE e.organisation_entity = ${req.orgInfo.entity} LIMIT ${limit} OFFSET ${offset}`
+        const { formattedData } = await datasette.runQuery(query, datasetOverride(FetchOptions.fromParams, req))
+        entities = entities.concat(formattedData)
+      }
+    } else {
+      logger.info('fetchEntities(): No entities found', { type: types.App, endpoint: req.originalUrl })
+    }
+
+    req.entities = entities
+
+    next()
+  } catch (error) {
+    logger.error('fetchEntities(): failed', { type: types.DataFetch, endpoint: req.originalUrl, errorMessage: error.message, errorStack: error.stack })
+
+    next(error)
+  }
+}
 
 export const fetchEntityCount = fetchOne({
   query: ({ req }) => `
@@ -330,7 +603,7 @@ export const extractJsonFieldFromEntities = (req, res, next) => {
       entity = Object.assign({}, parsedJson, entity)
     } catch (err) {
       logger.warn('common.middleware/extractJsonField: Error parsing JSON',
-        { type: types.App, json: jsonField, entity: entity.entity, errorMessage: err.message })
+        { type: types.App, json: jsonField, entity: entity.entity, errorMessage: err?.message })
     }
     return entity
   })
@@ -397,18 +670,45 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
   query: ({ req, params }) => {
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
+
     return `
-        select i.issue_type, field, entity, message, severity, value
-        from issue i
-        LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-        WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-        ${issueTypeClause}
-        AND it.responsibility = 'external'
-        AND it.severity = 'error'
-        ${issueFieldClause}
-        AND i.dataset = '${req.params.dataset}'
-        AND entity != ''
-        `
+        WITH ranked AS (
+          SELECT
+            i.issue_type,
+            field,
+            entity,
+            message,
+            severity,
+            value,
+            ROW_NUMBER() OVER (
+              PARTITION BY i.issue_type, entity
+              ORDER BY i.rowid
+            ) AS rn
+          FROM issue i
+          LEFT JOIN issue_type it ON i.issue_type = it.issue_type
+          WHERE resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
+            ${issueTypeClause}
+            AND it.responsibility = 'external'
+            AND it.severity = 'error'
+            ${issueFieldClause}
+            AND i.dataset = '${req.params.dataset}'
+            AND entity != ''
+            AND (
+              i.end_date = ''
+              OR i.end_date IS NULL
+            )
+        )
+        SELECT
+          issue_type,
+          field,
+          entity,
+          message,
+          severity,
+          value
+        FROM ranked
+        WHERE rn = 1
+        ORDER BY entity;
+      `
     // LIMIT ${req.dataRange.pageLength} OFFSET ${req.dataRange.offset}
   },
   result: 'issues'
@@ -442,7 +742,7 @@ export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
     })
 
   Promise.allSettled(promises).then((results) => {
-  // results is an array of objects with status (fulfilled or rejected) and value or reason
+    // results is an array of objects with status (fulfilled or rejected) and value or reason
     results.forEach(result => {
       if (result.status === 'fulfilled') {
         if (result.value.formattedData.length > 0) {
@@ -528,15 +828,18 @@ export const fetchEntityIssueCounts = fetchMany({
   query: ({ req }) => {
     const datasetClause = req.params.dataset ? `AND i.dataset = '${req.params.dataset}'` : ''
     return `
-      select dataset, field, i.issue_type, COUNT(resource+line_number) as count
-      from issue i
-      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
-      WHERE resource in ('${req.resources.map(resource => resource.resource).join("', '")}')
-      AND (entity != '' AND entity IS NOT NULL)
-      AND it.responsibility = 'external'
-      AND it.severity = 'error'
-      ${datasetClause}
-      GROUP BY field, i.issue_type, dataset
+      SELECT
+        i.dataset,
+        i.field,
+        i.issue_type,
+        COUNT(DISTINCT i.entity) AS count
+      FROM issue i
+      WHERE i.resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
+        AND i.entity IS NOT NULL AND i.entity <> ''
+        AND (i.end_date = '' OR i.end_date IS NULL)
+        AND i.issue_type IN (SELECT it.issue_type FROM issue_type it WHERE it.responsibility = 'external' AND it.severity = 'error')
+        ${datasetClause}
+      GROUP BY i.field, i.issue_type, i.dataset
     `
   },
   result: 'entityIssueCounts'
@@ -659,7 +962,7 @@ export const getSetDataRange = (pageLength) => {
 }
 
 export function getErrorSummaryItems (req, res, next) {
-  const { issue_type: issueType, issue_field: issueField } = req.params
+  const { issue_type: issueType, issue_field: issueField, dataset } = req.params
   const { entryIssues, issues: entityIssues, issueCount, entities, resources } = req
 
   const issues = entityIssues || entryIssues
@@ -669,7 +972,7 @@ export function getErrorSummaryItems (req, res, next) {
 
   const errorHeading = ''
   const issueItems = [{
-    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField }, true)
+    html: performanceDbApi.getTaskMessage({ issue_type: issueType, num_issues: totalIssues, rowCount: totalRecordCount, field: issueField, dataset }, true)
   }]
 
   req.errorSummary = {
@@ -734,6 +1037,7 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
   })
 })
 
+// Fetches all currently active data source endpoints for a given organization and dataset, deduplicating by endpoint URL and keeping only the most recently logged entry for each unique endpoint, ordered by when they were last accessed.
 export const fetchSources = fetchMany({
   query: ({ params }) => `
     WITH RankedEndpoints AS (
@@ -869,10 +1173,13 @@ export const expectationFetcher = ({ expectation, result, includeDetails = false
 }
 
 export const CONSTANTS = {
-  availableDatasets: Object.values(dataSubjects).flatMap((dataSubject) => dataSubject.dataSets
-    .filter((dataset) => dataset.available)
-    .map((dataset) => dataset.value)
-  )
+  async availableDatasets () {
+    const dataSubjects = await getDataSubjects()
+    return Object.values(dataSubjects).flatMap((dataSubject) => dataSubject.dataSets
+      .filter((dataset) => dataset.available)
+      .map((dataset) => dataset.value)
+    )
+  }
 }
 /**
  * Provides the list of available/supported datasets.
@@ -881,8 +1188,93 @@ export const CONSTANTS = {
  * @param {*} res
  * @param {*} next
  */
-export const setAvailableDatasets = (req, res, next) => {
+export const setAvailableDatasets = async (req, res, next) => {
   // Motivation: stop relying on global variables all over the place
-  req.availableDatasets = CONSTANTS.availableDatasets
+  req.availableDatasets = await CONSTANTS.availableDatasets()
   next()
 }
+
+/**
+ * Middleware. Updates req with 'entityIssueCounts' same as fetchEntityIssueCounts so not to be used together!
+ *
+ * Functionally equivalent (for the utilization of the LPA Dashboard) to fetchEntityIssueCounts but using performanceDb
+ */
+export const fetchEntityIssueCountsPerformanceDb = fetchMany({
+  query: ({ params }) => {
+    return performanceDbApi.fetchEntityIssueCounts(params.lpa, params.dataset)
+  },
+  result: 'entityIssueCounts',
+  dataset: FetchOptions.performanceDb
+})
+
+/**
+ * Middleware. Fetches all local-planning-group entities from the Platform API in a single call and derives two outputs:
+ *. - takes org code and:
+ * - req.parentGroup {Object[]|null} - If this org is a member of any planning group(s), returns an array of those
+ *   groups with { entity, name, organisation }. Null if this org belongs to no planning groups.
+ *
+ * - req.planningGroupMembers {Object[]|null} - If this org IS a planning group, returns an array of its member
+ *   organisations with { organisation, name }, where name is resolved via a parallel Platform API lookup.
+ *   Falls back to the org code as name if the lookup fails. Null if this org is not a planning group.
+ */
+export const fetchLocalPlanningGroups = async (req, res, next) => {
+  try {
+    const { formattedData: allGroups } = await platformApi.fetchAllEntities({ prefix: 'local-planning-group' })
+    // Remove all end-dated planning groups
+    const today = new Date().toISOString().slice(0, 10)
+    const groups = allGroups.filter(g => !g['end-date'] || g['end-date'] > today)
+    const orgCode = req.orgInfo.organisation
+
+    // Find any groups this org is within the organisations field.
+    const parentMatches = groups.filter(g => (g.organisations || '').split(';').includes(orgCode))
+    req.parentGroup = parentMatches.length > 0
+      ? parentMatches.map(g => ({ entity: g['organisation-entity'], name: g.name, organisation: `${g.prefix}:${g.reference}` }))
+      : null
+
+    // Look to see if this org is a local-planning group
+    const ownGroup = groups.find(g => String(g['organisation-entity']) === String(req.orgInfo.entity))
+
+    // if group get all members, and resolve their names in a single call to the Platform API, then map back to the org codes
+    if (ownGroup) {
+      const orgCodes = (ownGroup.organisations || '').split(';').filter(Boolean)
+      const { flat: allOrgs } = await platformApi.fetchOrganisations()
+      const nameMap = new Map(allOrgs.map(o => [o.organisation, o.name]))
+      req.planningGroupMembers = orgCodes.map(organisation => ({
+        organisation,
+        name: nameMap.get(organisation) ?? organisation
+      }))
+    } else {
+      req.planningGroupMembers = null
+    }
+  } catch (error) {
+    logger.warn({ message: `fetchLocalPlanningGroups(): ${error.message}`, type: types.App })
+    req.parentGroup = null
+    req.planningGroupMembers = null
+  }
+  next()
+}
+
+/**
+ * Fetches provision records for the current organisation and any planning groups it belongs to,
+ * filtered to the current dataset. Includes the organisation name via a JOIN on the organisation table.
+ *
+ * Requires: req.params.lpa, req.params.dataset, req.parentGroup (set by fetchLocalPlanningGroups)
+ * Sets: req.provisions — array of { dataset, project, provision_reason, organisation, name }
+ *
+ * TODO: Does it need fetchMany any more, would allow an append of Org Name to fetchLocalPlanningGroups result
+ */
+export const fetchProvisionsByOrgsAndDatasets = fetchMany({
+  query: ({ params, req }) => {
+    const orgs = [params.lpa]
+    if (req.parentGroup) {
+      orgs.push(...req.parentGroup.map(g => g.organisation))
+    }
+    const inClause = orgs.map(o => `'${o}'`).join(', ')
+    return /* sql */ `select p.dataset, p.project, p.provision_reason, p.organisation, o.name
+       from provision p
+       left join organisation o on o.organisation = p.organisation
+       where p.organisation IN (${inClause})
+       AND p.dataset = '${params.dataset}'`
+  },
+  result: 'provisions'
+})

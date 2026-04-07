@@ -55,7 +55,8 @@ test('receiving a result with errors', async ({ page }) => {
 
   expect(tableValues[0]).toEqual(expectedTableValues[0])
   expect(tableValues[1]).toEqual(expectedTableValues[1])
-  expect(tableValues[2]).toEqual(expectedTableValues[3])
+  expect(tableValues[2]).toEqual(expectedTableValues[2])
+  expect(tableValues[3]).toEqual(expectedTableValues[3])
 
   const issues = errorResponseDetails.map(detail => detail.issue_logs.filter(issue => issue.severity === 'error').map(issue => issue.message)).filter(issue => issue.length > 0)
 

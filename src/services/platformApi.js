@@ -1,0 +1,155 @@
+import axios from 'axios'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
+import config from '../../config/index.js'
+
+/**
+ * Service for querying the Platform API (mainWebsiteUrl)
+ * Unlike Datasette which uses SQL queries, this uses REST endpoints with query parameters
+ */
+export default {
+  /**
+   * Fetches entities from the Platform API /entity.json endpoint
+   *
+   * @param {Object} params - Query parameters
+   * @param {string} [params.organisation_entity] - The organisation entity ID
+   * @param {string} [params.dataset] - The dataset name
+   * @param {string} [params.prefix] - Entity prefix filter (e.g., 'local-planning-group')
+   * @param {number} [params.limit] - Maximum number of results
+   * @param {number} [params.offset] - Number of results to skip
+   * @param {string} [params.quality] - The quality level (e.g., 'authoritative', 'some')
+   * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted entity data
+   * @throws {Error} If the query fails or there is an error communicating with the Platform API
+   */
+  fetchEntities: async (params) => {
+    if (!params.organisation_entity && !params.dataset && !params.prefix && !params.organisation) {
+      throw new Error('organisation_entity, dataset, prefix, or organisation are required parameters')
+    }
+    const queryParams = new URLSearchParams()
+
+    if (params.organisation_entity) queryParams.append('organisation_entity', params.organisation_entity)
+    if (params.dataset) queryParams.append('dataset', params.dataset)
+    if (params.prefix) queryParams.append('prefix', params.prefix)
+    if (params.organisation) queryParams.append('organisation', params.organisation)
+    if (params.limit) queryParams.append('limit', params.limit)
+    if (params.offset) queryParams.append('offset', params.offset)
+    if (params.quality) queryParams.append('quality', params.quality)
+
+    const url = `${config.mainWebsiteUrl}/entity.json?${queryParams.toString()}`
+
+    const data = await queryPlatformAPI(url, params)
+
+    // Platform API returns { entities: [...] }
+    const entities = data?.entities || []
+
+    return {
+      data,
+      formattedData: entities
+    }
+  },
+
+  /**
+   * Fetches datasets from the Platform API /dataset.json endpoint
+   *
+   * @param {Object} params - Query params
+   * @param {string} [params.dataset] - The dataset name
+   * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
+   * @throws {Error} If the query fails or there is an error communicating with the Platform API
+   */
+  /**
+   * Fetches all entities from the Platform API /entity.json endpoint, paginating through all results.
+   * Accepts the same params as fetchEntities (except limit/offset which are managed internally).
+   */
+  fetchAllEntities: async (params) => {
+    const pageSize = 100
+    let offset = 0
+    let allEntities = []
+
+    while (true) {
+      const queryParams = new URLSearchParams()
+      if (params.organisation_entity) queryParams.append('organisation_entity', params.organisation_entity)
+      if (params.dataset) queryParams.append('dataset', params.dataset)
+      if (params.prefix) queryParams.append('prefix', params.prefix)
+      if (params.organisation) queryParams.append('organisation', params.organisation)
+      if (params.quality) queryParams.append('quality', params.quality)
+      queryParams.append('limit', pageSize)
+      queryParams.append('offset', offset)
+      const data = await queryPlatformAPI(`${config.mainWebsiteUrl}/entity.json?${queryParams.toString()}`, params)
+      const entities = data?.entities || []
+      allEntities = allEntities.concat(entities)
+      if (!data?.links?.next || entities.length < pageSize) break
+      offset += pageSize
+    }
+
+    return { formattedData: allEntities }
+  },
+
+  /**
+   * Fetches organisations from /organisation.json.
+   *
+   * @param {Object} [params]
+   * @param {string} [params.organisations] - Optional dataset type to filter by (e.g. 'local-authority')
+   * @returns {Promise<{data: object, grouped: object, flat: object[]}>}
+   *   - data: raw response
+   *   - grouped: organisations keyed by dataset type
+   *   - flat: all organisations as a flat array across all types
+   */
+  fetchOrganisations: async (params = {}) => {
+    const queryParams = new URLSearchParams()
+    if (params.organisations) queryParams.append('organisations', params.organisations)
+    const url = `${config.mainWebsiteUrl}/organisation.json${queryParams.toString() ? '?' + queryParams.toString() : ''}`
+    const data = await queryPlatformAPI(url, params)
+    const grouped = data?.organisations || {}
+    const flat = Object.values(grouped).flat()
+    return { data, grouped, flat }
+  },
+
+  fetchDatasets: async (params) => {
+    const queryParams = new URLSearchParams()
+
+    if (params.dataset) queryParams.append('dataset', params.dataset)
+
+    const url = `${config.mainWebsiteUrl}/dataset.json?${queryParams.toString()}`
+
+    const data = await queryPlatformAPI(url, params)
+
+    // Platform API returns { datasets: [...] }
+    const datasets = data?.datasets || []
+
+    return {
+      data,
+      formattedData: datasets
+    }
+  }
+
+}
+
+/**
+ * Generic query function for Platform API
+ *
+ * @param {string} url - The full URL to query
+ * @param {Object} params - Query parameters for logging
+ * @returns {Promise<Object>} - Raw response data from Platform API
+ */
+async function queryPlatformAPI (url, params = {}) {
+  try {
+    logger.debug({ message: 'Platform API request', type: types.DataFetch, url, params })
+    const response = await axios.get(url, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': config.checkService.userAgentInternal
+      }
+    })
+
+    return response.data
+  } catch (error) {
+    logger.warn({
+      message: `queryPlatformAPI(): ${error.message}`,
+      type: types.External,
+      params,
+      platformUrl: config.mainWebsiteUrl,
+      url
+    })
+    throw error
+  }
+}

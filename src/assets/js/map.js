@@ -35,12 +35,15 @@ const fallbackMapStyle = 'https://api.maptiler.com/maps/basic-v2/style.json?key=
  * @property {string} [boundaryGeoJsonUrl] - Optional - The URL of the boundary GeoJSON to be added to the map.
  * @property {boolean} [interactive] - Optional - Indicates whether the map should be interactive. Default is true.
  * @property {boolean} [wktFormat] - Optional - Indicates whether the data is in WKT format. Default is false.
+ * @property {boolean} [limitMaxZoom] - Optional - Indicates whether to limit the maximum zoom level when fitting bounds. Default is false.
  * @property {number[]} [boundingBox] - Optional - The bounding box coordinates [minX, minY, maxX, maxY] to set the initial view of the map.
  */
 export class Map {
   constructor (opts) {
     this.opts = opts
+    this.limitMaxZoom = opts.limitMaxZoom ?? false
     this.bbox = this.opts.boundingBox ?? null
+    this.authority = opts.authority ?? null
     this.map = new maplibregl.Map({
       container: this.opts.containerId,
       style: this.opts.style ?? defaultOsMapStyle,
@@ -115,7 +118,7 @@ export class Map {
     for (let index = 0; index < geometriesWkt.length; ++index) {
       const item = geometriesWkt[index]
       const geometryWkt = (typeof item === 'string') ? { geo: item } : item
-      const geometry = parse(geometryWkt.geo)
+      const geometry = geometryWkt.geo ? parse(geometryWkt.geo) : null
 
       if (!geometry) {
         console.error('Invalid WKT geometry format', geometryWkt)
@@ -248,7 +251,13 @@ export class Map {
   }
 
   setMapViewToBoundingBox (bbox) {
-    this.map.fitBounds(bbox, { padding: 20, duration: 0, maxZoom: 11 })
+    const fitOptions = { padding: 20, duration: 0 }
+    if (this.limitMaxZoom) {
+      fitOptions.maxZoom = 11
+    } else {
+      fitOptions.maxZoom = 18
+    }
+    this.map.fitBounds(bbox, fitOptions)
   }
 
   addPopupToMap () {
@@ -279,7 +288,21 @@ export class Map {
         features.forEach(feature => {
           // create inset
           const inset = document.createElement('li')
-          inset.classList.add('app-c-map__popup-list-item')
+
+          if (this.authority === 'some') {
+            const insetAlternate = document.createElement('li')
+            insetAlternate.classList.add('app-c-map__popup-list-item')
+            const textContent = document.createElement('p')
+            textContent.classList.add('govuk-body-s', 'govuk-!-margin-top-0', 'govuk-!-margin-bottom-0')
+            textContent.style.color = '#1d70b8' // GOV.UK blue colour
+            textContent.innerHTML = `This ${startCase(feature.properties.dataset).toLowerCase() || ''} is from an alternative source`
+
+            insetAlternate.appendChild(textContent)
+            list.appendChild(insetAlternate)
+          } else {
+            // Design to have blue tab on left only if not alternative source
+            inset.classList.add('app-c-map__popup-list-item')
+          }
 
           // feature text content
           const textContent = document.createElement('p')
@@ -433,13 +456,15 @@ export const generateBoundingBox = async (boundaryGeoJsonUrl) => {
 }
 
 export const createMapFromServerContext = async () => {
-  const { containerId, geometries, mapType, geoJsonUrl, boundaryGeoJsonUrl } = window.serverContext
+  const { containerId, geometries, mapType, geoJsonUrl, boundaryGeoJsonUrl, authority } = window.serverContext
   const options = {
     containerId,
     data: geometries,
     boundaryGeoJsonUrl,
     interactive: mapType !== 'static',
-    wktFormat: geoJsonUrl === undefined
+    wktFormat: geoJsonUrl === undefined,
+    limitMaxZoom: mapType !== 'interactive',
+    authority
   }
 
   // fetch initial token

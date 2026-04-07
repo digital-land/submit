@@ -60,7 +60,7 @@ export const getIssueField = (text, html, classes) => {
     },
     value: {
       html: html ? html.toString() : '',
-      originalValue: html // we don't want any markup here
+      originalValue: html != null ? html.toString() : undefined
     },
     classes
   }

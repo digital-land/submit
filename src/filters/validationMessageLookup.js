@@ -30,7 +30,8 @@ const validationMessages = {
     length: 'The URL must be less than 2048 characters',
     exists: 'The URL does not exist. Check the URL you\'ve entered is correct',
     filetype: 'The file referenced by URL must be a CSV, GeoJSON, GML or GeoPackage file',
-    size: 'The file referenced by URL must be smaller than 100MB'
+    size: 'The file referenced by URL must be smaller than 100MB',
+    restricted403: 'The URL must be accessible'
   },
   validationResult: {
     required: 'Sorry, there is a problem with the service. Try again later'
@@ -55,6 +56,9 @@ const validationMessages = {
     required: 'Enter a documentation URL',
     format: 'Webpage URL must be on a gov.uk or org.uk domain and must link to a webpage, not a file (for example, .csv or .json)',
     maxlength: 'The URL must be less than 2048 characters'
+  },
+  geomType: {
+    required: 'Select whether your geometry data is given as points or polygons'
   },
   hasLicence: {
     required: 'You need to confirm this dataset is provided under the Open Government Licence'

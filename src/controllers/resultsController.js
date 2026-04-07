@@ -15,7 +15,7 @@ const failedUrlRequestTemplate = 'results/failedUrlRequest'
 const resultsTemplate = 'results/results'
 
 class ResultsController extends PageController {
-  /* Custom middleware */
+  /* Custom middleware, currently the controller can load results/results, results/failedFileRequest and results/failedUrlRequest templates */
   middlewareSetup () {
     super.middlewareSetup()
     this.use(validateParams)
@@ -71,8 +71,13 @@ export async function getRequestDataMiddleware (req, res, next) {
 }
 
 export async function checkForErroredResponse (req, res, next) {
-  if (req.locals.requestData.response.error) {
-    return next(new Error(req.locals.requestData.response.error.message))
+  if (req.locals.requestData.response?.error) {
+    const { errMsg } = req.locals.requestData.response.error
+    if (errMsg && errMsg.length > 0) {
+      return next(new MiddlewareError(errMsg, 500, { template: 'check/error-redirect.html' }))
+    } else {
+      return next(new MiddlewareError('An unknown error occurred when processing your endpoint', 500, { template: 'check/error-redirect.html' }))
+    }
   }
   next()
 }
@@ -124,10 +129,8 @@ export async function fetchResponseDetails (req, res, next) {
   try {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
       const detailsOpts = req.locals.detailsOptions ?? {}
-      const responseDetails = req.locals.template === resultsTemplate
-        // pageNumber starts with: 1, fetchResponseDetails parameter `pageOffset` starts with 0
-        ? await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { severity: 'error', ...detailsOpts })
-        : await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { ...detailsOpts })
+      // Original code used a if statement to check template and filter by error severity accordingly, but move to always showing all details in results/results template
+      const responseDetails = await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { ...detailsOpts })
       req.locals.responseDetails = responseDetails
     }
   } catch (e) {
@@ -156,7 +159,8 @@ export const fieldToColumnMapping = ({ columns }) => {
 export function setupTableParams (req, res, next) {
   if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
     const responseDetails = req.locals.responseDetails
-    let rows = responseDetails.getRowsWithVerboseColumns(req.locals.requestData.hasErrors())
+    // Optionally filter out all non - error rows from dataset
+    let rows = responseDetails.getRowsWithVerboseColumns(false)
     // remove any issues that aren't of severity error
     rows = rows.map((row) => {
       const { columns, ...rest } = row
@@ -252,9 +256,16 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
 
   req.issues = issues.map(issue => {
     const issueType = issueTypeMap.get(issue['issue-type'])
+    let qualityLevel = issueType ? issueType.quality_criteria_level : null
+
+    // Field-specific override for 'missing value' issues on 'reference' field
+    if (issue['issue-type'] === 'missing value' && issue.field === 'reference') {
+      qualityLevel = 2
+    }
+
     return {
       ...issue,
-      quality_criteria_level: issueType ? issueType.quality_criteria_level : null
+      quality_criteria_level: qualityLevel
     }
   })
 
@@ -356,6 +367,7 @@ export function getTotalRows (req, res, next) {
   const totalRows = Number.parseInt(responseDetails.pagination.totalResults)
   // NOTE: the fallback number may not be accurate, but it's better than just giving up and throwing
   req.totalRows = Number.isInteger(totalRows) ? totalRows : responseDetails.getRows().length
+  req.locals.totalRows = req.totalRows
   next()
 }
 
@@ -366,13 +378,16 @@ export function getTotalRows (req, res, next) {
  */
 export function getTasksByLevel (req, level, status) {
   const { tasks, totalRows } = req
+  const dataset = req.locals.requestData?.getParams?.()?.dataset
+
   const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
   const taskParams = filteredTasks.map(task => {
     const taskMessage = performanceDbApi.getTaskMessage({
       issue_type: task.issueType,
       num_issues: task.count,
       rowCount: totalRows,
-      field: task.field
+      field: task.field,
+      dataset
     })
     return makeTaskParam(req, { taskMessage, status, issueType: task.issueType, field: task.field })
   })
@@ -456,13 +471,8 @@ export function getPassedChecks (req, res, next) {
     }
   }
 
-  // add task complete for how many rows are in the table
-  if (totalRows > 0) {
-    passedChecks.unshift(makePassedCheck(`Found ${totalRows} rows`))
-
-    if (tasks.length === 0 && missingColumnTasks.length === 0) {
-      passedChecks.push(makePassedCheck('All data is valid'))
-    }
+  if (totalRows > 0 && tasks.length === 0 && missingColumnTasks.length === 0) {
+    passedChecks.push(makePassedCheck('All data is valid'))
   }
 
   req.locals.passedChecks = passedChecks
@@ -482,7 +492,7 @@ export function getFileNameOrUrlAndCheckedTime (req, res, next) {
   const { requestData } = req.locals
   req.locals.uploadInfo = {
     type: requestData?.params?.type,
-    fileName: requestData?.params?.fileName,
+    fileName: requestData?.params?.original_filename,
     url: requestData?.params?.url,
     checkedTime: requestData?.modified
   }

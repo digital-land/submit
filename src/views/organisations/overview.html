@@ -17,12 +17,12 @@
       {% if dataset.status == 'Not submitted' %}
       <a class="govuk-link govuk-task-list__link"
          href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/get-started">
-        {{dataset.dataset | datasetSlugToReadableName}}
+        {{dataset.dataset | datasetSlugToReadableName(true)}}
       </a>
       {% else %}
       <a class="govuk-link govuk-task-list__link"
          href="/organisations/{{ organisation.organisation }}/{{dataset.dataset}}/overview">
-        {{dataset.dataset | datasetSlugToReadableName}}
+        {{dataset.dataset | datasetSlugToReadableName(true)}}
       </a>
       {% endif %}
     </h3>
@@ -37,7 +37,9 @@
         {% else %}
           <p>{{ dataset.error }}</p>
         {% endif %}
-      {% elif dataset.status == 'Needs fixing' %}
+      {% elif dataset.status == 'Needs improving' and dataset.authority == 'some' %}
+        <p>Data is not from an authoritative source</p>
+      {% elif dataset.status == 'Needs improving' %}
         {% set totalIssues = (dataset.issueCount or 0) + (dataset.endpointErrorCount or 0) %}
         <p>There {{ "is" | pluralise(totalIssues) }} {{ totalIssues }} {{ "issue" | pluralise(totalIssues) }} in this dataset</p>
       {% else %}
@@ -79,11 +81,16 @@
 {% block content %}
 
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+  <div class="govuk-grid-column-three-quarters">
+    {% if organisation.dataset %}
+      <span class="govuk-caption-xl">{{ organisation.dataset | datasetSlugToReadableName(true) }}</span>
+    {% endif %}
+    <h1 class="govuk-heading-l">{{ pageName }}</h1>
+  </div>
+</div>
 
-    <h1 class="govuk-heading-xl">
-      {{ pageName }}
-    </h1>
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
 
     {% for dataset in datasets.statutory %}
       {% if dataset.notice %}
@@ -91,11 +98,17 @@
       {% endif %}
     {% endfor %}
 
-    {% for dataset in datasets.other %}
-    {% if dataset.notice %}
-      {{ deadlineNotice(dataset.dataset, dataset.notice, organisation) }}
-    {% endif %}
-  {% endfor %}
+    {% for dataset in datasets.expected %}
+      {% if dataset.notice %}
+        {{ deadlineNotice(dataset.dataset, dataset.notice, organisation) }}
+      {% endif %}
+    {% endfor %}
+
+    {% for dataset in datasets.prospective %}
+      {% if dataset.notice %}
+        {{ deadlineNotice(dataset.dataset, dataset.notice, organisation) }}
+      {% endif %}
+    {% endfor %}
 
   </div>
 </div>
@@ -107,17 +120,17 @@
     <div class="dataset-status">
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithEndpoints}}/{{totalDatasets}}</span>
-        datasets submitted
+        authoritative dataset{{ "s" if (datasetsWithEndpoints != 1) }} provided
       </div>
 
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithErrors}}</span>
-        dataset{{ "s" if (datasetsWithErrors != 1) }} with endpoint errors
+        error{{ "s" if (datasetsWithErrors != 1) }} accessing URLs
       </div>
 
       <div class="dataset-status--item">
         <span class="big-number">{{datasetsWithIssues}}</span>
-        {{ "dataset" | pluralise(datasetsWithIssues) }} need{{ "s" if (datasetsWithIssues == 1) }} fixing
+        {{ "dataset" | pluralise(datasetsWithIssues) }} can be improved
       </div>
     </div>
   </div>
@@ -126,10 +139,10 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-
   {% if datasets.statutory.length > 0 %}
     <div data-testid="datasetsMandatory">
       <h2 class="govuk-heading-m">Datasets {{ organisation.name }} must provide</h2>
+      <p class="org-membership-info">You are required to make these datasets available under legislation. Using the Planning Data Platform to do this can help you to create and maintain authoritative, trustworthy data.</p>
       <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="statutory">
         {% for dataset in datasets.statutory %}
           {{ datasetItem(dataset) }}
@@ -138,23 +151,61 @@
     </div>
   {% endif %}
 
-  {% if datasets.other.length > 0 %}
-    <div data-testid="datasetsOdpMandatory">
-      <h2 class="govuk-heading-m">Datasets organisations in Open Digital Planning programme must provide</h2>
-      {% if isODPMember %}
-        <p class="org-membership-info">{{ organisation.name}} is a member of the Open Digital Planning programme.</p>
-      {% else %}
-        <p class="org-membership-info">{{ organisation.name}} is not a member of the Open Digital Planning programme.</p>
-      {% endif %}
-      <ul class="govuk-task-list" data-reason="other">
-        {% for dataset in datasets.other %}
+  {% if datasets.expected.length > 0 and isODPMember %}
+    <div data-testid="datasetsExpected">
+      <h2 class="govuk-heading-m">Datasets {{ organisation.name}} are expected to provide</h2>
+      <p class="org-membership-info">We expect you to provide these datasets as a condition of your funding with the Open Digital Planning community.</p>
+      <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="expected">
+        {% for dataset in datasets.expected %}
           {{ datasetItem(dataset) }}
         {% endfor %}
       </ul>
     </div>
   {% endif %}
 
+  {% if datasets.prospective.length > 0 %}
+    <div data-testid="datasetsProspective">
+      <h2 class="govuk-heading-m">Datasets {{ organisation.name}} can provide</h2>
+      <p class="org-membership-info">Your organisation is the authoritative source of this data. Providing this data to the platform helps ensure it is accurate and up to date.</p>
+      <ul class="govuk-task-list" data-reason="prospective">
+        {% for dataset in datasets.prospective %}
+          {{ datasetItem(dataset) }}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 
+  </div>
+
+  <div class="govuk-grid-column-one-third">
+    {% if planningGroupMembers %}
+    <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-members-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="planning-group-members-title">Membership</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <ul class="govuk-list govuk-list--bullet">
+          {% for member in planningGroupMembers %}
+            <li><a class="govuk-link" href="/organisations/{{ member.organisation }}">{{ member.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+    {% if parentGroup %}
+    <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-notice-title" data-module="govuk-notification-banner">
+      <div class="govuk-notification-banner__header">
+        <h2 class="govuk-notification-banner__title" id="planning-group-notice-title">Group {{ "Membership" | pluralise(parentGroup | length) }}</h2>
+      </div>
+      <div class="govuk-notification-banner__content">
+        <ul class="govuk-list govuk-list--bullet">
+          {% for group in parentGroup %}
+            <li><a class="govuk-link" href="/organisations/{{ group.organisation }}">{{ group.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
 

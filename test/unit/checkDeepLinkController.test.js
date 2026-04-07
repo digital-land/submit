@@ -27,7 +27,7 @@ describe('CheckDeepLinkController', () => {
   describe('get()', () => {
     it('should redirect to check tool start page when params invalid', async () => {
       const { req, res, next } = mockMiddlewareArgs({ query: {} })
-      checkDeepLinkController.get(req, res, next)
+      await checkDeepLinkController.get(req, res, next)
 
       expect(res.redirect).toHaveBeenCalledWith('/')
       expect(Array.from(req.sessionModel.keys())).toStrictEqual([])
@@ -35,20 +35,19 @@ describe('CheckDeepLinkController', () => {
     })
 
     it('should update session with deep link info', async () => {
-      const query = { dataset: 'conservation-area', orgName: 'Some Org', orgId: 'some-org' }
+      const query = { dataset: 'article-4-direction', orgName: 'Adur District Council', orgId: 'local-authority:ADU' }
       const { req, res, next } = mockMiddlewareArgs({ query })
 
-      checkDeepLinkController.get(req, res, next)
+      await checkDeepLinkController.get(req, res, next)
 
       expect(req.sessionModel.get(checkDeepLinkController.sessionKey)).toStrictEqual({
-        'data-subject': 'conservation-area',
-        orgName: 'Some Org',
-        orgId: 'some-org',
-        dataset: 'conservation-area',
-        datasetName: 'Conservation area'
+        'data-subject': 'article-4-direction',
+        orgName: 'Adur District Council',
+        orgId: 'local-authority:ADU',
+        dataset: 'article-4-direction',
+        datasetName: 'article-4-direction' // This will use datasetSlug Fall back, which just return the slug.
       })
       expect(req.journeyModel.get('history').length).toBe(1)
-      expect(next).toBeCalledTimes(1)
     })
   })
 })

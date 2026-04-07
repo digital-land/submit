@@ -93,7 +93,7 @@ export const tableParams = v.strictObject({
  */
 export const datasetStatusEnum = {
   Live: 'Live',
-  'Needs fixing': 'Needs fixing',
+  'Needs improving': 'Needs improving',
   Warning: 'Warning',
   Error: 'Error',
   'Not submitted': 'Not submitted'
@@ -107,7 +107,7 @@ export const DeadlineNoticeField = v.strictObject({
   deadline: v.string()
 })
 
-const IssueSpecification = v.optional(v.strictObject({
+const IssueSpecification = v.optional(v.looseObject({
   datasetField: NonEmptyString,
   field: NonEmptyString,
   description: v.optional(NonEmptyString),
@@ -115,8 +115,15 @@ const IssueSpecification = v.optional(v.strictObject({
   guidance: v.optional(NonEmptyString)
 }))
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()) })
-const DatasetNameField = v.strictObject({ name: NonEmptyString, dataset: NonEmptyString, collection: NonEmptyString })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()), dataset: v.optional(v.string()) })
+const DatasetNameField = v.looseObject({ name: NonEmptyString, dataset: NonEmptyString, collection: v.string() })
+const PlanningGroupProvisionsField = v.optional(v.array(v.strictObject({
+  organisation: NonEmptyString,
+  name: v.nullable(v.string()),
+  dataset: NonEmptyString,
+  project: v.nullable(v.string()),
+  provision_reason: v.nullable(v.string())
+})))
 const DatasetItem = v.strictObject({
   endpointCount: v.optional(v.number()),
   status: v.enum(datasetStatusEnum),
@@ -125,6 +132,7 @@ const DatasetItem = v.strictObject({
   error: v.optional(v.nullable(NonEmptyString)),
   issue: v.optional(NonEmptyString),
   entityCount: v.optional(v.number()),
+  authority: v.optional(v.string()),
   project: v.optional(v.string()),
   // synthetic entry, represents a user friendly count (e.g. count missing value in a column as 1 issue)
   numIssues: v.optional(v.number()),
@@ -136,28 +144,45 @@ export const OrgOverviewPage = v.strictObject({
   organisation: OrgField,
   datasets: v.object({
     statutory: v.optional(v.array(DatasetItem)),
+    expected: v.optional(v.array(DatasetItem)),
+    prospective: v.optional(v.array(DatasetItem)),
     other: v.optional(v.array(DatasetItem))
   }),
   totalDatasets: v.integer(),
   datasetsWithEndpoints: v.integer(),
   datasetsWithIssues: v.integer(),
   datasetsWithErrors: v.integer(),
-  isODPMember: v.boolean()
+  isODPMember: v.boolean(),
+  parentGroup: v.optional(v.nullable(v.array(v.strictObject({
+    entity: v.integer(),
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  })))),
+  planningGroupMembers: v.optional(v.nullable(v.array(v.strictObject({
+    organisation: NonEmptyString,
+    name: NonEmptyString
+  }))))
 })
 
 export const OrgFindPage = v.strictObject({
-  alphabetisedOrgs: v.record(NonEmptyString, v.array(OrgField))
+  orgsByDataset: v.record(NonEmptyString, v.array(OrgField))
 })
 
 export const OrgGetStarted = v.strictObject({
   organisation: OrgField,
-  dataset: DatasetNameField
+  dataset: DatasetNameField,
+  authority: v.string(),
+  planningGroupProvisions: PlanningGroupProvisionsField
 })
 
 export const OrgDatasetOverview = v.strictObject({
+  downloadUrl: v.optional(v.url()),
   organisation: OrgField,
   dataset: DatasetNameField,
+  showMap: v.boolean(),
+  authority: v.string(),
   taskCount: v.integer(),
+  alternateSources: v.optional(v.array(v.strictObject({ name: NonEmptyString }))),
   stats: v.strictObject({
     numberOfRecords: v.integer(),
     endpoints: v.array(v.strictObject({
@@ -174,16 +199,26 @@ export const OrgDatasetOverview = v.strictObject({
       }))
     }))
   }),
+  planningGroupProvisions: PlanningGroupProvisionsField,
+  parentGroup: v.optional(v.nullable(v.array(v.strictObject({
+    entity: v.integer(),
+    name: NonEmptyString,
+    organisation: NonEmptyString
+  })))),
   notice: v.optional(DeadlineNoticeField)
 })
 
 export const OrgDataView = v.strictObject({
+  downloadUrl: v.optional(v.url()),
   organisation: OrgField,
   dataset: DatasetNameField,
   taskCount: v.integer(),
+  authority: v.string(),
   tableParams,
   pagination: PaginationParams,
-  dataRange: dataRangeParams
+  dataRange: dataRangeParams,
+  alternateSources: v.optional(v.array(v.strictObject({ name: NonEmptyString }))),
+  planningGroupProvisions: PlanningGroupProvisionsField
 })
 
 export const OrgDatasetTaskList = v.strictObject({
@@ -198,11 +233,13 @@ export const OrgDatasetTaskList = v.strictObject({
     })
   })),
   organisation: OrgField,
+  authority: v.string(),
   dataset: v.strictObject({
-    dataset: v.optional(NonEmptyString),
+    dataset: NonEmptyString,
     name: NonEmptyString,
     collection: NonEmptyString
-  })
+  }),
+  planningGroupProvisions: PlanningGroupProvisionsField
 })
 
 export const OrgEndpointError = v.strictObject({
@@ -218,10 +255,11 @@ export const OrgEndpointError = v.strictObject({
 
 const MapGeometry = v.union([
   v.string(),
+  v.number(),
   v.object({
     type: v.string(),
-    reference: NonEmptyString,
-    geo: NonEmptyString
+    reference: v.optional(v.string()),
+    geo: v.nullish(v.string())
   })
 ])
 
@@ -289,7 +327,8 @@ export const DatasetDetails = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   values: v.strictObject({
-    dataset: NonEmptyString
+    dataset: NonEmptyString,
+    geomType: v.optional(v.picklist(['point', 'polygon']))
   }),
   errors: v.record(NonEmptyString, v.strictObject({
     type: NonEmptyString

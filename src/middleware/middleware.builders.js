@@ -14,16 +14,21 @@ import { types } from '../utils/logging.js'
 import { templateSchema } from '../routes/schemas.js'
 import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
+import platformApi from '../services/platformApi.js'
 import * as v from 'valibot'
 import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 
-import { dataSubjects } from '../utils/utils.js'
+import { getDataSubjects } from '../utils/utils.js'
 
-const availableDatasets = Object.values(dataSubjects).flatMap((dataSubject) =>
-  (dataSubject.dataSets || [])
-    .filter((dataset) => dataset.available)
-    .map((dataset) => dataset.value)
-)
+export async function getAvailableDatasets () {
+  const dataSubjects = await getDataSubjects()
+  return Object.values(dataSubjects).flatMap((dataSubject) =>
+    (dataSubject.dataSets || [])
+      .filter((dataset) => dataset.available)
+      .map((dataset) => dataset.value)
+  )
+}
+const availableDatasets = await getAvailableDatasets()
 
 export const FetchOptions = {
   /**
@@ -33,10 +38,14 @@ export const FetchOptions = {
   /**
    * Use the performance database
    */
-  performanceDb: Symbol('performance-db')
+  performanceDb: Symbol('performance-db'),
+  /**
+   * Use the platform database
+   */
+  platformDb: Symbol('platform-db')
 }
 
-const datasetOverride = (val, req) => {
+export const datasetOverride = (val, req) => {
   if (!val) {
     return 'digital-land'
   }
@@ -48,6 +57,8 @@ const datasetOverride = (val, req) => {
     return req.params.dataset
   } else if (val === FetchOptions.performanceDb) {
     return 'performance'
+  } else if (val === FetchOptions.platformDb) {
+    return 'platform'
   } else {
     return val(req)
   }
@@ -67,6 +78,15 @@ export const FetchOneFallbackPolicy = {
        * Renders a 404 response.
        */
   'not-found-error': fetchOneFallbackPolicy,
+
+  /**
+       * Sets an empty object for the result key.
+       * Note: This is called with `this` bound to the fetchOne context.
+       */
+  'set-empty-object': function (req, res, next) {
+    req[this.result] = null
+    next()
+  },
 
   /**
        * Proceeds by calling `next()`.
@@ -94,7 +114,8 @@ async function fetchOneFn (req, res, next) {
     const fallbackPolicy = this.fallbackPolicy ?? FetchOneFallbackPolicy['not-found-error']
     if (result.formattedData.length === 0) {
       // we can make the 404 more informative by informing the use what exactly was "not found"
-      fallbackPolicy(req, res, next)
+      // Bind the context so the fallback policy can access `this.result`
+      fallbackPolicy.call(this, req, res, next)
     } else {
       req[this.result] = result.formattedData[0]
       next()
@@ -118,7 +139,20 @@ async function fetchOneFn (req, res, next) {
 export async function fetchManyFn (req, res, next) {
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req))
+    const database = datasetOverride(this.dataset, req)
+
+    let result
+
+    // Platform DB uses REST API instead of SQL, doesn't use Datasette, future refactor could completely separate this from datasette
+    if (database === 'platform') {
+      if (!query || typeof query !== 'object' || Array.isArray(query)) {
+        throw new Error(`Platform DB queries require an object with { organisation_entity, dataset, limit, offset }, received: ${typeof query}`)
+      }
+      result = await platformApi.fetchEntities(query)
+    } else {
+      result = await datasette.runQuery(query, database)
+    }
+
     req[this.result] = result.formattedData
     logger.debug({ type: types.DataFetch, message: 'fetchMany', resultKey: this.result, resultCount: result.formattedData.length })
     next()

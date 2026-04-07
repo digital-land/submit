@@ -8,48 +8,59 @@
 
 import { test, expect } from '@playwright/test'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
-import config from '../../config/index.js'
+import StartPage from '../PageObjectModels/startPage'
+import StatusPage from '../PageObjectModels/statusPage.js'
+import ResultsPage from '../PageObjectModels/resultsPage.js'
 
 test.setTimeout(300000)
 
 const navigateToCheck = async (page) => {
   await page.goto('/check/link?dataset=article-4-direction&orgName=Adur%20District%20Council&orgId=local-authority%3AADU')
-  return new UploadMethodPage(page)
+  return new StartPage(page)
 }
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
+// TODO: this file should cause a SSL Certificate error when served to the async. It currently does but is temporary (A link that causes a Server Timeout Error or SSL Error is required)
+const serverErrorFile = 'https://www.tendringdc.gov.uk/sites/default/files/documents/planning/CAD%20csv.csv'
+const htmlFile = 'https://en.wikipedia.org/wiki/John_Doe'
 
 let lastTimestamp = 0
 
-async function checkDataFile ({ page, jsEnabled }) {
-  let hasMap = false
-  const datasetId = 'article-4-direction'
-  try {
-    const res = await fetch(`${config.mainWebsiteUrl}/dataset/${datasetId}.json`)
-    if (res.ok) {
-      const json = await res.json()
-      hasMap = json?.typology === 'geography'
+async function waitForStatusPageToBeProcessing (statusPage) {
+  // wait up to 60 seconds for processing to finish
+  for (let i = 0; i < 60; i++) {
+    if (!(await statusPage.page.url().includes('/check/status'))) {
+      break
     }
-  } catch (err) {
-    hasMap = false
+
+    await statusPage.page.waitForTimeout(1000)
+
+    if (await statusPage.isCheckStatusButtonVisible()) {
+      await statusPage.clickCheckStatusButton()
+      break
+    }
   }
+}
+
+async function checkDataFile ({ page, jsEnabled }) {
   log(`Starting test: request check of a @datafile, jsEnabled=${jsEnabled}`, true)
 
-  const uploadMethodPage = await navigateToCheck(page)
+  const startPage = await navigateToCheck(page)
+  const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
   await uploadMethodPage.waitForPage()
   await uploadMethodPage.selectUploadMethod(uploadMethods.File)
   const uploadFilePage = await uploadMethodPage.clickContinue()
 
   await uploadFilePage.waitForPage()
   await uploadFilePage.uploadFile('test/datafiles/article4directionareas-ok.csv')
-  const statusPage = await uploadFilePage.clickContinue()
+  await uploadFilePage.clickContinue()
 
-  await statusPage.waitForPage()
+  const statusPage = await startPage.verifyAndReturnPage(StatusPage)
   await statusPage.expectPageToBeProcessing()
 
   if (jsEnabled) {
-    await statusPage.expectPageToHaveFinishedProcessing()
+    await waitForStatusPageToBeProcessing(statusPage)
   } else {
     await statusPage.expectCheckStatusButtonToBeVisible()
     await page.waitForTimeout(5000)
@@ -61,16 +72,16 @@ async function checkDataFile ({ page, jsEnabled }) {
   /** @type {import('../PageObjectModels/resultsPage.js').default} ResultsPage */
   let resultsPage
   if (jsEnabled) {
-    resultsPage = await statusPage.clickContinue()
-    resultsPage.expectPageHasTabs(jsEnabled, hasMap)
+    resultsPage = await statusPage.verifyAndReturnPage(ResultsPage)
+    resultsPage.expectPageHasTabs(jsEnabled)
   } else {
     await page.waitForTimeout(5000)
     resultsPage = await statusPage.clickCheckStatusButton()
   }
 
-  await resultsPage.waitForPage(id)
   await resultsPage.expectPageHasTitle()
-  await resultsPage.expectPageHasTabs(jsEnabled, hasMap)
+  await resultsPage.expectPageHasTabs(jsEnabled)
+
   const confirmationPage = await resultsPage.clickContinue()
   log('Navigated to confirmation page')
   await confirmationPage.waitForPage()
@@ -80,7 +91,8 @@ async function checkDataFile ({ page, jsEnabled }) {
 async function checkErrorDataFile ({ page, jsEnabled }) {
   log(`Starting test: request check of an error @datafile, jsEnabled=${jsEnabled}`, true)
 
-  const uploadMethodPage = await navigateToCheck(page)
+  const startPage = await navigateToCheck(page)
+  const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
   await uploadMethodPage.waitForPage()
   await uploadMethodPage.selectUploadMethod(uploadMethods.File)
   /** @type {import('../PageObjectModels/uploadFilePage').default} UploadFilePage */
@@ -95,7 +107,7 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   await statusPage.expectPageToBeProcessing()
 
   if (jsEnabled) {
-    await statusPage.expectPageToHaveFinishedProcessing()
+    await waitForStatusPageToBeProcessing(statusPage)
   } else {
     await statusPage.expectCheckStatusButtonToBeVisible()
   }
@@ -105,29 +117,28 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   /** @type {import('../PageObjectModels/resultsPage.js').default} ResultsPage */
   let resultsPage
   if (jsEnabled) {
-    resultsPage = await statusPage.clickContinue()
+    resultsPage = await statusPage.verifyAndReturnPage(ResultsPage)
   } else {
     await page.waitForTimeout(5000)
     resultsPage = await statusPage.clickCheckStatusButton()
   }
 
-  await resultsPage.waitForPage(id)
   await resultsPage.expectPageHasTitle()
   await resultsPage.expectPageHasBlockingTasks()
   await resultsPage.expectPageHasTabs(jsEnabled)
 
   // issue details page
-  await page.getByText('description column is missing').click()
+  await page.getByText('name column is missing').click()
   await page.waitForURL(/\/check\/results\/.*\/issue\/.*/, { timeout: 4000 })
   await expect(page.getByText('Your data has issues')).toBeVisible()
   await expect(page.getByText('You cannot submit your data until you fix the issues')).toBeVisible()
   const itemsLocator = page.locator('.govuk-error-summary ul li')
   expect(await itemsLocator.count()).toBe(1)
-  await expect(itemsLocator).toContainText('description column is missing')
+  await expect(itemsLocator).toContainText('name column is missing')
   await expect(page.getByText('How to improve Adur District Council’s data')).toBeVisible()
 
   // verify we get correctly routed to a 404
-  const nonExistingIssue = page.url().replace(/.*\/check/, '/check').replace('/description', '/foobar')
+  const nonExistingIssue = page.url().replace(/.*\/check/, '/check').replace('/name', '/foobar')
   const response = await page.goto(nonExistingIssue)
   expect(response.status()).toBe(404)
 }
@@ -157,7 +168,8 @@ test.describe('Request Check', () => {
     test('request check of a @url', async ({ page }) => {
       log('Starting test: request check of a @url', true)
 
-      const uploadMethodPage = await navigateToCheck(page)
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
@@ -167,13 +179,12 @@ test.describe('Request Check', () => {
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectPageToBeProcessing()
-      await statusPage.expectPageToHaveFinishedProcessing()
+      await waitForStatusPageToBeProcessing(statusPage)
+
       const id = await statusPage.getIdFromUrl()
       log(`Extracted ID from URL: ${id}`)
-      const resultsPage = await statusPage.clickContinue()
 
-      await resultsPage.waitForPage(id)
+      const resultsPage = await statusPage.verifyAndReturnPage(ResultsPage)
       await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs()
 
@@ -185,7 +196,8 @@ test.describe('Request Check', () => {
     test('request check of an error @url', async ({ page }) => {
       log('Starting test: request check of an error @url', true)
 
-      const uploadMethodPage = await navigateToCheck(page)
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
@@ -195,13 +207,12 @@ test.describe('Request Check', () => {
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectPageToBeProcessing()
-      await statusPage.expectPageToHaveFinishedProcessing()
+      await waitForStatusPageToBeProcessing(statusPage)
+
       const id = await statusPage.getIdFromUrl()
       log(`Extracted ID from URL: ${id}`)
-      const resultsPage = await statusPage.clickContinue()
 
-      await resultsPage.waitForPage(id)
+      const resultsPage = await statusPage.verifyAndReturnPage(ResultsPage)
       await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasBlockingTasks()
       await resultsPage.expectPageHasTabs()
@@ -222,7 +233,8 @@ test.describe('Request Check', () => {
     test('request check of a @url', async ({ page }) => {
       log('Starting test: request check of a @url with javascript disabled', true)
 
-      const uploadMethodPage = await navigateToCheck(page)
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
@@ -232,15 +244,12 @@ test.describe('Request Check', () => {
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
-      await statusPage.expectPageToBeProcessing()
-      await statusPage.expectCheckStatusButtonToBeVisible()
+      await waitForStatusPageToBeProcessing(statusPage)
+
       const id = await statusPage.getIdFromUrl()
       log(`Extracted ID from URL: ${id}`)
 
-      await page.waitForTimeout(5000)
-      const resultsPage = await statusPage.clickCheckStatusButton()
-
-      await resultsPage.waitForPage(id)
+      const resultsPage = await statusPage.verifyAndReturnPage(ResultsPage)
       await resultsPage.expectPageHasTitle()
       await resultsPage.expectPageHasTabs(false)
 
@@ -252,7 +261,8 @@ test.describe('Request Check', () => {
     test('request check of an error @url', async ({ page }) => {
       log('Starting test: request check of an error @url with javascript disabled', true)
 
-      const uploadMethodPage = await navigateToCheck(page)
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
       await uploadMethodPage.waitForPage()
       await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
       const submitURLPage = await uploadMethodPage.clickContinue()
@@ -262,18 +272,75 @@ test.describe('Request Check', () => {
       const statusPage = await submitURLPage.clickContinue()
 
       await statusPage.waitForPage()
+      await waitForStatusPageToBeProcessing(statusPage)
+
+      const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
+
+      const resultsPage = await statusPage.verifyAndReturnPage(ResultsPage)
+      await resultsPage.expectPageHasTitle()
+      await resultsPage.expectPageHasBlockingTasks()
+      await resultsPage.expectPageHasTabs(false)
+    })
+
+    test('request check of a @url that should cause a SSL error and display custom content', async ({ page }) => {
+      log('request check of a @url that should cause a SSL error and display custom content', true)
+
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL(serverErrorFile)
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
       await statusPage.expectPageToBeProcessing()
       await statusPage.expectCheckStatusButtonToBeVisible()
+
       const id = await statusPage.getIdFromUrl()
       log(`Extracted ID from URL: ${id}`)
 
       await page.waitForTimeout(5000)
-      const resultsPage = await statusPage.clickCheckStatusButton()
+      await statusPage.clickCheckStatusButton()
 
-      await resultsPage.waitForPage(id)
-      await resultsPage.expectPageHasTitle()
-      await resultsPage.expectPageHasBlockingTasks()
-      await resultsPage.expectPageHasTabs(false)
+      // Wait longer for error page to load and render error messages i.e. webkit
+      await page.waitForTimeout(3000)
+
+      // Check for specific error message content
+      await expect(page.getByText('While it may open in some browsers').first()).toBeVisible({ timeout: 1000 })
+    })
+
+    test('request check of a @url that should cause a incorrect content type error return from async', async ({ page }) => {
+      log('request check of a @url that should cause a SSL error and display custom content', true)
+
+      const startPage = await navigateToCheck(page)
+      const uploadMethodPage = await startPage.verifyAndReturnPage(UploadMethodPage)
+      await uploadMethodPage.waitForPage()
+      await uploadMethodPage.selectUploadMethod(uploadMethods.URL)
+      const submitURLPage = await uploadMethodPage.clickContinue()
+
+      await submitURLPage.waitForPage()
+      await submitURLPage.enterURL(htmlFile)
+      const statusPage = await submitURLPage.clickContinue()
+
+      await statusPage.waitForPage()
+      await statusPage.expectPageToBeProcessing()
+      await statusPage.expectCheckStatusButtonToBeVisible()
+
+      const id = await statusPage.getIdFromUrl()
+      log(`Extracted ID from URL: ${id}`)
+
+      await page.waitForTimeout(5000)
+      await statusPage.clickCheckStatusButton()
+
+      // Wait longer for error page to load and render error messages i.e. webkit
+      await page.waitForTimeout(3000)
+
+      // Check for specific error message content
+      await expect(page.getByText('a direct link to the data file in one of the following formats').first()).toBeVisible({ timeout: 1000 })
     })
   })
 })

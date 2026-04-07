@@ -1,3 +1,7 @@
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
 asyncRequestApi: {
     url: http://production-pub-async-api-lb-636110663.eu-west-2.elb.amazonaws.com
 }
@@ -31,3 +35,10 @@ features:
     enabled: false
   expectationOutOfBoundsTask:
     enabled: false
+  provisionBasedDatasets:
+    # This feature will load datasets based on provisionReasons (as well as the hard coded list in default.yaml)
+    enabled: false
+  nonAuthPages:
+    # This feature enables pages to show non-authoritative datasets
+    # If off, it will still check for local-plan datasets.
+    enabled: true

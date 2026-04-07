@@ -18,6 +18,7 @@ aws: {
 url: 'https://provide.planning.data.gov.uk'
 mainWebsiteUrl: https://www.planning.data.gov.uk
 dataDesignUrl: https://design.planning.data.gov.uk
+downloadUrl: 'https://download.planning.data.gov.uk' 
 # NOTE: this property is deprecated, use serviceNames instead
 serviceName: 'Check and provide planning data'
 # NOTE: the keys in this map are sometimes referred to as "serviceType" in the templates
@@ -30,7 +31,8 @@ datasetteUrl: 'https://datasette.planning.data.gov.uk'
 checkService:
     # used as User-Agent header when checking the accessibility
     # of user supplied URLs
-    userAgent: 'GOVUK Planning Data: Check Service'
+    userAgentInternal: 'GOVUK-Planning-Data:Provide'
+    userAgent: 'GOVUK-Planning-Data'
 templateContent:
     feedbackLink: 'https://forms.office.com/Pages/ResponsePage.aspx?id=EGg0v32c3kOociSi7zmVqML0lOlr1nBLv1MaFDrnRRxURThTVTJBSDE0Sk45V1JJQlFSRDI2RzRBMy4u'
     homepageUrl: '/'
@@ -88,19 +90,44 @@ datasetsConfig:
     guidanceUrl: /guidance/specifications/tree-preservation-order
     entityDisplayName:
       variable: tree
-  listed-building:
-    guidanceUrl: /guidance/specifications/listed-building
-    entityDisplayName:
-      base: listed
-      variable: building
   listed-building-outline:
     guidanceUrl: /guidance/specifications/listed-building
     entityDisplayName:
       base: listed building
       variable: outline
+  developer-agreement-transaction:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: developer contributions
+      variable: transaction
+  developer-agreement:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: developer contributions
+      variable: document
+  developer-agreement-contribution:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: developer contributions
+      variable: document
+  infrastructure-funding-statement:
+    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    entityDisplayName:
+      base: infrastructure funding statement
+      variable: statement
+# Any dataset that has one of these three previous rules set, will be displayed in the LPA Dashboard to be checked.
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
+provisionReasons:
+  - statutory
+  - prospective
+  - expected
+  - encouraged
 tablePageLength: 50
 jira: {
-  requestTypeId: 1
+  requestTypeId: 28
 }
 features:
   submitEndpointForm:
@@ -114,4 +141,11 @@ features:
     # this feature includes violated 'out of bounds' expectations
     # as 'tasks' on LPA overview pages etc.
     # https://github.com/digital-land/submit/issues/921
+    enabled: true
+  provisionBasedDatasets:
+    # This feature will load datasets based on provisionReasons
+    enabled: true
+  nonAuthPages:
+    # This feature enables pages to show non-authoritative datasets
+    # If off, it will still check for local-plan datasets.
     enabled: true

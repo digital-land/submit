@@ -22,10 +22,18 @@ export async function initialiseMessages () {
   const fieldIssuesMessages = new Promise((resolve, reject) => {
     fs.createReadStream('src/content/fieldIssueMessages.csv').pipe(csv()).on('data', row => {
       try {
-        messages.set(row.issue_type, {
-          singular: row.singular_message,
-          plural: row.plural_message
-        })
+        const messageInfo = messages.get(row.issue_type) ?? { dataset_specific_messages: {} }
+
+        if (row.dataset && row.dataset !== 'all') {
+          messageInfo.dataset_specific_messages[row.dataset] = messageInfo.dataset_specific_messages[row.dataset] ?? {}
+          messageInfo.dataset_specific_messages[row.dataset].singular = row.singular_message
+          messageInfo.dataset_specific_messages[row.dataset].plural = row.plural_message
+        } else {
+          messageInfo.singular = row.singular_message
+          messageInfo.plural = row.plural_message
+        }
+
+        messages.set(row.issue_type, messageInfo)
       } catch (error) {
         reject(error)
       }
@@ -41,8 +49,15 @@ export async function initialiseMessages () {
     fs.createReadStream('src/content/entityIssueMessages.csv').pipe(csv()).on('data', row => {
       try {
         const messageInfo = messages.get(row.issue_type)
-        messageInfo.entities_singular = row.singular_message
-        messageInfo.entities_plural = row.plural_message
+
+        if (row.dataset && row.dataset !== 'all') {
+          messageInfo.dataset_specific_messages[row.dataset] = messageInfo.dataset_specific_messages[row.dataset] ?? {}
+          messageInfo.dataset_specific_messages[row.dataset].entities_singular = row.singular_message
+          messageInfo.dataset_specific_messages[row.dataset].entities_plural = row.plural_message
+        } else {
+          messageInfo.entities_singular = row.singular_message
+          messageInfo.entities_plural = row.plural_message
+        }
       } catch (error) {
         reject(error)
       }
@@ -57,7 +72,13 @@ export async function initialiseMessages () {
     fs.createReadStream('src/content/allRowsIssueMessages.csv').pipe(csv()).on('data', row => {
       try {
         const messageInfo = messages.get(row.issue_type)
-        messageInfo.allRows_message = row.allRows_message
+
+        if (row.dataset && row.dataset !== 'all') {
+          messageInfo.dataset_specific_messages[row.dataset] = messageInfo.dataset_specific_messages[row.dataset] ?? {}
+          messageInfo.dataset_specific_messages[row.dataset].allRows_message = row.allRows_message
+        } else {
+          messageInfo.allRows_message = row.allRows_message
+        }
       } catch (error) {
         reject(error)
       }
@@ -90,7 +111,7 @@ const datasetIssuesQuery = (resource, datasetId) => {
           WHEN it.severity == 'error' THEN 1
           ELSE null
         END
-      ) > 0 THEN 'Needs fixing'
+      ) > 0 THEN 'Needs improving'
       ELSE 'Live'
     END AS status,
     COUNT(i.issue_type) as num_issues
@@ -108,7 +129,7 @@ const datasetIssuesQuery = (resource, datasetId) => {
 
 /**
  * @typedef {Object} Dataset
- * @property {string} status - One of: 'Not submitted', 'Error', 'Needs fixing', 'Warning', 'Live'
+ * @property {string} status - One of: 'Not submitted', 'Error', 'Needs improving', 'Warning', 'Live'
  * @property {string} endpoint
  * @property {number} issue_count
  * @property {?string} error
@@ -173,7 +194,7 @@ SELECT
   case
       when (rle.latest_status is null) then 'Not submitted'
       when (rle.latest_status != '200') then 'Error'
-      when (i.severity = 'error') then 'Needs fixing'
+      when (i.severity = 'error') then 'Needs improving'
       else 'Live'
   end as status,
   case
@@ -211,6 +232,7 @@ export const issuesQueryLimit = 1000
  * @property {number} rowCount - Total row count
  * @property {string} field - Field name
  * @property {('html'|'text')} [format] - Output format
+ * @property {string} [dataset] - Dataset name for dataset-specific messages
  */
 
 /**
@@ -226,6 +248,24 @@ export default {
     from reporting_latest_endpoints
     WHERE REPLACE(organisation, '-eng', '') = '${lpa}'
     AND pipeline = '${datasetId}'`
+  },
+
+  // Query to simulate fetchEntityIssueCounts in common.middleware.js but against performanceDb
+  fetchEntityIssueCounts (lpa, dataset) {
+    const datasetClause = dataset ? `AND dataset = '${dataset}'` : ''
+    return /* sql */ `
+    SELECT
+    dataset,
+    issue_type,
+    field,
+    COUNT(*) AS count
+    FROM endpoint_dataset_issue_type_summary
+    WHERE organisation = '${lpa}'
+        AND severity = 'error'
+        AND responsibility = 'external'
+        AND (resource_end_date = '' OR resource_end_date IS NULL)
+        ${datasetClause}
+    GROUP BY dataset, issue_type, field`
   },
 
   datasetIssuesQuery,
@@ -250,18 +290,26 @@ export default {
     field,
     ...rest
   }, entityLevel = false) {
-    const messageInfo = messages.get(issueType)
+    const defaultMessage = `${numIssues} issue of type ${issueType}`
+    let messageInfo = messages.get(issueType)
     if (!messageInfo) {
       logger.warn({
         message: `PerformanceDbApi.getTaskMessage(): Unknown issue type: ${issueType}`,
         type: types.App
       })
-      return `${numIssues} issue of type ${issueType}`
+      return defaultMessage
     }
 
     if (!field) {
       logger.warn('performanceDbApi.getTaskMessage(): no field provided', { issueType })
       field = 'value'
+    }
+
+    if (rest.dataset && messageInfo?.dataset_specific_messages[rest.dataset]) {
+      messageInfo = {
+        ...messageInfo,
+        ...messageInfo.dataset_specific_messages[rest.dataset]
+      }
     }
 
     let message
@@ -276,6 +324,9 @@ export default {
         ? messageInfo.singular
         : messageInfo.plural
     }
+
+    if (!message) return defaultMessage
+
     const fieldText = rest.format === 'html' ? `<span class="column-name">${field}</span>` : field
     return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', fieldText)
   },

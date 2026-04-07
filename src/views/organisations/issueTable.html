@@ -7,9 +7,9 @@
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Submit'%}
 {% if issueEntitiesCount > 1 %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}
+  {% set pageName %}{{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}
 {% else %}
-  {% set pageName %}{{organisation.name}} - {{dataset.name}} - Issues{% endset %}
+  {% set pageName %}{{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Issues{% endset %}
 {%endif%}
 
 {% extends "layouts/main.html" %}

@@ -32,7 +32,7 @@
     "test:integration": "NODE_ENV=test playwright test --config ./test/integration/playwright.config.js",
     "test:acceptance": "NODE_ENV=development playwright test --config ./test/acceptance/playwright.config.js",
     "test:acceptance:ci": "NODE_ENV=ci playwright test --config ./test/acceptance/playwright.config.js",
-    "test:acceptance:local": "NODE_ENV=local playwright test --config ./test/acceptance/playwright.config.js",
+    "test:acceptance:local": "NODE_ENV=local playwright test --config ./test/acceptance/playwright.config.js --ui",
     "playwright-codegen": "playwright codegen http://localhost:5000",
     "lint": "standard",
     "lint:fix": "standard --fix",
@@ -57,6 +57,7 @@
     "jsdom": "^24.1.0",
     "json-schema-faker": "^0.5.6",
     "nodemon": "^3.0.1",
+    "npm-audit-markdown": "^1.2.0",
     "pluralize": "^8.0.0",
     "standard": "^17.1.0",
     "supertest": "^7.0.0",
@@ -66,7 +67,7 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.2",
     "zaproxy": "^2.0.0-rc.5",
-    "npm-audit-markdown": "^1.2.0"
+    "esbuild": "^0.27.3"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.537.0",
@@ -85,7 +86,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
-    "govuk-frontend": "^5.7.1",
+    "govuk-frontend": "^5.11.1",
     "hmpo-config": "^3.0.0",
     "hmpo-form-wizard": "^13.0.0",
     "hmpo-i18n": "^6.0.1",

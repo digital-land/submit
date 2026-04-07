@@ -11,12 +11,13 @@ describe('datasetTaskList.middleware.js', () => {
     it('sets the correct template params on the request object', async () => {
       const req = {
         orgInfo: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1' },
+        dataset: { dataset: 'example-dataset', name: 'Example Dataset', collection: 'collection 1' },
+        authority: 'authoritative',
         taskList: [
           {
             title: { text: 'task message goes here' },
             href: '/foo/bar',
-            status: { tag: { classes: 'some-class', text: 'Needs fixing' } }
+            status: { tag: { classes: 'some-class', text: 'Needs improving' } }
           }]
       }
       const res = { render: vi.fn() }
@@ -28,7 +29,8 @@ describe('datasetTaskList.middleware.js', () => {
       const templateParams = {
         taskList: req.taskList,
         organisation: { name: 'Example Organisation', organisation: 'ORG' },
-        dataset: { name: 'Example Dataset', collection: 'collection 1' }
+        dataset: { dataset: 'example-dataset', name: 'Example Dataset', collection: 'collection 1' },
+        authority: 'authoritative'
       }
       v.parse(S.OrgDatasetTaskList, templateParams)
 
@@ -63,14 +65,16 @@ describe('datasetTaskList.middleware.js', () => {
         issue_type: 'issue-type1',
         num_issues: 1,
         rowCount: 2,
-        field: 'field1'
+        field: 'field1',
+        dataset: 'some-dataset'
       })
 
       expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith({
         issue_type: 'issue-type2',
         num_issues: 1,
         rowCount: 2,
-        field: 'field2'
+        field: 'field2',
+        dataset: 'some-dataset'
       })
 
       expect(req.taskList).toEqual([
@@ -82,7 +86,7 @@ describe('datasetTaskList.middleware.js', () => {
           status: {
             tag: {
               classes: 'govuk-tag--yellow',
-              text: 'Needs fixing'
+              text: 'Needs improving'
             }
           }
         },
@@ -94,7 +98,7 @@ describe('datasetTaskList.middleware.js', () => {
           status: {
             tag: {
               classes: 'govuk-tag--yellow',
-              text: 'Needs fixing'
+              text: 'Needs improving'
             }
           }
         }
@@ -129,7 +133,8 @@ describe('datasetTaskList.middleware.js', () => {
         issue_type: 'reference values are not unique',
         num_issues: 1,
         rowCount: 10,
-        field: 'field1'
+        field: 'field1',
+        dataset: 'some-dataset'
       })
 
       expect(req.taskList).toEqual([
@@ -141,7 +146,7 @@ describe('datasetTaskList.middleware.js', () => {
           status: {
             tag: {
               classes: 'govuk-tag--yellow',
-              text: 'Needs fixing'
+              text: 'Needs improving'
             }
           }
         }
@@ -201,7 +206,7 @@ describe('datasetTaskList.middleware.js', () => {
         {
           title: { text: '1 issue of type issue-type1' }, // Or some default text if error is handled that way
           href: '/organisations/some-lpa/some-dataset/issue-type1/field1',
-          status: { tag: { classes: 'govuk-tag--yellow', text: 'Needs fixing' } }
+          status: { tag: { classes: 'govuk-tag--yellow', text: 'Needs improving' } }
         }
       ])
 
@@ -278,7 +283,7 @@ describe('datasetTaskList.middleware.js', () => {
       expect(req.taskList.length).toBe(1)
       const { href, status: { tag: { text } } } = req.taskList[0]
       expect(href).toMatch('/organisations/some-lpa/some-dataset/expectation/out-of-bounds')
-      expect(text).toBe('Needs fixing')
+      expect(text).toBe('Needs improving')
 
       expect(next).toHaveBeenCalledTimes(1)
     })
@@ -299,7 +304,6 @@ describe('entityOutOfBoundsMessage()', () => {
     expect(entityOutOfBoundsMessage('tree-preservation-order', 2)).toBe('You have 2 tree preservation orders outside of your boundary')
     expect(entityOutOfBoundsMessage('tree-preservation-zone', 2)).toBe('You have 2 tree preservation zones outside of your boundary')
     expect(entityOutOfBoundsMessage('tree', 2)).toBe('You have 2 trees outside of your boundary')
-    expect(entityOutOfBoundsMessage('listed-building', 2)).toBe('You have 2 listed buildings outside of your boundary')
     expect(entityOutOfBoundsMessage('listed-building-outline', 2)).toBe('You have 2 listed building outlines outside of your boundary')
   })
   it('Handles missing count', () => {

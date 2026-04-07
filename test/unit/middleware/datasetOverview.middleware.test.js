@@ -3,6 +3,12 @@ import { describe, it, expect, vi } from 'vitest'
 import { prepareDatasetOverviewTemplateParams, setNoticesFromSourceKey } from '../../../src/middleware/datasetOverview.middleware.js'
 import * as utils from '../../../src/utils/utils.js'
 
+vi.mock('../../../src/services/platformApi.js', () => ({
+  default: {
+    fetchEntities: vi.fn()
+  }
+}))
+
 describe('Dataset Overview Middleware', () => {
   const req = {
     params: {
@@ -21,7 +27,7 @@ describe('Dataset Overview Middleware', () => {
     it('should prepare template params for dataset overview', async () => {
       const reqWithResults = {
         ...req,
-        orgInfo: { name: 'mock-org' },
+        orgInfo: { name: 'mock-org', entity: 'mock-entity' },
         datasetSpecification: { fields: [{ field: 'field1' }, { field: 'field2' }] },
         columnSummary: [{ mapping_field: 'field1', non_mapping_field: 'field3' }],
         entityCount: { entity_count: 10 },
@@ -30,7 +36,7 @@ describe('Dataset Overview Middleware', () => {
           { endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: 200, endpoint_entry_date: '2024-02-01', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
           { endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: 404, exception: 'exception', endpoint_entry_date: '2023-01-01', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
         ],
-        entryIssueCounts: [
+        entityIssueCounts: [
           {
             issue: 'Example issue 1',
             issue_type: 'Example issue type 1',
@@ -39,12 +45,15 @@ describe('Dataset Overview Middleware', () => {
             status: 'Error'
           }
         ],
-        entityIssueCounts: [],
-        notice: undefined
+        notice: undefined,
+        authority: ''
       }
       prepareDatasetOverviewTemplateParams(reqWithResults, res, () => {})
       expect(reqWithResults.templateParams).toEqual({
-        organisation: { name: 'mock-org' },
+        downloadUrl: 'https://download.planning.data.gov.uk/mock-dataset.csv?organisation-entity=mock-entity&quality=',
+        authority: '',
+        showMap: false,
+        organisation: { name: 'mock-org', entity: 'mock-entity' },
         dataset: reqWithResults.dataset,
         taskCount: 3, // 1 issue + 1 endpoint error + 1 failed 'out of bound' expectation
         stats: {

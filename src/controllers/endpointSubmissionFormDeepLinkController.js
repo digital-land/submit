@@ -2,8 +2,7 @@ import PageController from './pageController.js'
 
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
-import { datasets } from '../utils/utils.js'
-
+import { getDatasets } from '../utils/utils.js'
 /**
  * Potentially updates sessionData with 'referrer'
  *
@@ -34,10 +33,11 @@ function maybeSetReferrer (req, sessionData) {
  * then redirect the user to the "next" page in the wizard
  */
 class EndpointSubmissionFormDeepLinkController extends PageController {
-  get (req, res, next) {
+  async get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
     const { dataset, orgName, orgId } = req.query
+    const datasets = await getDatasets()
 
     if (!dataset || !orgName || !datasets.has(dataset)) {
       logger.info('EndpointSubmissionFormDeepLinkController.get(): invalid params for deep link, redirecting to landing page',

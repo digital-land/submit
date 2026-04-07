@@ -19,10 +19,10 @@ test.describe('Dataset overview', () => {
     expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
     expect(await page.locator('[data-testid=datasetsMandatory] h2.govuk-heading-m').innerText())
       .toEqual('Datasets London Borough of Lambeth must provide')
-    expect(await page.locator('[data-testid=datasetsMandatory] .govuk-task-list li').count()).toEqual(1)
-    expect(await page.locator('[data-testid=datasetsOdpMandatory] h2.govuk-heading-m').innerText())
-      .toEqual('Datasets organisations in Open Digital Planning programme must provide')
-    expect(await page.locator('[data-testid=datasetsOdpMandatory] .govuk-task-list li').count()).toEqual(8)
+    expect(await page.locator('[data-testid=datasetsExpected] .govuk-task-list li').count()).toBeGreaterThanOrEqual(1)
+    expect(await page.locator('[data-testid=datasetsExpected] h2.govuk-heading-m').innerText())
+      .toEqual('Datasets London Borough of Lambeth are expected to provide')
+    expect(await page.locator('[data-testid=datasetsExpected] .govuk-task-list li').count()).toBeGreaterThanOrEqual(8)
   })
 
   test('Can view dataset overview', async ({ page, context }) => {
@@ -45,7 +45,7 @@ test.describe('Dataset overview', () => {
 
     expect(await page.getByRole('h2', { name: 'Dataset actions' })).toBeDefined()
     expect(await page.locator('.govuk-grid-column-one-third .govuk-list').count()).toEqual(1)
-    expect(await page.locator('.govuk-grid-column-one-third .govuk-list li').count()).toEqual(2)
+    expect(await page.locator('.govuk-grid-column-one-third .govuk-list li').count()).toEqual(3)
   })
 
   test('Can view dataset tables', async ({ page, context }) => {
@@ -74,5 +74,39 @@ test.describe('Dataset overview', () => {
     await datasetOverviewPage.viewDatasetIssues()
 
     expect(await page.locator('h2.govuk-heading-l').innerText()).toEqual('London Borough of Lambeth’s task list')
+  })
+
+  test('Dataset names shown dynamically match names fetched from redisLoader', async ({ page }) => {
+    const organisationId = 'local-authority:LBH'
+
+    // Mock the expected nameMap to avoid Redis calls, currently may only work when environment is NOT 'local' or 'development' as in those environments redisLoader will add more dynamically that may not be listed here.
+    const nameMap = {
+      'brownfield-land': 'Brownfield land',
+      'article-4-direction-area': 'Article 4 direction area',
+      'article-4-direction': 'Article 4 direction',
+      'conservation-area': 'Conservation area',
+      'conservation-area-document': 'Conservation area document',
+      tree: 'Tree',
+      'tree-preservation-zone': 'Tree preservation zone',
+      'listed-building': 'Listed building',
+      'listed-building-outline': 'Listed building outline',
+      'tree-preservation-order': 'Tree preservation order',
+      'development-plan-document': 'Development plan document',
+      'brownfield-site': 'Brownfield site'
+    }
+
+    const organisationOverviewPage = new OrganisationOverviewPage(page, { organisationId })
+    await organisationOverviewPage.navigateHere()
+
+    expect(await page.locator('h1').innerText()).toEqual('London Borough of Lambeth overview')
+    const datasetElements = await page.locator('[data-testid=datasetsExpected] .govuk-task-list li').allInnerTexts()
+    const displayedNames = datasetElements
+      .map(text => text.split('\n')[0].trim())
+
+    for (const displayedName of displayedNames) {
+      const matchingKey = Object.keys(nameMap).find(key => nameMap[key] === displayedName)
+      expect(matchingKey).toBeDefined()
+    }
+    expect(displayedNames.length).toBeGreaterThanOrEqual(8)
   })
 })

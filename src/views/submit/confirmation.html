@@ -4,7 +4,7 @@
 {% from "govuk/components/panel/macro.njk" import govukPanel %}
 
 {% set serviceType = 'Submit' %}
-{% set pageName = (values['dataset'] | datasetSlugToReadableName) + " provided" %}
+{% set pageName = (values['dataset'] | datasetSlugToReadableName(true)) + " provided" %}
 
 {% block content %}
 

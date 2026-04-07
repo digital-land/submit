@@ -4,43 +4,22 @@
  * @description Middleware for oragnisation (LPA) overview page
  */
 
-import performanceDbApi from '../services/performanceDbApi.js'
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchEntityIssueCounts, fetchEntryIssueCounts, fetchOrgInfo, fetchResources, logPageError, noop, setAvailableDatasets } from './common.middleware.js'
-import { fetchMany, FetchOptions, renderTemplate, fetchOneFromAllDatasets } from './middleware.builders.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchEntityIssueCountsPerformanceDb, fetchLocalPlanningGroups } from './common.middleware.js'
+import { fetchMany, renderTemplate, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
-import config from '../../config/index.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
-
-/**
- * Middleware. Updates req with 'datasetErrorStatus'.
- *
- * Fetches datasets which have active endpoints in error state.
- */
-const fetchDatasetErrorStatus = fetchMany({
-  query: ({ params }) => {
-    return performanceDbApi.datasetErrorStatusQuery(params.lpa, { datasetsFilter: Object.keys(config.datasetsConfig) })
-  },
-  result: 'datasetErrorStatus',
-  dataset: FetchOptions.performanceDb
-})
+import platformApi from '../services/platformApi.js'
+import { types } from '../utils/logging.js'
+import config from '../../config/index.js'
 
 const fetchProvisions = fetchMany({
   query: ({ params }) => {
-    const excludeDatasets = Object.keys(config.datasetsConfig).map(dataset => `'${dataset}'`).join(',')
     return /* sql */ `select dataset, project, provision_reason
-       from provision where organisation = '${params.lpa}' and dataset in (${excludeDatasets})`
+       from provision where organisation = '${params.lpa}'`
   },
   result: 'provisions'
-})
-
-const fetchEntityCounts = fetchOneFromAllDatasets({
-  query: ({ req }) => `
-    select count(entity) as entity_count
-    from entity
-    WHERE organisation_entity = '${req.orgInfo.entity}'`,
-  result: 'entityCounts'
 })
 
 /**
@@ -57,7 +36,7 @@ const fetchEntityCounts = fetchOneFromAllDatasets({
  */
 const orgStatsReducer = (accumulator, dataset) => {
   if (dataset.endpointCount > 0) accumulator[0]++
-  if (dataset.status === 'Needs fixing') accumulator[1]++
+  if (dataset.status === 'Needs improving') accumulator[1]++
   if (dataset.status === 'Error') accumulator[2]++
   return accumulator
 }
@@ -72,6 +51,8 @@ const orgStatsReducer = (accumulator, dataset) => {
  * @description
  * This middleware function checks if a dataset has been submitted within a certain timeframe
  * and sets flags for due and overdue notices accordingly.
+ *
+ * Does not work and not used currently, TODO: fix or delete
  */
 export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   const { resources } = req
@@ -122,6 +103,7 @@ export const datasetSubmissionDeadlineCheck = (req, res, next) => {
   next()
 }
 
+// TODO: Not used, fix or delete
 export function groupResourcesByDataset (req, res, next) {
   const { resources } = req
 
@@ -206,11 +188,17 @@ export const addNoticesToDatasets = (req, res, next) => {
  * @param {*} next
  */
 export function prepareDatasetObjects (req, res, next) {
-  const { issues, endpoints, expectationOutOfBounds, availableDatasets } = req
+  const { issues, endpoints, expectationOutOfBounds, availableDatasets, datasetAuthority } = req
   const outOfBoundsViolations = new Set((expectationOutOfBounds ?? []).map(o => o.dataset))
   req.datasets = availableDatasets.map((dataset) => {
     const datasetEndpoints = endpoints[dataset]
     const datasetIssues = issues[dataset]
+
+    // If data found is provided by alternative source, Needs improving is 'hard coded in' as 1 task Needs improving: submit authoritive data
+    if (datasetAuthority && datasetAuthority[dataset] === 'some') {
+      return { status: 'Needs improving', endpointCount: 0, dataset, issueCount: 1, authority: 'some' }
+    }
+
     if (!datasetEndpoints) {
       return { status: 'Not submitted', endpointCount: 0, dataset }
     }
@@ -228,12 +216,14 @@ export function prepareDatasetObjects (req, res, next) {
     if (allError) {
       status = 'Error'
     } else if (someError || issueCount > 0) {
-      status = 'Needs fixing'
+      status = 'Needs improving'
     } else {
       status = 'Live'
     }
 
-    return { dataset, error, issueCount, status, endpointCount, endpointErrorCount }
+    const authority = datasetAuthority?.[dataset] || ''
+
+    return { dataset, error, issueCount, status, endpointCount, endpointErrorCount, authority }
   })
 
   next()
@@ -256,7 +246,7 @@ export function prepareDatasetObjects (req, res, next) {
  * @returns {void}
  */
 export function prepareOverviewTemplateParams (req, res, next) {
-  const { orgInfo: organisation, provisions, datasets, availableDatasets } = req
+  const { orgInfo: organisation, provisions, datasets, availableDatasets, parentGroup, planningGroupMembers } = req
 
   const provisionData = new Map()
   for (const provision of provisions ?? []) {
@@ -278,17 +268,23 @@ export function prepareOverviewTemplateParams (req, res, next) {
   })
 
   const isODPMember = provisions.findIndex((p) => p.project === 'open-digital-planning') >= 0
-  const totalDatasets = datasets.length
   const [datasetsWithEndpoints, datasetsWithIssues, datasetsWithErrors] = datasets.reduce(orgStatsReducer, [0, 0, 0])
   const datasetsByReason = _.groupBy(datasets, (ds) => {
     const reason = provisionData.get(ds.dataset)?.provision_reason
     switch (reason) {
       case 'statutory':
         return 'statutory'
+      case 'expected':
+        return 'expected'
+      case 'prospective':
+        return 'prospective'
+      case 'encouraged': // Currently adding encouraged datasets to same group as prospective the "can-provide" segment
+        return 'prospective'
       default:
         return 'other'
     }
   })
+  const totalDatasets = (datasetsByReason.statutory?.length ?? 0) + (datasetsByReason.expected?.length ?? 0) + (datasetsByReason.prospective?.length ?? 0)
 
   for (const coll of Object.values(datasetsByReason)) {
     coll.sort((a, b) => a.dataset.localeCompare(b.dataset))
@@ -301,10 +297,114 @@ export function prepareOverviewTemplateParams (req, res, next) {
     datasetsWithEndpoints,
     datasetsWithIssues,
     datasetsWithErrors,
-    isODPMember
+    isODPMember,
+    parentGroup,
+    planningGroupMembers
   }
 
   next()
+}
+
+/**
+ * Batch version of prepareAuthority for LPA overview dashboard
+ * Checks authority status for all datasets in parallel
+ *
+ * @param {Object} req - Request object
+ * @param {Object} req.orgInfo - Organization info with entity
+ * @param {Object} req.datasets - Object with dataset keys and their data
+ * @param {Object} res - Response object
+ * @param {Function} next - Next middleware function
+ */
+export const prepareAuthorityBatch = async (req, res, next) => {
+  // Initialize with empty object to prevent downstream failures
+  req.datasetAuthority = {}
+
+  try {
+    const { orgInfo, availableDatasets } = req
+
+    // Datasets that are currently enabled for authority checking i.e. local plans
+    const authorityEnabledDatasets = [
+      'local-plan-boundary',
+      'local-plan-document',
+      'local-plan-document-type',
+      'local-plan-event',
+      'local-plan-housing',
+      'local-plan-process',
+      'local-plan-timetable'
+    ]
+    let datasetsToCheck = []
+    if (config.features.nonAuthPages.enabled) {
+      // Use when all datasets are to be checked
+      datasetsToCheck = availableDatasets
+    } else {
+      datasetsToCheck = availableDatasets.filter(dataset =>
+        authorityEnabledDatasets.includes(dataset)
+      )
+    }
+
+    if (datasetsToCheck.length === 0) {
+      return next()
+    }
+
+    // Create parallel promises for all datasets
+    const authorityPromises = datasetsToCheck.map(async (dataset) => {
+      try {
+        // Check for authoritative quality
+        const authoritativeResult = await platformApi.fetchEntities({
+          organisation_entity: orgInfo.entity,
+          dataset,
+          quality: 'authoritative',
+          limit: 1
+        })
+
+        if (authoritativeResult.formattedData && authoritativeResult.formattedData.length > 0) {
+          return { dataset, authority: 'authoritative' }
+        }
+
+        // Check for 'some' quality
+        const someResult = await platformApi.fetchEntities({
+          organisation_entity: orgInfo.entity,
+          dataset,
+          quality: 'some',
+          limit: 1
+        })
+
+        if (someResult.formattedData && someResult.formattedData.length > 0) {
+          return { dataset, authority: 'some' }
+        }
+
+        return { dataset, authority: '' }
+      } catch (error) {
+        logger.warn({
+          message: `prepareAuthorityBatch failed for dataset ${dataset}: ${error.message}`,
+          type: types.App,
+          orgEntity: orgInfo.entity,
+          dataset
+        })
+        return { dataset, authority: '' }
+      }
+    })
+
+    // Wait for all authority checks
+    const results = await Promise.all(authorityPromises)
+
+    // Convert results array to dictionary for easier lookup
+    req.datasetAuthority = results.reduce((acc, { dataset, authority }) => {
+      acc[dataset] = authority
+      return acc
+    }, {})
+
+    return next()
+  } catch (error) {
+    logger.error({
+      message: `prepareAuthorityBatch failed: ${error.message}`,
+      type: types.App,
+      orgEntity: req.orgInfo?.entity,
+      errorStack: error.stack
+    })
+    // req.datasetAuthority already initialized to {} at the top so okay future use
+    return next()
+  }
 }
 
 export const getOverview = renderTemplate({
@@ -317,11 +417,9 @@ export const getOverview = renderTemplate({
 })
 
 export function groupIssuesCountsByDataset (req, res, next) {
-  const { entityIssueCounts, entryIssueCounts } = req
+  const { entityIssueCounts = [] } = req
 
-  // merge arrays and handle undefined
-  const issueCounts = [...(entityIssueCounts || []), ...(entryIssueCounts || [])]
-  req.issues = issueCounts.reduce((acc, current) => {
+  req.issues = entityIssueCounts.reduce((acc, current) => {
     if (!acc[current.dataset]) {
       acc[current.dataset] = []
     }
@@ -356,23 +454,23 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
  */
 export default [
   fetchOrgInfo,
-  fetchResources,
-  fetchDatasetErrorStatus,
-  fetchEndpointSummary,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
-  fetchEntityCounts,
+  parallel([
+    fetchLocalPlanningGroups,
+    fetchEndpointSummary,
+    fetchEntityIssueCountsPerformanceDb,
+    fetchProvisions
+  ]),
+
   setAvailableDatasets,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
-  groupResourcesByDataset,
   groupIssuesCountsByDataset,
   groupEndpointsByDataset,
 
+  prepareAuthorityBatch, // Fetch Platform API authority status for all datasets
   prepareDatasetObjects,
 
   // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
-  fetchProvisions,
   prepareOverviewTemplateParams,
   getOverview,
   logPageError

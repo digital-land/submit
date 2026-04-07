@@ -43,6 +43,6 @@ export default class Wiremock {
         host: config.asyncRequestApi.port
       })
       .withReuse(true).start()
-    this.container.stop()
+    await this.container.stop()
   }
 }

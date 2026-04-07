@@ -1,97 +1,10 @@
+import { getDataSubjectMap } from './datasetSubjectLoader.js'
+
 export const severityLevels = {
   notice: 'notice',
   informational: 'info',
   warning: 'warning',
   error: 'error'
-}
-
-export const dataSubjects = {
-  'article-4-direction': {
-    available: true,
-    dataSets: [
-      {
-        value: 'article-4-direction',
-        text: 'Article 4 direction',
-        available: true
-      },
-      {
-        value: 'article-4-direction-area',
-        text: 'Article 4 direction area',
-        available: true
-      }
-    ]
-  },
-  'brownfield-land': {
-    available: true,
-    dataSets: [
-      {
-        value: 'brownfield-land',
-        text: 'Brownfield land',
-        available: true
-      },
-      {
-        value: 'brownfield-site',
-        text: 'Brownfield site',
-        available: false
-      }
-    ]
-  },
-  'conservation-area': {
-    available: true,
-    dataSets: [
-      {
-        value: 'conservation-area',
-        text: 'Conservation area',
-        available: true
-      },
-      {
-        value: 'conservation-area-document',
-        text: 'Conservation area document',
-        available: true
-      }
-    ]
-  },
-  'listed-building': {
-    available: true,
-    dataSets: [
-      {
-        value: 'listed-building',
-        text: 'Listed building',
-        available: false
-      },
-      {
-        value: 'listed-building-grade',
-        text: 'Listed building grade',
-        available: false
-      },
-      {
-        value: 'listed-building-outline',
-        text: 'Listed building outline',
-        available: true
-      }
-    ]
-  },
-  'tree-preservation-order': {
-    available: true,
-    dataSets: [
-      {
-        value: 'tree',
-        text: 'Tree',
-        available: true,
-        requiresGeometryTypeSelection: true
-      },
-      {
-        value: 'tree-preservation-order',
-        text: 'Tree preservation order',
-        available: true
-      },
-      {
-        value: 'tree-preservation-zone',
-        text: 'Tree preservation zone',
-        available: true
-      }
-    ]
-  }
 }
 
 export const entryIssueGroups = [
@@ -109,6 +22,20 @@ export const entryIssueGroups = [
   }
 ]
 
+// Function exposes datasets sorted by collections. (the subjects), pre-flattening done by makeDatasetsLookup.
+export async function getDataSubjects () {
+  const dataSubjectMap = await getDataSubjectMap()
+  return dataSubjectMap
+}
+
+/**
+ * Flattens the nested dataSubjects object into a two-dimensional Map for quick lookup.
+ * Each entry in the returned Map uses the dataSet's value as the key and an object containing
+ * the dataSet properties along with its parent dataSubject key.
+ *
+ * @param {Object} dataSubjects - An object where each key is a dataSubject and its value contains a dataSets array.
+ * @returns {Map} A Map where each key is a dataSet value and each value is the corresponding dataSet object with an added dataSubject property.
+ */
 export function makeDatasetsLookup (dataSubjects) {
   const lookup = new Map()
   for (const [key, dataSubject] of Object.entries(dataSubjects)) {
@@ -133,8 +60,13 @@ export function makeDatasetsLookup (dataSubjects) {
  * Map of dataset identifiers to their configuration objects
  * @type {Map<string, Dataset>}
  */
-export const datasets = makeDatasetsLookup(dataSubjects)
-
+export async function getDatasets () {
+  const dataSubjects = await getDataSubjects()
+  const datasets = makeDatasetsLookup(dataSubjects)
+  return datasets
+}
+// export const datasets = makeDatasetsLookup(dataSubjects)
+// console.log('datasets:', datasets)
 /**
  * Gets the list of available datasets sorted by display text
  *

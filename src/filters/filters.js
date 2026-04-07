@@ -18,7 +18,7 @@ import { getNavigationLinks } from './getNavigationLinks.js'
 const statusToTagClassMapping = {
   Error: 'govuk-tag--red',
   'Not submitted': 'govuk-tag--grey',
-  'Needs fixing': 'govuk-tag--yellow',
+  'Needs improving': 'govuk-tag--yellow',
   Warning: 'govuk-tag--blue',
   Issue: 'govuk-tag--blue', // deprecated
   Live: 'govuk-tag--green'
@@ -32,7 +32,8 @@ export function statusToTagClass (status) {
 const { govukMarkdown, govukDateTime } = xGovFilters
 
 const addFilters = (nunjucksEnv) => {
-  nunjucksEnv.addFilter('datasetSlugToReadableName', datasetSlugToReadableName)
+  // Wrapper function for datasetSlugToReadableName filter to allow working with async loading of the mapping data
+  nunjucksEnv.addFilter('datasetSlugToReadableName', (...args) => datasetSlugToReadableName(...args))
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
   nunjucksEnv.addFilter('govukDateTime', govukDateTime)

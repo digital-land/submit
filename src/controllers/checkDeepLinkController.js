@@ -1,10 +1,11 @@
 import PageController from './pageController.js'
 
-import { datasets } from '../utils/utils.js'
+import { getDatasets } from '../utils/utils.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import * as v from 'valibot'
 import { NonEmptyString } from '../routes/schemas.js'
+import { requiresGeometryTypeToBeSelectedViaDeepLink } from './datasetController.js'
 
 const QueryParams = v.object({
   dataset: NonEmptyString,
@@ -42,10 +43,18 @@ function maybeSetReferrer (req, sessionData) {
  * then redirect the user to the "next" page in the wizard
  */
 class CheckDeepLinkController extends PageController {
-  get (req, res, next) {
+  async get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
     const { dataset, orgName, orgId } = req.query
+    let datasets = null
+    try {
+      datasets = await getDatasets()
+    } catch (error) {
+      logger.error('getDatasets Error', error)
+      return res.redirect('/')
+    }
+
     const validationResult = v.safeParse(QueryParams, req.query)
     if (!(validationResult.success && datasets.has(dataset))) {
       logger.info('DeepLinkController.get(): invalid params for deep link, redirecting to landing page',
@@ -61,6 +70,10 @@ class CheckDeepLinkController extends PageController {
     req.sessionModel.set(this.sessionKey, sessionData)
 
     this.#addHistoryStep(req, '/check/dataset')
+
+    // Pre-calculate geometry requirement to avoid async timing issues in form wizard async conditional routing
+    const requiresGeometry = await requiresGeometryTypeToBeSelectedViaDeepLink(req)
+    req.sessionModel.set('requiresGeometryTypeSelection', requiresGeometry)
 
     super.post(req, res, next)
   }

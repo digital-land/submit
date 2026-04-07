@@ -6,15 +6,25 @@ aws: {
     bucket: 'development-pub-async-request-files',
 }
 datasetteUrl: https://datasette.development.planning.data.gov.uk
+downloadUrl: 'https://download.development.planning.data.gov.uk' 
 redis: {
     secure: true,
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',
     port: 6379
 }
+organisationTypes:
+  - local-authority
+  - national-park-authority
+  - development-corporation
+  - local-planning-group
 url: 'https://provide.development.planning.data.gov.uk/'
-jira: {
-  requestTypeId: 37
-}
 features:
   submitEndpointForm:
+    enabled: true
+  provisionBasedDatasets:
+    # This feature will load datasets based on provisionReasons
+    enabled: true
+  nonAuthPages:
+    # This feature enables pages to show non-authoritative datasets
+    # If off, it will still check for local-plan datasets.
     enabled: true

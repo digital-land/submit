@@ -30,5 +30,6 @@ export class MiddlewareError extends Error {
     }
     this.statusCode = statusCode
     this.template = options?.template ?? 'errorPages/error.njk'
+    this.errorDetail = options?.errorDetail
   }
 }
