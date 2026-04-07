@@ -10,7 +10,7 @@
   /organisations/{{ organisation.organisation | urlencode }}/{{ dataset.dataset | urlencode }}/endpoint-error/{{ endpoint.endpoint | urlencode }}
 {% endmacro %}
 
-{% macro endpointUrlInfo(organisation, dataset, endpoint) %}
+{% macro endpointUrlWithError(organisation, dataset, endpoint) %}
   <a style="{{ urlStyle}}" href="{{endpoint.endpoint_url}}">{{endpoint.endpoint_url}}</a>
 
   <p class="govuk-error-message">
@@ -124,7 +124,7 @@
     {% if endpoint.error %}
       {% set _ = endpointRows.push({
         key: { text: "Endpoint URL" },
-        value: { html: endpointUrlInfo(organisation, dataset, endpoint) },
+        value: { html: endpointUrlWithError(organisation, dataset, endpoint) },
         classes: 'app-inset-text---error dl-summary-card-list__row--error'
       }) %}
     {% else %}
@@ -134,7 +134,7 @@
       }) %}
     {% endif %}
 
-    {% if endpoint.documentation_url is not defined or endpoint.documentation_url == "" %}
+    {% if not endpoint.documentation_url %}
       {% set _ = endpointRows.push({
         key: { text: "Webpage URL" },
         value: { html: '<p class="govuk-error-message" > Documentation URL missing</p>' },
@@ -153,7 +153,7 @@
     }) %}
     {% set _ = endpointRows.push({
       key: { text: "Endpoint last accessed" },
-      value: { text: endpoint.lastAccessed | govukDateTime }
+      value: { text: endpoint.lastAccessed and (endpoint.lastAccessed | govukDateTime) }
     }) %}
     {% set _ = endpointRows.push({
       key: { text: "Endpoint last updated" },

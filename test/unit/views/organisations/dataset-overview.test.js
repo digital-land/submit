@@ -37,8 +37,8 @@ describe('Dataset Overview Page', () => {
           name: 'endpoint 2',
           endpoint: 'BAR',
           endpoint_url: 'http://endpoint2.co.uk',
-          lastAccessed: '2024-19-19',
-          lastUpdated: '2024-19-19',
+          lastAccessed: '2024-09-19',
+          lastUpdated: '2024-09-19',
           entryDate: '2024-12-12',
           error: {
             code: 404,
