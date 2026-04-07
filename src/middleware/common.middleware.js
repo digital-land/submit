@@ -18,6 +18,7 @@ import config from '../../config/index.js'
 import { readFileSync } from 'node:fs'
 
 const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
+const PLAN_FALLBACK_DATASETS_JSON = JSON.stringify(planFallback.datasets)
 /**
  * Middleware. Set `req.handlerName` to a string that will identify
  * the function that threw the error.
@@ -398,7 +399,7 @@ export const checkSpecificationFallback = (req, res, next) => {
   if (specification && specification.specification === 'local-plan') {
     const fallbackDataset = planFallback.datasets.find(d => d.dataset === req.dataset.dataset)
     if (fallbackDataset) {
-      req.specification = { json: JSON.stringify(planFallback.datasets) }
+      req.specification = { json: PLAN_FALLBACK_DATASETS_JSON }
     }
   }
 
