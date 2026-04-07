@@ -91,7 +91,7 @@ class SubmitUrlController extends UploadController {
     const postCheckFailure = postValidators(headResponse).find(validator => !validator.fn())
     if (postCheckFailure) {
       Sentry.metrics.count('url_submission.validation_failure', 1, { attributes: { failure_type: postCheckFailure.type } })
-      logger.warn({ message: 'url_submission.validation_failure', type: types.DataValidation, failure_type: postCheckFailure.type, submittedUrl: url })
+      logger.warn({ message: 'url_submission.validation_failure', event: 'url_submission_failure', type: types.DataValidation, failure_type: postCheckFailure.type, submittedUrl: url })
     }
     return postCheckFailure?.type
   }
