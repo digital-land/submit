@@ -37,8 +37,8 @@ describe('Dataset Overview Page', () => {
           name: 'endpoint 2',
           endpoint: 'BAR',
           endpoint_url: 'http://endpoint2.co.uk',
-          lastAccessed: '2024-19-19',
-          lastUpdated: '2024-19-19',
+          lastAccessed: '2024-09-19',
+          lastUpdated: '2024-09-19',
           entryDate: '2024-12-12',
           error: {
             code: 404,
@@ -77,20 +77,31 @@ describe('Dataset Overview Page', () => {
 
   it('Renders dataset details correctly', () => {
     expect(document.querySelector('#main-content h2.govuk-heading-m').textContent).toContain('Dataset details')
-    const summaryListValues = document.querySelectorAll('dd.govuk-summary-list__value')
+    const summaryLists = document.querySelectorAll('.govuk-summary-list')
 
-    expect(summaryListValues[0].textContent.trim()).toEqual(params.stats.numberOfRecords.toString())
-    expect(summaryListValues[1].textContent.trim()).toEqual('Open Government Licence')
-    expect(summaryListValues[2].textContent).toContain(params.stats.endpoints[0].endpoint_url)
-    expect(summaryListValues[3].textContent).toContain(params.stats.endpoints[0].documentation_url)
-    expect(summaryListValues[4].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastAccessed))
-    expect(summaryListValues[5].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastUpdated))
-    expect(summaryListValues[6].textContent).toContain(govukDateTime(params.stats.endpoints[0].entryDate))
-    expect(summaryListValues[7].textContent).toContain(params.stats.endpoints[1].endpoint_url)
-    expect(summaryListValues[8].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastAccessed))
-    expect(summaryListValues[8].textContent).toContain(params.stats.endpoints[1].error.code)
-    expect(summaryListValues[9].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
-    expect(summaryListValues[10].textContent).toContain(govukDateTime(params.stats.endpoints[1].entryDate))
+    expect(summaryLists.length).toEqual(3)
+    expect(summaryLists[0].textContent).toContain(params.stats.numberOfRecords.toString())
+  })
+
+  it('Renders active endpoint cards in descending order', () => {
+    const endpointCards = document.querySelectorAll('.govuk-summary-card')
+    const endpointTitles = document.querySelectorAll('.govuk-summary-card__title')
+
+    expect(endpointCards.length).toEqual(2)
+    expect(endpointTitles[0].textContent.trim()).toEqual('Endpoint 2')
+    expect(endpointTitles[1].textContent.trim()).toEqual('Endpoint 1')
+
+    expect(endpointCards[0].textContent).toContain(params.stats.endpoints[0].endpoint_url)
+    expect(endpointCards[0].textContent).toContain(params.stats.endpoints[0].documentation_url)
+    expect(endpointCards[0].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastAccessed))
+    expect(endpointCards[0].textContent).toContain(govukDateTime(params.stats.endpoints[0].lastUpdated))
+    expect(endpointCards[0].textContent).toContain(govukDateTime(params.stats.endpoints[0].entryDate))
+
+    expect(endpointCards[1].textContent).toContain(params.stats.endpoints[1].endpoint_url)
+    expect(endpointCards[1].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastAccessed))
+    expect(endpointCards[1].textContent).toContain(params.stats.endpoints[1].error.code)
+    expect(endpointCards[1].textContent).toContain(govukDateTime(params.stats.endpoints[1].lastUpdated))
+    expect(endpointCards[1].textContent).toContain(govukDateTime(params.stats.endpoints[1].entryDate))
   })
 
   it('Renders breadcrumbs correctly', () => {
