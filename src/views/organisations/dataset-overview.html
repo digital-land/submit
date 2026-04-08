@@ -128,9 +128,12 @@
         classes: 'app-inset-text---error dl-summary-card-list__row--error'
       }) %}
     {% else %}
+      {% set endpointUrlHtml %}
+        <a style="{{ urlStyle }}" href="{{ endpoint.endpoint_url }}">{{ endpoint.endpoint_url }}</a>
+      {% endset %}
       {% set _ = endpointRows.push({
         key: { text: "Endpoint URL" },
-        value: { html: '<a style="' + urlStyle + '" href="' + endpoint.endpoint_url + '">' + endpoint.endpoint_url + '</a>' }
+        value: { html: endpointUrlHtml }
       }) %}
     {% endif %}
 
@@ -141,9 +144,12 @@
         classes: 'app-inset-text---error dl-summary-card-list__row--error'
       }) %}
     {% else %}
+      {% set documentationUrlHtml %}
+        <a style="{{ urlStyle }}" href="{{ endpoint.documentation_url }}">{{ endpoint.documentation_url }}</a>
+      {% endset %}
       {% set _ = endpointRows.push({
         key: { text: "Webpage URL" },
-        value: { html: '<a style="' + urlStyle + '" href="' + endpoint.documentation_url + '">' + endpoint.documentation_url + '</a>' }
+        value: { html: documentationUrlHtml }
       }) %}
     {% endif %}
 
