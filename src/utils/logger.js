@@ -1,4 +1,5 @@
-import { createLogger, format, transports } from 'winston'
+import { createLogger, format, transports, Transport } from 'winston'
+import * as Sentry from '@sentry/node'
 import config from '../../config/index.js'
 
 /* eslint-disable no-unused-vars */
@@ -9,9 +10,18 @@ const ignoreAssetRequests = format((info, opts) => {
   return info
 })
 
+class SentryTransport extends Transport {
+  log (info, callback) {
+    if (info.level === 'warn') Sentry.logger.warn(info.message, info)
+    else if (info.level === 'error') Sentry.logger.error(info.message, info)
+    callback()
+  }
+}
+
 const appTransports = () => [
   new transports.Console(),
-  new transports.File({ filename: 'combined.log' })
+  new transports.File({ filename: 'combined.log' }),
+  new SentryTransport({ level: 'warn' })
 ]
 
 const testTransports = () => [
