@@ -11,7 +11,7 @@
 {% endmacro %}
 
 {% macro endpointUrlWithError(organisation, dataset, endpoint) %}
-  <a style="{{ urlStyle}}" href="{{endpoint.endpoint_url}}">{{endpoint.endpoint_url}}</a>
+  <a style="{{ urlStyle}}" href="{{ endpoint.endpoint_url }}">{{ endpoint.endpoint_url }}</a>
 
   <p class="govuk-error-message">
    {{ endpointErrorMessage(endpoint) }}
