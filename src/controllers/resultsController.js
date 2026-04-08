@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node'
 import * as v from 'valibot'
 import config from '../../config/index.js'
 import PageController from './pageController.js'
@@ -71,11 +72,19 @@ export async function getRequestDataMiddleware (req, res, next) {
 }
 
 export async function checkForErroredResponse (req, res, next) {
+  if (!req.locals.requestData.response?.error) {
+    Sentry.metrics.count('url_submission.success', 1)
+  }
+
   if (req.locals.requestData.response?.error) {
     const { errMsg } = req.locals.requestData.response.error
     if (errMsg && errMsg.length > 0) {
+      Sentry.metrics.count('url_submission.async_processing_failure', 1, { attributes: { error_message: errMsg } })
+      // Disable as this is not an error we want to track in Sentry, only need metrics
+      Sentry.getCurrentScope().setTag('async_handled_processing_error', true)
       return next(new MiddlewareError(errMsg, 500, { template: 'check/error-redirect.html' }))
     } else {
+      Sentry.metrics.count('url_submission.async_processing_failure', 1, { attributes: { error_message: 'unknown' } })
       return next(new MiddlewareError('An unknown error occurred when processing your endpoint', 500, { template: 'check/error-redirect.html' }))
     }
   }
