@@ -111,7 +111,7 @@ datasetsConfig:
       base: developer contributions
       variable: document
   infrastructure-funding-statement:
-    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    guidanceUrl: https://digital-land.github.io/specification/specification/infrastructure-funding-statement/
     entityDisplayName:
       base: infrastructure funding statement
       variable: statement
