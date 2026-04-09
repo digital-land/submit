@@ -103,13 +103,13 @@ datasetsConfig:
   developer-agreement:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
-      base: developer agreement
-      variable: document
+      base: developer
+      variable: agreement
   developer-agreement-contribution:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
       base: developer agreement
-      variable: document
+      variable: contribution
   infrastructure-funding-statement:
     guidanceUrl: https://digital-land.github.io/specification/specification/infrastructure-funding-statement/
     entityDisplayName:
