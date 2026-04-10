@@ -3,7 +3,7 @@ import logger from '../logger.js'
 import config from '../../../config/index.js'
 
 export const fetchDatasetsRequiredForLocalAuthority = async () => {
-  const sql = 'SELECT DISTINCT dataset, provision_reason FROM provision'
+  const sql = 'SELECT DISTINCT dataset, provision_reason FROM provision LIMIT -1'
 
   try {
     const response = await datasette.runQuery(sql)

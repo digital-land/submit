@@ -24,6 +24,7 @@
 {% from "../components/dataset-navigation.html" import datasetNavigation %}
 {% from "components/deadlineNotice.html" import deadlineNotice %}
 {% from "components/alternativeSourceNotice.html" import alternativeSourceNotice %}
+{% from "components/alternativePrePopulatedSourceNotice.html" import alternativePrePopulatedSourceNotice %}
 
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 
@@ -217,7 +218,11 @@
     </section>
     {% endif %}
     {% if authority === "some" %}
-      {{ alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
+      {% if dataset.dataset === "local-plan" or dataset.dataset === "plan-timetable" %}
+        {{ alternativePrePopulatedSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
+      {% else %}
+        {{ alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
+      {% endif %}
     {% endif %}
   </div>
   <div class="govuk-grid-column-one-third">
