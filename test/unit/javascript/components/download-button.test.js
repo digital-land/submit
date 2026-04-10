@@ -57,7 +57,7 @@ describe('DownloadButton', () => {
     await flushAsync()
 
     expect(button.getAttribute('aria-busy')).toEqual('false')
-    expect(button.textContent).toContain('Download complete. Check your downloads folder.')
+    expect(button.textContent).toContain('Download complete.')
     expect(window.URL.createObjectURL).toHaveBeenCalled()
     expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test')
   })
@@ -74,7 +74,7 @@ describe('DownloadButton', () => {
     dispatchClick(window, button)
     await flushAsync()
 
-    expect(button.textContent).toContain('We could not download the file. Try again.')
+    expect(button.textContent).toContain('Download failed. Try again.')
   })
 
   it('falls back to href when data-download-url is missing', async () => {
