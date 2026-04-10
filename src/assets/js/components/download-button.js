@@ -87,12 +87,12 @@ export default class DownloadButton {
     }
 
     if (state === 'complete') {
-      button.textContent = 'Download complete. Check your downloads folder.'
+      button.textContent = 'Download complete.'
       return
     }
 
     if (state === 'error') {
-      button.textContent = 'We could not download the file. Try again.'
+      button.textContent = 'Download failed. Try again.'
       return
     }
 
