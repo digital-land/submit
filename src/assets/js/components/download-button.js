@@ -1,5 +1,3 @@
-
-
 export default class DownloadButton {
   constructor (document, browserWindow = window) {
     this.document = document
