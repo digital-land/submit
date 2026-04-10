@@ -1,0 +1,37 @@
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% macro alternativePrePopulatedSourceNotice(organisation, dataset, downloadUrl, alternateSources) %}
+  <section>
+    <p class="govuk-body">An alternative source is data that was <b>not provided by your organisation.</b></p>
+    {% if alternateSources and alternateSources.length > 0 %}
+      {% for source in alternateSources %}
+        {% if source.name == "Ministry of Housing, Communities & Local Government" %}
+          <p class="govuk-body">The Ministry of Housing, Communities &amp; Local Government (MHCLG) is listed as the alternative source when the data was collected from publicly available information, not supplied directly by you.</p>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    <h2 class="govuk-heading-m">Become the authoritative source</h2>
+    <p class="govuk-body"><a href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/get-started">Follow the steps</a> to publish data on your website and let us know where we can collect it.</p>
+    <p class="govuk-body">To help you prepare your data, you can download CSV files for local plans and plan timetables. Each file contains pre-populated rows for local plans using the new system that you can complete.</p>
+    <p class="govuk-body">Open the file in a spreadsheet editor and:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>review the data</li>
+      <li>correct any errors</li>
+      <li>add missing information before publishing it on your website</li>
+    </ul>
+    <p class="govuk-body">The CSV may include data for the legacy local plans system from:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>data you provided in the past</li>
+      <li>information on your website from plans under the legacy system</li>
+      <li>open data from public sources</li>
+    </ul>
+    <div class="js-app-c-download-button">
+      {{ govukButton({
+        text: "Download alternative source data (CSV)",
+        href: downloadUrl,
+        preventDoubleClick: true,
+        attributes: { "data-download-url": downloadUrl }
+      }) }}
+    </div>
+  </section>
+{% endmacro %}

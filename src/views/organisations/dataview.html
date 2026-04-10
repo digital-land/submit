@@ -3,6 +3,7 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 {% from "components/alternativeSourceNotice.html" import alternativeSourceNotice %}
+{% from "components/alternativePrePopulatedSourceNotice.html" import alternativePrePopulatedSourceNotice %}
 
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
 {% set serviceType = 'Submit'%}
@@ -74,7 +75,11 @@
 {% if authority === "some" %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    {{ alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
+    {% if dataset.dataset === "local-plan" or dataset.dataset === "plan-timetable" %}
+      {{ alternativePrePopulatedSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
+    {% else %}
+      {{ alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) }}
+    {% endif %}
   </div>
 </div>
 {% endif %}
