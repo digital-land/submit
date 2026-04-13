@@ -55,6 +55,9 @@ export default class DownloadButton {
 
       this.downloadBlob(blob, fileName)
       this.showMessage(button, 'complete')
+      setTimeout(() => {
+        this.showMessage(button, 'reset')
+      }, 5000)
     } catch (error) {
       console.error('DownloadButton: failed to download file', error)
       this.showMessage(button, 'error')
@@ -79,20 +82,28 @@ export default class DownloadButton {
   }
 
   showMessage (button, state) {
-    const originalText = button.dataset.originalText || 'Download alternative source data (CSV)'
+    const originalText = button.dataset.originalText || 'Download'
 
     if (state === 'loading') {
-      button.innerHTML = '<span class="app-c-spinner" aria-hidden="true"></span><span class="app-c-download-button__button-text">Downloading...</span>'
+      button.textContent = ''
+      const spinner = this.document.createElement('span')
+      spinner.className = 'app-c-spinner'
+      spinner.setAttribute('aria-hidden', 'true')
+      const text = this.document.createElement('span')
+      text.className = 'app-c-download-button__button-text'
+      text.textContent = 'Downloading...'
+      button.appendChild(spinner)
+      button.appendChild(text)
       return
     }
 
     if (state === 'complete') {
-      button.textContent = 'Download complete.'
+      button.textContent = 'Download complete'
       return
     }
 
     if (state === 'error') {
-      button.textContent = 'Download failed. Try again.'
+      button.textContent = 'Download failed. Try again'
       return
     }
 
@@ -115,14 +126,14 @@ export default class DownloadButton {
       return null
     }
 
-    const utf8NameMatch = headerValue.match(/filename\*=UTF-8''([^;]+)/i)
-    if (utf8NameMatch && utf8NameMatch[1]) {
-      return decodeURIComponent(utf8NameMatch[1])
+    const quotedMatch = headerValue.match(/filename="([^"]+)"/i)
+    if (quotedMatch && quotedMatch[1]) {
+      return quotedMatch[1]
     }
 
-    const fileNameMatch = headerValue.match(/filename="?([^";]+)"?/i)
-    if (fileNameMatch && fileNameMatch[1]) {
-      return fileNameMatch[1]
+    const unquotedMatch = headerValue.match(/filename=([^;]+)/i)
+    if (unquotedMatch && unquotedMatch[1]) {
+      return unquotedMatch[1].trim()
     }
 
     return null

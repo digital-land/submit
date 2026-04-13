@@ -57,7 +57,7 @@ describe('DownloadButton', () => {
     await flushAsync()
 
     expect(button.getAttribute('aria-busy')).toEqual('false')
-    expect(button.textContent).toContain('Download complete.')
+    expect(button.textContent).toContain('Download complete')
     expect(window.URL.createObjectURL).toHaveBeenCalled()
     expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test')
   })
@@ -74,7 +74,7 @@ describe('DownloadButton', () => {
     dispatchClick(window, button)
     await flushAsync()
 
-    expect(button.textContent).toContain('Download failed. Try again.')
+    expect(button.textContent).toContain('Download failed. Try again')
   })
 
   it('falls back to href when data-download-url is missing', async () => {
@@ -89,5 +89,21 @@ describe('DownloadButton', () => {
     await flushAsync()
 
     expect(fetchMock).toHaveBeenCalledWith('/downloads/alternative.csv', { credentials: 'same-origin' })
+  })
+
+  it('prevents navigation and ignores repeated clicks while busy', async () => {
+    const button = document.querySelector('.govuk-button')
+    button.removeAttribute('data-download-url')
+
+    const downloadButton = new DownloadButton(document, window)
+    expect(downloadButton).toBeTruthy()
+    const firstClick = new window.MouseEvent('click', { bubbles: true, cancelable: true })
+    button.dispatchEvent(firstClick)
+    expect(firstClick.defaultPrevented).toBe(true)
+
+    dispatchClick(window, button)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    await flushAsync()
   })
 })
