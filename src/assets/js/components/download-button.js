@@ -62,17 +62,11 @@ export default class DownloadButton {
 
       this.downloadBlob(blob, fileName)
       this.showMessage(button, 'complete')
-      button.resetTimer = this.window.setTimeout(() => {
-        button.resetTimer = null
-        this.showMessage(button, 'reset')
-      }, 5000)
+      this.scheduleReset(button)
     } catch (error) {
       console.error('DownloadButton: failed to download file', error)
       this.showMessage(button, 'error')
-      button.resetTimer = this.window.setTimeout(() => {
-        button.resetTimer = null
-        this.showMessage(button, 'reset')
-      }, 5000)
+      this.scheduleReset(button)
     } finally {
       this.setLoadingState(button, false)
     }
@@ -122,6 +116,17 @@ export default class DownloadButton {
     button.textContent = originalText
   }
 
+  scheduleReset (button) {
+    if (button.resetTimer) {
+      this.window.clearTimeout(button.resetTimer)
+    }
+
+    button.resetTimer = this.window.setTimeout(() => {
+      button.resetTimer = null
+      this.showMessage(button, 'reset')
+    }, 5000)
+  }
+
   downloadBlob (blob, fileName) {
     const blobUrl = this.window.URL.createObjectURL(blob)
     const link = this.document.createElement('a')
@@ -138,12 +143,13 @@ export default class DownloadButton {
       return null
     }
 
-    const encodedMatch = headerValue.match(/filename\*\s*=\s*[^']*''([^;]+)/i)
+    const encodedMatch = headerValue.match(/filename\*\s*=\s*(?:[^';]+)?'(?:[^']*)'([^;]+)/i)
     if (encodedMatch && encodedMatch[1]) {
       try {
-        return decodeURIComponent(encodedMatch[1].trim())
+        const encodedValue = encodedMatch[1].trim().replace(/^"(.*)"$/, '$1')
+        return decodeURIComponent(encodedValue)
       } catch (e) {
-        return encodedMatch[1].trim()
+        return encodedMatch[1].trim().replace(/^"(.*)"$/, '$1')
       }
     }
 
