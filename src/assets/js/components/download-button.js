@@ -20,6 +20,7 @@ export default class DownloadButton {
 
       button.dataset.originalText = button.textContent.trim()
       button.setAttribute('aria-live', 'polite')
+      button.resetTimer = null
 
       button.addEventListener('click', async (event) => {
         await this.handleDownloadClick(event, button)
@@ -40,6 +41,12 @@ export default class DownloadButton {
       return
     }
 
+    // Cancel any pending delayed reset before starting new download
+    if (button.resetTimer) {
+      clearTimeout(button.resetTimer)
+      button.resetTimer = null
+    }
+
     this.setLoadingState(button, true)
 
     try {
@@ -55,12 +62,17 @@ export default class DownloadButton {
 
       this.downloadBlob(blob, fileName)
       this.showMessage(button, 'complete')
-      setTimeout(() => {
+      button.resetTimer = setTimeout(() => {
+        button.resetTimer = null
         this.showMessage(button, 'reset')
       }, 5000)
     } catch (error) {
       console.error('DownloadButton: failed to download file', error)
       this.showMessage(button, 'error')
+      button.resetTimer = setTimeout(() => {
+        button.resetTimer = null
+        this.showMessage(button, 'reset')
+      }, 5000)
     } finally {
       this.setLoadingState(button, false)
     }
