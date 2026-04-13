@@ -1,4 +1,4 @@
-{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "components/download-button.html" import downloadButton %}
 
 {% macro alternativePrePopulatedSourceNotice(organisation, dataset, downloadUrl, alternateSources) %}
   <section>
@@ -25,13 +25,10 @@
       <li>information on your website from plans under the legacy system</li>
       <li>open data from public sources</li>
     </ul>
-    <div class="js-app-c-download-button">
-      {{ govukButton({
-        text: "Download alternative source data (CSV)",
-        href: downloadUrl,
-        preventDoubleClick: true,
-        attributes: { "data-download-url": downloadUrl }
-      }) }}
-    </div>
+    {{ downloadButton({
+      text: "Download alternative source data (CSV)",
+      href: downloadUrl,
+      preventDoubleClick: true
+    }) }}
   </section>
 {% endmacro %}
