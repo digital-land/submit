@@ -43,7 +43,7 @@ export default class DownloadButton {
 
     // Cancel any pending delayed reset before starting new download
     if (button.resetTimer) {
-      clearTimeout(button.resetTimer)
+      this.window.clearTimeout(button.resetTimer)
       button.resetTimer = null
     }
 
@@ -62,14 +62,14 @@ export default class DownloadButton {
 
       this.downloadBlob(blob, fileName)
       this.showMessage(button, 'complete')
-      button.resetTimer = setTimeout(() => {
+      button.resetTimer = this.window.setTimeout(() => {
         button.resetTimer = null
         this.showMessage(button, 'reset')
       }, 5000)
     } catch (error) {
       console.error('DownloadButton: failed to download file', error)
       this.showMessage(button, 'error')
-      button.resetTimer = setTimeout(() => {
+      button.resetTimer = this.window.setTimeout(() => {
         button.resetTimer = null
         this.showMessage(button, 'reset')
       }, 5000)
@@ -136,6 +136,15 @@ export default class DownloadButton {
   fileNameFromContentDisposition (headerValue) {
     if (!headerValue) {
       return null
+    }
+
+    const encodedMatch = headerValue.match(/filename\*\s*=\s*[^']*''([^;]+)/i)
+    if (encodedMatch && encodedMatch[1]) {
+      try {
+        return decodeURIComponent(encodedMatch[1].trim())
+      } catch (e) {
+        return encodedMatch[1].trim()
+      }
     }
 
     const quotedMatch = headerValue.match(/filename="([^"]+)"/i)
