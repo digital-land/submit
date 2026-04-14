@@ -339,7 +339,7 @@ export function filterOutTasksByQualityCriterialLevel (issue) {
 /** @type {{mustFix: Status, shouldFix: Status, passed: Status}} */
 const taskStatus = {
   mustFix: { text: 'Must fix', link: true, colour: 'red' },
-  shouldFix: { text: 'Should fix', link: true, colour: 'yellow' },
+  shouldFix: { text: 'Needs improving', link: true, colour: 'yellow' },
   passed: { text: 'Passed', link: false, colour: 'green' }
 }
 

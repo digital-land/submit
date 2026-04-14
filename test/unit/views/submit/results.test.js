@@ -86,7 +86,7 @@ describe('results.html', () => {
         href: '',
         status: {
           tag: {
-            text: 'Should fix',
+            text: 'Needs improving',
             classes: 'govuk-tag--yellow'
           }
         }
