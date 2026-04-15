@@ -26,8 +26,11 @@ export function setupMiddlewares (app) {
   app.use((req, res, next) => {
     const csp = [
       "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://web-sdk.smartlook.com",
       "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
+      "connect-src 'self' https:",
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'none'",
