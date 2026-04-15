@@ -23,6 +23,22 @@ export function setupMiddlewares (app) {
     next()
   })
 
+  app.use((req, res, next) => {
+    const csp = [
+      "default-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+      "form-action 'self'"
+    ].join('; ')
+    res.setHeader('Content-Security-Policy', csp)
+    res.setHeader('X-Frame-Options', 'DENY')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    next()
+  })
+
   app.use('/assets', express.static('./node_modules/govuk-frontend/dist/govuk/assets'))
   app.use('/assets', express.static('./node_modules/@x-govuk/govuk-prototype-components/x-govuk'))
   app.use('/public', express.static('./public'))

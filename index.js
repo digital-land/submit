@@ -19,6 +19,12 @@ dotenv.config()
 const datasetSlugToReadableName = await initDatasetSlugToReadableNameFilter()
 const app = express()
 
+app.disable('x-powered-by')
+
+if (config.environment === 'production') {
+  app.set('trust proxy', 1)
+}
+
 setupMiddlewares(app)
 await setupSession(app)
 setupNunjucks({
