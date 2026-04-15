@@ -21,7 +21,7 @@ const app = express()
 
 app.disable('x-powered-by')
 
-if (config.environment === 'production') {
+if (config.environment !== 'development') {
   app.set('trust proxy', 1)
 }
 
