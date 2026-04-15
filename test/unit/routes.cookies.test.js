@@ -42,7 +42,7 @@ describe('cookies route', () => {
     if (shouldBeSecure) {
       expect(setCookie.every(cookie => cookie.includes('Secure'))).toBe(true)
     } else {
-      expect(setCookie.some(cookie => cookie.includes('Secure'))).toBe(false)
+      expect(setCookie.every(cookie => cookie.includes('Secure'))).toBe(false)
     }
   })
 
