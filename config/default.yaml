@@ -54,8 +54,8 @@ datasetsConfig:
   article-4-direction:
     guidanceUrl: /guidance/specifications/article-4-direction
     entityDisplayName:
-      base: article 4 direction
-      variable: area
+      base: article 4
+      variable: direction
   article-4-direction-area:
     guidanceUrl: /guidance/specifications/article-4-direction
     entityDisplayName:
@@ -98,23 +98,49 @@ datasetsConfig:
   developer-agreement-transaction:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
-      base: developer contributions
+      base: developer agreement
       variable: transaction
   developer-agreement:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
-      base: developer contributions
-      variable: document
+      base: developer
+      variable: agreement
   developer-agreement-contribution:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
-      base: developer contributions
-      variable: document
+      base: developer agreement
+      variable: contribution
   infrastructure-funding-statement:
-    guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
+    guidanceUrl: https://digital-land.github.io/specification/specification/infrastructure-funding-statement/
     entityDisplayName:
-      base: infrastructure funding statement
+      base: infrastructure funding
       variable: statement
+  plan-timetable:
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
+    entityDisplayName:
+      base: plan
+      variable: timetable
+  local-plan:
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
+    entityDisplayName:
+      base: local
+      variable: plan
+  minerals-plan:
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
+    entityDisplayName:
+      base: minerals
+      variable: plan
+  waste-plan:
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
+    entityDisplayName:
+      base: waste
+      variable: plan
+  supplementary-plan:
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
+    entityDisplayName:
+      base: supplementary
+      variable: plan
+
 # Any dataset that has one of these three previous rules set, will be displayed in the LPA Dashboard to be checked.
 organisationTypes:
   - local-authority
