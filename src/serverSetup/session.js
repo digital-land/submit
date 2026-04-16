@@ -6,7 +6,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 
 export async function setupSession (app) {
-  const secureCookie = config.environment !== 'development'
+  const secureCookie = config.secureCookies
   let sessionStore
   if ('redis' in config) {
     const urlPrefix = `redis${config.redis.secure ? 's' : ''}`

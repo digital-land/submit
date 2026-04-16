@@ -43,6 +43,6 @@ describe('setupSession cookie config', () => {
     expect(capturedSessionOptions).toBeDefined()
     expect(capturedSessionOptions.cookie.httpOnly).toBe(true)
     expect(capturedSessionOptions.cookie.sameSite).toBe('lax')
-    expect(capturedSessionOptions.cookie.secure).toBe(config.environment !== 'development')
+    expect(capturedSessionOptions.cookie.secure).toBe(config.secureCookies)
   })
 })

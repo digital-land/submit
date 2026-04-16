@@ -7,6 +7,8 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 export default class Wiremock {
+  static sharedContainer = null
+
   constructor () {
     this.image = 'wiremock/wiremock:3.4.2'
     this.mappingsFolder = path.join(__dirname, '../../docker/request-api-stub/wiremock')
@@ -18,7 +20,14 @@ export default class Wiremock {
       return this
     }
 
-    const shouldReuseContainer = !process.env.CI
+    if (Wiremock.sharedContainer) {
+      this.container = Wiremock.sharedContainer
+      return this
+    }
+
+    const ciValue = String(process.env.CI ?? '').trim().toLowerCase()
+    const isCI = ciValue === 'true' || ciValue === '1'
+    const shouldReuseContainer = !isCI
 
     console.log('Starting WiremockContainer')
     console.log('copying files to container from: ' + this.mappingsFolder)
@@ -34,17 +43,22 @@ export default class Wiremock {
       })
       .withReuse(shouldReuseContainer)
       .start()
+
+    Wiremock.sharedContainer = this.container
+
     return this
   }
 
   async stop () {
     console.log('Stopping WiremockContainer')
 
-    if (!this.container) {
+    const container = this.container ?? Wiremock.sharedContainer
+    if (!container) {
       return
     }
 
-    await this.container.stop()
+    await container.stop()
     this.container = null
+    Wiremock.sharedContainer = null
   }
 }

@@ -38,7 +38,7 @@ describe('cookies route', () => {
     // sameSite is part of hardening and should be on all cookies emitted by this route.
     expect(setCookie.every(cookie => cookie.includes('SameSite=Lax'))).toBe(true)
 
-    const shouldBeSecure = config.environment !== 'development'
+    const shouldBeSecure = config.secureCookies
     if (shouldBeSecure) {
       expect(setCookie.every(cookie => cookie.includes('Secure'))).toBe(true)
     } else {

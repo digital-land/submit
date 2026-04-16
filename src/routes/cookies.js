@@ -22,7 +22,7 @@ router.post('/update-preference', (req, res) => {
 
   const acceptCookies = acceptCookiesRaw === 'true'
   const defaultCookieExpiry = 1000 * 60 * 60 * 24 * 365 // 1 year
-  const secureCookie = config.environment !== 'development'
+  const secureCookie = config.secureCookies
   const cookieOptions = {
     sameSite: 'lax',
     secure: secureCookie
