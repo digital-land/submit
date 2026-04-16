@@ -14,6 +14,12 @@ export default class Wiremock {
   }
 
   async start () {
+    if (this.container) {
+      return this
+    }
+
+    const shouldReuseContainer = !process.env.CI
+
     console.log('Starting WiremockContainer')
     console.log('copying files to container from: ' + this.mappingsFolder)
     this.container = await new WireMockContainer(this.image)
@@ -26,23 +32,19 @@ export default class Wiremock {
         container: 8080,
         host: config.asyncRequestApi.port
       })
-      .withReuse(true).start()
+      .withReuse(shouldReuseContainer)
+      .start()
     return this
   }
 
   async stop () {
     console.log('Stopping WiremockContainer')
-    this.container = await new WireMockContainer(this.image)
-      .withBindMounts([{
-        source: this.mappingsFolder,
-        target: '/home/wiremock',
-        mode: 'ro'
-      }])
-      .withExposedPorts({
-        container: 8080,
-        host: config.asyncRequestApi.port
-      })
-      .withReuse(true).start()
+
+    if (!this.container) {
+      return
+    }
+
     await this.container.stop()
+    this.container = null
   }
 }
