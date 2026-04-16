@@ -116,27 +116,27 @@ datasetsConfig:
       base: infrastructure funding
       variable: statement
   plan-timetable:
-    guidanceUrl: /guidance/specifications/plan
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
     entityDisplayName:
       base: plan
       variable: timetable
   local-plan:
-    guidanceUrl: /guidance/specifications/plan
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
     entityDisplayName:
       base: local
       variable: plan
   minerals-plan:
-    guidanceUrl: /guidance/specifications/plan
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
     entityDisplayName:
       base: minerals
       variable: plan
   waste-plan:
-    guidanceUrl: /guidance/specifications/plan
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
     entityDisplayName:
       base: waste
       variable: plan
   supplementary-plan:
-    guidanceUrl: /guidance/specifications/plan
+    guidanceUrl: https://gov.uk/government/publications/publish-your-plan-data
     entityDisplayName:
       base: supplementary
       variable: plan
