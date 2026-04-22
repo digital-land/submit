@@ -52,11 +52,14 @@ const postRequest = async (formData) => {
       errorCode: error.code,
       errorMessage: error.message,
       errorCause: error?.cause,
-      axiosConfig: error.config
+      url: error?.config.url
     }
-    const errorMessage = `post request failed: ${JSON.stringify(errorDetails)}`
-    logger.warn('postRequest()', { type: types.App, formData })
-    throw new Error(errorMessage)
+    const errorMessage = `Post request failed with status ${errorDetails.responseStatus} and message: ${errorDetails.errorMessage}`
+    logger.warn('postRequest()', { type: types.App, errorDetails })
+    const newError = new Error(errorMessage, { cause: error })
+    newError.code = error.code
+    newError.response = error.response
+    throw newError
   }
 }
 
@@ -69,6 +72,6 @@ export const getRequestData = async (resultId, opts = undefined) => {
     if (error?.response?.status === 404) {
       throw error
     }
-    throw new Error(`HTTP error! status: ${error.status}: ${error.message}`, { cause: error })
+    throw new Error(`HTTP error! status: ${error.response?.status}: ${error.message}`, { cause: error })
   }
 }

@@ -80,56 +80,30 @@ describe('asyncRequestApi', () => {
       }
 
       axios.post.mockRejectedValueOnce(mockError)
-
-      await expect(postFileRequest(formData)).rejects.toThrow('post request failed:')
+      await expect(postFileRequest(formData)).rejects.toThrow('Post request failed with status 500')
 
       expect(logger.warn).toHaveBeenCalledWith(
         'postRequest()',
-        {
+        expect.objectContaining({
           type: 'App',
-          formData: {
-            dataset: 'test-dataset',
-            collection: 'test-collection',
-            organisationName: 'Test Org',
-            geom_type: 'point',
-            uploaded_filename: 'file.csv',
-            original_filename: 'original.csv',
-            type: 'check_file'
-          }
-        }
+          errorDetails: expect.objectContaining({
+            requestData: {
+              dataset: 'test-dataset',
+              collection: 'test-collection',
+              organisationName: 'Test Org',
+              geom_type: 'point',
+              uploaded_filename: 'file.csv',
+              original_filename: 'original.csv',
+              type: 'check_file'
+            },
+            responseStatus: 500,
+            errorCode: 'ECONNREFUSED',
+            errorMessage: 'Network error',
+            responseData: { error: 'Internal server error' },
+            url: 'http://localhost:8080/requests'
+          })
+        })
       )
-    })
-
-    it('should include error details object in error message', async () => {
-      const formData = {
-        uploadedFilename: 'file.csv',
-        originalFilename: 'original.csv',
-        dataset: 'test-dataset',
-        collection: 'test-collection',
-        geomType: 'point',
-        organisationName: 'Test Org'
-      }
-
-      const mockError = new Error('Request failed')
-      mockError.code = 'ERR_NETWORK'
-      mockError.response = {
-        status: 400,
-        data: { message: 'Bad request' }
-      }
-      mockError.config = { url: 'http://test.com' }
-
-      axios.post.mockRejectedValueOnce(mockError)
-
-      try {
-        await postFileRequest(formData)
-      } catch (error) {
-        const errorMessage = error.message
-        expect(errorMessage).toContain('requestData')
-        expect(errorMessage).toContain('responseStatus')
-        expect(errorMessage).toContain('responseData')
-        expect(errorMessage).toContain('errorCode')
-        expect(errorMessage).toContain('axiosConfig')
-      }
     })
   })
 
@@ -168,7 +142,7 @@ describe('asyncRequestApi', () => {
         url: 'https://example.com/data.csv',
         dataset: 'test-dataset',
         collection: 'test-collection',
-        geomType: 'polygon',
+        geom_type: 'polygon',
         organisationName: 'Test Org'
       }
 
@@ -182,7 +156,7 @@ describe('asyncRequestApi', () => {
 
       axios.post.mockRejectedValueOnce(mockError)
 
-      await expect(postUrlRequest(formData)).rejects.toThrow('post request failed:')
+      await expect(postUrlRequest(formData)).rejects.toThrow('Post request failed with status')
     })
   })
 
@@ -215,11 +189,11 @@ describe('asyncRequestApi', () => {
 
     it('should throw error with details for non-404 errors', async () => {
       const mockError = new Error('Server error')
-      mockError.status = 500
+      mockError.response = { status: 500 }
 
       axios.get.mockRejectedValueOnce(mockError)
 
-      await expect(getRequestData('request-123')).rejects.toThrow('HTTP error! status:')
+      await expect(getRequestData('request-123')).rejects.toThrow('HTTP error! status: 500')
     })
   })
 })

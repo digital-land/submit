@@ -110,24 +110,21 @@ describe('asyncRequestApi', () => {
     it('should throw an error if the GET request fails with status 404', async () => {
       const resultId = '123'
 
-      const expectedError = new Error('HTTP error! status: 404')
-      expectedError.message = 'HTTP error! status: 404: Failed to do the thing'
-      expectedError.status = 404
+      const mockError = new Error('Failed to do the thing')
+      mockError.response = { status: 404, message: 'Failed to do the thing' }
+      axios.get.mockRejectedValueOnce(mockError)
 
-      const expectedResponse = { status: 404, message: 'Failed to do the thing' }
-      axios.get.mockRejectedValue(expectedResponse)
-
-      await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
+      await expect(getRequestData(resultId)).rejects.toBe(mockError)
     })
 
     it('should throw an error if the GET request fails with status 500', async () => {
       const resultId = '123'
 
-      const expectedError = new Error('HTTP error! status: 500: Failed to do the thing')
-      const expectedResponse = { status: 500, message: 'Failed to do the thing' }
-      axios.get.mockRejectedValue(expectedResponse)
+      const mockError = new Error('Failed to do the thing')
+      mockError.response = { status: 500, message: 'Failed to do the thing' }
+      axios.get.mockRejectedValueOnce(mockError)
 
-      await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
+      await expect(getRequestData(resultId)).rejects.toThrow('HTTP error! status: 500')
     })
   })
 })
