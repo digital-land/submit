@@ -52,7 +52,7 @@ const postRequest = async (formData) => {
       errorCode: error.code,
       errorMessage: error.message,
       errorCause: error?.cause,
-      url: error?.config.url
+      url: error?.config?.url
     }
     const errorMessage = `Post request failed with status ${errorDetails.responseStatus} and message: ${errorDetails.errorMessage}`
     logger.warn('postRequest()', { type: types.App, errorDetails })
