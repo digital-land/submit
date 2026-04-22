@@ -45,14 +45,16 @@ const postRequest = async (formData) => {
     return response.data.id // assuming the response contains the id
   } catch (error) {
     // see: https://axios-http.com/docs/handling_errors
-    const errorMessage = 'post request failed:' +
-      (error.response
-        ? `response status: ${error.response.status}, response data: '${error.response.data}', `
-        : 'No response received, ') +
-      `cause: '${error?.cause}' ` +
-      `code: ${error.code}, ` +
-      `message: '${error.message ?? 'no message provided'}', ` +
-      (error.config ? `Error in Axios configuration ${error.config}` : '')
+    const errorDetails = {
+      requestData: formData,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+      errorCode: error.code,
+      errorMessage: error.message,
+      errorCause: error?.cause,
+      axiosConfig: error.config
+    }
+    const errorMessage = `post request failed: ${JSON.stringify(errorDetails)}`
     logger.warn('postRequest()', { type: types.App, formData })
     throw new Error(errorMessage)
   }
