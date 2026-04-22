@@ -6,6 +6,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 
 export async function setupSession (app) {
+  const secureCookie = config.secureCookies
   let sessionStore
   if ('redis' in config) {
     const urlPrefix = `redis${config.redis.secure ? 's' : ''}`
@@ -27,8 +28,10 @@ export async function setupSession (app) {
     saveUninitialized: false,
     store: sessionStore,
     cookie: {
-      secure: false,
-      maxAge: 1000 * 60 * 60 * 24 * 7
+      secure: secureCookie,
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      httpOnly: true,
+      sameSite: 'lax'
     }
   }))
 }
