@@ -72,6 +72,7 @@ export const getRequestData = async (resultId, opts = undefined) => {
     if (error?.response?.status === 404) {
       throw error
     }
-    throw new Error(`HTTP error! status: ${error.response?.status}: ${error.message}`, { cause: error })
+    const status = error.response?.status ?? error.code ?? 'Unknown'
+    throw new Error(`HTTP error! status: ${status}: ${error.message}`, { cause: error })
   }
 }
