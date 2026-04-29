@@ -5,6 +5,9 @@ import logger from '../utils/logger.js'
 
 let redisClient
 
+const cacheNamespace = [process.env.DEPLOY_TIME, process.env.GIT_COMMIT].find(Boolean)
+const cacheKey = (key) => (cacheNamespace ? `${cacheNamespace}:${key}` : key)
+
 export async function getRedisClient () {
   if (!config.redis) return null
 
@@ -64,12 +67,12 @@ export async function getDatasetNameMap (datasetKeys) {
   let nameMap = {}
   if (!Array.isArray(datasetKeys) || !datasetKeys.length) return {}
 
-  const cacheKey = `dataset:${datasetKeys.slice().sort().join(',')}`
+  const key = cacheKey(`dataset:${datasetKeys.slice().sort().join(',')}`)
   const client = await getRedisClient()
 
   if (client) {
     try {
-      const cached = await client.get(cacheKey)
+      const cached = await client.get(key)
       if (cached) {
         nameMap = JSON.parse(cached)
         return nameMap
@@ -84,7 +87,7 @@ export async function getDatasetNameMap (datasetKeys) {
 
   if (client) {
     try {
-      await client.setEx(cacheKey, CACHE_TTL, JSON.stringify(nameMap))
+      await client.setEx(key, CACHE_TTL, JSON.stringify(nameMap))
     } catch (err) {
       logger.warn(`redisLoader/redis set error: ${err.message}`)
     }
@@ -94,12 +97,12 @@ export async function getDatasetNameMap (datasetKeys) {
 
 // Get organisation list, with Redis caching
 export async function getOrganisationList () {
-  const cacheKey = 'dataset:organisationList'
+  const key = cacheKey('dataset:organisationList')
   const client = await getRedisClient()
 
   if (client) {
     try {
-      const cached = await client.get(cacheKey)
+      const cached = await client.get(key)
       if (cached) {
         return JSON.parse(cached)
       } else {
@@ -114,12 +117,12 @@ export async function getOrganisationList () {
 
 // Set organisation list, with Redis caching
 export async function setOrganisationList (organisationList) {
-  const cacheKey = 'dataset:organisationList'
+  const key = cacheKey('dataset:organisationList')
   const client = await getRedisClient()
 
   if (client) {
     try {
-      await client.setEx(cacheKey, 60 * 60 * 6, JSON.stringify(organisationList)) // 6 hours
+      await client.setEx(key, 60 * 60 * 6, JSON.stringify(organisationList)) // 6 hours
     } catch (err) {
       logger.warn(`setOrganisationList/redis set error: ${err.message}`)
     }
