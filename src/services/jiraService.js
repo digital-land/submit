@@ -56,15 +56,14 @@ export async function attachFileToIssue (issueKey, file, additionalComment = 'Pl
     throw new Error('JIRA_URL, JIRA_API_KEY and JIRA_SERVICE_DESK_ID must be set')
   }
 
-  const authHeader = `Bearer ${JIRA_API_KEY}`
-
+  // Create temporary attachment file
   const data = new FormData()
   data.append('file', file)
 
   const temporaryFiles = await axios.post(`${JIRA_URL}/rest/servicedeskapi/servicedesk/${JIRA_SERVICE_DESK_ID}/attachTemporaryFile`, data, {
     headers: {
       'Content-Type': 'multipart/form-data',
-      Authorization: authHeader,
+      Authorization: `Bearer ${JIRA_API_KEY}`,
       'X-ExperimentalApi': 'opt-in',
       'X-Atlassian-Token': 'no-check'
     }
@@ -74,6 +73,7 @@ export async function attachFileToIssue (issueKey, file, additionalComment = 'Pl
     throw new Error('Failed to attach file to JIRA issue')
   }
 
+  // Attach temporary attachment to issue
   const temporaryFileId = temporaryFiles.data.temporaryAttachments[0].temporaryAttachmentId
   const attachment = await axios.post(`${JIRA_URL}/rest/servicedeskapi/request/${issueKey}/attachment`, {
     temporaryAttachmentIds: [temporaryFileId],
@@ -84,7 +84,7 @@ export async function attachFileToIssue (issueKey, file, additionalComment = 'Pl
   }, {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: authHeader
+      Authorization: `Bearer ${JIRA_API_KEY}`
     }
   })
 
