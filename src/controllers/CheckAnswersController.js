@@ -95,7 +95,7 @@ class CheckAnswersController extends PageController {
       ? `${config.url}check/results/${requestId}/${config.jira.requestTypeId}`
       : 'Check tool link unavailable'
 
-    const isNonProd = ['local', 'dev', 'staging'].includes(config.environment)
+    const isNonProd = ['local', 'development', 'staging'].includes(config.environment)
     const summary = `${isNonProd ? '[TEST] ' : ''}Dataset URL request: ${data.organisationName} for ${data.dataset}`
     const description = `A new dataset request has been made by *${data.name}* from *${data.organisationName} (${data.organisationId})* for the dataset *${data.dataset}*.\n\n
 
