@@ -394,9 +394,9 @@ export const fetchDatasetFields = fetchMany({
  * so that pullOutDatasetSpecification can extract the correct dataset-specific fields.
  */
 export const checkSpecificationFallback = (req, res, next) => {
-  const { specification } = req
+  const { dataset } = req
 
-  if (specification && specification.specification === 'local-plan') {
+  if (dataset && dataset.collection === 'local-plan') {
     const fallbackDataset = planFallback.datasets.find(d => d.dataset === req.dataset.dataset)
     if (fallbackDataset) {
       req.specification = { json: PLAN_FALLBACK_DATASETS_JSON }
