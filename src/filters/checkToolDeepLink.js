@@ -6,9 +6,10 @@
  *
  * @return {string}
  */
-export function checkToolDeepLink (organisation, dataset) {
+export function checkToolDeepLink (organisation, dataset, uploadMethod) {
   if (!organisation || !dataset) {
     return '/check'
   }
-  return `/check/link?dataset=${encodeURIComponent(dataset.dataset)}&orgName=${encodeURIComponent(organisation.name)}&orgId=${encodeURIComponent(organisation.organisation)}`
+  const url = `/check/link?dataset=${encodeURIComponent(dataset.dataset)}&orgName=${encodeURIComponent(organisation.name)}&orgId=${encodeURIComponent(organisation.organisation)}`
+  return uploadMethod ? `${url}&uploadMethod=${encodeURIComponent(uploadMethod)}` : url
 }

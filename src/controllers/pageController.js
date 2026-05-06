@@ -45,13 +45,14 @@ class PageController extends Controller {
   locals (req, res, next) {
     try {
       let backLink
+      req.form.options.lpa = req.sessionModel?.get('lpa')
+      req.form.options.dataset = req.sessionModel?.get('dataset')
+      req.form.options.orgId = req.sessionModel?.get('orgId')
+
       const deepLinkInfo = req?.sessionModel?.get(this.sessionKey)
       if (deepLinkInfo) {
         req.form.options.deepLink = deepLinkInfo
-        req.form.options.dataset = deepLinkInfo.dataset
         req.form.options.datasetName = deepLinkInfo.datasetName
-        req.form.options.lpa = deepLinkInfo.lpa || deepLinkInfo.orgName
-        req.form.options.orgId = deepLinkInfo.orgId
         backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
       }
 

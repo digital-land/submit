@@ -299,12 +299,14 @@ export const OrgIssueDetails = v.strictObject({
 })
 
 export const CheckAnswers = v.strictObject({
+  options: v.strictObject({
+    endpointUrl: v.optional(v.string())
+  }),
   values: v.strictObject({
     lpa: NonEmptyString,
     name: NonEmptyString,
     email: v.pipe(v.string(), v.email()),
     dataset: NonEmptyString,
-    'endpoint-url': v.url(),
     'documentation-url': v.url(),
     hasLicence: NonEmptyString,
     errors: v.optional(v.array(v.strictObject({
