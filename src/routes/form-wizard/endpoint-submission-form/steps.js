@@ -25,15 +25,14 @@ export default {
     next: 'check-answers',
     controller: DatasetDetailsController,
     checkJourney: false,
-    entryPoint: true
+    backLink: '/lpa-details'
   },
   '/check-answers': {
     ...defaultParams,
-    template: 'submit/check-answers',
     controller: CheckAnswersController,
     next: 'confirmation',
     checkJourney: false,
-    entryPoint: true
+    backLink: '/dataset-details'
   },
   '/confirmation': {
     ...defaultParams,

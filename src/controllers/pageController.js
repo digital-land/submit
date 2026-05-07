@@ -42,6 +42,13 @@ class PageController extends Controller {
     super.get(req, res, next)
   }
 
+  errorHandler (err, req, res, next) {
+    if (err.code === 'SESSION_TIMEOUT') {
+      return res.redirect('/')
+    }
+    super.errorHandler(err, req, res, next)
+  }
+
   locals (req, res, next) {
     try {
       let backLink

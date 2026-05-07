@@ -5,6 +5,7 @@ import { getRequestData } from '../services/asyncRequestApi.js'
 class LpaDetailsController extends PageController {
   async locals (req, res, next) {
     const requestId = req.session?.checkRequestId
+    const orgId = req.session?.checkOrgId
 
     try {
       const requestData = await getRequestData(requestId)
@@ -14,6 +15,7 @@ class LpaDetailsController extends PageController {
       const params = requestData.getParams()
       req.sessionModel.set('requestId', requestId)
       req.sessionModel.set('lpa', params.organisationName)
+      req.sessionModel.set('orgId', orgId)
       req.sessionModel.set('dataset', params.dataset)
     } catch {
       return res.redirect('/check/url')

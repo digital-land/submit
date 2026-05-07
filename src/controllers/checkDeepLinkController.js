@@ -78,6 +78,7 @@ class CheckDeepLinkController extends PageController {
     req.sessionModel.set('requiresGeometryTypeSelection', requiresGeometry)
 
     if (req.query.uploadMethod === 'url') {
+      req.sessionModel.set('upload-method', 'url')
       return res.redirect('/check/url')
     }
 
