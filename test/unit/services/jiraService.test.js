@@ -13,7 +13,7 @@ describe('jiraService', () => {
 
     beforeEach(() => {
       process.env.JIRA_URL = 'https://jira.example.com'
-      process.env.JIRA_BASIC_AUTH = 'basicAuthToken'
+      process.env.JIRA_API_KEY = 'apiToken'
       process.env.JIRA_SERVICE_DESK_ID = 'serviceDeskId'
     })
 
@@ -21,12 +21,12 @@ describe('jiraService', () => {
       vi.clearAllMocks()
     })
 
-    it('should throw an error if JIRA_URL, JIRA_BASIC_AUTH, or JIRA_SERVICE_DESK_ID are not set', async () => {
+    it('should throw an error if JIRA_URL, JIRA_API_KEY, or JIRA_SERVICE_DESK_ID are not set', async () => {
       delete process.env.JIRA_URL
 
       await expect(createCustomerRequest(summary, description, requestTypeId))
         .rejects
-        .toThrowError('JIRA_URL, JIRA_BASIC_AUTH and JIRA_SERVICE_DESK_ID must be set')
+        .toThrowError('JIRA_URL, JIRA_API_KEY and JIRA_SERVICE_DESK_ID must be set')
     })
 
     it('should call axios.post with correct parameters', async () => {
@@ -73,7 +73,7 @@ describe('jiraService', () => {
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: 'Basic basicAuthToken'
+            Authorization: 'Bearer apiToken'
           }
         }
       )
@@ -103,7 +103,7 @@ describe('jiraService', () => {
 
     beforeEach(() => {
       process.env.JIRA_URL = 'https://jira.example.com'
-      process.env.JIRA_BASIC_AUTH = 'basicAuthToken'
+      process.env.JIRA_API_KEY = 'apiToken'
       process.env.JIRA_SERVICE_DESK_ID = 'serviceDeskId'
     })
 
@@ -111,12 +111,12 @@ describe('jiraService', () => {
       vi.clearAllMocks()
     })
 
-    it('should throw an error if JIRA_URL, JIRA_BASIC_AUTH, or JIRA_SERVICE_DESK_ID are not set', async () => {
+    it('should throw an error if JIRA_URL, JIRA_API_KEY, or JIRA_SERVICE_DESK_ID are not set', async () => {
       delete process.env.JIRA_URL
 
       await expect(attachFileToIssue(issueKey, file, additionalComment))
         .rejects
-        .toThrowError('JIRA_URL, JIRA_BASIC_AUTH and JIRA_SERVICE_DESK_ID must be set')
+        .toThrowError('JIRA_URL, JIRA_API_KEY and JIRA_SERVICE_DESK_ID must be set')
     })
 
     it('should call axios.post with correct parameters', async () => {
@@ -150,7 +150,7 @@ describe('jiraService', () => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: 'Basic basicAuthToken',
+            Authorization: 'Bearer apiToken',
             'X-ExperimentalApi': 'opt-in',
             'X-Atlassian-Token': 'no-check'
           }
@@ -170,7 +170,7 @@ describe('jiraService', () => {
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: 'Basic basicAuthToken'
+            Authorization: 'Bearer apiToken'
           }
         }
       )
@@ -209,7 +209,7 @@ describe('jiraService', () => {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            Authorization: 'Basic basicAuthToken',
+            Authorization: 'Bearer apiToken',
             'X-ExperimentalApi': 'opt-in',
             'X-Atlassian-Token': 'no-check'
           }
@@ -229,7 +229,7 @@ describe('jiraService', () => {
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: 'Basic basicAuthToken'
+            Authorization: 'Bearer apiToken'
           }
         }
       )
