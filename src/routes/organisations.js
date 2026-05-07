@@ -1,10 +1,11 @@
 import express from 'express'
 import OrganisationsController from '../controllers/OrganisationsController.js'
-import { fetchOrgInfo, fetchLocalPlanningGroups, fetchProvisionsByOrgsAndDatasets, validateOrgAndDatasetCombo } from '../middleware/common.middleware.js'
+import { fetchOrgInfo, fetchLocalPlanningGroups, fetchProvisionsByOrgsAndDatasets, validateOrgAndDatasetCombo,validateOrgAndDatasetQueryParams } from '../middleware/common.middleware.js'
 
 const router = express.Router()
 
 const validateOrgDatasetRoute = [
+  validateOrgAndDatasetQueryParams,
   fetchOrgInfo,
   fetchLocalPlanningGroups,
   fetchProvisionsByOrgsAndDatasets,
