@@ -1039,7 +1039,7 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
 
 export const validateOrgAndDatasetCombo = (req, res, next) => {
   if (!Array.isArray(req.provisions) || req.provisions.length === 0) {
-    const err = new MiddlewareError(`Not found`, 404)
+    const err = new MiddlewareError('Not found', 404)
     return next(err)
   }
   next()
