@@ -56,8 +56,7 @@ class CheckAnswersController extends PageController {
         type: types.External
       })
       req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
-      const requestId = req.sessionModel.get('requestId')
-      return res.redirect(`/submit/check-answers${requestId ? '/' + requestId : ''}`)
+      return res.redirect('/submit/check-answers')
     }
 
     super.post(req, res, next)
