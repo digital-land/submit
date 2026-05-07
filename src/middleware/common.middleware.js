@@ -891,7 +891,7 @@ export const fetchEntryIssueCounts = fetchMany({
  * @function
  * @returns {array} An array of middleware functions that construct the necessary data for all the relevant issues.
  */
-export const processRelevantIssuesMiddlewares = 
+export const processRelevantIssuesMiddlewares =
 [
   fetchEntityIssuesForFieldAndType,
   // arguably removeIssuesThatHaveBeenFixed should be s step however we have only currently found one organisation,
