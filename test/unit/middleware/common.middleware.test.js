@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority } from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority, validateOrgAndDatasetCombo } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -106,6 +106,30 @@ describe('show404IfPageNumberNotInRange middleware', () => {
       expect(isValiError(error)).toBe(true)
     }
     expect(next).not.toHaveBeenCalled()
+  })
+})
+
+describe('validateOrgAndDatasetCombo middleware', () => {
+  it('should proceed when provisions exist', () => {
+    const req = { provisions: [{ dataset: 'some-dataset' }] }
+    const next = vi.fn()
+
+    validateOrgAndDatasetCombo(req, {}, next)
+
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next).toHaveBeenCalledWith()
+  })
+
+  it('should return 404 when the organisation/dataset combination is invalid', () => {
+    const req = { provisions: [] }
+    const next = vi.fn((err) => {
+      expect(err).toBeInstanceOf(Error)
+      expect(err.statusCode).toBe(404)
+    })
+
+    validateOrgAndDatasetCombo(req, {}, next)
+
+    expect(next).toHaveBeenCalledTimes(1)
   })
 })
 

@@ -1,7 +1,17 @@
 import express from 'express'
 import OrganisationsController from '../controllers/OrganisationsController.js'
+import { fetchOrgInfo, fetchLocalPlanningGroups, fetchProvisionsByOrgsAndDatasets, validateOrgAndDatasetCombo } from '../middleware/common.middleware.js'
 
 const router = express.Router()
+
+const validateOrgDatasetRoute = [
+  fetchOrgInfo,
+  fetchLocalPlanningGroups,
+  fetchProvisionsByOrgsAndDatasets,
+  validateOrgAndDatasetCombo
+]
+
+router.use('/:lpa/:dataset', validateOrgDatasetRoute)
 
 router.get('/:lpa/:dataset/get-started', OrganisationsController.getStartedMiddleware)
 router.get('/:lpa/:dataset/overview', OrganisationsController.datasetOverviewMiddleware)

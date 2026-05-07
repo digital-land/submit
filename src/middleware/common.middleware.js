@@ -1037,6 +1037,14 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
   })
 })
 
+export const validateOrgAndDatasetCombo = (req, res, next) => {
+  if (!Array.isArray(req.provisions) || req.provisions.length === 0) {
+    const err = new MiddlewareError(`Not found`, 404)
+    return next(err)
+  }
+  next()
+}
+
 // Fetches all currently active data source endpoints for a given organization and dataset, deduplicating by endpoint URL and keeping only the most recently logged entry for each unique endpoint, ordered by when they were last accessed.
 export const fetchSources = fetchMany({
   query: ({ params }) => `
