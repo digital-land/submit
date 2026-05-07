@@ -8,15 +8,15 @@ import axios from 'axios'
  * @param {string} description - The description of the customer request.
  * @param {string} requestTypeId - The ID of the request type.
  * @returns {Promise} - A promise that resolves to the response of the JIRA API.
- * @throws {Error} - Throws an error if JIRA_URL, JIRA_BASIC_AUTH, or JIRA_SERVICE_DESK_ID are not set.
+ * @throws {Error} - Throws an error if JIRA_URL, JIRA_API_KEY, or JIRA_SERVICE_DESK_ID are not set.
  */
 export async function createCustomerRequest ({ summary, description, raiseOnBehalfOf }, requestTypeId) {
   const JIRA_URL = process.env.JIRA_URL
-  const JIRA_BASIC_AUTH = process.env.JIRA_BASIC_AUTH
+  const JIRA_API_KEY = process.env.JIRA_API_KEY
   const JIRA_SERVICE_DESK_ID = process.env.JIRA_SERVICE_DESK_ID
 
-  if (!JIRA_URL || !JIRA_BASIC_AUTH || !JIRA_SERVICE_DESK_ID) {
-    throw new Error('JIRA_URL, JIRA_BASIC_AUTH and JIRA_SERVICE_DESK_ID must be set')
+  if (!JIRA_URL || !JIRA_API_KEY || !JIRA_SERVICE_DESK_ID) {
+    throw new Error('JIRA_URL, JIRA_API_KEY and JIRA_SERVICE_DESK_ID must be set')
   }
 
   const data = JSON.stringify({
@@ -32,7 +32,7 @@ export async function createCustomerRequest ({ summary, description, raiseOnBeha
   return await axios.post(`${JIRA_URL}/rest/servicedeskapi/request`, data, {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Basic ${JIRA_BASIC_AUTH}`
+      Authorization: `Bearer ${JIRA_API_KEY}`
     }
   })
 }
@@ -45,15 +45,15 @@ export async function createCustomerRequest ({ summary, description, raiseOnBeha
  * @param {string} issueKey - The key of the issue to which the file will be attached.
  * @param {File} file - The file to be attached to the issue.
  * @returns {Promise} - A promise that resolves to the response of the JIRA API.
- * @throws {Error} - Throws an error if JIRA_URL, JIRA_BASIC_AUTH, or JIRA_SERVICE_DESK_ID are not set.
+ * @throws {Error} - Throws an error if JIRA_URL, JIRA_API_KEY, or JIRA_SERVICE_DESK_ID are not set.
  */
 export async function attachFileToIssue (issueKey, file, additionalComment = 'Please find the file attached.') {
   const JIRA_URL = process.env.JIRA_URL
-  const JIRA_BASIC_AUTH = process.env.JIRA_BASIC_AUTH
+  const JIRA_API_KEY = process.env.JIRA_API_KEY
   const JIRA_SERVICE_DESK_ID = process.env.JIRA_SERVICE_DESK_ID
 
-  if (!JIRA_URL || !JIRA_BASIC_AUTH || !JIRA_SERVICE_DESK_ID) {
-    throw new Error('JIRA_URL, JIRA_BASIC_AUTH and JIRA_SERVICE_DESK_ID must be set')
+  if (!JIRA_URL || !JIRA_API_KEY || !JIRA_SERVICE_DESK_ID) {
+    throw new Error('JIRA_URL, JIRA_API_KEY and JIRA_SERVICE_DESK_ID must be set')
   }
 
   // Create temporary attachment file
@@ -63,7 +63,7 @@ export async function attachFileToIssue (issueKey, file, additionalComment = 'Pl
   const temporaryFiles = await axios.post(`${JIRA_URL}/rest/servicedeskapi/servicedesk/${JIRA_SERVICE_DESK_ID}/attachTemporaryFile`, data, {
     headers: {
       'Content-Type': 'multipart/form-data',
-      Authorization: `Basic ${JIRA_BASIC_AUTH}`,
+      Authorization: `Bearer ${JIRA_API_KEY}`,
       'X-ExperimentalApi': 'opt-in',
       'X-Atlassian-Token': 'no-check'
     }
@@ -84,7 +84,7 @@ export async function attachFileToIssue (issueKey, file, additionalComment = 'Pl
   }, {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Basic ${JIRA_BASIC_AUTH}`
+      Authorization: `Bearer ${JIRA_API_KEY}`
     }
   })
 
