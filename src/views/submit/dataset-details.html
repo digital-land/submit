@@ -66,27 +66,6 @@
         value: values['documentation-url']
       }) }}
 
-      {% if values['dataset'] == 'tree' %}
-        {{ govukRadios({
-          name: "geomType",
-          fieldset: {
-            legend: {
-              text: "Is your geometry data given as points or polygons?",
-              isPageHeading: false,
-              classes: "govuk-fieldset__legend--m"
-            }
-          },
-          value: values['geomType'],
-          items: [
-            { value: "point", text: "Points" },
-            { value: "polygon", text: "Polygons" }
-          ],
-          errorMessage: {
-            text: 'geomType' | validationMessageLookup(errors['geomType'].type)
-          } if errors['geomType']
-        }) }}
-      {% endif %}
-
       {{ govukCheckboxes({
         name: "licence",
         fieldset: {

@@ -21,7 +21,7 @@ export default {
   '/dataset-details': {
     ...defaultParams,
     template: 'submit/dataset-details',
-    fields: ['documentation-url', 'hasLicence', 'geomType'],
+    fields: ['documentation-url', 'hasLicence'],
     next: 'check-answers',
     controller: DatasetDetailsController,
     checkJourney: false,
