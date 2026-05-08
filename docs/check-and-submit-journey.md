@@ -36,11 +36,14 @@ Users must complete the **check wizard** before they can submit data. The check 
 
 ### `/check/results/:id/:pageNumber`
 - Displays validation results
+- `updateSessionFromRequestData` middleware sets `request_id` and (for `check_url` type) `upload-method: 'url'` in the check sessionModel — this ensures the session is correct whether the user arrives naturally or via a shared direct URL
+- The org name in the banner is resolved via the `orgIdToName` filter from the org code stored in the async request params
+- The LPA boundary map uses `requestParams.organisationName` (org code from async) as the source for the boundary GeoJSON URL, falling back to `deepLink.orgId`
 - Continue → `/check/confirmation`
 
 ### `/check/confirmation`
 - Reads `upload-method` from check sessionModel
-- If `'url'`: reads `request_id` and `orgId`, sets `req.session.checkRequestId` and `req.session.checkOrgId` (raw Express session, shared across wizards), shows "Provide your data" button → `/submit/lpa-details`
+- If `'url'`: reads `request_id`, sets `req.session.checkRequestId` (raw Express session, shared across wizards), shows "Provide your data" button → `/submit/lpa-details`
 - If `upload-method` is not `'url'` or session is stale: button not shown, user must re-run the check
 
 ---
@@ -50,20 +53,21 @@ Users must complete the **check wizard** before they can submit data. The check 
 > There are no deep links into the submit wizard. The only entry is `/submit/lpa-details` via the confirmation page button.
 
 ### `/submit/lpa-details`
-- Reads `req.session.checkRequestId` and `req.session.checkOrgId` (raw session)
+- Reads `req.session.checkRequestId` (raw session)
 - No `requestId` → redirects to `/check/url`
-- Calls `getRequestData()` to validate `type === 'check_url'` and fetch `organisationName` + `dataset`
+- Calls `getRequestData()` to validate `type === 'check_url'` and populate the submit sessionModel
 - API validation fails → redirects to `/check/url`
-- Stores `requestId`, `lpa`, `orgId`, `dataset` in submit sessionModel
+- Stores `requestId`, `lpa`, `orgId`, `dataset`, `endpoint-url`, and `geomType` (if present) in submit sessionModel — `lpa` is resolved via `orgIdToName` from the org code in the API params
+- Back link points to `/check/results/:id/1`
 - Shows name and email form
 
 ### `/submit/dataset-details`
 - Guards: no `requestId` in submit sessionModel → redirects to `/check/url`
+- Validates that the submitted `documentation-url` does not match the `endpoint-url` in session (`sameAsEndpoint` error)
 - Shows documentation URL, licence confirmation, geometry type (tree only)
 
 ### `/submit/check-answers` GET
 - Guards: no `requestId` in submit sessionModel → redirects to `/check/url`
-- Calls `getRequestData()` to fetch the endpoint URL, stores as `endpoint-url` in submit sessionModel
 - Renders all answers for review
 
 ### `/submit/check-answers` POST
@@ -87,7 +91,7 @@ If the session has expired by the time the user views the confirmation page, `up
 ### Stale session on any submit page
 `datasetDetailsController` and `CheckAnswersController` both guard on `requestId` in the submit sessionModel. If the session has expired mid-flow, the user is redirected to `/check/url`. However, since `/check/url` is also a mid-wizard page, a stale check session there will trigger `SESSION_TIMEOUT` and redirect to `/`. The user effectively ends up at the home page and must start again.
 
-### `lpaDetailsController` — missing raw session keys
+### `lpaDetailsController` — missing raw session key
 If `req.session.checkRequestId` is absent (e.g. the user navigated directly to `/submit/lpa-details` without going through confirmation, or the session expired), the controller redirects to `/check/url`. As above, a stale check session will bounce this to `/`.
 
 ---
@@ -96,9 +100,7 @@ If `req.session.checkRequestId` is absent (e.g. the user navigated directly to `
 
 | Key | Set by | Read by |
 |---|---|---|
-| `upload-method` | check sessionModel — hmpo field or deep link controller | `checkConfirmationController` |
-| `request_id` | check sessionModel — hmpo field via `submitUrlController` | `checkConfirmationController` |
+| `upload-method` | check sessionModel — hmpo field or deep link controller or `updateSessionFromRequestData` | `checkConfirmationController` |
+| `request_id` | check sessionModel — hmpo field via `submitUrlController` or `updateSessionFromRequestData` | `checkConfirmationController` |
 | `req.session.checkRequestId` | `checkConfirmationController` (raw Express session) | `lpaDetailsController` |
-| `req.session.checkOrgId` | `checkConfirmationController` (raw Express session) | `lpaDetailsController` |
-| `requestId`, `lpa`, `orgId`, `dataset` | submit sessionModel — `lpaDetailsController` | `datasetDetailsController`, `CheckAnswersController`, templates |
-| `endpoint-url` | submit sessionModel — `CheckAnswersController.locals` | `CheckAnswersController.createJiraServiceRequest` |
+| `requestId`, `lpa`, `orgId`, `dataset`, `endpoint-url`, `geomType` | submit sessionModel — `lpaDetailsController` (sourced from async API params) | `datasetDetailsController`, `CheckAnswersController`, templates |

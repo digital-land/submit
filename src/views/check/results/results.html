@@ -45,7 +45,7 @@ panel: { html: tableTab } } } %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    {{ datasetBanner(options.requestParams.organisationName, options.requestParams.dataset) }}
+    {{ datasetBanner(options.requestParams.organisationName | orgIdToName, options.requestParams.dataset) }}
 
     <h1 class="govuk-heading-l">
       {{pageName}}
@@ -191,6 +191,7 @@ panel: { html: tableTab } } } %}
 </div>
 {% endblock %}
 
+{% set boundaryOrgId = options.requestParams.organisationName or options.deepLink.orgId %}
 {% block scripts %}
 {{ super() }}
 {% if options.geometries %}
@@ -198,7 +199,7 @@ panel: { html: tableTab } } } %}
   window.serverContext = {
     containerId: 'map',
     geometries: {{ options.geometries | dump | safe }},
-    {% if options.deepLink.orgId %} boundaryGeoJsonUrl: "/api/lpa-boundary/{{ options.deepLink.orgId | urlencode }}"{% endif %}
+    {% if boundaryOrgId %} boundaryGeoJsonUrl: "/api/lpa-boundary/{{ boundaryOrgId | urlencode }}"{% endif %}
     }
 </script>
 <script src="/public/js/map.bundle.js"></script>

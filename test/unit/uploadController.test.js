@@ -35,14 +35,14 @@ describe('UploadController', () => {
 
   describe('get redirect guard', () => {
     it('redirects to landing page when any required value is missing', async () => {
-      const scenarios = ['orgName', 'dataset', 'collection']
+      const scenarios = ['orgId', 'dataset', 'collection']
 
       for (const missingField of scenarios) {
         const req = {
           sessionModel: {
             get: (key) => {
-              if (key === 'deep-link-session-key') {
-                return { orgName: missingField === 'orgName' ? '' : 'Org' }
+              if (key === 'orgId') {
+                return missingField === 'orgId' ? '' : 'local-authority-eng:TST'
               }
               if (key === 'dataset') {
                 return missingField === 'dataset' ? '' : 'dataset'
@@ -69,7 +69,7 @@ describe('UploadController', () => {
       const parentGetSpy = vi.spyOn(PageController.prototype, 'get').mockImplementation(() => {})
       const req = {
         sessionModel: {
-          get: (key) => key === 'deep-link-session-key' ? { orgName: 'Org' } : key === 'dataset' ? 'dataset' : key === 'data-subject' ? 'collection' : undefined
+          get: (key) => key === 'orgId' ? 'local-authority-eng:TST' : key === 'dataset' ? 'dataset' : key === 'data-subject' ? 'collection' : undefined
         },
         session: {
           id: 'session-1'

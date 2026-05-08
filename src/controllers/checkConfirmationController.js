@@ -7,7 +7,6 @@ class CheckConfirmationController extends PageController {
       const requestId = req.sessionModel.get('request_id')
       req.form.options.requestId = requestId
       req.session.checkRequestId = requestId
-      req.session.checkOrgId = req.sessionModel.get('orgId')
     }
     super.locals(req, res, next)
   }
