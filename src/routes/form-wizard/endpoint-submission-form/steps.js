@@ -8,6 +8,8 @@ const defaultParams = {
   controller: PageController
 }
 
+// Previously this was a separate form wizard entirely, now the only entry point is from the check wizard.
+// TODO: Merge these two wizards together to remove the bridged session.
 export default {
   '/lpa-details': {
     ...defaultParams,

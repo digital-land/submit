@@ -7,7 +7,7 @@
 {% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
 
 {% set serviceType = 'Submit' %}
-{% set pageName = "Dataset details" %}
+{% set pageName = "Source webpage details" %}
 
 {% block pageTitle %}
   {% if errors | length %}
@@ -53,7 +53,7 @@
 
       {{ govukInput({
         label: {
-          text: "Webpage URL",
+          text: "Source webpage URL",
           classes: "govuk-label--m",
           isPageHeading: false
         },

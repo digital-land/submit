@@ -55,6 +55,7 @@ class ResultsController extends PageController {
 }
 
 export function updateSessionFromRequestData (req, res, next) {
+  // Used so check results can be shared and still continue to submit
   const { requestData } = req.locals
   const params = requestData?.getParams()
   req.sessionModel.set('request_id', req.params.id)

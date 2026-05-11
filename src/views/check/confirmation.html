@@ -5,7 +5,12 @@
 {% extends "layouts/main.html" %}
 
 {% set serviceType = 'Check' %}
-{% set pageName = "You can now publish your data" %}
+
+{% if options.requestId %}
+  {% set pageName = "You can now provide your data" %}
+{% else %}
+  {% set pageName = "You can now publish your data" %}
+{% endif %}
 
 {% block beforeContent %}
   {{ govukBackLink({
@@ -19,7 +24,15 @@
 
   # What to do next
 
+  {% if options.requestId %}
+
+  ## 1: Make sure that your data is published on your website
+
+  {% else %}
+
   ## 1: Publish your data to your website
+
+  {% endif %}
 
   The page on your website must include:
   - a link to the data
@@ -44,11 +57,11 @@
 
   ## 2: Provide your data
 
-  Once you have your data hosted on a URL endpoint, [re-check that URL](/check/url) and you can then submit it to us.
-
-  {% endif %}
+  Once you have your data hosted on a URL endpoint, come back to [check and provide](/check/url) it to the Planning Data Platform.
 
   Details about what to do next are also available [in the guidance](/guidance)
+
+  {% endif %}
 
   {% if options.deepLink %}
     <p><a href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName }} overview</a></p>
