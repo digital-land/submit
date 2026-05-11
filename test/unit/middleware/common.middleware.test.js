@@ -1,11 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-vi.mock('../../../src/utils/redisLoader.js', async () => {
-  const actual = await vi.importActual('../../../src/utils/redisLoader.js')
-  return {
-    ...actual,
-    getOrganisationList: vi.fn()
-  }
-})
 import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority, validateOrgAndDatasetCombo } from '../../../src/middleware/common.middleware'
 import { getOrganisationList } from '../../../src/utils/redisLoader.js'
 import config from '../../../config/index.js'
@@ -14,6 +7,13 @@ import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
 import platformApi from '../../../src/services/platformApi.js'
 import { isValiError } from 'valibot'
+vi.mock('../../../src/utils/redisLoader.js', async () => {
+  const actual = await vi.importActual('../../../src/utils/redisLoader.js')
+  return {
+    ...actual,
+    getOrganisationList: vi.fn()
+  }
+})
 
 vi.mock('../../../src/services/performanceDbApi.js')
 

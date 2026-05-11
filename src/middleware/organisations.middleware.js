@@ -54,8 +54,6 @@ export const saveOrganisations = async (req, res, next) => {
   next()
 }
 
-
-
 /**
  * Middleware. Updates req with `templateParams`.
  *
