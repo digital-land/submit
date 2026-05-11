@@ -4,7 +4,7 @@
  * @description Middleware for oragnisation (LPA) overview page
  */
 
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchEntityIssueCountsPerformanceDb, fetchLocalPlanningGroups } from './common.middleware.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchEntityIssueCountsPerformanceDb, fetchLocalPlanningGroups, validateOrgAndDatasetCombo, filterApprovedOrganisations } from './common.middleware.js'
 import { fetchMany, renderTemplate, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import _ from 'lodash'
@@ -453,6 +453,7 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
  * Organisation (LPA) overview page middleware chain.
  */
 export default [
+  filterApprovedOrganisations,
   fetchOrgInfo,
   parallel([
     fetchLocalPlanningGroups,

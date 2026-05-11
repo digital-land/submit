@@ -1,4 +1,4 @@
-import { fetchDatasetInfo, fetchLocalPlanningGroups, fetchProvisionsByOrgsAndDatasets, fetchOrgInfo, logPageError, prepareAuthority } from './common.middleware.js'
+import { fetchDatasetInfo, fetchLocalPlanningGroups, fetchProvisionsByOrgsAndDatasets, fetchOrgInfo, validateOrgAndDatasetCombo, logPageError, prepareAuthority } from './common.middleware.js'
 import { renderTemplate } from './middleware.builders.js'
 
 export const getGetStarted = renderTemplate({
@@ -22,6 +22,7 @@ export default [
   fetchOrgInfo,
   fetchLocalPlanningGroups,
   fetchProvisionsByOrgsAndDatasets,
+  validateOrgAndDatasetCombo,
   fetchDatasetInfo,
   prepareAuthority,
   getGetStarted,

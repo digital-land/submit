@@ -26,6 +26,7 @@ import {
   fetchOrgInfo, fetchResources, fetchSources,
   logPageError,
   noop,
+  validateOrgAndDatasetCombo,
   validateOrgAndDatasetQueryParams,
   prepareAuthority
 } from './common.middleware.js'
@@ -234,6 +235,7 @@ export default [
   fetchOrgInfo,
   fetchLocalPlanningGroups,
   fetchProvisionsByOrgsAndDatasets,
+  validateOrgAndDatasetCombo,
   fetchSources,
   fetchDatasetInfo,
   fetchResources,

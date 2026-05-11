@@ -1,4 +1,4 @@
-import { logPageError } from './common.middleware.js'
+import { logPageError, filterApprovedOrganisations } from './common.middleware.js'
 import { fetchMany, onlyIf, renderTemplate } from './middleware.builders.js'
 import { setOrganisationList, getOrganisationList } from '../utils/redisLoader.js'
 import logger from '../utils/logger.js'
@@ -54,6 +54,8 @@ export const saveOrganisations = async (req, res, next) => {
   next()
 }
 
+
+
 /**
  * Middleware. Updates req with `templateParams`.
  *
@@ -90,6 +92,7 @@ export default [
   loadOrganisations,
   onlyIf(req => !req.cached, fetchOrganisations),
   onlyIf(req => !req.cached, saveOrganisations),
+  filterApprovedOrganisations,
   prepareGetOrganisationsTemplateParams,
   getOrganisations,
   logPageError

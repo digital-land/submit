@@ -7,6 +7,7 @@ import {
   fetchProvisionsByOrgsAndDatasets,
   fetchOrgInfo,
   processAuthoritativeMiddlewares,
+  validateOrgAndDatasetCombo,
   processSpecificationMiddlewares,
   replaceUnderscoreInEntities,
   setDefaultParams,
@@ -126,6 +127,7 @@ export default [
   fetchOrgInfo,
   fetchLocalPlanningGroups,
   fetchProvisionsByOrgsAndDatasets,
+  validateOrgAndDatasetCombo,
   fetchDatasetInfo,
 
   fetchResources,
