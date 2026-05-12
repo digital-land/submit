@@ -1079,12 +1079,17 @@ export const filterApprovedOrganisations = async (req, res, next) => {
   try {
     const lpa = req.params.lpa
     const approved = await getOrganisationList()
-    if (Array.isArray(approved) && approved.length > 0) {
+    if (Array.isArray(approved)) {
+      if (approved.length === 0) {
+        return next(new MiddlewareError('Page not found', 404))
+      }
       const approvedOrgs = new Set(approved.map(org => org.organisation))
       if (lpa && !approvedOrgs.has(lpa)) {
         return next(new MiddlewareError('Page not found', 404))
       }
-      req.organisations = req.organisations.filter(org => approvedOrgs.has(org.organisation))
+      if (Array.isArray(req.organisations)) {
+        req.organisations = req.organisations.filter(org => approvedOrgs.has(org.organisation))
+      }
     }
   } catch (e) {
     logger.warn('Error loading approved organisations for filtering', e)
