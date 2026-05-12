@@ -233,7 +233,7 @@
           <a class="govuk-link" href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/get-started">How to prepare and provide your {{ dataset.dataset | datasetSlugToReadableName }} data</a>
         </li>
         <li>
-          <a class="govuk-link" href="{{ organisation | checkToolDeepLink(dataset) }}">Check {{ dataset.dataset | datasetSlugToReadableName }} dataset</a>
+          <a class="govuk-link" href="{{ organisation | checkToolDeepLink(dataset) }}">Check and provide {{ dataset.dataset | datasetSlugToReadableName }} dataset</a>
         </li>
         {% if dataset.dataset | getDatasetGuidanceUrl %}
         <li>

@@ -53,13 +53,13 @@
         {{ datasetBanner(options.lpa, options.datasetName) }}
 
         {% set endpointUrlHint %}
-          <p class="govuk-body">The endpoint URL is the URL of the data file or feed itself. This is where we will regularly collect the data from.</p>
-          <p class="govuk-body">Endpoints typically fall into 1 of the following 2 categories:</p>
+          <p class="govuk-body">Your endpoint URL is the URL where anyone can download your data.</p>
+          <p class="govuk-body">Endpoints are usually either a:</p>
           <ul class="govuk-list govuk-list--bullet">
-            <li><strong>hosted file</strong> — these will usually be URLs which end in something like <code>.json</code> or <code>.csv</code></li>
-            <li><strong>a live feed of the data from an API</strong> — usually identifiable by parts of the URL like <code>MapServer</code> or <code>FeatureServer</code>, or sections that look like query parameters, like <code>?service=WFS&amp;version=1.0.0</code></li>
+            <li>file hosted on your web server — like URLs that end in .json or .csv</li>
+            <li>live data feed from an API — hosted by your Geographic Information System (GIS) software or open data platform</li>
           </ul>
-          <p class="govuk-body">If you're unsure about how to find your endpoint details, speak to your team's GIS specialist, or contact us for support: <a href="mailto:DigitalLand@communities.gov.uk" class="govuk-link">DigitalLand@communities.gov.uk</a>.</p>
+          <p class="govuk-body-s">If you are not sure about how to find your endpoint details, contact your GIS specialist, or <a href="mailto:DigitalLand@communities.gov.uk" class="govuk-link">DigitalLand@communities.gov.uk</a>.</p>
           {% if 'url' in errors and errors['url'].type == 'restricted403' %}
             <p class="govuk-body">You must host the URL on a server which does not block access due to set permissions.</p>
             <p class="govuk-body">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>

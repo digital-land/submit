@@ -9,7 +9,7 @@
 {% if options.requestId %}
   {% set pageName = "You can now provide your data" %}
 {% else %}
-  {% set pageName = "You can now publish your data" %}
+  {% set pageName = "Publish your data" %}
 {% endif %}
 
 {% block beforeContent %}
@@ -30,14 +30,14 @@
 
   {% else %}
 
-  ## 1: Publish your data to your website
+  ## 1: Publish data to your website
 
   {% endif %}
 
-  The page on your website must include:
-  - a link to the data
-  - a summary of what the data is about
-  - a statement that the data is provided under the Open Government Licence
+  For each dataset, your webpage must include a:
+  - link to the endpoint URL
+  - summary of what the data is about
+  - statement that the data is provided under the Open Government Licence
 
   {% if options.requestId %}
 
@@ -47,7 +47,7 @@
 
   - full name
   - work email address
-  - webpage URL: publicly accessible page on your organisation’s website with information about the data
+  - Source webpage URL: publicly accessible page on your organisation’s website with information about the data
 
   We’ll confirm by email when we’ve received your data.
 
@@ -57,9 +57,9 @@
 
   ## 2: Provide your data
 
-  Once you have your data hosted on a URL endpoint, come back to [check and provide](/check/url) it to the Planning Data Platform.
+  After you publish, you should [provide your data to the Planning Data Platform](/check/url).
 
-  Details about what to do next are also available [in the guidance](/guidance)
+  [Find out more about how to check and provide your data](/guidance)
 
   {% endif %}
 

@@ -29,7 +29,7 @@ id: "table-tab",
 panel: { html: tableTab } } } %}
 
 {% set serviceType = 'Check' %}
-{% set pageName = 'Your data has been checked' %}
+{% set pageName = 'We have checked your data' %}
 
 {% block pageTitle %}
 {% set pageTitle = super() %}
@@ -146,11 +146,9 @@ panel: { html: tableTab } } } %}
 
     {% if options.tasksNonBlocking.length > 0 %}
     <div id="optional-checks">
-      <h2 class="govuk-heading-m">Issues you can fix after providing your data</h2>
+      <h2 class="govuk-heading-m">Issues you need to fix</h2>
 
-      <p>You can provide your data with these issues but should fix them over time to improve the quality and usability
-        of
-        the data.</p>
+      <p>You can can provide your data with these issues, but you should fix them to improve data quality and usability.</p>
 
       {{ govukTaskList({
       idPrefix: "fix-later",
@@ -160,12 +158,12 @@ panel: { html: tableTab } } } %}
     {% endif %}
 
     {% if options.tasksBlocking.length > 0 %}
-    <p>Fix the issues, then upload a new version of your data to check if it is ready to provide.</p>
+    <p>Fix the issues, then check your data again.</p>
 
     <form>
       <div class="govuk-button-group">
         {{ govukButton({
-        text: "Upload a new version",
+        text: "Check data",
         href: "/check/upload-method"
         }) }}
       </div>
