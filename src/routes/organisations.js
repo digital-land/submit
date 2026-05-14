@@ -1,7 +1,10 @@
 import express from 'express'
 import OrganisationsController from '../controllers/OrganisationsController.js'
+import { validateOrg } from '../middleware/common.middleware.js'
 
 const router = express.Router()
+
+router.use('/:lpa', validateOrg)
 
 router.get('/:lpa/:dataset/get-started', OrganisationsController.getStartedMiddleware)
 router.get('/:lpa/:dataset/overview', OrganisationsController.datasetOverviewMiddleware)

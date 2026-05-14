@@ -5,6 +5,13 @@ import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
 import platformApi from '../../../src/services/platformApi.js'
 import { isValiError } from 'valibot'
+vi.mock('../../../src/utils/redisLoader.js', async () => {
+  const actual = await vi.importActual('../../../src/utils/redisLoader.js')
+  return {
+    ...actual,
+    getOrganisationList: vi.fn()
+  }
+})
 
 vi.mock('../../../src/services/performanceDbApi.js')
 
