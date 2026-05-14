@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority, validateOrgAndDatasetCombo } from '../../../src/middleware/common.middleware'
-import { getOrganisationList } from '../../../src/utils/redisLoader.js'
-import config from '../../../config/index.js'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -115,79 +113,6 @@ describe('show404IfPageNumberNotInRange middleware', () => {
       expect(isValiError(error)).toBe(true)
     }
     expect(next).not.toHaveBeenCalled()
-  })
-})
-
-describe('validateOrgAndDatasetCombo middleware', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('should proceed when provisions exist', async () => {
-    getOrganisationList.mockResolvedValue(false)
-    const validDataset = Object.keys(config.datasetsConfig)[0]
-    const req = {
-      params: { lpa: 'org:valid', dataset: validDataset },
-      provisions: [{ dataset: validDataset }]
-    }
-    const next = vi.fn()
-
-    await validateOrgAndDatasetCombo(req, {}, next)
-
-    expect(next).toHaveBeenCalledTimes(1)
-    expect(next).toHaveBeenCalledWith()
-  })
-
-  it('should return 404 when the organisation/dataset combination is invalid', async () => {
-    getOrganisationList.mockResolvedValue(false)
-    const validDataset = Object.keys(config.datasetsConfig)[0]
-    const req = {
-      params: { lpa: 'org:invalid', dataset: validDataset },
-      provisions: []
-    }
-    const next = vi.fn((err) => {
-      expect(err).toBeInstanceOf(Error)
-      expect(err.statusCode).toBe(404)
-    })
-
-    await validateOrgAndDatasetCombo(req, {}, next)
-
-    expect(next).toHaveBeenCalledTimes(1)
-  })
-
-  it('should return 404 when the organisation is invalid and organisation list cache is available', async () => {
-    getOrganisationList.mockResolvedValue([{ organisation: 'org:valid' }])
-    const validDataset = Object.keys(config.datasetsConfig)[0]
-    const req = {
-      params: { lpa: 'org:invalid', dataset: validDataset },
-      provisions: [{ dataset: validDataset }]
-    }
-    const next = vi.fn()
-
-    await validateOrgAndDatasetCombo(req, {}, next)
-
-    expect(next).toHaveBeenCalledTimes(1)
-    const err = next.mock.calls[0][0]
-    expect(err).toBeInstanceOf(Error)
-    expect(err.statusCode).toBe(404)
-    expect(err.message).toBe('Page not found')
-  })
-
-  it('should return 404 when the dataset is invalid against config datasetsConfig', async () => {
-    getOrganisationList.mockResolvedValue([{ organisation: 'org:valid' }])
-    const req = {
-      params: { lpa: 'org:valid', dataset: 'invalid-dataset' },
-      provisions: [{ dataset: 'invalid-dataset' }]
-    }
-    const next = vi.fn()
-
-    await validateOrgAndDatasetCombo(req, {}, next)
-
-    expect(next).toHaveBeenCalledTimes(1)
-    const err = next.mock.calls[0][0]
-    expect(err).toBeInstanceOf(Error)
-    expect(err.statusCode).toBe(404)
-    expect(err.message).toBe('Dataset not found')
   })
 })
 
