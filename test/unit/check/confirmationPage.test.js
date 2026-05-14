@@ -21,11 +21,11 @@ describe('Check confirmation View', () => {
     const doc = dom.window.document
 
     runGenericPageTests(html, {
-      pageTitle: 'You can now publish your data - Check your planning data'
+      pageTitle: 'Publish your data - Check your planning data'
     })
 
     it('should render the gov uk panel', () => {
-      const regex = new RegExp('<h1 class="govuk-panel__title".*You can now publish your data.*</h1>', 'g')
+      const regex = new RegExp('<h1 class="govuk-panel__title".*Publish your data.*</h1>', 'g')
       expect(html).toMatch(regex)
     })
 
