@@ -1038,57 +1038,19 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
   })
 })
 
-export const validateOrgAndDatasetCombo = async (req, res, next) => {
-  const { lpa, dataset } = req.params
-
-  const datasetConfig = config.datasetsConfig
-  const hasDatasetConfig = datasetConfig && typeof datasetConfig === 'object' && Object.keys(datasetConfig).length > 0
-  const datasetValid = hasDatasetConfig
-    ? Object.prototype.hasOwnProperty.call(datasetConfig, dataset)
-    : null
-
-  let orgList
-  let hasOrgList = false
-  let orgValid = null
+export const validateOrg = async (req, res, next) => {
   try {
-    orgList = await getOrganisationList()
-    if (Array.isArray(orgList)) {
-      hasOrgList = true
-      orgValid = orgList.some(org => org?.organisation === lpa)
+    const orgList = await getOrganisationList()
+    if (orgList) {
+      const orgExists = orgList.some(org => org?.organisation === req.params.lpa)
+      if (!orgExists) {
+        return next(new MiddlewareError('Not found', 404))
+      }
     }
   } catch (error) {
-    logger.warn('validateOrgAndDatasetCombo failed to load organisation list', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+    logger.warn(`validateOrg/redis error: ${error instanceof Error ? error.message : String(error)}`)
   }
 
-  if (hasOrgList && orgValid === false) {
-    return next(new MiddlewareError('Page not found', 404))
-  }
-
-  if (datasetValid === false) {
-    return next(new MiddlewareError('Dataset not found', 404))
-  }
-
-  if (!Array.isArray(req.provisions) || req.provisions.length === 0) {
-    return next(new MiddlewareError('Not found', 404))
-  }
-
-  next()
-}
-
-export const filterApprovedOrganisations = async (req, res, next) => {
-  try {
-    const lpa = req.params.lpa
-    const approved = await getOrganisationList()
-    if (Array.isArray(approved) && approved.length > 0) {
-      const approvedOrgs = new Set(approved.map(org => org.organisation))
-      if (lpa && !approvedOrgs.has(lpa)) {
-        return next(new MiddlewareError('Page not found', 404))
-      }
-      req.organisations = req.organisations.filter(org => approvedOrgs.has(org.organisation))
-    }
-  } catch (e) {
-    logger.warn('Error loading approved organisations for filtering', e)
-  }
   next()
 }
 
