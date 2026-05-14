@@ -25,7 +25,7 @@ test('receiving a successful result', async ({ page }) => {
   await resultsPage.navigateToRequest('complete')
   await resultsPage.expectPageHasTitle()
 
-  await expect(page.locator('#main-content')).toContainText('Your data has been checked')
+  await expect(page.locator('#main-content')).toContainText('We have checked your data')
 
   await resultsPage.clickTableTab()
 
