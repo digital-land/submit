@@ -15,6 +15,7 @@ import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
 import config from '../../config/index.js'
+import { getOrganisationList } from '../utils/redisLoader.js'
 import { readFileSync } from 'node:fs'
 
 const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
@@ -1037,6 +1038,21 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
     dataset: v.string()
   })
 })
+
+export const validateOrg = async (req, res, next) => {
+  try {
+    const orgList = await getOrganisationList()
+    if (orgList) {
+      const orgExists = orgList.some(org => org?.organisation === req.params.lpa)
+      if (!orgExists) {
+        return next(new MiddlewareError('Not found', 404))
+      }
+    }
+  } catch (error) {
+    logger.warn(`validateOrg/redis error: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  next()
+}
 
 // Fetches all currently active data source endpoints for a given organization and dataset, deduplicating by endpoint URL and keeping only the most recently logged entry for each unique endpoint, ordered by when they were last accessed.
 export const fetchSources = fetchMany({

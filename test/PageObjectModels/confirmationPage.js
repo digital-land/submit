@@ -11,10 +11,10 @@ export default class ConfirmationPage extends BasePage {
   }
 
   async expectProvideDataButtonVisible () {
-    await expect(this.page.getByRole('link', { name: 'Provide your data' })).toBeVisible()
+    await expect(this.page.getByRole('link', { name: 'Provide your data', exact: true })).toBeVisible()
   }
 
   async expectProvideDataButtonHidden () {
-    await expect(this.page.getByRole('link', { name: 'Provide your data' })).not.toBeVisible()
+    await expect(this.page.getByRole('link', { name: 'Provide your data', exact: true })).not.toBeVisible()
   }
 }
