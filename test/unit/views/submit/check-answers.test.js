@@ -7,12 +7,14 @@ import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
 
 describe('check-answers View', async () => {
   const params = {
+    options: {
+      endpointUrl: 'mockEndpointUrl'
+    },
     values: {
       lpa: 'mockLpa',
       name: 'mockName',
       email: 'mockEmail@example.com',
       dataset: 'mockDataset',
-      'endpoint-url': 'mockEndpointUrl',
       'documentation-url': 'mockDocumentationUrl',
       hasLicence: 'true'
     }
@@ -44,8 +46,8 @@ describe('check-answers View', async () => {
     expect(html).toMatch(datasetRegex)
   })
 
-  it('should render the endpoint url entered', () => {
-    const endpointUrlRegex = new RegExp('<div class="govuk-summary-list__row">.*Endpoint URL.*mockEndpointUrl.*Change.*</div>', 'g')
+  it('should render the endpoint url from options without a Change link', () => {
+    const endpointUrlRegex = new RegExp('<div class="govuk-summary-list__row govuk-summary-list__row--no-actions">.*Endpoint URL.*mockEndpointUrl.*</div>', 'g')
     expect(html).toMatch(endpointUrlRegex)
   })
 
@@ -61,6 +63,7 @@ describe('check-answers View', async () => {
 
   it('should render the licence selected as false if the licence has not been confirmed', () => {
     const noLicenseParams = {
+      options: params.options,
       values: {
         ...params.values,
         hasLicence: 'false'

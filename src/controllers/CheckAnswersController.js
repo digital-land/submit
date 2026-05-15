@@ -4,11 +4,30 @@ import { attachFileToIssue, createCustomerRequest } from '../services/jiraServic
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
-import { postUrlRequest, getRequestData } from '../services/asyncRequestApi.js'
-import SubmitUrlController from './submitUrlController.js'
+import { getRequestData } from '../services/asyncRequestApi.js'
 import { getDatasets } from '../utils/utils.js'
 
 class CheckAnswersController extends PageController {
+  async locals (req, res, next) {
+    const requestId = req.sessionModel.get('requestId')
+    if (!requestId) {
+      return res.redirect('/check/url')
+    }
+    try {
+      const requestData = await getRequestData(requestId)
+      const endpointUrl = requestData.getParams()?.url
+      req.form.options.endpointUrl = endpointUrl
+      req.sessionModel.set('endpoint-url', endpointUrl)
+    } catch (error) {
+      logger.warn('CheckAnswersController.locals(): failed to fetch request data', {
+        requestId,
+        errorMessage: error.message,
+        type: types.External
+      })
+    }
+    super.locals(req, res, next)
+  }
+
   /**
    * Handles the HTTP POST request for choosing a dataset.
    * during this, we will perform a few actions
@@ -28,8 +47,7 @@ class CheckAnswersController extends PageController {
         req.sessionModel.set('processing', true)
       } else {
         req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
-
-        return res.redirect('/submit/check-answers') // Redirect on error
+        return res.redirect('/submit/check-answers')
       }
     } catch (error) {
       logger.error('CheckAnswersController.post(): Failed to create Jira issue', {
@@ -38,8 +56,7 @@ class CheckAnswersController extends PageController {
         type: types.External
       })
       req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
-
-      return res.redirect('/submit/check-answers') // Redirect on error
+      return res.redirect('/submit/check-answers')
     }
 
     super.post(req, res, next)
@@ -58,39 +75,8 @@ class CheckAnswersController extends PageController {
     }
     const datasets = await getDatasets()
     const dataset = req.sessionModel.get('dataset')
-    const datasetMeta = datasets.get(dataset) || {}
-    const url = req.body.url || req.sessionModel.get('endpoint-url')
-    if (!url) {
-      logger.error('No Endpoint URL provided.')
-      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
-      return null
-    }
-
-    const URLvalidationError = await SubmitUrlController.localUrlValidation(url)
-    if (URLvalidationError) {
-      logger.warn(`URL validation failed for submitted URL: ${url}`)
-      req.sessionModel.set('errors', [{ text: 'A valid Endpoint URL is required to proceed.' }])
-      return null
-    }
-
-    const formData = {
-      url,
-      organisationName: req.sessionModel.get('lpa'),
-      dataset: req.sessionModel.get('dataset'),
-      collection: datasetMeta.dataSubject,
-      geomType: req.sessionModel.get('geomType')
-    }
-    let requestId
-    try {
-      requestId = await postUrlRequest(formData)
-    } catch (error) {
-      logger.error('Failed to submit URL request:', {
-        errorMessage: error.message,
-        errorStack: error,
-        type: types.External
-      })
-      requestId = null
-    }
+    const datasetMeta = datasets.get(dataset) || {} // eslint-disable-line no-unused-vars
+    const requestId = req.sessionModel.get('requestId')
     const checkTool = requestId
       ? `${config.url}check/results/${requestId}/${config.jira.requestTypeId}`
       : 'Check tool link unavailable'

@@ -1,19 +1,39 @@
 import PageController from './pageController.js'
 import { fetchLocalAuthorities } from '../utils/datasetteQueries/fetchLocalAuthorities.js'
+import { getRequestData } from '../services/asyncRequestApi.js'
+import { orgIdToName } from '../utils/orgIdToName.js'
 
 class LpaDetailsController extends PageController {
   async locals (req, res, next) {
-    if (!req.sessionModel?.get('lpa') || !req.sessionModel?.get('dataset')) {
-      return res.redirect('/')
+    const requestId = req.session?.checkRequestId
+
+    try {
+      const requestData = await getRequestData(requestId)
+      if (requestData?.getParams()?.type !== 'check_url') {
+        return res.redirect('/check/url')
+      }
+      // Populate submit wizard session from the check request params
+      const params = requestData.getParams()
+      const orgId = params.organisationName
+      req.sessionModel.set('requestId', requestId)
+      req.sessionModel.set('lpa', orgIdToName(orgId))
+      req.sessionModel.set('orgId', orgId)
+      req.sessionModel.set('dataset', params.dataset)
+      req.sessionModel.set('endpoint-url', params.url)
+      if (params.geom_type) {
+        req.sessionModel.set('geomType', params.geom_type)
+      }
+    } catch {
+      return res.redirect('/check/url')
     }
 
     const localAuthoritiesNames = await fetchLocalAuthorities()
-    const listItems = localAuthoritiesNames.map(name => ({
+    req.form.options.localAuthorities = localAuthoritiesNames.map(name => ({
       text: name,
       value: name
     }))
 
-    req.form.options.localAuthorities = listItems
+    req.form.options.lastPage = `/check/results/${req.session.checkRequestId}/1`
 
     super.locals(req, res, next)
   }

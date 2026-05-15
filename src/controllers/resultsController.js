@@ -21,6 +21,7 @@ class ResultsController extends PageController {
     super.middlewareSetup()
     this.use(validateParams)
     this.use(getRequestDataMiddleware)
+    this.use(updateSessionFromRequestData)
     this.use(setupTemplate)
     this.use(fetchDatasetTypology)
     this.use(fetchResponseDetails)
@@ -51,6 +52,17 @@ class ResultsController extends PageController {
   noErrors (req, res, next) {
     return !req.form.options.data.hasErrors()
   }
+}
+
+export function updateSessionFromRequestData (req, res, next) {
+  // Used so check results can be shared and still continue to submit
+  const { requestData } = req.locals
+  const params = requestData?.getParams()
+  req.sessionModel.set('request_id', req.params.id)
+  if (params?.type === 'check_url') {
+    req.sessionModel.set('upload-method', 'url')
+  }
+  next()
 }
 
 export async function getRequestDataMiddleware (req, res, next) {

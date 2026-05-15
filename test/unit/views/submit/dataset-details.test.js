@@ -1,6 +1,6 @@
 /* eslint-disable prefer-regex-literals */
 
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from '../../generic-page.js'
 import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
@@ -48,12 +48,12 @@ describe(`dataset details View (seed: ${seed})`, () => {
   const html = stripWhitespace(nunjucks.render('dataset-details.html', params))
 
   runGenericPageTests(html, {
-    pageTitle: 'Endpoint details - Check and provide your planning data'
+    pageTitle: 'Source webpage details - Check and provide your planning data'
   })
 
   it('should render the correct header', () => {
     const regex = new RegExp(
-      '<h1 class="govuk-heading-l".*Endpoint details.*</h1>',
+      '<h1 class="govuk-heading-l".*Source webpage details.*</h1>',
       'g'
     )
 
@@ -61,38 +61,6 @@ describe(`dataset details View (seed: ${seed})`, () => {
   })
 
   describe('validation error messages', () => {
-    describe('endpoint-url', () => {
-      it(
-        'should display an error message when the endpoint-url field is empty',
-        errorTestFn({
-          params,
-          fieldId: 'endpoint-url',
-          fieldType: 'required',
-          message: 'Enter an endpoint URL'
-        })
-      )
-
-      it(
-        'should display an error message when the endpoint-url is not a valid URL',
-        errorTestFn({
-          params,
-          fieldId: 'endpoint-url',
-          fieldType: 'format',
-          message: 'Endpoint URL must start with http:// or https://, and have no spaces or special characters like { } [ ]'
-        })
-      )
-
-      it(
-        'should display an error message when the endpoint-url is too long',
-        errorTestFn({
-          params,
-          fieldId: 'endpoint-url',
-          fieldType: 'maxlength',
-          message: 'The URL must be less than 2048 characters'
-        })
-      )
-    })
-
     describe('documentation-url', () => {
       it(
         'should display an error message when the documentation-url field is empty',
@@ -121,21 +89,6 @@ describe(`dataset details View (seed: ${seed})`, () => {
           fieldId: 'documentation-url',
           fieldType: 'maxlength',
           message: 'The URL must be less than 2048 characters'
-        })
-      )
-    })
-
-    describe('geomType', () => {
-      beforeEach(() => {
-        params.values.dataset = 'tree'
-      })
-      it(
-        'should display an error message when the geomType field is not selected for tree ',
-        errorTestFn({
-          params,
-          fieldId: 'geomType',
-          fieldType: 'required',
-          message: 'Select whether your geometry data is given as points or polygons'
         })
       )
     })

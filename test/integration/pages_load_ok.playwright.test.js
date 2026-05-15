@@ -19,22 +19,12 @@ const checkRouteResponse = async (page, route, statuses) => {
 
 const checkSessionExpired = async (page, route) => {
   await page.goto(route)
-  const sessionExpiredText = await page.getByText('Session expired')
-  await expect(sessionExpiredText !== undefined).toBeTruthy()
+  await expect(page).toHaveURL('/')
 }
 
 test.describe('without a valid session, the user can not access the later form pages', () => {
-  test('/check/dataset', async ({ page }) => {
-    await checkSessionExpired(page, '/check/dataset')
-  })
-
-  test('/check/geometry-type', async ({ page }) => {
-    await checkSessionExpired(page, '/check/geometry-type')
-  })
-
-  test('/check/upload-method', async ({ page }) => {
-    await checkSessionExpired(page, '/check/upload-method')
-  })
+  // /check/dataset, /check/geometry-type, /check/upload-method have checkJourney: false
+  // so they render without a session — no redirect expected
 
   test('/check/upload', async ({ page }) => {
     await checkSessionExpired(page, '/check/upload')

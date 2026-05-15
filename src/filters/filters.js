@@ -7,6 +7,7 @@ import getFullServiceName from './getFullServiceName.js'
 import { checkToolDeepLink } from './checkToolDeepLink.js'
 import pluralize from 'pluralize'
 import { datasetSlugToReadableName } from '../utils/datasetSlugToReadableName.js'
+import { orgIdToName } from '../utils/orgIdToName.js'
 import { getDatasetGuidanceUrl } from './getDatasetConfig.js'
 import { schemaIssues } from './schemaIssues.js'
 import { endpointSubmissionFormToolDeepLink } from './endpointSubmissionFormDeepLink.js'
@@ -34,6 +35,7 @@ const { govukMarkdown, govukDateTime } = xGovFilters
 const addFilters = (nunjucksEnv) => {
   // Wrapper function for datasetSlugToReadableName filter to allow working with async loading of the mapping data
   nunjucksEnv.addFilter('datasetSlugToReadableName', (...args) => datasetSlugToReadableName(...args))
+  nunjucksEnv.addFilter('orgIdToName', (...args) => orgIdToName(...args))
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
   nunjucksEnv.addFilter('govukDateTime', govukDateTime)

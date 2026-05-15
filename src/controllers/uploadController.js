@@ -3,7 +3,7 @@ import PageController from './pageController.js'
 
 class UploadController extends PageController {
   get (req, res, next) {
-    const organisationName = req?.sessionModel?.get('deep-link-session-key')?.orgName
+    const organisationName = req?.sessionModel?.get('orgId')
     const dataset = req?.sessionModel?.get('dataset')
     const collection = req?.sessionModel?.get('data-subject')
     const isEmpty = value => value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
@@ -20,7 +20,7 @@ class UploadController extends PageController {
 
   getBaseFormData (req) {
     return {
-      organisationName: req.sessionModel.get('deep-link-session-key')?.orgName,
+      organisationName: req.sessionModel.get('orgId'),
       dataset: req.sessionModel.get('dataset'),
       collection: req.sessionModel.get('data-subject'),
       geomType: req.sessionModel.get('geomType'),
