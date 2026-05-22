@@ -1,0 +1,22 @@
+name: Invalidate CloudFront cache
+
+on:
+  push:
+    branches:
+      - 2510-clear-cdn-cache-on-service-deploy
+
+jobs:
+  invalidate-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id E1U2W8HWDSJAF0 \
+            --paths "/*"
