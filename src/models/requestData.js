@@ -99,11 +99,12 @@ export default class ResultData {
       logger.warn('trying to check for errors when there are none', { requestId: this.id })
       return true
     }
-    if (this.response.data['error-summary'] == null) {
-      logger.warn('trying to check for errors but there is no error-summary', { requestId: this.id })
+    const taskLog = this.response.data['task-log']
+    if (taskLog == null) {
+      logger.warn('trying to check for errors but there is no task-log', { requestId: this.id })
       return true
     }
-    return this.response.data['error-summary'].length > 0
+    return taskLog.some(task => task.responsibility === 'external')
   }
 
   isComplete () {
@@ -116,11 +117,24 @@ export default class ResultData {
    * @returns {any[]}
    */
   getColumnFieldLog () {
-    if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
+    if (!this.response || !this.response.data) {
       logger.warn('trying to get column field log when there is none', { requestId: this.id })
       return []
     }
-    return this.response.data['column-field-log']
+
+    const columnMapping = this.response.data['column-mapping'] ?? []
+    const taskLog = this.response.data['task-log'] ?? []
+
+    const log = columnMapping.map(({ field, column }) => ({ field, column, missing: false }))
+
+    for (const task of taskLog) {
+      if (task['task-source'] === 'column-field') {
+        const details = JSON.parse(task.details)
+        log.push({ field: details.field, missing: true })
+      }
+    }
+
+    return log
   }
 
   getParams () {

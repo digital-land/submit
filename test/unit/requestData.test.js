@@ -167,49 +167,55 @@ describe('RequestData', () => {
   })
 
   describe('hasErrors', () => {
-    it('should return true if there are errors', () => {
+    it('should return true if there are external tasks', () => {
       const response = {
         data: {
-          'error-summary': ['error1', 'error2']
+          'task-log': [
+            { responsibility: 'external' },
+            { responsibility: 'external' }
+          ]
         }
       }
       const requestData = new RequestData({ response })
 
-      const hasErrors = requestData.hasErrors()
-
-      expect(hasErrors).toBe(true)
+      expect(requestData.hasErrors()).toBe(true)
     })
 
-    it('should return true if there are no errors', () => {
+    it('should return false if all tasks are internal', () => {
+      const response = {
+        data: {
+          'task-log': [{ responsibility: 'internal' }]
+        }
+      }
+      const requestData = new RequestData({ response })
+
+      expect(requestData.hasErrors()).toBe(false)
+    })
+
+    it('should return false if task-log is empty', () => {
+      const response = {
+        data: {
+          'task-log': []
+        }
+      }
+      const requestData = new RequestData({ response })
+
+      expect(requestData.hasErrors()).toBe(false)
+    })
+
+    it('should return true if there is no response', () => {
       const requestData = new RequestData({})
 
-      const hasErrors = requestData.hasErrors()
-
-      expect(hasErrors).toBe(true)
+      expect(requestData.hasErrors()).toBe(true)
     })
 
-    it('should return true if there is no error summary', () => {
+    it('should return true if there is no task-log', () => {
       const response = {
         data: {}
       }
       const requestData = new RequestData({ response })
 
-      const hasErrors = requestData.hasErrors()
-
-      expect(hasErrors).toBe(true)
-    })
-
-    it('should return false if the error summary is empty', () => {
-      const response = {
-        data: {
-          'error-summary': []
-        }
-      }
-      const requestData = new RequestData({ response })
-
-      const hasErrors = requestData.hasErrors()
-
-      expect(hasErrors).toBe(false)
+      expect(requestData.hasErrors()).toBe(true)
     })
   })
 
@@ -249,25 +255,56 @@ describe('RequestData', () => {
   })
 
   describe('getColumnFieldLog', () => {
-    it('should return the column field log from the response', () => {
+    it('should build log from column-mapping with missing: false', () => {
       const response = {
         data: {
-          'column-field-log': ['column1', 'column2']
+          'column-mapping': [
+            { field: 'name', column: 'name' },
+            { field: 'geometry', column: 'geom' }
+          ],
+          'task-log': []
         }
       }
       const requestData = new RequestData({ response })
 
-      const columnFieldLog = requestData.getColumnFieldLog()
-
-      expect(columnFieldLog).toStrictEqual(['column1', 'column2'])
+      expect(requestData.getColumnFieldLog()).toStrictEqual([
+        { field: 'name', column: 'name', missing: false },
+        { field: 'geometry', column: 'geom', missing: false }
+      ])
     })
 
-    it('should return an empty array if there is no column field log', () => {
+    it('should append missing column entries from task-log where task-source is column-field', () => {
+      const response = {
+        data: {
+          'column-mapping': [
+            { field: 'name', column: 'name' }
+          ],
+          'task-log': [
+            {
+              'task-source': 'column-field',
+              details: '{"field": "geometry", "issue_type": "missing-field"}',
+              responsibility: 'external'
+            },
+            {
+              'task-source': 'issue',
+              details: '{"issue_type": "missing value", "count": 4, "field": "reference"}',
+              responsibility: 'external'
+            }
+          ]
+        }
+      }
+      const requestData = new RequestData({ response })
+
+      expect(requestData.getColumnFieldLog()).toStrictEqual([
+        { field: 'name', column: 'name', missing: false },
+        { field: 'geometry', missing: true }
+      ])
+    })
+
+    it('should return an empty array if there is no response data', () => {
       const requestData = new RequestData({})
 
-      const columnFieldLog = requestData.getColumnFieldLog()
-
-      expect(columnFieldLog).toStrictEqual([])
+      expect(requestData.getColumnFieldLog()).toStrictEqual([])
     })
   })
 
