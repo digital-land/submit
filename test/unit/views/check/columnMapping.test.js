@@ -39,16 +39,19 @@ describe('check/column-mapping.html', () => {
     })
 
     const document = new JSDOM(html, { url: 'http://localhost' }).window.document
+    const notesSelect = document.querySelector('select[name="fieldMap[notes]"]')
+    const notesRow = notesSelect.closest('tr')
 
     expect(document.querySelector('th').textContent).toContain('Expected fields')
     expect(document.querySelector('td strong').textContent).toBe('reference')
     expect(document.querySelectorAll('td')[1].textContent).toContain('Reference')
-    expect(document.querySelector('td').getAttribute('style')).toContain('vertical-align: middle')
+    expect(document.defaultView.getComputedStyle(document.querySelector('td')).verticalAlign).toBe('middle')
     expect(document.querySelector('.govuk-error-summary').textContent).toContain('Select the notes field')
     expect(document.querySelector('.govuk-error-summary a').getAttribute('href')).toBe('#fieldMap-1')
     expect(document.querySelector('.govuk-error-message').textContent).toContain('Select the notes field')
     expect(document.querySelector('.govuk-form-group').className).toContain('govuk-!-margin-bottom-0')
-    expect(document.querySelector('tr.govuk-form-group--error').textContent).toContain('notes')
+    expect(notesRow.className).toContain('govuk-form-group--error')
+    expect(notesRow.textContent).toContain('notes')
     expect(document.querySelector('.govuk-form-group').className).not.toContain('govuk-form-group--error')
     expect(document.querySelector('button[form="columnMappingForm"]').textContent).toContain('Check your data')
   })

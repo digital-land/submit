@@ -92,7 +92,7 @@ describe('getDatasetNameMap', () => {
       expect(mockRedisClient.get).toHaveBeenCalledWith('deploy-123:dataset:example-dataset')
       expect(mockRedisClient.setEx).toHaveBeenCalledWith(
         'deploy-123:dataset:example-dataset',
-        300,
+        21600,
         JSON.stringify({ 'example-dataset': 'Example dataset' })
       )
     } finally {
@@ -173,14 +173,14 @@ describe('getDatasetNameMap', () => {
       expect(mockRedisClient.setEx).toHaveBeenNthCalledWith(
         1,
         'deploy-456:dataset-fields:conservation-area',
-        300,
+        21600,
         JSON.stringify(['name', 'notes', 'reference'])
       )
       expect(mockRedisClient.get).toHaveBeenNthCalledWith(2, 'deploy-456:provision-reasons:local-authority:TST:conservation-area')
       expect(mockRedisClient.setEx).toHaveBeenNthCalledWith(
         2,
         'deploy-456:provision-reasons:local-authority:TST:conservation-area',
-        300,
+        21600,
         JSON.stringify(['statutory'])
       )
       expect(mockDatasette.default.runQuery).toHaveBeenCalledTimes(2)

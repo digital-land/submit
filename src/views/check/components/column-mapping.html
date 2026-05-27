@@ -77,7 +77,7 @@
             <td class="govuk-table__cell" style="vertical-align: middle; overflow-wrap: anywhere; word-break: break-word;">
               {% if not isEditable %}
                 {% if allowUnmapping %}
-                  <select name="map[{{ row.column }}]" style="background-color: #00703c; color: #ffffff; font-weight: 700; font-size: 0.875rem; padding: 2px 8px; border: none; border-radius: 0; cursor: pointer; appearance: auto;">
+                  <select name="map[{{ row.column }}]" class="column-mapping__unmap-select">
                   <option value="">Mapped</option>
                   <option value="IGNORE">Un-Map</option>
                 </select>

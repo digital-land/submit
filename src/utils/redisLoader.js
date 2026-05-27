@@ -94,7 +94,7 @@ export async function getDatasetFields (dataset) {
 
   const query = `select field from dataset_field where dataset = '${escapeSqlString(dataset)}'`
   const response = await datasette.runQuery(query)
-  const fields = normaliseDatasetFields(response.formattedData)
+  const fields = normaliseDatasetFields(response.formattedData, dataset)
 
   await setCachedJson(key, fields, 'getDatasetFields')
 

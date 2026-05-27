@@ -174,7 +174,11 @@ export function applySubmittedFieldSelections (mappingRows = [], body = {}) {
 
 export function buildSubmittedColumnMapping ({ existingMapping = {}, body = {}, spareUploadedColumns = [] }) {
   const columnMapping = { ...existingMapping }
-  const columns = Array.isArray(body.columns) ? body.columns : [body.columns].filter(Boolean)
+  const columns = Array.isArray(body.columns)
+    ? body.columns
+    : body.columns
+      ? [body.columns]
+      : []
   const selectedUploadedColumns = new Set()
 
   columns.forEach((column, index) => {

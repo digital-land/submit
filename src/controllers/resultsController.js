@@ -236,10 +236,8 @@ export function setupTableParams (req, res, next) {
           return { mappedField, col }
         })
         .filter(({ mappedField, col }) => {
-          // skip empty values and explicit IGNORE mappings
-          if (!mappedField || !col) return false
-          if (typeof mappedField === 'string' && mappedField.toUpperCase() === 'IGNORE') return false
-          return true
+          const normalizedMappedField = typeof mappedField === 'string' ? mappedField.toUpperCase() : mappedField
+          return Boolean(mappedField && col && normalizedMappedField !== 'IGNORE')
         })
         .map(({ mappedField, col }) => ({
           key: { text: mappedField },
