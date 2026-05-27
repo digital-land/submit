@@ -2,6 +2,7 @@
 import config from '../../config/index.js'
 import { createClient } from 'redis'
 import logger from '../utils/logger.js'
+import datasette from '../services/datasette.js'
 
 let redisClient
 
@@ -36,7 +37,99 @@ export async function getRedisClient () {
   return redisClient
 }
 
-const CACHE_TTL = 300 // 5min
+const CACHE_TTL = 60 * 60 * 6 // 6 hours
+const SYSTEM_FIELDS = new Set([
+  'entity',
+  'prefix',
+  'entry-number',
+  'organisation-entity',
+  'organisation',
+  'IGNORE',
+  ''
+])
+
+function escapeSqlString (value) {
+  return String(value).replaceAll("'", "''")
+}
+
+async function getCachedJson (key, logPrefix) {
+  const client = await getRedisClient()
+  if (!client) return undefined
+
+  try {
+    const cached = await client.get(cacheKey(key))
+    if (cached) return JSON.parse(cached)
+  } catch (err) {
+    logger.warn(`${logPrefix}/redis get error: ${err.message}`)
+  }
+
+  return undefined
+}
+
+async function setCachedJson (key, value, logPrefix, ttl = CACHE_TTL) {
+  const client = await getRedisClient()
+  if (!client) return
+
+  try {
+    await client.setEx(cacheKey(key), ttl, JSON.stringify(value))
+  } catch (err) {
+    logger.warn(`${logPrefix}/redis set error: ${err.message}`)
+  }
+}
+
+export function normaliseDatasetFields (rows = [], dataset) {
+  return [...new Set(
+    rows
+      .map(row => row?.field)
+      .filter(field => field && !SYSTEM_FIELDS.has(field) && dataset !== field)
+  )].sort()
+}
+
+export async function getDatasetFields (dataset) {
+  if (!dataset) return []
+
+  const key = `dataset-fields:${dataset}`
+  const cached = await getCachedJson(key, 'getDatasetFields')
+  if (cached) return cached
+
+  const query = `select field from dataset_field where dataset = '${escapeSqlString(dataset)}'`
+  const response = await datasette.runQuery(query)
+  const fields = normaliseDatasetFields(response.formattedData)
+
+  await setCachedJson(key, fields, 'getDatasetFields')
+
+  return fields
+}
+
+export async function getProvisionReasonsForDataset ({ organisation, dataset }) {
+  if (!organisation || !dataset) return []
+
+  const key = `provision-reasons:${organisation}:${dataset}`
+  const cached = await getCachedJson(key, 'getProvisionReasonsForDataset')
+  if (cached) return cached
+
+  const query = `
+    select provision_reason from provision
+    where organisation = '${escapeSqlString(organisation)}'
+    and dataset = '${escapeSqlString(dataset)}'
+    and (
+      end_date is null
+      or end_date = '')
+  `
+  const response = await datasette.runQuery(query)
+  const provisionReasons = response.formattedData
+    .map(row => row?.provision_reason)
+    .filter(Boolean)
+
+  await setCachedJson(key, provisionReasons, 'getProvisionReasonsForDataset')
+
+  return provisionReasons
+}
+
+export async function isStatutoryDataset ({ organisation, dataset }) {
+  const provisionReasons = await getProvisionReasonsForDataset({ organisation, dataset })
+  return provisionReasons.includes('statutory')
+}
 
 // TODO: future removal of this function in favour of using datasetNameSlug and datasetSubjectLoaded instead.
 export async function fetchDatasetNames (datasetKeys) {

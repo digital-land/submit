@@ -249,6 +249,22 @@ code * {
   border-left: govuk-spacing(1) solid $govuk-error-colour;
 }
 
+.column-mapping__row--error {
+  padding-left: 0;
+
+  .govuk-table__cell:first-child {
+    border-left: govuk-spacing(1) solid $govuk-error-colour;
+  }
+}
+
+.column-mapping-table {
+  th,
+  td {
+    padding-top: govuk-spacing(2);
+    padding-bottom: govuk-spacing(2);
+  }
+}
+
 .app-content__markdown img {
   max-width: 100%;
 }

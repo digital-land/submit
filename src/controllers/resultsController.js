@@ -223,6 +223,31 @@ export function setupTableParams (req, res, next) {
       columnNameProcessing: 'none',
       mapping: columnToField
     }
+
+    // Show column mapping if the requestParams contains a non-empty mapping object
+    const columnMapping = req.locals.requestParams?.column_mapping
+    const hasMappingObject = columnMapping && typeof columnMapping === 'object' && Object.keys(columnMapping).length > 0
+    const columnMappingEnabled = columnMapping === true || hasMappingObject
+    req.locals.columnMappingEnabled = columnMappingEnabled
+    if (columnMappingEnabled) {
+      const columnMappingRows = orderedFields
+        .map(col => {
+          const mappedField = columnToField.get(col) || ''
+          return { mappedField, col }
+        })
+        .filter(({ mappedField, col }) => {
+          // skip empty values and explicit IGNORE mappings
+          if (!mappedField || !col) return false
+          if (typeof mappedField === 'string' && mappedField.toUpperCase() === 'IGNORE') return false
+          return true
+        })
+        .map(({ mappedField, col }) => ({
+          key: { text: mappedField },
+          value: { html: col }
+        }))
+
+      req.locals.columnMappingRows = columnMappingRows
+    }
     req.locals.geometries =
       req.locals.datasetTypology === 'geography'
         ? responseDetails.getGeometries()
