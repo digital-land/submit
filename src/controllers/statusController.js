@@ -77,14 +77,24 @@ export async function shouldShowColumnMapping (requestData) {
     if (expectedFields.length === 0) return false
 
     const columnFieldLog = requestData.getColumnFieldLog?.() ?? []
+
+    // the column mapping the user has done
     const userColumnMapping = params.column_mapping ?? {}
     const responseDetails = await requestData.fetchResponseDetails(0, 50)
     const rows = responseDetails.getRows?.() ?? []
-
+    // all the columns the user has mapped.
     const mappedFields = buildMappedFields(columnFieldLog, userColumnMapping)
+
+    // all the fields in the dataset that has not been mapped
     const unmappedExpectedFields = new Set(expectedFields.filter(field => !mappedFields.has(field)))
     const hasUnmappedExpectedFields = unmappedExpectedFields.size > 0
     if (!hasUnmappedExpectedFields) return false
+
+    const spareUploadedColumns = buildSpareUploadedColumns(columnFieldLog, rows, userColumnMapping)
+
+    if (spareUploadedColumns.length === 0) return false
+
+    if (columnFieldLog.some(column => column?.missing)) return true
 
     // If there are other blocking external errors, users should resolve those in
     // results instead of being redirected to column-mapping.
@@ -95,10 +105,7 @@ export async function shouldShowColumnMapping (requestData) {
         !unmappedExpectedFields.has(issue?.field)
       )
     )
-    if (hasOtherBlockingExternalErrors) return false
-
-    const spareUploadedColumns = buildSpareUploadedColumns(columnFieldLog, rows, userColumnMapping)
-    return spareUploadedColumns.length > 0
+    return !hasOtherBlockingExternalErrors
   } catch {
     return false
   }
