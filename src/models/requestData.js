@@ -129,8 +129,16 @@ export default class ResultData {
 
     for (const task of taskLog) {
       if (task['task-source'] === 'column-field') {
-        const details = JSON.parse(task.details)
-        log.push({ field: details.field, missing: true })
+        if (typeof task.details !== 'string' || task.details.length === 0) continue
+        let details
+        try {
+          details = JSON.parse(task.details)
+        } catch {
+          continue
+        }
+        if (details.field) {
+          log.push({ field: details.field, missing: true })
+        }
       }
     }
 
