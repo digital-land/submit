@@ -137,6 +137,40 @@ export default class ResultData {
     return log
   }
 
+  /**
+   * Returns issue tasks from the task-log, filtering out internal issues and
+   * normalising the shape ready for `aggregateIssues`.
+   *
+   * @returns {Array<{issue-type: string, field: string, count: number, severity: string, responsibility: string, summary: string}>}
+   */
+  getIssueTasks () {
+    if (!this.response || !this.response.data) {
+      logger.warn('trying to get issue tasks when there is no response data', { requestId: this.id })
+      return []
+    }
+
+    const taskLog = this.response.data['task-log'] ?? []
+    return taskLog
+      .filter(task => task['task-source'] === 'issue' && task.responsibility !== 'internal')
+      .map(task => {
+        let details
+        try {
+          details = JSON.parse(task.details)
+        } catch {
+          return null // skip entries with unparseable details
+        }
+        return {
+          'issue-type': details.issue_type,
+          field: details.field,
+          count: details.count ?? 1,
+          severity: task.severity,
+          responsibility: task.responsibility,
+          summary: task.summary
+        }
+      })
+      .filter(Boolean) // remove nulls from failed parses
+  }
+
   getParams () {
     return this.params
   }

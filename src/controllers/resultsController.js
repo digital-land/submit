@@ -28,8 +28,7 @@ class ResultsController extends PageController {
     this.use(checkForErroredResponse)
     this.use(setupTableParams)
     this.use(getIssueTypesWithQualityCriteriaLevels)
-    this.use(extractIssuesFromResults)
-    this.use(filterOutInternalIssues)
+    this.use(extractIssuesFromTaskLog)
     this.use(addQualityCriteriaLevelsToIssues)
     this.use(aggregateIssues)
     this.use(getTotalRows)
@@ -84,10 +83,7 @@ export async function getRequestDataMiddleware (req, res, next) {
 }
 
 export async function checkForErroredResponse (req, res, next) {
-  if (!req.locals.requestData.response?.error) {
-    Sentry.metrics.count('url_submission.success', 1)
-  }
-
+  // Sentry metrics will count repeatedly if page reloads - not complete solution.
   if (req.locals.requestData.response?.error) {
     const { errMsg } = req.locals.requestData.response.error
     if (errMsg && errMsg.length > 0) {
@@ -265,6 +261,11 @@ export function extractIssuesFromResults (req, res, next) {
   next()
 }
 
+export function extractIssuesFromTaskLog (req, res, next) {
+  req.issues = req.locals.requestData.getIssueTasks()
+  next()
+}
+
 export function filterOutInternalIssues (req, res, next) {
   const { issues } = req
   req.issues = issues.filter(issue => issue.responsibility !== 'internal')
@@ -316,10 +317,11 @@ export function aggregateIssues (req, res, next) {
           issueType: issue['issue-type'],
           field: issue.field,
           qualityCriteriaLevel: issue.quality_criteria_level,
-          count: 1
+          count: issue.count ?? 1,
+          summary: issue.summary
         })
       } else {
-        task.count++
+        task.count += issue.count ?? 1
       }
     }
   }
@@ -348,9 +350,10 @@ export function filterOutTasksByQualityCriterialLevel (issue) {
  * @property {string} colour - Status color
  */
 
-/** @type {{mustFix: Status, shouldFix: Status, passed: Status}} */
+/** @type {{mustFix: Status, mustFixNoLink: Status, shouldFix: Status, passed: Status}} */
 const taskStatus = {
   mustFix: { text: 'Must fix', link: true, colour: 'red' },
+  mustFixNoLink: { text: 'Must fix', link: false, colour: 'red' },
   shouldFix: { text: 'Needs improving', link: true, colour: 'yellow' },
   passed: { text: 'Passed', link: false, colour: 'green' }
 }
@@ -403,13 +406,15 @@ export function getTasksByLevel (req, level, status) {
 
   const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
   const taskParams = filteredTasks.map(task => {
-    const taskMessage = performanceDbApi.getTaskMessage({
-      issue_type: task.issueType,
-      num_issues: task.count,
-      rowCount: totalRows,
-      field: task.field,
-      dataset
-    })
+    const taskMessage = (task.summary?.length > 0)
+      ? task.summary
+      : performanceDbApi.getTaskMessage({
+        issue_type: task.issueType,
+        num_issues: task.count,
+        rowCount: totalRows,
+        field: task.field,
+        dataset
+      })
     return makeTaskParam(req, { taskMessage, status, issueType: task.issueType, field: task.field })
   })
   req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
@@ -420,10 +425,9 @@ export const missingColumnTaskMessage = (field) => {
 }
 
 export function getMissingColumnTasks (req) {
-  const { responseDetails } = req.locals
   const taskMap = new Map()
   const tasks = []
-  for (const column of responseDetails.getColumnFieldLog()) {
+  for (const column of req.locals.requestData.getColumnFieldLog()) {
     if (column.missing) {
       taskMap.set(`missing column|${column.field}`, {
         issueType: 'missing column',
@@ -433,7 +437,7 @@ export function getMissingColumnTasks (req) {
       })
       tasks.push(makeTaskParam(req, {
         taskMessage: missingColumnTaskMessage(column.field),
-        status: taskStatus.mustFix,
+        status: taskStatus.mustFixNoLink,
         field: column.field,
         issueType: 'missing column'
       }))

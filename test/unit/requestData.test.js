@@ -308,6 +308,109 @@ describe('RequestData', () => {
     })
   })
 
+  describe('getIssueTasks', () => {
+    const makeTaskLogEntry = (overrides = {}) => ({
+      'task-source': 'issue',
+      details: '{"issue_type": "missing value", "count": 4, "field": "reference"}',
+      responsibility: 'external',
+      severity: 'error',
+      summary: '4 reference values are missing',
+      ...overrides
+    })
+
+    it('filters out entries where task-source is not "issue"', () => {
+      const response = {
+        data: {
+          'task-log': [
+            makeTaskLogEntry({ 'task-source': 'column-field' }),
+            makeTaskLogEntry()
+          ]
+        }
+      }
+      const requestData = new RequestData({ response })
+      expect(requestData.getIssueTasks()).toHaveLength(1)
+    })
+
+    it('filters out entries where responsibility is "internal"', () => {
+      const response = {
+        data: {
+          'task-log': [
+            makeTaskLogEntry({ responsibility: 'internal' }),
+            makeTaskLogEntry()
+          ]
+        }
+      }
+      const requestData = new RequestData({ response })
+      expect(requestData.getIssueTasks()).toHaveLength(1)
+    })
+
+    it('parses details and normalises issue_type to "issue-type" key', () => {
+      const response = {
+        data: {
+          'task-log': [makeTaskLogEntry()]
+        }
+      }
+      const requestData = new RequestData({ response })
+      const [task] = requestData.getIssueTasks()
+      expect(task['issue-type']).toBe('missing value')
+      expect(task.field).toBe('reference')
+    })
+
+    it('skips entries with unparseable details without throwing', () => {
+      const response = {
+        data: {
+          'task-log': [
+            makeTaskLogEntry({ details: 'not-json' }),
+            makeTaskLogEntry()
+          ]
+        }
+      }
+      const requestData = new RequestData({ response })
+      expect(requestData.getIssueTasks()).toHaveLength(1)
+    })
+
+    it('returns count: 1 when details.count is absent', () => {
+      const response = {
+        data: {
+          'task-log': [
+            makeTaskLogEntry({ details: '{"issue_type": "invalid WKT", "field": "geometry"}' })
+          ]
+        }
+      }
+      const requestData = new RequestData({ response })
+      const [task] = requestData.getIssueTasks()
+      expect(task.count).toBe(1)
+    })
+
+    it('uses the pre-aggregated count from details when present', () => {
+      const response = {
+        data: {
+          'task-log': [makeTaskLogEntry()]
+        }
+      }
+      const requestData = new RequestData({ response })
+      const [task] = requestData.getIssueTasks()
+      expect(task.count).toBe(4)
+    })
+
+    it('preserves summary and severity from the top-level task entry', () => {
+      const response = {
+        data: {
+          'task-log': [makeTaskLogEntry()]
+        }
+      }
+      const requestData = new RequestData({ response })
+      const [task] = requestData.getIssueTasks()
+      expect(task.summary).toBe('4 reference values are missing')
+      expect(task.severity).toBe('error')
+    })
+
+    it('returns an empty array when there is no response data', () => {
+      const requestData = new RequestData({})
+      expect(requestData.getIssueTasks()).toStrictEqual([])
+    })
+  })
+
   describe('getParams', () => {
     it('should return the params', () => {
       const requestData = new RequestData({ params: { param1: 'value1' } })
