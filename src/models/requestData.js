@@ -167,6 +167,7 @@ export default class ResultData {
         } catch {
           return null // skip entries with unparseable details
         }
+        if (!details.issue_type || !details.field) return null
         return {
           'issue-type': details.issue_type,
           field: details.field,
