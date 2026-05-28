@@ -106,14 +106,15 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   await statusPage.waitForPage()
   await statusPage.expectPageToBeProcessing()
 
+  const id = await statusPage.getIdFromUrl()
+  log(`Extracted ID from URL: ${id}`)
+
   if (jsEnabled) {
     await waitForStatusPageToBeProcessing(statusPage)
   } else {
     await statusPage.expectCheckStatusButtonToBeVisible()
   }
 
-  const id = await statusPage.getIdFromUrl()
-  log(`Extracted ID from URL: ${id}`)
   /** @type {import('../PageObjectModels/resultsPage.js').default} ResultsPage */
   let resultsPage
   if (jsEnabled) {
@@ -127,8 +128,8 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   await resultsPage.expectPageHasBlockingTasks()
   await resultsPage.expectPageHasTabs(jsEnabled)
 
-  // issue details page
-  await page.getByText('name column is missing').click()
+  // issue details page - missing column tasks no longer link directly; navigate via URL
+  await page.goto(`/check/results/${id}/issue/missing column/name`)
   await page.waitForURL(/\/check\/results\/.*\/issue\/.*/, { timeout: 4000 })
   await expect(page.getByText('Your data has issues')).toBeVisible()
   await expect(page.getByText('You cannot submit your data until you fix the issues')).toBeVisible()

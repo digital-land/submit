@@ -15,8 +15,8 @@
     },
     "response": {
         "data": {
-            "error-summary": [],
-            "column-field-log": []
+            "task-log": [],
+            "column-mapping": []
         },
         "error": null
     }
