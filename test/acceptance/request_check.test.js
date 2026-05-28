@@ -106,14 +106,15 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   await statusPage.waitForPage()
   await statusPage.expectPageToBeProcessing()
 
+  const id = await statusPage.getIdFromUrl()
+  log(`Extracted ID from URL: ${id}`)
+
   if (jsEnabled) {
     await waitForStatusPageToBeProcessing(statusPage)
   } else {
     await statusPage.expectCheckStatusButtonToBeVisible()
   }
 
-  const id = await statusPage.getIdFromUrl()
-  log(`Extracted ID from URL: ${id}`)
   /** @type {import('../PageObjectModels/resultsPage.js').default} ResultsPage */
   let resultsPage
   if (jsEnabled) {
