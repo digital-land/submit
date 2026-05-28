@@ -127,8 +127,8 @@ async function checkErrorDataFile ({ page, jsEnabled }) {
   await resultsPage.expectPageHasBlockingTasks()
   await resultsPage.expectPageHasTabs(jsEnabled)
 
-  // issue details page
-  await page.getByText('name column is missing').click()
+  // issue details page - missing column tasks no longer link directly; navigate via URL
+  await page.goto(`/check/results/${id}/issue/missing column/name`)
   await page.waitForURL(/\/check\/results\/.*\/issue\/.*/, { timeout: 4000 })
   await expect(page.getByText('Your data has issues')).toBeVisible()
   await expect(page.getByText('You cannot submit your data until you fix the issues')).toBeVisible()
