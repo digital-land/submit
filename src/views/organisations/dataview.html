@@ -5,7 +5,7 @@
 {% from "components/alternativeSourceNotice.html" import alternativeSourceNotice %}
 {% from "components/alternativePrePopulatedSourceNotice.html" import alternativePrePopulatedSourceNotice %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community']) %}
 {% set serviceType = 'Submit'%}
 {% set pageName %}{{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Dataset table{% endset %}
 

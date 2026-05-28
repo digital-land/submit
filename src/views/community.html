@@ -1,0 +1,20 @@
+{% extends "layouts/main.html" %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community']) %}
+{% set pageName = 'Community' %}
+
+{% block main %}
+<div class="govuk-width-container">
+  <h1 class="govuk-heading-xl"></h1>
+  <h1 class="govuk-heading-xl">Community</h1>
+  <span class="govuk-body">You can</span>
+  <a href="https://mhclgdigital.blog.gov.uk/author/digital-planning/">
+  <span class="govuk-body">get involved with community events and discussions </span>
+  </a>
+  <span class="govuk-body">to help improve this service.</span>
+  </a>
+  <h1 class="govuk-heading-xl"></h1>
+</div>
+{% endblock %}
+
+
+

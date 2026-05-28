@@ -8,12 +8,14 @@ import manage from '../routes/manage.js'
 import privacy from '../routes/privacy.js'
 import cookies from '../routes/cookies.js'
 import guidance from '../routes/guidance.js'
+import community from '../routes/community.js'
 
 export function setupRoutes (app) {
   app.use('/', manage)
   app.use('/check', checkFormWizard)
   app.use('/organisations', organisations)
   app.use('/guidance', guidance)
+  app.use('/community', community)
 
   app.use('/api', polling)
 
