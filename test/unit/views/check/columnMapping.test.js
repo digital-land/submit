@@ -83,7 +83,7 @@ describe('check/column-mapping.html', () => {
     expect(document.querySelector('.govuk-error-message')).toBeNull()
   })
 
-  it('does not show not provided for required fields', () => {
+  it('shows not provided for required fields', () => {
     const html = nunjucks.render('check/column-mapping.html', {
       options: {
         lastPage: '/check/status/123',

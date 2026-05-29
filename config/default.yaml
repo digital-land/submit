@@ -124,7 +124,7 @@ datasetsConfig:
     guidanceUrl: https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data
     entityDisplayName:
       base: local
-      variable: plan 
+      variable: plan
   minerals-plan:
     guidanceUrl: https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data
     entityDisplayName:

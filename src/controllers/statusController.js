@@ -35,8 +35,8 @@ class StatusController extends PageController {
         const { formattedData } = await platformApi.fetchDatasets({ dataset: params.dataset })
         // Bounds check TODO move to external bounds handling as in fetchOne
         if (!formattedData || formattedData.length === 0) {
-          const error = new Error(`Dataset not found: ${req.params.dataset}`)
-          logger.warn('fetchDatasetPlatformInfo: no dataset returned', { type: types.App, dataset: req.params.dataset })
+          const error = new Error(`Dataset not found: ${params.dataset}`)
+          logger.warn('fetchDatasetPlatformInfo: no dataset returned', { type: types.App, dataset: params.dataset })
           return next(error)
         }
         const datasetInfo = formattedData[0]

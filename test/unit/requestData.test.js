@@ -2,19 +2,19 @@ import RequestData, { fetchPaginated } from '../../src/models/requestData.js'
 import ResponseDetails from '../../src/models/responseDetails.js'
 import { describe, it, expect, vi } from 'vitest'
 import axios from 'axios'
-import logger from '../../src/utils/logger.js'
 
 vi.mock('axios')
 
-vi.mock('../utils/logger.js', () => {
+vi.mock('../../src/utils/logger.js', () => {
   return {
     default: {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
       error: vi.fn()
     }
   }
 })
-
-vi.spyOn(logger, 'error')
 
 // Tech Debt: we should write some more tests around the requestData.js file
 describe('RequestData', () => {
