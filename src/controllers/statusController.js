@@ -2,7 +2,11 @@ import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { finishedProcessingStatuses } from '../utils/utils.js'
 import { headingTexts, messageTexts, buttonTexts, buttonAriaLabels } from '../content/statusPage.js'
-import { getDatasetFields, isStatutoryDataset } from '../utils/redisLoader.js'
+import { isStatutoryDataset } from '../utils/redisLoader.js'
+import platformApi from '../services/platformApi.js'
+import logger from '../utils/logger.js'
+import { types } from '../utils/logging.js'
+import { processSpecificationMiddlewares } from '../middleware/common.middleware.js'
 
 /**
  * Attempts to infer how we ended up on this page.
@@ -21,10 +25,42 @@ function getLastPage (req) {
 }
 
 class StatusController extends PageController {
+  middlewareSetup () {
+    super.middlewareSetup()
+    // Populate req.params and dataset, then run specification processing middlewares
+    this.use(async (req, res, next) => {
+      const requestData = await getRequestData(req.params.id)
+      const params = requestData?.getParams() ?? {}
+      try {
+        const { formattedData } = await platformApi.fetchDatasets({ dataset: params.dataset })
+        // Bounds check TODO move to external bounds handling as in fetchOne
+        if (!formattedData || formattedData.length === 0) {
+          const error = new Error(`Dataset not found: ${req.params.dataset}`)
+          logger.warn('fetchDatasetPlatformInfo: no dataset returned', { type: types.App, dataset: req.params.dataset })
+          return next(error)
+        }
+        const datasetInfo = formattedData[0]
+        req.dataset = {
+          collection: datasetInfo.collection,
+          name: datasetInfo.name,
+          dataset: datasetInfo.dataset,
+          typology: datasetInfo.typology
+        }
+      } catch (error) {
+        logger.warn('fetchDatasetPlatformInfo failed', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+        return next(error)
+      }
+      return next()
+    })
+    // attach the standard specification processing middleware chain
+    processSpecificationMiddlewares.forEach(mw => this.use(mw))
+  }
+
   async post (req, res, next) {
     try {
       const requestData = await getRequestData(req.params.id)
-      const nextStep = await shouldShowColumnMapping(requestData)
+      const uniqueDatasetFields = req.uniqueDatasetFields || []
+      const nextStep = await shouldShowColumnMapping(requestData, uniqueDatasetFields)
         ? `/check/column-mapping/${req.params.id}`
         : `/check/results/${req.params.id}/1`
 
@@ -58,7 +94,7 @@ class StatusController extends PageController {
   }
 }
 
-export async function shouldShowColumnMapping (requestData) {
+export async function shouldShowColumnMapping (requestData, uniqueDatasetFields = []) {
   if (!requestData?.isComplete?.() || requestData?.isFailed?.()) {
     return false
   }
@@ -73,37 +109,55 @@ export async function shouldShowColumnMapping (requestData) {
       return false
     }
 
-    const expectedFields = await getDatasetFields(params.dataset)
-    if (expectedFields.length === 0) return false
+    let columnMapping = requestData.getColumnFieldLog?.() ?? []
 
-    const columnFieldLog = requestData.getColumnFieldLog?.() ?? []
+    if (uniqueDatasetFields.length > 0) {
+      columnMapping = columnMapping.filter(entry => uniqueDatasetFields.includes(entry?.field))
+    }
+    let allFieldsInDataset = columnMapping.map(column => column?.field).filter(Boolean)
+    // filter out point or geometry field depending on which is present.
+    // If geometry is mapped, do not show point. If point is mapped, do not show geometry.
+    // If both are mapped, no action needed. If neither are mapped, show both options
+    const geometryItem = columnMapping.find(column => column?.field?.toLowerCase() === 'geometry') ?? null
+    const pointFieldItem = columnMapping.find(column => column?.field?.toLowerCase() === 'point') ?? null
+    const geometryMapped = Boolean(geometryItem?.column)
+    const pointMapped = Boolean(pointFieldItem?.column)
+    if (geometryMapped && !pointMapped) {
+      allFieldsInDataset = allFieldsInDataset.filter(field => field.toLowerCase() !== 'point')
+    } else if (pointMapped && !geometryMapped) {
+      allFieldsInDataset = allFieldsInDataset.filter(field => field.toLowerCase() !== 'geometry')
+    }
+    if (allFieldsInDataset.length === 0) return false
 
     // the column mapping the user has done
     const userColumnMapping = params.column_mapping ?? {}
     const responseDetails = await requestData.fetchResponseDetails(0, 50)
     const rows = responseDetails.getRows?.() ?? []
     // all the columns the user has mapped.
-    const mappedFields = buildMappedFields(columnFieldLog, userColumnMapping)
+    const fieldsMappedByUser = buildMappedFields(columnMapping, userColumnMapping)
 
     // all the fields in the dataset that has not been mapped
-    const unmappedExpectedFields = new Set(expectedFields.filter(field => !mappedFields.has(field)))
-    const hasUnmappedExpectedFields = unmappedExpectedFields.size > 0
+    const unmappedDatasetFields = new Set(allFieldsInDataset.filter(field => !fieldsMappedByUser.has(field)))
+
+    const hasUnmappedExpectedFields = unmappedDatasetFields.size > 0
+    // there are no dataset fields that are unmapped, so no need to show column mapping page
     if (!hasUnmappedExpectedFields) return false
 
-    const spareUploadedColumns = buildSpareUploadedColumns(columnFieldLog, rows, userColumnMapping)
+    // the uploaded columns that have not been mapped either automatically or by the user (they are available for mapping)
+    const spareUploadedColumns = buildSpareUploadedColumns(columnMapping, rows, userColumnMapping)
 
+    // if there are no uploaded columns that can be mapped, then there is no point showing the column mapping page
     if (spareUploadedColumns.length === 0) return false
 
-    if (columnFieldLog.some(column => column?.missing)) return true
+    // if there are missing mandatory fields that are not mapped by the user, then we should show the column mapping page
+    const hasMissingMandatoryFields = columnMapping.some(column => column?.mandatory && !column?.column && !fieldsMappedByUser.has(column.field))
+    if (hasMissingMandatoryFields) return true
 
-    // If there are other blocking external errors, users should resolve those in
-    // results instead of being redirected to column-mapping.
-    const hasOtherBlockingExternalErrors = rows.some(row =>
-      (row?.issue_logs ?? []).some(issue =>
-        issue?.severity === 'error' &&
-        issue?.responsibility === 'external' &&
-        !unmappedExpectedFields.has(issue?.field)
-      )
+    // if has unmapped required fields
+    const hasOtherBlockingExternalErrors = requestData.getIssueTasks().some(issue =>
+      issue.severity === 'error' &&
+      issue.responsibility === 'external' &&
+      issue['issue-type'] !== 'missing-field'
     )
     return !hasOtherBlockingExternalErrors
   } catch {
@@ -111,10 +165,10 @@ export async function shouldShowColumnMapping (requestData) {
   }
 }
 
-function buildMappedFields (columnFieldLog = [], userColumnMapping = {}) {
+function buildMappedFields (columnMapping = [], userColumnMapping = {}) {
   const fields = new Set()
 
-  columnFieldLog.forEach(column => {
+  columnMapping.forEach(column => {
     if (column?.field && column?.column && !column?.missing) fields.add(column.field)
   })
 
@@ -125,8 +179,9 @@ function buildMappedFields (columnFieldLog = [], userColumnMapping = {}) {
   return fields
 }
 
-function buildSpareUploadedColumns (columnFieldLog = [], rows = [], userColumnMapping = {}) {
-  const mappedColumns = new Set(columnFieldLog.map(column => column?.column).filter(Boolean))
+// uploaded columns that have not been mapped either automatically or by the user (they are available for mapping)
+function buildSpareUploadedColumns (columnMapping = [], rows = [], userColumnMapping = {}) {
+  const mappedColumns = new Set(columnMapping.map(column => column?.column).filter(Boolean))
   Object.entries(userColumnMapping).forEach(([column, field]) => {
     if (field) mappedColumns.add(column)
   })

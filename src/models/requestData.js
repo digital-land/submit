@@ -125,7 +125,7 @@ export default class ResultData {
     const columnMapping = this.response.data['column-mapping'] ?? []
     const taskLog = this.response.data['task-log'] ?? []
 
-    const log = columnMapping.map(({ field, column }) => ({ field, column, missing: false }))
+    const log = columnMapping.map(({ field, column, mandatory }) => ({ field, column, missing: false, mandatory }))
 
     for (const task of taskLog) {
       if (task['task-source'] === 'column-field') {
@@ -137,7 +137,12 @@ export default class ResultData {
           continue
         }
         if (details.field) {
-          log.push({ field: details.field, missing: true })
+          const logEntry = log.find(entry => entry.field === details.field)
+          if (logEntry) {
+            logEntry.missing = true
+          } else {
+            log.push({ field: details.field, column: null, missing: true, mandatory: true })
+          }
         }
       }
     }

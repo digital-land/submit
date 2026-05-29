@@ -14,11 +14,9 @@ describe('columnMappingController helpers', () => {
   it('builds rows from mapped, missing and unmapped columns', () => {
     const rows = buildColumnMappingRows({
       columnFieldLog: [
-        { column: 'Reference', field: 'reference' },
-        { column: 'Start', field: 'start-date', missing: true }
-      ],
-      responseRows: [
-        { converted_row: { Reference: 'abc', Name: 'Test name' } }
+        { column: 'Reference', field: 'reference', mandatory: true, missing: false },
+        { column: 'Name', field: 'name', mandatory: false, missing: false },
+        { field: 'start-date', mandatory: false, missing: true }
       ],
       userColumnMapping: {
         Name: 'name'
@@ -32,17 +30,7 @@ describe('columnMappingController helpers', () => {
         isMapped: true,
         isAutoMapped: true,
         isMissing: false,
-        userDefined: false,
-        userIgnored: false
-      },
-      {
-        column: 'Start',
-        field: 'start-date',
-        isMapped: false,
-        isAutoMapped: false,
-        isMissing: true,
-        userDefined: false,
-        userIgnored: false
+        userDefined: false
       },
       {
         column: 'Name',
@@ -50,8 +38,15 @@ describe('columnMappingController helpers', () => {
         isMapped: true,
         isAutoMapped: false,
         isMissing: false,
-        userDefined: true,
-        userIgnored: false
+        userDefined: true
+      },
+      {
+        column: '',
+        field: 'start-date',
+        isMapped: false,
+        isMissing: true,
+        userDefined: false,
+        userIgnored: true
       }
     ])
   })
@@ -59,9 +54,9 @@ describe('columnMappingController helpers', () => {
   it('keeps missing required fields that have no uploaded column', () => {
     const rows = buildColumnMappingRows({
       columnFieldLog: [
-        { field: 'reference', missing: true }
+        { field: 'reference', mandatory: true, missing: true }
       ],
-      responseRows: []
+      userColumnMapping: {}
     })
 
     expect(rows).toEqual([
@@ -156,6 +151,7 @@ describe('columnMappingController helpers', () => {
         column: 'Reference',
         field: 'reference',
         isMapped: true,
+        isAutoMapped: true,
         userDefined: false,
         userIgnored: false
       },
@@ -168,7 +164,7 @@ describe('columnMappingController helpers', () => {
       }
     ]
 
-    expect(buildSelectableColumns(columnMappingRows)).toEqual(['Name'])
+    expect(buildSelectableColumns(columnMappingRows, [{ converted_row: { Reference: 'abc', Name: 'Test name' } }])).toEqual(['Name'])
     expect(buildExpectedFieldRows({
       columnMappingRows,
       specFields: ['notes', 'reference', 'name'],
@@ -181,6 +177,7 @@ describe('columnMappingController helpers', () => {
         isAutoMapped: true,
         isEditable: false,
         userDefined: false,
+        userIgnored: false,
         isRequired: true
       },
       {
@@ -190,6 +187,7 @@ describe('columnMappingController helpers', () => {
         isAutoMapped: false,
         isEditable: true,
         userDefined: true,
+        userIgnored: false,
         isRequired: false
       },
       {
@@ -199,6 +197,7 @@ describe('columnMappingController helpers', () => {
         isAutoMapped: false,
         isEditable: true,
         userDefined: false,
+        userIgnored: false,
         isRequired: false
       }
     ])
@@ -282,6 +281,7 @@ describe('columnMappingController helpers', () => {
         isAutoMapped: false,
         isEditable: true,
         userDefined: false,
+        userIgnored: false,
         isRequired: true
       },
       {
@@ -291,6 +291,36 @@ describe('columnMappingController helpers', () => {
         isAutoMapped: false,
         isEditable: true,
         userDefined: false,
+        userIgnored: false,
+        isRequired: false
+      }
+    ])
+  })
+
+  it('preserves ignored fields when building expected rows', () => {
+    const columnMappingRows = [
+      {
+        column: '',
+        field: 'notes',
+        isMapped: false,
+        userDefined: false,
+        userIgnored: true
+      }
+    ]
+
+    expect(buildExpectedFieldRows({
+      columnMappingRows,
+      specFields: ['notes'],
+      requiredFields: []
+    })).toEqual([
+      {
+        field: 'notes',
+        column: '',
+        isMapped: false,
+        isAutoMapped: false,
+        isEditable: true,
+        userDefined: false,
+        userIgnored: true,
         isRequired: false
       }
     ])
@@ -301,15 +331,12 @@ describe('columnMappingController helpers', () => {
       columnFieldLog: [
         { column: 'Reference', field: 'reference' }
       ],
-      responseRows: [
-        { converted_row: { Reference: 'abc', Notes: 'note', Extra: 'extra' } }
-      ],
       userColumnMapping: {
         Extra: 'IGNORE'
       }
     })
 
-    expect(buildSelectableColumns(rows)).toEqual(['Extra', 'Notes'])
+    expect(buildSelectableColumns(rows, [{ converted_row: { Reference: 'abc', Notes: 'note', Extra: 'extra' } }])).toEqual(['Extra', 'Notes'])
   })
 
   it('extracts nested and literal bracketed fields', () => {
@@ -354,8 +381,8 @@ describe('columnMappingController helpers', () => {
 
   it('applies submitted selections to mapping rows for redisplay', () => {
     const rows = [
-      { field: 'notes', column: '' },
-      { field: 'reference', column: 'Reference' }
+      { field: 'notes', column: '', userIgnored: false },
+      { field: 'reference', column: 'Reference', userIgnored: false }
     ]
 
     applySubmittedFieldSelections(rows, {
@@ -365,8 +392,24 @@ describe('columnMappingController helpers', () => {
     })
 
     expect(rows).toEqual([
-      { field: 'notes', column: 'Notes' },
-      { field: 'reference', column: 'Reference' }
+      { field: 'notes', column: 'Notes', userIgnored: false },
+      { field: 'reference', column: 'Reference', userIgnored: false }
+    ])
+  })
+
+  it('marks na submitted selections as user ignored for redisplay', () => {
+    const rows = [
+      { field: 'notes', column: 'Notes', userIgnored: false }
+    ]
+
+    applySubmittedFieldSelections(rows, {
+      fieldMap: {
+        notes: 'na'
+      }
+    })
+
+    expect(rows).toEqual([
+      { field: 'notes', column: '', userIgnored: true }
     ])
   })
 

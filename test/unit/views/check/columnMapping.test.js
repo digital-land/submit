@@ -108,7 +108,8 @@ describe('check/column-mapping.html', () => {
 
     const document = new JSDOM(html, { url: 'https://example.test/' }).window.document
 
-    expect(document.querySelector('option[value="na"]')).toBeNull()
+    expect(document.querySelector('option[value="na"]')).not.toBeNull()
+    expect(document.querySelector('option[value="na"]').textContent).toContain('Not provided')
   })
 
   it('preselects user-defined mapped fields in the selector', () => {
@@ -156,6 +157,7 @@ describe('check/column-mapping.html', () => {
             column: '',
             isMapped: false,
             userDefined: false,
+            userIgnored: false,
             isEditable: true,
             isRequired: false
           }
@@ -168,5 +170,36 @@ describe('check/column-mapping.html', () => {
     const document = new JSDOM(html).window.document
 
     expect(document.querySelector('option[value="na"]').textContent).toContain('Not provided')
+  })
+
+  it('preselects not provided when field is user ignored', () => {
+    const html = nunjucks.render('check/column-mapping.html', {
+      options: {
+        lastPage: '/check/status/123',
+        requestParams: {
+          organisationName: 'local-authority:ABC',
+          dataset: 'conservation-area'
+        },
+        mappingRows: [
+          {
+            field: 'notes',
+            column: '',
+            isMapped: false,
+            userDefined: false,
+            userIgnored: true,
+            isEditable: true,
+            isRequired: false
+          }
+        ],
+        uploadedColumns: ['Notes'],
+        columnMappingErrors: {}
+      }
+    })
+
+    const document = new JSDOM(html).window.document
+    const fieldSelect = document.querySelector('select[name="fieldMap[notes]"]')
+
+    expect(fieldSelect).not.toBeNull()
+    expect(fieldSelect.value).toBe('na')
   })
 })

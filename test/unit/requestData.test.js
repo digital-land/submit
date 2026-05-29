@@ -39,7 +39,7 @@ describe('RequestData', () => {
 
       const response = {
         id: 1,
-        getColumnFieldLog: () => []
+        getColumnMapping: () => []
       }
       const requestData = new RequestData(response)
 
@@ -68,7 +68,7 @@ describe('RequestData', () => {
 
       const response = {
         id: 1,
-        getColumnFieldLog: () => []
+        getColumnMapping: () => []
       }
       const requestData = new RequestData(response)
 
@@ -97,7 +97,7 @@ describe('RequestData', () => {
 
       const response = {
         id: 1,
-        getColumnFieldLog: () => []
+        getColumnMapping: () => []
       }
       const requestData = new RequestData(response)
 
@@ -268,8 +268,8 @@ describe('RequestData', () => {
       const requestData = new RequestData({ response })
 
       expect(requestData.getColumnFieldLog()).toStrictEqual([
-        { field: 'name', column: 'name', missing: false },
-        { field: 'geometry', column: 'geom', missing: false }
+        { field: 'name', column: 'name', missing: false, mandatory: undefined },
+        { field: 'geometry', column: 'geom', missing: false, mandatory: undefined }
       ])
     })
 
@@ -296,8 +296,8 @@ describe('RequestData', () => {
       const requestData = new RequestData({ response })
 
       expect(requestData.getColumnFieldLog()).toStrictEqual([
-        { field: 'name', column: 'name', missing: false },
-        { field: 'geometry', missing: true }
+        { field: 'name', column: 'name', missing: false, mandatory: undefined },
+        { field: 'geometry', column: null, missing: true, mandatory: true }
       ])
     })
 

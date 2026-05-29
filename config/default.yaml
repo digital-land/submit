@@ -56,181 +56,85 @@ datasetsConfig:
     entityDisplayName:
       base: article 4
       variable: direction
-    requiredFields:
-      - reference
-      - name
-      - document-url
-      - documentation-url
   article-4-direction-area:
     guidanceUrl: /guidance/specifications/article-4-direction
     entityDisplayName:
       base: article 4 direction
       variable: area
-    requiredFields:
-      - reference
-      - geometry
-      - name
-      - permitted-development-rights
-      - article-4-direction
   brownfield-land:
     guidanceUrl: https://www.gov.uk/government/publications/brownfield-land-registers-data-standard/publish-your-brownfield-land-data
     entityDisplayName:
       base: brownfield land
       variable: site
-    requiredFields:
-      - OrganisationURI
-      - SiteReference
-      - SiteNameAddress
-      - GeoX
-      - GeoY
   conservation-area:
     guidanceUrl: /guidance/specifications/conservation-area
     entityDisplayName:
       base: conservation
       variable: area
-    requiredFields:
-      - reference
-      - geometry
-      - name
   conservation-area-document:
     guidanceUrl: /guidance/specifications/conservation-area
     entityDisplayName:
       base: conservation
       variable: area
-    requiredFields:
-      - reference
-      - name
-      - conservation-area
-      - document-url
-      - documentation-url
-      - document-type
   tree-preservation-order:
     guidanceUrl: /guidance/specifications/tree-preservation-order
     entityDisplayName:
       base: tree preservation
       variable: order
-    requiredFields:
-      - reference
-      - document-url
-      - documentation-url
   tree-preservation-zone:
     guidanceUrl: /guidance/specifications/tree-preservation-order
     entityDisplayName:
       base: tree preservation
       variable: zone
-    requiredFields:
-      - reference
-      - geometry
-      - tree-preservation-order
   tree:
     guidanceUrl: /guidance/specifications/tree-preservation-order
     entityDisplayName:
       variable: tree
-    requiredFields:
-      - reference
-      - tree-preservation-order
-      - point
-      - geometry
   listed-building-outline:
     guidanceUrl: /guidance/specifications/listed-building
     entityDisplayName:
       base: listed building
       variable: outline
-    requiredFields:
-      - reference
-      - geometry
-      - name
-      - listed-building
   developer-agreement-transaction:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
       base: developer agreement
       variable: transaction
-    requiredFields:
-      - reference
   developer-agreement:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
       base: developer
       variable: agreement
-    requiredFields:
-      - reference
   developer-agreement-contribution:
     guidanceUrl: https://www.gov.uk/guidance/publish-your-developer-contributions-data
     entityDisplayName:
       base: developer agreement
       variable: contribution
-    requiredFields:
-      - reference
   infrastructure-funding-statement:
     guidanceUrl: https://digital-land.github.io/specification/specification/infrastructure-funding-statement/
     entityDisplayName:
       base: infrastructure funding
       variable: statement
-    requiredFields:
-      - reference
   plan-timetable:
     guidanceUrl: https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data
     entityDisplayName:
       base: plan
       variable: timetable
-    requiredFields:
-      - reference
-      - plan
-      - plan-event
-      - event-date
-      - entry-date
   local-plan:
     guidanceUrl: https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data
     entityDisplayName:
       base: local
       variable: plan 
-    requiredFields:
-      - reference
-      - name
-      - description
-      - dataset
-      - period-start-date
-      - period-end-date
-      - local-planning-authorities
-      - documentation-url
-      - document-url
-      - required-housing
-      - entry-date
   minerals-plan:
     guidanceUrl: https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data
     entityDisplayName:
       base: minerals
       variable: plan
-    requiredFields:
-      - reference
-      - name
-      - description
-      - dataset
-      - period-start-date
-      - period-end-date
-      - minerals-and-waste-planning-authorities
-      - documentation-url
-      - document-url
-      - document-count
-      - entry-date
   waste-plan:
     guidanceUrl: https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data
     entityDisplayName:
       base: waste
       variable: plan
-    requiredFields:
-      - reference
-      - name
-      - description
-      - dataset
-      - period-start-date
-      - period-end-date
-      - minerals-and-waste-planning-authorities
-      - documentation-url
-      - document-url
-      - document-count
-      - entry-date
   supplementary-plan:
     guidanceUrl: https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data
     entityDisplayName:

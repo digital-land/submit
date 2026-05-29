@@ -5,7 +5,7 @@
 
 {% macro columnMapping(mappingRows, uploadedColumns=[], errors={}, allowUnmapping=true) %}
 <form method="post" id="columnMappingForm" name="columnMappingForm">
-  <div class="govuk-!-margin-bottom-6">
+  <div class="govuk-!-margin-bottom-6 column-mapping-panel">
     <table class="govuk-table dl-table column-mapping-table">
       <colgroup>
         <col style="width: 35%;">
@@ -36,15 +36,14 @@
                   {
                     value: "",
                     text: "-- Select a field --",
-                    selected: not row.column
+                    selected: not row.column and not row.userIgnored
                   }
                 ] %}
-                {% if not row.isRequired %}
                   {% set _ = selectItems.push({
                     value: "na",
-                    text: "Not provided"
+                    text: "Not provided",
+                    selected: row.userIgnored
                   }) %}
-                {% endif %}
                 {% for column in uploadedColumns %}
                   {% set _ = selectItems.push({
                     value: column,

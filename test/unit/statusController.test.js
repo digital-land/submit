@@ -1,9 +1,27 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 import StatusController, { shouldShowColumnMapping } from '../../src/controllers/statusController.js'
-import { getDatasetFields, isStatutoryDataset } from '../../src/utils/redisLoader.js'
+import { isStatutoryDataset } from '../../src/utils/redisLoader.js'
 
 vi.mock('@/services/asyncRequestApi.js')
 vi.mock('../../src/utils/redisLoader.js')
+
+const makeRequestData = ({
+  params = { organisationName: 'local-authority:TST', dataset: 'test-dataset' },
+  columnFieldLog = [],
+  rows = [],
+  issueTasks = [],
+  complete = true,
+  failed = false
+} = {}) => ({
+  isComplete: () => complete,
+  isFailed: () => failed,
+  getParams: () => params,
+  getColumnFieldLog: () => columnFieldLog,
+  fetchResponseDetails: vi.fn().mockResolvedValue({
+    getRows: () => rows
+  }),
+  getIssueTasks: () => issueTasks
+})
 
 describe('StatusController', () => {
   let asyncRequestApi
@@ -11,7 +29,6 @@ describe('StatusController', () => {
 
   beforeEach(async () => {
     asyncRequestApi = await import('@/services/asyncRequestApi')
-    vi.mocked(getDatasetFields).mockResolvedValue(['name', 'reference'])
     vi.mocked(isStatutoryDataset).mockResolvedValue(false)
 
     statusController = new StatusController({
@@ -28,7 +45,7 @@ describe('StatusController', () => {
         form: {
           options: {}
         },
-        params: 'fake_id'
+        params: { id: 'fake_id' }
       }
 
       const res = {}
@@ -48,12 +65,12 @@ describe('StatusController', () => {
   describe('post', () => {
     it('redirects to column mapping when columns need mapping', async () => {
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue({
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => ({ organisationName: 'local-authority:TST', dataset: 'test-dataset' }),
-        getColumnFieldLog: () => [{ field: 'reference', missing: true }],
-        fetchResponseDetails: vi.fn().mockResolvedValue({
-          getRows: () => [{ converted_row: { Ref: 'abc' } }]
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'geometry', column: null, missing: true, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Ref: 'abc' } }]
         })
       })
 
@@ -68,12 +85,12 @@ describe('StatusController', () => {
 
     it('redirects to results when all columns are mapped', async () => {
       asyncRequestApi.getRequestData = vi.fn().mockResolvedValue({
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => ({ organisationName: 'local-authority:TST', dataset: 'test-dataset' }),
-        getColumnFieldLog: () => [{ column: 'Reference', field: 'reference' }],
-        fetchResponseDetails: vi.fn().mockResolvedValue({
-          getRows: () => [{ converted_row: { Reference: 'abc' } }]
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'name', column: 'Name', missing: false, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Name: 'Test' } }]
         })
       })
 
@@ -90,12 +107,12 @@ describe('StatusController', () => {
   describe('shouldShowColumnMapping', () => {
     it('returns true when expected fields are unmapped and unmapped headings are available', async () => {
       await expect(shouldShowColumnMapping({
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => ({ organisationName: 'local-authority:TST', dataset: 'test-dataset' }),
-        getColumnFieldLog: () => [{ column: 'Name', field: 'name' }],
-        fetchResponseDetails: vi.fn().mockResolvedValue({
-          getRows: () => [{ converted_row: { Name: 'Name', Ref: 'abc' } }]
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'geometry', column: null, missing: true, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Ref: 'abc' } }]
         })
       })).resolves.toBe(true)
     })
@@ -104,55 +121,52 @@ describe('StatusController', () => {
       vi.mocked(isStatutoryDataset).mockResolvedValue(true)
 
       await expect(shouldShowColumnMapping({
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => ({ organisationName: 'local-authority:TST', dataset: 'test-dataset' }),
-        getColumnFieldLog: () => [{ column: 'Name', field: 'name' }],
-        fetchResponseDetails: vi.fn().mockResolvedValue({
-          getRows: () => [{ converted_row: { Name: 'Name', Ref: 'abc' } }]
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'geometry', column: null, missing: true, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc' } }]
         })
       })).resolves.toBe(false)
     })
 
     it('returns false when expected fields are unmapped but no unmapped headings are available', async () => {
       await expect(shouldShowColumnMapping({
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => ({ organisationName: 'local-authority:TST', dataset: 'test-dataset' }),
-        getColumnFieldLog: () => [{ column: 'Name', field: 'name' }],
-        fetchResponseDetails: vi.fn().mockResolvedValue({
-          getRows: () => [{ converted_row: { Name: 'abc' } }]
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'name', column: 'Name', missing: false, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Name: 'abc', Extra: 'extra' } }]
         })
       })).resolves.toBe(false)
     })
 
     it('returns false when all expected fields are mapped', async () => {
       await expect(shouldShowColumnMapping({
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => ({ organisationName: 'local-authority:TST', dataset: 'test-dataset' }),
-        getColumnFieldLog: () => [{ column: 'Reference', field: 'reference' }, { column: 'Name', field: 'name' }],
-        fetchResponseDetails: vi.fn().mockResolvedValue({
-          getRows: () => [{ converted_row: { Reference: 'abc', Name: 'Name', Extra: 'extra' } }]
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'name', column: 'Name', missing: false, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Name: 'Name', Extra: 'extra' } }]
         })
       })).resolves.toBe(false)
     })
 
     it('returns false when there are other blocking external errors', async () => {
       await expect(shouldShowColumnMapping({
-        isComplete: () => true,
-        isFailed: () => false,
-        getParams: () => ({ organisationName: 'local-authority:TST', dataset: 'test-dataset' }),
-        getColumnFieldLog: () => [{ column: 'Name', field: 'name' }],
-        fetchResponseDetails: vi.fn().mockResolvedValue({
-          getRows: () => [{
-            converted_row: { Name: 'Name', Ref: 'abc' },
-            issue_logs: [{
-              severity: 'error',
-              responsibility: 'external',
-              field: 'geometry',
-              'issue-type': 'invalid geometry'
-            }]
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'description', column: null, missing: true, mandatory: false }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Notes: 'note', Extra: 'extra' } }],
+          issueTasks: [{
+            severity: 'error',
+            responsibility: 'external',
+            'issue-type': 'invalid geometry'
           }]
         })
       })).resolves.toBe(false)

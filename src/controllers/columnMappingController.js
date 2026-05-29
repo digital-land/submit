@@ -1,8 +1,11 @@
 import PageController from './pageController.js'
-import config from '../../config/index.js'
 import { postCheckRequest } from '../services/asyncRequestApi.js'
-import { getDatasetFields, isStatutoryDataset } from '../utils/redisLoader.js'
+import { isStatutoryDataset } from '../utils/redisLoader.js'
 import { getRequestDataMiddleware, updateSessionFromRequestData } from './resultsController.js'
+import { processSpecificationMiddlewares } from '../middleware/common.middleware.js'
+import platformApi from '../services/platformApi.js'
+import { types } from '../utils/logging.js'
+import logger from '../utils/logger.js'
 
 class ColumnMappingController extends PageController {
   middlewareSetup () {
@@ -17,6 +20,33 @@ class ColumnMappingController extends PageController {
       next()
     })
     this.use(updateSessionFromRequestData)
+    // Populate req.params and dataset, then run specification processing middlewares
+    this.use(async (req, res, next) => {
+      const { requestData } = req.locals
+      const params = requestData?.getParams() ?? {}
+      try {
+        const { formattedData } = await platformApi.fetchDatasets({ dataset: params.dataset })
+        // Bounds check TODO move to external bounds handling as in fetchOne
+        if (!formattedData || formattedData.length === 0) {
+          const error = new Error(`Dataset not found: ${req.params.dataset}`)
+          logger.warn('fetchDatasetPlatformInfo: no dataset returned', { type: types.App, dataset: req.params.dataset })
+          return next(error)
+        }
+        const datasetInfo = formattedData[0]
+        req.dataset = {
+          collection: datasetInfo.collection,
+          name: datasetInfo.name,
+          dataset: datasetInfo.dataset,
+          typology: datasetInfo.typology
+        }
+      } catch (error) {
+        logger.warn('fetchDatasetPlatformInfo failed', { type: types.App, errorMessage: error.message, errorStack: error.stack })
+        return next(error)
+      }
+      return next()
+    })
+    // attach the standard specification processing middleware chain
+    processSpecificationMiddlewares.forEach(mw => this.use(mw))
   }
 
   async locals (req, res, next) {
@@ -28,10 +58,11 @@ class ColumnMappingController extends PageController {
         res.redirect(`/check/results/${req.params.id}/1`)
         return
       }
-
+      const uniqueDatasetFields = req.uniqueDatasetFields || []
       Object.assign(req.form.options, await buildColumnMappingOptions({
         requestData,
-        requestId: req.params.id
+        requestId: req.params.id,
+        uniqueDatasetFields
       }))
       super.locals(req, res, next)
     } catch (error) {
@@ -47,7 +78,8 @@ class ColumnMappingController extends PageController {
       const options = await buildColumnMappingOptions({
         requestData,
         requestId: req.params.id,
-        body: req.body
+        body: req.body,
+        uniqueDatasetFields: req.uniqueDatasetFields || []
       })
       const validationErrors = validateColumnMapping(req.body, options.mappingRows)
       if (Object.keys(validationErrors).length > 0) {
@@ -63,7 +95,8 @@ class ColumnMappingController extends PageController {
       }
 
       const params = requestData.getParams() ?? {}
-      const { columnMappingRows } = await prepareColumnMappingContext(requestData)
+      const uniqueDatasetFields = req.uniqueDatasetFields || []
+      const { columnMappingRows } = await prepareColumnMappingContext(requestData, uniqueDatasetFields)
       const spareUploadedColumns = buildSelectableColumns(columnMappingRows)
       const columnMapping = buildSubmittedColumnMapping({
         existingMapping: params.column_mapping,
@@ -89,12 +122,12 @@ class ColumnMappingController extends PageController {
  * Returns UI-friendly data including expected mapping rows, selectable uploaded
  * columns and any validation errors so the view can render the mapping form.
  */
-async function buildColumnMappingOptions ({ requestData, requestId, body = {}, validationErrors = {} }) {
+async function buildColumnMappingOptions ({ requestData, requestId, body = {}, validationErrors = {}, uniqueDatasetFields = [] }) {
   const {
     columnMappingRows,
     specFields,
     requiredFields
-  } = await prepareColumnMappingContext(requestData)
+  } = await prepareColumnMappingContext(requestData, uniqueDatasetFields)
   const mappingRows = buildExpectedFieldRows({
     columnMappingRows,
     specFields,
@@ -103,11 +136,12 @@ async function buildColumnMappingOptions ({ requestData, requestId, body = {}, v
 
   applySubmittedFieldSelections(mappingRows, body)
 
+  const responseDetails = await requestData.fetchResponseDetails(0, 50)
   return {
     id: requestId,
     requestParams: requestData.getParams(),
     mappingRows,
-    uploadedColumns: buildSelectableColumns(columnMappingRows),
+    uploadedColumns: buildSelectableColumns(columnMappingRows, responseDetails.getRows()),
     columnMappingErrors: validationErrors,
     lastPage: `/check/status/${requestId}`
   }
@@ -120,18 +154,20 @@ async function buildColumnMappingOptions ({ requestData, requestId, body = {}, v
  * - Builds `columnMappingRows` (combined auto-detected + user overrides).
  * - Resolves `specFields` from the dataset and `requiredFields` from config.
  */
-async function prepareColumnMappingContext (requestData) {
-  const responseDetails = await requestData.fetchResponseDetails(0, 50)
-  const columnFieldLog = requestData.getColumnFieldLog()
+async function prepareColumnMappingContext (requestData, uniqueDatasetFields = []) {
+  let columnFieldLog = requestData.getColumnFieldLog()
+  if (uniqueDatasetFields.length > 0) {
+    columnFieldLog = columnFieldLog.filter(entry => uniqueDatasetFields.includes(entry?.field))
+  }
   const params = requestData.getParams() ?? {}
   const userColumnMapping = params.column_mapping ?? {}
   const columnMappingRows = buildColumnMappingRows({
     columnFieldLog,
-    responseRows: responseDetails.getRows(),
     userColumnMapping
   })
-  const specFields = buildSpecFields(await getDatasetFields(params.dataset))
-  const requiredFields = config.datasetsConfig?.[params.dataset]?.requiredFields ?? []
+
+  const specFields = buildSpecFields(columnFieldLog.map(entry => entry?.field).filter(Boolean))
+  const requiredFields = columnFieldLog.filter(entry => entry?.mandatory).map(entry => entry.field)
   return {
     columnMappingRows,
     specFields,
@@ -154,20 +190,43 @@ async function getCompletedRequestData (req, res) {
 export function validateColumnMapping (body = {}, mappingRows = []) {
   const requiredFields = new Set(mappingRows.filter(row => row.isRequired).map(row => row.field))
 
-  return Object.fromEntries(
-    Object.entries(getBracketFields(body, 'fieldMap'))
+  const fieldMap = getBracketFields(body, 'fieldMap')
+
+  // base errors: missing or explicit 'na' for required fields
+  const errors = Object.fromEntries(
+    Object.entries(fieldMap)
       .filter(([field, value]) => value === '' || (value === 'na' && requiredFields.has(field)))
       .map(([field]) => [field, {
         text: `Select the ${field} field`
       }])
   )
+
+  // check for duplicate selections (same column selected for multiple fields)
+  const selections = Object.entries(fieldMap)
+    .map(([field, value]) => [field, (value ?? '').trim()])
+    .filter(([, col]) => col && col !== 'na')
+
+  const counts = selections.reduce((acc, [, col]) => {
+    acc[col] = (acc[col] || 0) + 1
+    return acc
+  }, {})
+
+  for (const [field, col] of selections) {
+    if (counts[col] > 1 && !errors[field]) {
+      errors[field] = { text: `${col} has been selected more than once` }
+    }
+  }
+
+  return errors
 }
 
 export function applySubmittedFieldSelections (mappingRows = [], body = {}) {
   const fieldMap = getBracketFields(body, 'fieldMap')
   mappingRows.forEach(row => {
     if (Object.hasOwn(fieldMap, row.field)) {
-      row.column = fieldMap[row.field]
+      const selectedColumn = (fieldMap[row.field] ?? '').trim()
+      row.userIgnored = selectedColumn === 'na'
+      row.column = row.userIgnored ? '' : selectedColumn
     }
   })
 }
@@ -251,33 +310,19 @@ export function buildSpecFields (datasetFields = []) {
   return [...fields].sort()
 }
 
-/**
- * Build the canonical list of column mapping rows.
- *
- * Each row describes an uploaded column and how it relates to a spec field:
- * - `column`: uploaded column name (empty string for missing auto-detected fields)
- * - `field`: mapped spec field (if any)
- * - `isMapped`, `isAutoMapped`, `isMissing`, `userDefined`, `userIgnored`
- *
- * @param {Object} options
- * @param {Array} options.columnFieldLog - auto-detected column->field log entries
- * @param {Array} options.responseRows - sample response rows with `converted_row` keys
- * @param {Object} options.userColumnMapping - existing user mapping overrides
- * @returns {Array} rows suitable for UI consumption
- */
-export function buildColumnMappingRows ({ columnFieldLog = [], responseRows = [], userColumnMapping = {} }) {
-  const mappedColumns = new Set()
+export function buildColumnMappingRows ({ columnFieldLog = [], userColumnMapping = {} }) {
+  const entries = columnFieldLog
   const rows = []
 
-  columnFieldLog.forEach(entry => {
+  entries.forEach(entry => {
     const column = entry?.column
     if (!column) {
-      if (entry?.field && entry?.missing) {
+      if (entry?.field) {
         rows.push({
           column: '',
           field: entry.field,
           isMapped: false,
-          isMissing: true,
+          isMissing: entry.missing,
           userDefined: false,
           userIgnored: false
         })
@@ -285,70 +330,77 @@ export function buildColumnMappingRows ({ columnFieldLog = [], responseRows = []
       return
     }
 
-    mappedColumns.add(column)
     const userMappedField = userColumnMapping[column]
-    const userIgnored = userMappedField === 'IGNORE'
-    const field = userIgnored ? '' : userMappedField || entry.field || ''
-
+    const field = entry.field
+    const isMapped = Boolean(field) && Boolean(column)
     rows.push({
       column,
       field,
-      isMapped: Boolean(field) && !entry.missing,
-      isAutoMapped: Boolean(entry.field) && !userMappedField && !entry.missing,
-      isMissing: Boolean(entry.missing),
-      userDefined: Boolean(userMappedField) && !userIgnored,
-      userIgnored
+      isMapped,
+      isAutoMapped: isMapped && !userMappedField,
+      isMissing: entry.missing,
+      userDefined: Boolean(userMappedField)
     })
   })
 
-  const unmappedColumns = new Set()
-  responseRows.forEach(row => {
-    Object.keys(row?.converted_row ?? {}).forEach(column => {
-      if (!mappedColumns.has(column)) unmappedColumns.add(column)
+  if (Object.keys(userColumnMapping).length > 0) {
+    rows.forEach(row => {
+      if (!row.column) {
+        row.userIgnored = true
+      }
     })
-  })
-
-  const sortedUnmappedColumns = [...unmappedColumns].sort()
-  sortedUnmappedColumns.forEach(column => {
-    rows.push({
-      column,
-      field: userColumnMapping[column] === 'IGNORE' ? '' : userColumnMapping[column] || '',
-      isMapped: Boolean(userColumnMapping[column]) && userColumnMapping[column] !== 'IGNORE',
-      isAutoMapped: false,
-      isMissing: false,
-      userDefined: Boolean(userColumnMapping[column]) && userColumnMapping[column] !== 'IGNORE',
-      userIgnored: userColumnMapping[column] === 'IGNORE'
-    })
-  })
+  }
 
   return rows
 }
 
-export function buildSelectableColumns (columnMappingRows = []) {
-  return [...new Set(
-    columnMappingRows
-      .filter(row => row.userDefined || !row.isMapped)
-      .map(row => row.column)
-      .filter(Boolean)
-  )].sort()
+// selectable columns are converted rows that have not been auto-mapped by the system
+export function buildSelectableColumns (columnMappingRows = [], responseRows = []) {
+  const autoMappedColumns = new Set(columnMappingRows.filter(row => row.isAutoMapped).map(row => row.column).filter(Boolean))
+  const unmappedColumns = new Set()
+  responseRows.forEach(row => {
+    Object.keys(row?.converted_row ?? {}).forEach(column => {
+      if (!autoMappedColumns.has(column)) unmappedColumns.add(column)
+    })
+  })
+  return [...unmappedColumns].sort()
 }
 
 export function buildExpectedFieldRows ({ columnMappingRows = [], specFields = [], requiredFields = [] }) {
   const requiredFieldSet = new Set(requiredFields)
 
-  return specFields.map(field => {
-    const row = columnMappingRows.find(row => row.field === field && row.isMapped && !row.userIgnored)
-    const isAutoMapped = Boolean(row?.isMapped) && !row?.userDefined
+  let rows = specFields.map(field => {
+    const mappedRow = columnMappingRows.find(row => row.field === field && row.isMapped && !row.userIgnored)
+    const ignoredRow = columnMappingRows.find(row => row.field === field && row.userIgnored)
+
+    const isAutoMapped = Boolean(mappedRow?.isMapped) && !mappedRow?.userDefined
     return {
       field,
-      column: row?.column ?? '',
-      isMapped: Boolean(row?.column),
+      column: mappedRow?.column ?? '',
+      isMapped: Boolean(mappedRow?.column),
       isAutoMapped,
-      userDefined: Boolean(row?.userDefined), // if the user has explicitly mapped this field
+      userDefined: Boolean(mappedRow?.userDefined), // if the user has explicitly mapped this field
+      userIgnored: Boolean(ignoredRow),
       isEditable: !isAutoMapped, // shows as dropdown in the UI and also shows as an Unmapped badge
       isRequired: requiredFieldSet.has(field)
     }
-  }).sort((a, b) => {
+  })
+
+  // Business rule: geometry and point are mutually exclusive when one is already mapped.
+  // - If `geometry` is mapped and `point` is not, hide the `point` option.
+  // - If `point` is mapped and `geometry` is not, hide the `geometry` option.
+  // - If both are mapped or both are unmapped, leave both rows as-is.
+  const geometryRow = rows.find(r => r.field === 'geometry')
+  const pointRow = rows.find(r => r.field === 'point')
+  const geometryMapped = Boolean(geometryRow && geometryRow.isAutoMapped)
+  const pointMapped = Boolean(pointRow && pointRow.isAutoMapped)
+  if (geometryMapped && !pointMapped) {
+    rows = rows.filter(r => r.field !== 'point')
+  } else if (pointMapped && !geometryMapped) {
+    rows = rows.filter(r => r.field !== 'geometry')
+  }
+
+  return rows.sort((a, b) => {
     const rank = (row) => {
       if (row.isAutoMapped && row.isRequired) return 0
       if (row.isAutoMapped && !row.isRequired) return 1

@@ -38,15 +38,6 @@ export async function getRedisClient () {
 }
 
 const CACHE_TTL = 60 * 60 * 6 // 6 hours
-const SYSTEM_FIELDS = new Set([
-  'entity',
-  'prefix',
-  'entry-number',
-  'organisation-entity',
-  'organisation',
-  'IGNORE',
-  ''
-])
 
 function escapeSqlString (value) {
   return String(value).replaceAll("'", "''")
@@ -75,30 +66,6 @@ async function setCachedJson (key, value, logPrefix, ttl = CACHE_TTL) {
   } catch (err) {
     logger.warn(`${logPrefix}/redis set error: ${err.message}`)
   }
-}
-
-export function normaliseDatasetFields (rows = [], dataset) {
-  return [...new Set(
-    rows
-      .map(row => row?.field)
-      .filter(field => field && !SYSTEM_FIELDS.has(field) && dataset !== field)
-  )].sort()
-}
-
-export async function getDatasetFields (dataset) {
-  if (!dataset) return []
-
-  const key = `dataset-fields:${dataset}`
-  const cached = await getCachedJson(key, 'getDatasetFields')
-  if (cached) return cached
-
-  const query = `select field from dataset_field where dataset = '${escapeSqlString(dataset)}'`
-  const response = await datasette.runQuery(query)
-  const fields = normaliseDatasetFields(response.formattedData, dataset)
-
-  await setCachedJson(key, fields, 'getDatasetFields')
-
-  return fields
 }
 
 export async function getProvisionReasonsForDataset ({ organisation, dataset }) {

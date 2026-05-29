@@ -1,5 +1,5 @@
 import { vi, it, describe, expect, beforeEach, afterEach } from 'vitest'
-import { getDatasetNameMap, normaliseDatasetFields } from '../../src/utils/redisLoader'
+import { getDatasetNameMap } from '../../src/utils/redisLoader'
 import config from '../../config'
 
 describe('getDatasetNameMap', () => {
@@ -104,7 +104,7 @@ describe('getDatasetNameMap', () => {
     }
   })
 
-  it('should fetch dataset fields and provision reasons with namespaced cache keys', async () => {
+  it('should fetch provision reasons with namespaced cache keys', async () => {
     const originalDeployTime = process.env.DEPLOY_TIME
     const mockRedisClient = {
       isOpen: false,
@@ -119,15 +119,6 @@ describe('getDatasetNameMap', () => {
     const mockDatasette = {
       default: {
         runQuery: vi.fn()
-          .mockResolvedValueOnce({
-            formattedData: [
-              { field: 'reference' },
-              { field: 'organisation' },
-              { field: 'notes' },
-              { field: 'entity' },
-              { field: 'name' }
-            ]
-          })
           .mockResolvedValueOnce({
             formattedData: [{ provision_reason: 'statutory' }]
           })
@@ -154,12 +145,10 @@ describe('getDatasetNameMap', () => {
       vi.doMock('../../src/services/datasette.js', () => mockDatasette)
 
       const {
-        getDatasetFields,
         getProvisionReasonsForDataset,
         isStatutoryDataset
       } = await import('../../src/utils/redisLoader.js')
 
-      await expect(getDatasetFields('conservation-area')).resolves.toEqual(['name', 'notes', 'reference'])
       await expect(getProvisionReasonsForDataset({
         organisation: 'local-authority:TST',
         dataset: 'conservation-area'
@@ -169,21 +158,14 @@ describe('getDatasetNameMap', () => {
         dataset: 'conservation-area'
       })).resolves.toBe(true)
 
-      expect(mockRedisClient.get).toHaveBeenNthCalledWith(1, 'deploy-456:dataset-fields:conservation-area')
+      expect(mockRedisClient.get).toHaveBeenNthCalledWith(1, 'deploy-456:provision-reasons:local-authority:TST:conservation-area')
       expect(mockRedisClient.setEx).toHaveBeenNthCalledWith(
         1,
-        'deploy-456:dataset-fields:conservation-area',
-        21600,
-        JSON.stringify(['name', 'notes', 'reference'])
-      )
-      expect(mockRedisClient.get).toHaveBeenNthCalledWith(2, 'deploy-456:provision-reasons:local-authority:TST:conservation-area')
-      expect(mockRedisClient.setEx).toHaveBeenNthCalledWith(
-        2,
         'deploy-456:provision-reasons:local-authority:TST:conservation-area',
         21600,
         JSON.stringify(['statutory'])
       )
-      expect(mockDatasette.default.runQuery).toHaveBeenCalledTimes(2)
+      expect(mockDatasette.default.runQuery).toHaveBeenCalledTimes(1)
     } finally {
       process.env.DEPLOY_TIME = originalDeployTime
       vi.unmock('redis')
@@ -193,7 +175,7 @@ describe('getDatasetNameMap', () => {
     }
   })
 
-  it('should return cached dataset fields and provision reasons without querying Datasette', async () => {
+  it('should return cached provision reasons without querying Datasette', async () => {
     const mockRedisClient = {
       isOpen: false,
       connect: vi.fn().mockImplementation(async () => {
@@ -228,15 +210,18 @@ describe('getDatasetNameMap', () => {
       vi.doMock('../../src/services/datasette.js', () => mockDatasette)
 
       const {
-        getDatasetFields,
-        getProvisionReasonsForDataset
+        getProvisionReasonsForDataset,
+        isStatutoryDataset
       } = await import('../../src/utils/redisLoader.js')
 
-      await expect(getDatasetFields('conservation-area')).resolves.toEqual(['cached-field'])
       await expect(getProvisionReasonsForDataset({
         organisation: 'local-authority:TST',
         dataset: 'conservation-area'
-      })).resolves.toEqual(['expected'])
+      })).resolves.toEqual(['cached-field'])
+      await expect(isStatutoryDataset({
+        organisation: 'local-authority:TST',
+        dataset: 'conservation-area'
+      })).resolves.toBe(false)
       expect(mockDatasette.default.runQuery).not.toHaveBeenCalled()
     } finally {
       vi.unmock('redis')
@@ -244,16 +229,5 @@ describe('getDatasetNameMap', () => {
       vi.unmock('../../src/services/datasette.js')
       vi.resetModules()
     }
-  })
-
-  it('should normalise duplicate, empty and system dataset fields', () => {
-    expect(normaliseDatasetFields([
-      { field: 'reference' },
-      { field: 'reference' },
-      { field: 'organisation' },
-      { field: 'entity' },
-      { field: '' },
-      {}
-    ])).toEqual(['reference'])
   })
 })
