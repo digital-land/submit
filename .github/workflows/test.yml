@@ -25,11 +25,11 @@ jobs:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
       TESTCONTAINERS_REUSE_ENABLE: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install AWS CLI
         uses: ./.github/actions/awscli-setup
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.5.1'
           cache: 'npm'
@@ -40,7 +40,7 @@ jobs:
         run: npm run lint
       - name: Test documentation generates without errors
         run: npm run generate:docs
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
@@ -67,7 +67,7 @@ jobs:
       - name: Run acceptance tests
         run: npm run test:acceptance:ci
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: playwright-report
