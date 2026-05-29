@@ -188,14 +188,12 @@ async function getCompletedRequestData (req, res) {
 }
 
 export function validateColumnMapping (body = {}, mappingRows = []) {
-  const requiredFields = new Set(mappingRows.filter(row => row.isRequired).map(row => row.field))
-
   const fieldMap = getBracketFields(body, 'fieldMap')
 
   // base errors: missing or explicit 'na' for required fields
   const errors = Object.fromEntries(
     Object.entries(fieldMap)
-      .filter(([field, value]) => value === '' || (value === 'na' && requiredFields.has(field)))
+      .filter(([field, value]) => value === '')
       .map(([field]) => [field, {
         text: `Select the ${field} field`
       }])
@@ -275,10 +273,9 @@ export function buildSubmittedColumnMapping ({ existingMapping = {}, body = {}, 
     for (const [mappedColumn, mappedField] of Object.entries(columnMapping)) {
       if (mappedField === field) delete columnMapping[mappedColumn]
     }
-    if (column !== 'na') {
-      columnMapping[column] = field
-      selectedUploadedColumns.add(column)
-    }
+
+    columnMapping[column] = column === 'na' ? 'IGNORE' : field
+    selectedUploadedColumns.add(column)
   }
 
   spareUploadedColumns.forEach(column => {

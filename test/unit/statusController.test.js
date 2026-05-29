@@ -155,6 +155,25 @@ describe('StatusController', () => {
       })).resolves.toBe(false)
     })
 
+    it('returns false when the user has already started mapping', async () => {
+      await expect(shouldShowColumnMapping({
+        ...makeRequestData({
+          params: {
+            organisationName: 'local-authority:TST',
+            dataset: 'test-dataset',
+            column_mapping: {
+              na: 'IGNORE'
+            }
+          },
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'geometry', column: null, missing: true, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Ref: 'abc' } }]
+        })
+      })).resolves.toBe(false)
+    })
+
     it('returns false when there are other blocking external errors', async () => {
       await expect(shouldShowColumnMapping({
         ...makeRequestData({

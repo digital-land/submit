@@ -131,6 +131,9 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
 
     // the column mapping the user has done
     const userColumnMapping = params.column_mapping ?? {}
+    const hasUserColumnMapping = Object.values(userColumnMapping).some(value => Boolean(value))
+    if (hasUserColumnMapping) return false
+
     const responseDetails = await requestData.fetchResponseDetails(0, 50)
     const rows = responseDetails.getRows?.() ?? []
     // all the columns the user has mapped.
@@ -151,15 +154,22 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
 
     // if there are missing mandatory fields that are not mapped by the user, then we should show the column mapping page
     const hasMissingMandatoryFields = columnMapping.some(column => column?.mandatory && !column?.column && !fieldsMappedByUser.has(column.field))
+    // Note: at this point we've already ensured there are spare uploaded columns (earlier check),
+    // so a missing mandatory field with spare columns means we should show the mapping page.
     if (hasMissingMandatoryFields) return true
 
-    // if has unmapped required fields
-    const hasOtherBlockingExternalErrors = requestData.getIssueTasks().some(issue =>
+    // Do not show column mapping if there are any external, error-level issues
+    // whose issue-type is not 'missing-field' (these are blocking external errors).
+    const issueTasks = requestData.getIssueTasks?.() ?? []
+    const hasOtherBlockingExternalErrors = issueTasks.some(issue =>
       issue.severity === 'error' &&
       issue.responsibility === 'external' &&
       issue['issue-type'] !== 'missing-field'
     )
-    return !hasOtherBlockingExternalErrors
+    if (hasOtherBlockingExternalErrors) return false
+
+    // Show column mapping if there are unmapped expected fields (and spareUploadedColumns > 0 ensured earlier)
+    return hasUnmappedExpectedFields
   } catch {
     return false
   }

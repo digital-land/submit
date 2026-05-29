@@ -226,18 +226,17 @@ export function setupTableParams (req, res, next) {
     const columnMappingEnabled = columnMapping === true || hasMappingObject
     req.locals.columnMappingEnabled = columnMappingEnabled
     if (columnMappingEnabled) {
-      const columnMappingRows = orderedFields
-        .map(col => {
-          const mappedField = columnToField.get(col) || ''
-          return { mappedField, col }
-        })
-        .filter(({ mappedField, col }) => {
-          const normalizedMappedField = typeof mappedField === 'string' ? mappedField.toUpperCase() : mappedField
-          return Boolean(mappedField && col && normalizedMappedField !== 'IGNORE')
-        })
-        .map(({ mappedField, col }) => ({
-          key: { text: mappedField },
-          value: { html: col }
+      const requestData = req.locals.requestData
+      const columnMappingRows = requestData.getColumnFieldLog()
+        .filter(({ field, column, missing, mandatory }) => Boolean(field) && Boolean(column))
+        .map(({ field, column, missing, mandatory }) => {
+          return {
+            field,
+            column: column || ''
+          }
+        }).map(({ field, column }) => ({
+          key: { text: field },
+          value: { html: column }
         }))
 
       req.locals.columnMappingRows = columnMappingRows

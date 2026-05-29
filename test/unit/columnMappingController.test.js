@@ -92,7 +92,8 @@ describe('columnMappingController helpers', () => {
     expect(mapping).toEqual({
       Removed: 'name',
       Reference: 'IGNORE',
-      'New reference': 'reference'
+      'New reference': 'reference',
+      na: 'IGNORE'
     })
   })
 
@@ -372,11 +373,7 @@ describe('columnMappingController helpers', () => {
     }, [
       { field: 'reference', isRequired: true },
       { field: 'notes', isRequired: false }
-    ])).toEqual({
-      reference: {
-        text: 'Select the reference field'
-      }
-    })
+    ])).toEqual({})
   })
 
   it('applies submitted selections to mapping rows for redisplay', () => {
@@ -427,7 +424,8 @@ describe('columnMappingController helpers', () => {
     expect(mapping).toEqual({
       Reference: 'reference',
       Notes: 'IGNORE',
-      Extra: 'IGNORE'
+      Extra: 'IGNORE',
+      na: 'IGNORE'
     })
   })
 })
