@@ -190,5 +190,39 @@ describe('StatusController', () => {
         })
       })).resolves.toBe(false)
     })
+
+    it('does not block when issue-type is missing-field', async () => {
+      await expect(shouldShowColumnMapping({
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'geometry', column: null, missing: true, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Ref: 'abc' } }],
+          issueTasks: [{
+            severity: 'error',
+            responsibility: 'external',
+            'issue-type': 'missing-field'
+          }]
+        })
+      })).resolves.toBe(true)
+    })
+
+    it('does not block when issues are internal', async () => {
+      await expect(shouldShowColumnMapping({
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'geometry', column: null, missing: true, mandatory: true }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Ref: 'abc' } }],
+          issueTasks: [{
+            severity: 'error',
+            responsibility: 'internal',
+            'issue-type': 'invalid geometry'
+          }]
+        })
+      })).resolves.toBe(true)
+    })
   })
 })
