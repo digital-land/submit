@@ -108,6 +108,15 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
     })) {
       return false
     }
+    // Do not show column mapping if there are any external, error-level issues
+    // whose issue-type is not 'missing-field' (these are blocking external errors).
+    const issueTasks = requestData.getIssueTasks?.() ?? []
+    const hasOtherBlockingExternalErrors = issueTasks.some(issue =>
+      issue.severity === 'error' &&
+      issue.responsibility === 'external' &&
+      issue['issue-type'] !== 'missing-field'
+    )
+    if (hasOtherBlockingExternalErrors) return false
 
     let columnMapping = requestData.getColumnFieldLog?.() ?? []
 
@@ -157,16 +166,6 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
     // Note: at this point we've already ensured there are spare uploaded columns (earlier check),
     // so a missing mandatory field with spare columns means we should show the mapping page.
     if (hasMissingMandatoryFields) return true
-
-    // Do not show column mapping if there are any external, error-level issues
-    // whose issue-type is not 'missing-field' (these are blocking external errors).
-    const issueTasks = requestData.getIssueTasks?.() ?? []
-    const hasOtherBlockingExternalErrors = issueTasks.some(issue =>
-      issue.severity === 'error' &&
-      issue.responsibility === 'external' &&
-      issue['issue-type'] !== 'missing-field'
-    )
-    if (hasOtherBlockingExternalErrors) return false
 
     // Show column mapping if there are unmapped expected fields (and spareUploadedColumns > 0 ensured earlier)
     return hasUnmappedExpectedFields
