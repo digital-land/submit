@@ -296,9 +296,15 @@ export function filterOutInternalIssues (req, res, next) {
 
 export function addQualityCriteriaLevelsToIssues (req, res, next) {
   const { issues, issueTypes } = req
+  req.issues = addQualityCriteriaLevels(issues, issueTypes)
+
+  next()
+}
+
+export function addQualityCriteriaLevels (issues = [], issueTypes = []) {
   const issueTypeMap = new Map(issueTypes.map(it => [it.issue_type, it]))
 
-  req.issues = issues.map(issue => {
+  return issues.map(issue => {
     const issueType = issueTypeMap.get(issue['issue-type'])
     let qualityLevel = issueType ? issueType.quality_criteria_level : null
 
@@ -312,8 +318,6 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
       quality_criteria_level: qualityLevel
     }
   })
-
-  next()
 }
 
 /**

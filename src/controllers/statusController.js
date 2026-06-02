@@ -7,6 +7,8 @@ import platformApi from '../services/platformApi.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { processSpecificationMiddlewares } from '../middleware/common.middleware.js'
+import datasette from '../services/datasette.js'
+import { addQualityCriteriaLevels } from './resultsController.js'
 
 /**
  * Attempts to infer how we ended up on this page.
@@ -108,15 +110,7 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
     })) {
       return false
     }
-    // Do not show column mapping if there are any external, error-level issues
-    // whose issue-type is not 'missing-field' (these are blocking external errors).
-    const issueTasks = requestData.getIssueTasks?.() ?? []
-    const hasOtherBlockingExternalErrors = issueTasks.some(issue =>
-      issue.severity === 'error' &&
-      issue.responsibility === 'external' &&
-      issue['issue-type'] !== 'missing-field'
-    )
-    if (hasOtherBlockingExternalErrors) return false
+    if (await hasBlockingNonColumnMappingTasks(requestData)) return false
 
     let columnMapping = requestData.getColumnFieldLog?.() ?? []
 
@@ -172,6 +166,22 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
   } catch {
     return false
   }
+}
+
+export async function hasBlockingNonColumnMappingTasks (requestData) {
+  const issueTasks = requestData.getIssueTasks?.() ?? []
+  if (issueTasks.length === 0) return false
+
+  const { formattedData: issueTypes } = await datasette.runQuery(`
+    select issue_type, quality_criteria_level
+    from issue_type
+  `)
+
+  return addQualityCriteriaLevels(issueTasks, issueTypes).some(issue =>
+    issue.responsibility !== 'internal' &&
+    issue.quality_criteria_level === 2 &&
+    !['missing column', 'missing-field'].includes(issue['issue-type'])
+  )
 }
 
 function buildMappedFields (columnMapping = [], userColumnMapping = {}) {

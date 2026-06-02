@@ -1,9 +1,15 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 import StatusController, { shouldShowColumnMapping } from '../../src/controllers/statusController.js'
 import { isStatutoryDataset } from '../../src/utils/redisLoader.js'
+import datasette from '../../src/services/datasette.js'
 
 vi.mock('@/services/asyncRequestApi.js')
 vi.mock('../../src/utils/redisLoader.js')
+vi.mock('../../src/services/datasette.js', () => ({
+  default: {
+    runQuery: vi.fn()
+  }
+}))
 
 const makeRequestData = ({
   params = { organisationName: 'local-authority:TST', dataset: 'test-dataset' },
@@ -30,6 +36,13 @@ describe('StatusController', () => {
   beforeEach(async () => {
     asyncRequestApi = await import('@/services/asyncRequestApi')
     vi.mocked(isStatutoryDataset).mockResolvedValue(false)
+    vi.mocked(datasette.runQuery).mockResolvedValue({
+      formattedData: [
+        { issue_type: 'invalid geometry', quality_criteria_level: 2 },
+        { issue_type: 'missing-field', quality_criteria_level: 2 },
+        { issue_type: 'minor formatting issue', quality_criteria_level: 3 }
+      ]
+    })
 
     statusController = new StatusController({
       route: '/status'
@@ -174,7 +187,7 @@ describe('StatusController', () => {
       })).resolves.toBe(false)
     })
 
-    it('returns false when there are other blocking external errors', async () => {
+    it('returns false when there are level 2 external issue tasks', async () => {
       await expect(shouldShowColumnMapping({
         ...makeRequestData({
           columnFieldLog: [
@@ -189,6 +202,23 @@ describe('StatusController', () => {
           }]
         })
       })).resolves.toBe(false)
+    })
+
+    it('does not block when external issue tasks are level 3', async () => {
+      await expect(shouldShowColumnMapping({
+        ...makeRequestData({
+          columnFieldLog: [
+            { field: 'reference', column: 'Reference', missing: false, mandatory: true },
+            { field: 'description', column: null, missing: true, mandatory: false }
+          ],
+          rows: [{ converted_row: { Reference: 'abc', Notes: 'note', Extra: 'extra' } }],
+          issueTasks: [{
+            severity: 'error',
+            responsibility: 'external',
+            'issue-type': 'minor formatting issue'
+          }]
+        })
+      })).resolves.toBe(true)
     })
 
     it('does not block when issue-type is missing-field', async () => {

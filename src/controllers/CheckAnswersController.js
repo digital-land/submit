@@ -1,6 +1,6 @@
 import PageController from './pageController.js'
 import config from '../../config/index.js'
-import { attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
+import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
@@ -114,6 +114,18 @@ class CheckAnswersController extends PageController {
 
     this.attachFileToIssue(requestId, data, description, response).catch((error) => {
       logger.error('CheckAnswersController.attachFileToIssue(): Failed to attach CSV to Jira issue', {
+        errorMessage: error.message,
+        errorStack: error,
+        type: types.External
+      })
+    })
+    const urlSearchParams = new URLSearchParams({ requestId, dataset: data.dataset, organisationId: data.organisationId, endpointUrl: data.endpoint, documentationUrl: data.documentationUrl, jiraIssueId: response.data.issueKey })
+    if (data.dataset === 'tree') {
+      urlSearchParams.append('geometryType', data.geomType)
+    }
+    const manageServiceLink = `${config.manageServiceUrl}/datamanager${urlSearchParams.toString() ? `?${urlSearchParams.toString()}` : ''}`
+    addInternalNoteToIssue(response.data.issueKey, `Click here to add this data \n\n ${manageServiceLink} \n\n\n [Click here to add this data] (${manageServiceLink})`).catch((error) => {
+      logger.error('CheckAnswersController.addInternalNoteToIssue(): Failed to add internal note to Jira issue', {
         errorMessage: error.message,
         errorStack: error,
         type: types.External

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
+import { addInternalNoteToIssue, createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
@@ -35,6 +35,7 @@ describe('CheckAnswersController', () => {
     next = vi.fn()
     controller = new CheckAnswersController({ route: '/check-answers/:requestId' })
     vi.clearAllMocks()
+    addInternalNoteToIssue.mockResolvedValue({ data: {} })
   })
 
   describe('POST to CheckAnswersController', () => {
