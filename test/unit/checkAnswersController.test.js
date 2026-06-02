@@ -140,6 +140,7 @@ describe('CheckAnswersController', () => {
       const response = { data: { issueKey: 'TEST-123' } }
       createCustomerRequest.mockResolvedValue(response)
       attachFileToIssue.mockResolvedValue({ data: {} })
+      vi.spyOn(controller, 'attachFileToIssue').mockResolvedValue()
 
       const result = await controller.createJiraServiceRequest(req, res, next)
 
