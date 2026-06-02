@@ -118,7 +118,8 @@ class CheckAnswersController extends PageController {
     }
     const manageServiceLink = `${config.manageServiceUrl}/datamanager${urlSearchParams.toString() ? `?${urlSearchParams.toString()}` : ''}`
 
-    await addInternalNoteToIssue(response.data.issueKey, `[Click here to add this data|${manageServiceLink}]`).catch((error) => {
+    const internalNote = `This request is ready to be added in the Manage Service.\n\n[Open this request in Manage Service|${manageServiceLink}]\n\nIf the link does not open, use this URL:\n${manageServiceLink}`
+    await addInternalNoteToIssue(response.data.issueKey, internalNote).catch((error) => {
       logger.error('CheckAnswersController.addInternalNoteToIssue(): Failed to add internal note to Jira issue', {
         errorMessage: error.message,
         errorStack: error,
