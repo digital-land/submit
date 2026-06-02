@@ -10,6 +10,10 @@ const navigationLinks = {
   community: {
     href: '/community',
     text: 'Community'
+  },
+  extract: {
+    href: '/extract',
+    text: 'Extract your data'
   }
 }
 
