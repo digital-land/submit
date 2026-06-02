@@ -124,59 +124,14 @@ class CheckAnswersController extends PageController {
       urlSearchParams.append('geometryType', data.geomType)
     }
     const manageServiceLink = `${config.manageServiceUrl}/datamanager${urlSearchParams.toString() ? `?${urlSearchParams.toString()}` : ''}`
-    const note = {
-      type: 'doc',
-      version: 1,
-      content: [
-        {
-          type: 'paragraph',
-          content: [
-            {
-              type: 'text',
-              text: 'Click here to add this data',
-              marks: [
-                {
-                  type: 'link',
-                  attrs: {
-                    href: manageServiceLink
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          type: 'paragraph',
-          content: []
-        },
-        {
-          type: 'paragraph',
-          content: [
-            {
-              type: 'text',
-              text: 'If the link above is not clickable, copy and paste the link below instead:'
-            }
-          ]
-        },
-        {
-          type: 'paragraph',
-          content: [
-            {
-              type: 'text',
-              text: manageServiceLink
-            }
-          ]
-        }
-      ]
-    }
-    addInternalNoteToIssue(response.data.issueKey, note).catch((error) => {
+
+    addInternalNoteToIssue(response.data.issueKey, `[Click here to add this data|${manageServiceLink}]`).catch((error) => {
       logger.error('CheckAnswersController.addInternalNoteToIssue(): Failed to add internal note to Jira issue', {
         errorMessage: error.message,
         errorStack: error,
         type: types.External
       })
     })
-
     return response.data
   }
 
