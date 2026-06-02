@@ -236,7 +236,7 @@ export function setupTableParams (req, res, next) {
           }
         }).map(({ field, column }) => ({
           key: { text: field },
-          value: { html: column }
+          value: { text: String(column || '') }
         }))
 
       req.locals.columnMappingRows = columnMappingRows
