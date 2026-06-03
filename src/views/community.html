@@ -1,0 +1,10 @@
+{% extends "layouts/main.html" %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
+{% set pageName = 'Community' %}
+
+{% block main %}
+<div class="govuk-width-container govuk-!-padding-top-6 govuk-!-padding-bottom-6">
+  <h1 class="govuk-heading-xl">Community</h1>
+  <p class="govuk-body">You can <a href="https://design.planning.data.gov.uk/get-involved-in-designing-data">get involved with community events and discussions</a> to help improve this service.</p>
+</div>
+{% endblock %}

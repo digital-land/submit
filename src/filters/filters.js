@@ -13,6 +13,7 @@ import { schemaIssues } from './schemaIssues.js'
 import { endpointSubmissionFormToolDeepLink } from './endpointSubmissionFormDeepLink.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import { getNavigationLinks } from './getNavigationLinks.js'
+import { aOrAn } from './aOrAn.js'
 /** maps dataset status (as returned by `fetchLpaOverview` middleware to a
  * CSS class used by the govuk-tag component
  */
@@ -47,6 +48,7 @@ const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('getFullServiceName', getFullServiceName)
   nunjucksEnv.addFilter('statusToTagClass', statusToTagClass)
   nunjucksEnv.addFilter('pluralise', pluralize)
+  nunjucksEnv.addFilter('aOrAn', aOrAn)
   nunjucksEnv.addFilter('checkToolDeepLink', checkToolDeepLink)
   nunjucksEnv.addFilter('endpointSubmissionFormToolDeepLink', endpointSubmissionFormToolDeepLink)
   nunjucksEnv.addFilter('getDatasetGuidanceUrl', getDatasetGuidanceUrl)
