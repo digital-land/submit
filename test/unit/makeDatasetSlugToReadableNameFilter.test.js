@@ -24,4 +24,11 @@ describe('makeDatasetSlugToReadableNameFilter', () => {
     expect(filter('Unknown-slug')).toBe('unknown-slug')
     expect(filter('Unknown-slug', true)).toBe('Unknown-slug')
   })
+
+  it('returns a missing slug without trying to capitalize it', () => {
+    expect(filter(undefined)).toBeUndefined()
+    expect(filter(undefined, true)).toBeUndefined()
+    expect(filter(null)).toBeNull()
+    expect(filter(null, true)).toBeNull()
+  })
 })

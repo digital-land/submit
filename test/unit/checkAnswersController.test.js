@@ -37,6 +37,20 @@ describe('CheckAnswersController', () => {
     vi.clearAllMocks()
   })
 
+  describe('locals', () => {
+    it('should redirect to /check/url when dataset is missing', async () => {
+      req.sessionModel.get.mockImplementation(key => ({
+        requestId: 'existing-request-id'
+      }[key]))
+
+      await controller.locals(req, res, next)
+
+      expect(res.redirect).toHaveBeenCalledWith('/check/url')
+      expect(getRequestData).not.toHaveBeenCalled()
+      expect(next).not.toHaveBeenCalled()
+    })
+  })
+
   describe('POST to CheckAnswersController', () => {
     it('should create a Jira issue and set session data on success', async () => {
       const issue = { issueKey: 'TEST-123' }

@@ -56,6 +56,19 @@ describe('lpaDetailsController', async () => {
       expect(req.sessionModel.set).toHaveBeenCalledWith('dataset', 'mock-dataset')
     })
 
+    it('should use request_id from the session model when checkRequestId is not set', async () => {
+      req.session = {}
+      req.sessionModel.get.mockImplementation(key => ({
+        request_id: 'session-model-request-id'
+      }[key]))
+
+      await controller.locals(req, res, next)
+
+      expect(getRequestData).toHaveBeenCalledWith('session-model-request-id')
+      expect(req.sessionModel.set).toHaveBeenCalledWith('requestId', 'session-model-request-id')
+      expect(req.form.options.lastPage).toEqual('/check/results/session-model-request-id/1')
+    })
+
     it('should set localAuthorities options in the form', async () => {
       fetchLocalAuthorities.fetchLocalAuthorities = vi.fn().mockResolvedValue(['Authority 1', 'Authority 2'])
 
@@ -80,6 +93,17 @@ describe('lpaDetailsController', async () => {
     it('should redirect to /check/url when request type is not check_url', async () => {
       getRequestData.mockResolvedValue({
         getParams: () => ({ type: 'check_file' })
+      })
+
+      await controller.locals(req, res, next)
+
+      expect(res.redirect).toHaveBeenCalledWith('/check/url')
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('should redirect to /check/url when request params do not include a dataset', async () => {
+      getRequestData.mockResolvedValue({
+        getParams: () => ({ type: 'check_url', organisationName: 'Mock LPA' })
       })
 
       await controller.locals(req, res, next)
