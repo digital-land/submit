@@ -99,11 +99,12 @@ export default class ResultData {
       logger.warn('trying to check for errors when there are none', { requestId: this.id })
       return true
     }
-    if (this.response.data['error-summary'] == null) {
-      logger.warn('trying to check for errors but there is no error-summary', { requestId: this.id })
+    const taskLog = this.response.data['task-log']
+    if (taskLog == null) {
+      logger.warn('trying to check for errors but there is no task-log', { requestId: this.id })
       return true
     }
-    return this.response.data['error-summary'].length > 0
+    return taskLog.some(task => task.responsibility === 'external')
   }
 
   isComplete () {
@@ -116,11 +117,67 @@ export default class ResultData {
    * @returns {any[]}
    */
   getColumnFieldLog () {
-    if (!this.response || !this.response.data || !this.response.data['column-field-log']) {
+    if (!this.response || !this.response.data) {
       logger.warn('trying to get column field log when there is none', { requestId: this.id })
       return []
     }
-    return this.response.data['column-field-log']
+
+    const columnMapping = this.response.data['column-mapping'] ?? []
+    const taskLog = this.response.data['task-log'] ?? []
+
+    const log = columnMapping.map(({ field, column }) => ({ field, column, missing: false }))
+
+    for (const task of taskLog) {
+      if (task['task-source'] === 'column-field') {
+        if (typeof task.details !== 'string' || task.details.length === 0) continue
+        let details
+        try {
+          details = JSON.parse(task.details)
+        } catch {
+          continue
+        }
+        if (details.field) {
+          log.push({ field: details.field, missing: true })
+        }
+      }
+    }
+
+    return log
+  }
+
+  /**
+   * Returns issue tasks from the task-log, filtering out internal issues and
+   * normalising the shape ready for `aggregateIssues`.
+   *
+   * @returns {Array<{issue-type: string, field: string, count: number, severity: string, responsibility: string, summary: string}>}
+   */
+  getIssueTasks () {
+    if (!this.response || !this.response.data) {
+      logger.warn('trying to get issue tasks when there is no response data', { requestId: this.id })
+      return []
+    }
+
+    const taskLog = this.response.data['task-log'] ?? []
+    return taskLog
+      .filter(task => task['task-source'] === 'issue' && task.responsibility !== 'internal')
+      .map(task => {
+        let details
+        try {
+          details = JSON.parse(task.details)
+        } catch {
+          return null // skip entries with unparseable details
+        }
+        if (!details.issue_type || !details.field) return null
+        return {
+          'issue-type': details.issue_type,
+          field: details.field,
+          count: details.count ?? 1,
+          severity: task.severity,
+          responsibility: task.responsibility,
+          summary: task.summary
+        }
+      })
+      .filter(Boolean) // remove nulls from failed parses
   }
 
   getParams () {

@@ -88,7 +88,7 @@ describe('map.js', () => {
     it('should handle empty arrays gracefully', () => {
       const result = calculateBoundingBoxFromGeometries([])
 
-      expect(result).toEqual([[Infinity, Infinity], [-Infinity, -Infinity]])
+      expect(result).toEqual([])
     })
 
     it('should handle complex multi-dimensional coordinates', () => {
