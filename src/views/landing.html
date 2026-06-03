@@ -1,7 +1,6 @@
 {% extends "layouts/main.html" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner %}
-
 {% set serviceType = 'Manage' %}
 {% set pageName = '' %}
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
@@ -17,30 +16,23 @@
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-two-thirds-from-desktop">
         <h1 class="govuk-heading-xl app-masthead__title">{{ serviceName }}</h1>
-
         <p class="app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
           Use this service to:
         </p>
-
-        <p class="app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
-          <ul class="govuk-list govuk-list--bullet govuk-list--spaced app-masthead govuk-body-l">
-            <li>
-              <span>check your data is ready to publish </span>
-            </li>
-            <li>
-              <span>provide your data to the planning data platform</span>
-            </li>
-          </ul>
-        </p>
-
+        <ul class="govuk-list govuk-list--bullet govuk-list--spaced app-masthead govuk-body-l govuk-!-margin-bottom-4">
+          <li>
+            <span>check your data is ready to publish </span>
+          </li>
+          <li>
+            <span>provide your data to the planning data platform</span>
+          </li>
+        </ul>
         <p class="app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
           Planning data aims to make land and housing data easier to find, use and trust. We take the data you provide and standardise it in a consistent format.
         </p>
-
         <p class="app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
           <a href="/guidance" class="govuk-link app-masthead__link">Find out how to check and provide your data</a>
         </p>
-
         <a href="/organisations" role="button" draggable="false"
           class="govuk-button govuk-button--inverse govuk-!-margin-top-6 govuk-!-margin-bottom-0 govuk-button--start"
           data-module="govuk-button">
@@ -51,7 +43,6 @@
           </svg>
         </a>
       </div>
-
       <div class="govuk-grid-column-one-third-from-desktop">&nbsp;</div>
     </div>
   </div>
