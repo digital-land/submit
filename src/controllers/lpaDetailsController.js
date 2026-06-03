@@ -5,7 +5,7 @@ import { orgIdToName } from '../utils/orgIdToName.js'
 
 class LpaDetailsController extends PageController {
   async locals (req, res, next) {
-    const requestId = req.session?.checkRequestId ?? req.sessionModel.get('request_id')
+    const requestId = req.session?.checkRequestId
 
     try {
       const requestData = await getRequestData(requestId)

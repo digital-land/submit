@@ -56,19 +56,6 @@ describe('lpaDetailsController', async () => {
       expect(req.sessionModel.set).toHaveBeenCalledWith('dataset', 'mock-dataset')
     })
 
-    it('should use request_id from the session model when checkRequestId is not set', async () => {
-      req.session = {}
-      req.sessionModel.get.mockImplementation(key => ({
-        request_id: 'session-model-request-id'
-      }[key]))
-
-      await controller.locals(req, res, next)
-
-      expect(getRequestData).toHaveBeenCalledWith('session-model-request-id')
-      expect(req.sessionModel.set).toHaveBeenCalledWith('requestId', 'session-model-request-id')
-      expect(req.form.options.lastPage).toEqual('/check/results/session-model-request-id/1')
-    })
-
     it('should set localAuthorities options in the form', async () => {
       fetchLocalAuthorities.fetchLocalAuthorities = vi.fn().mockResolvedValue(['Authority 1', 'Authority 2'])
 
