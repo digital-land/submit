@@ -3,6 +3,7 @@
 {% from 'govuk/components/phase-banner/macro.njk' import govukPhaseBanner %}
 {% set serviceType = 'Manage' %}
 {% set pageName = '' %}
+{% set mainClasses = 'govuk-!-padding-0' %}
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% block main %}
 <div class="app-masthead">
@@ -19,16 +20,13 @@
         <p class="app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
           Use this service to:
         </p>
-        <ul class="govuk-list govuk-list--bullet govuk-list--spaced app-masthead govuk-body-l govuk-!-margin-bottom-4">
-          <li>
-            <span>check your data is ready to publish </span>
-          </li>
-          <li>
-            <span>provide your data to the planning data platform</span>
-          </li>
+        <ul class="govuk-list govuk-list--bullet govuk-list--spaced app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
+          <li>check your data is ready to publish</li>
+          <li>provide your data to the planning data platform</li>
         </ul>
         <p class="app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
-          Planning data aims to make land and housing data easier to find, use and trust. We take the data you provide and standardise it in a consistent format.
+          Planning data aims to make land and housing data easier to find, use and trust. We take the data you provide
+          and standardise it in a consistent format.
         </p>
         <p class="app-masthead__description govuk-body-l govuk-!-margin-bottom-4">
           <a href="/guidance" class="govuk-link app-masthead__link">Find out how to check and provide your data</a>
@@ -43,7 +41,7 @@
           </svg>
         </a>
       </div>
-      <div class="govuk-grid-column-one-third-from-desktop">&nbsp;</div>
+      <div class="govuk-grid-column-one-third-from-desktop"></div>
     </div>
   </div>
 </div>
