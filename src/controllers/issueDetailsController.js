@@ -122,7 +122,7 @@ const middlewares = [
   results.setupTableParams,
   setPagination,
   results.getIssueTypesWithQualityCriteriaLevels,
-  results.extractIssuesFromResults,
+  results.extractIssuesFromTaskLog,
   results.addQualityCriteriaLevelsToIssues,
   results.aggregateIssues,
   results.getBlockingTasks, // we get this to ensure 'missing column issues

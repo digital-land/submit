@@ -33,7 +33,7 @@ features:
     # https://github.com/digital-land/submit/issues/786
     # enabling this feature will cause the results page to present
     # links to individual issue pages
-    enabled: false
+    enabled: true
   expectationOutOfBoundsTask:
     enabled: false
   provisionBasedDatasets:
