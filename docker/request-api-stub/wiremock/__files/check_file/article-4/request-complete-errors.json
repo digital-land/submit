@@ -14,53 +14,106 @@
   },
   "response": {
       "data": {
-          "error-summary": [
-              "1 geometry must be in Well-Known Text (WKT) format",
-              "1 documentation URL must be a real URL",
-              "1 entry date must be today or in the past",
-              "1 start date must be a real date",
-              "1 geometry missing",
-              "Reference column missing"
+          "task-log": [
+              {
+                  "dataset": "conservation-area",
+                  "details": "{\"issue_type\": \"invalid WKT\", \"count\": 1, \"field\": \"geometry\"}",
+                  "summary": "1 geometry must be in Well-Known Text (WKT) format",
+                  "endpoint": "",
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c",
+                  "severity": "error",
+                  "reference": "a1b2c3d4e5f60001",
+                  "entry-date": "2024-03-27",
+                  "task-source": "issue",
+                  "organisation": "",
+                  "responsibility": "external"
+              },
+              {
+                  "dataset": "conservation-area",
+                  "details": "{\"issue_type\": \"invalid URI\", \"count\": 1, \"field\": \"documentation-url\"}",
+                  "summary": "1 documentation URL must be a real URL",
+                  "endpoint": "",
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c",
+                  "severity": "error",
+                  "reference": "a1b2c3d4e5f60002",
+                  "entry-date": "2024-03-27",
+                  "task-source": "issue",
+                  "organisation": "",
+                  "responsibility": "external"
+              },
+              {
+                  "dataset": "conservation-area",
+                  "details": "{\"issue_type\": \"date-in-future\", \"count\": 1, \"field\": \"entry-date\"}",
+                  "summary": "1 entry date must be today or in the past",
+                  "endpoint": "",
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c",
+                  "severity": "error",
+                  "reference": "a1b2c3d4e5f60003",
+                  "entry-date": "2024-03-27",
+                  "task-source": "issue",
+                  "organisation": "",
+                  "responsibility": "external"
+              },
+              {
+                  "dataset": "conservation-area",
+                  "details": "{\"issue_type\": \"invalid date\", \"count\": 1, \"field\": \"start-date\"}",
+                  "summary": "1 start date must be a real date",
+                  "endpoint": "",
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c",
+                  "severity": "error",
+                  "reference": "a1b2c3d4e5f60004",
+                  "entry-date": "2024-03-27",
+                  "task-source": "issue",
+                  "organisation": "",
+                  "responsibility": "external"
+              },
+              {
+                  "dataset": "conservation-area",
+                  "details": "{\"issue_type\": \"missing value\", \"count\": 1, \"field\": \"geometry\"}",
+                  "summary": "1 geometry missing",
+                  "endpoint": "",
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c",
+                  "severity": "error",
+                  "reference": "a1b2c3d4e5f60005",
+                  "entry-date": "2024-03-27",
+                  "task-source": "issue",
+                  "organisation": "",
+                  "responsibility": "external"
+              },
+              {
+                  "dataset": "conservation-area",
+                  "details": "{\"field\": \"reference\", \"issue_type\": \"missing-field\"}",
+                  "summary": "Reference column missing",
+                  "endpoint": "",
+                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c",
+                  "severity": "error",
+                  "reference": "a1b2c3d4e5f60006",
+                  "entry-date": "2024-03-27",
+                  "task-source": "column-field",
+                  "organisation": "",
+                  "responsibility": "external"
+              }
           ],
-          "column-field-log": [
+          "column-mapping": [
               {
                   "field": "geometry",
-                  "column": "wkt",
-                  "dataset": "conservation-area",
-                  "missing": false,
-                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+                  "column": "wkt"
               },
               {
                   "field": "documentation-url",
-                  "column": "documentation-url",
-                  "dataset": "conservation-area",
-                  "missing": false,
-                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+                  "column": "documentation-url"
               },
               {
                   "field": "entry-date",
-                  "column": "entry-date",
-                  "dataset": "conservation-area",
-                  "missing": false,
-                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+                  "column": "entry-date"
               },
               {
                   "field": "name",
-                  "column": "name",
-                  "dataset": "conservation-area",
-                  "missing": false,
-                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
+                  "column": "name"
               },
               {
                   "field": "start-date",
-                  "column": "start-date",
-                  "dataset": "conservation-area",
-                  "missing": false,
-                  "resource": "5af8ff6d-3b19-4bda-aa9c-e61828b8ad4c"
-              },
-              {
-                  "field": "reference",
-                  "missing": true
+                  "column": "start-date"
               }
           ]
       },
