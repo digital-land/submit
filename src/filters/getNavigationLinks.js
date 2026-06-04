@@ -6,6 +6,14 @@ const navigationLinks = {
   guidance: {
     href: '/guidance',
     text: 'Guidance'
+  },
+  community: {
+    href: '/community',
+    text: 'Community'
+  },
+  extract: {
+    href: '/extract',
+    text: 'Extract your data'
   }
 }
 

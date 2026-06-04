@@ -4,7 +4,7 @@
 {% from "govuk/components/pagination/macro.njk" import govukPagination %}
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% set serviceType = 'Submit'%}
 {% if issueEntitiesCount > 1 %}
   {% set pageName %}{{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Issues (Page {{pageNumber}} of {{issueEntitiesCount}}){% endset %}

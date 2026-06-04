@@ -180,7 +180,9 @@ export class Map {
       filter: ['==', '$type', 'Point']
     })
 
-    this.bbox = calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
+    if (!this.bbox || this.bbox.length === 0) {
+      this.bbox = calculateBoundingBoxFromGeometries(geometries.map(g => g.coordinates))
+    }
   }
 
   async addGeoJsonUrlsToMap (geoJsonUrls) {
@@ -363,6 +365,7 @@ export const calculateBoundingBoxFromGeometries = (geometries) => {
   pullOutCoordinates(geometries)
 
   // Return the bounding box
+  if (minX === Infinity || maxX === -Infinity) return []
   return [[minX, minY], [maxX, maxY]]
 }
 
