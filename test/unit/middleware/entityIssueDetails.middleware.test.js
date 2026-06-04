@@ -1,5 +1,7 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
-import { getIssueDetails, getIssueField, prepareEntity, setRecordCount, show404ifNoIssues } from '../../../src/middleware/entityIssueDetails.middleware.js'
+import * as v from 'valibot'
+import { isValiError } from 'valibot'
+import { IssueDetailsQueryParams, getIssueDetails, getIssueField, prepareEntity, setRecordCount, show404ifNoIssues } from '../../../src/middleware/entityIssueDetails.middleware.js'
 import { MiddlewareError } from '../../../src/utils/errors.js'
 
 vi.mock('../../../src/services/performanceDbApi.js')
@@ -253,6 +255,31 @@ describe('issueDetails.middleware.js', () => {
       next = vi.fn()
       show404ifNoIssues({ recordCount: 10 }, {}, next)
       expect(next).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('IssueDetailsQueryParams', () => {
+    const validBaseParams = {
+      lpa: 'local-authority:LIV',
+      dataset: 'tree-preservation-zone',
+      issue_type: 'missing associated entity',
+      issue_field: 'tree-preservation-order'
+    }
+
+    it('transforms a valid numeric pageNumber string to a number', () => {
+      const result = v.parse(IssueDetailsQueryParams, { ...validBaseParams, pageNumber: '2' })
+      expect(result.pageNumber).toBe(2)
+    })
+
+    it('throws a ValiError when pageNumber is not numeric', () => {
+      let thrown
+      try {
+        v.parse(IssueDetailsQueryParams, { ...validBaseParams, pageNumber: 'TPO335.G19' })
+      } catch (error) {
+        thrown = error
+      }
+      expect(thrown).toBeDefined()
+      expect(isValiError(thrown)).toBe(true)
     })
   })
 })
