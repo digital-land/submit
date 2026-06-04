@@ -3,7 +3,8 @@ import PageController from './pageController.js'
 class DatasetDetailsController extends PageController {
   locals (req, res, next) {
     const requestId = req.sessionModel.get('requestId')
-    if (!requestId) {
+    const dataset = req.sessionModel.get('dataset')
+    if (!requestId || !dataset) {
       return res.redirect('/check/url')
     }
     super.locals(req, res, next)

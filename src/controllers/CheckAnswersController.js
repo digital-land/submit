@@ -10,7 +10,8 @@ import { getDatasets } from '../utils/utils.js'
 class CheckAnswersController extends PageController {
   async locals (req, res, next) {
     const requestId = req.sessionModel.get('requestId')
-    if (!requestId) {
+    const dataset = req.sessionModel.get('dataset')
+    if (!requestId || !dataset) {
       return res.redirect('/check/url')
     }
     try {
