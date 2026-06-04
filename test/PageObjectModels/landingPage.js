@@ -7,7 +7,7 @@ export default class LandingPage extends BasePage {
   }
 
   async clickStartNow () {
-    await this.page.click('text=Check and provide data')
+    await this.page.click('text=Start now')
     return await super.verifyAndReturnPage(OrganisationsPage)
   }
 }
