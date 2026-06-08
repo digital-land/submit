@@ -6,7 +6,6 @@ import ResponseDetails from './responseDetails.js'
 
 const ResponseDetailsOptions = v.optional(v.object({
   severity: v.optional(v.pipe(v.string(), v.minLength(2))),
-  includeGeometries: v.optional(v.boolean()),
   issue: v.optional(v.object({
     issueType: v.pipe(v.string(), v.minLength(1)),
     field: v.pipe(v.string(), v.minLength(1))
@@ -50,11 +49,7 @@ export default class ResultData {
       url.searchParams.append('jsonpath', `$.issue_logs[*].severity=="${opts.severity}"`)
     }
 
-    const geometryUrl = new URL(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/geometries`)
-    const [response, geometriesResponse] = await Promise.all([
-      axios.get(url, { timeout: 30000 }),
-      opts.includeGeometries ? fetchGeometries(geometryUrl) : Promise.resolve(undefined)
-    ])
+    const response = await axios.get(url, { timeout: 30000 })
     const totalResults = Number.parseInt(response.headers['x-pagination-total-results'])
 
     const pagination = {
@@ -63,7 +58,7 @@ export default class ResultData {
       limit: `${limit}`
     }
 
-    return new ResponseDetails(this.id, response.data, pagination, this.getColumnFieldLog(), geometriesResponse)
+    return new ResponseDetails(this.id, response.data, pagination, this.getColumnFieldLog())
   }
 
   isFailed () {
@@ -184,32 +179,4 @@ export default class ResultData {
     }
     return this.response.data.plugin ?? null
   }
-}
-
-async function fetchGeometries (url) {
-  const response = await axios.get(url, { timeout: 30000 })
-  const totalResults = Number.parseInt(response.headers?.['x-pagination-total-results'])
-  const limit = Number.parseInt(response.headers?.['x-pagination-limit']) || getGeometryItems(response.data).length || 500
-  const geometries = getGeometryItems(response.data)
-
-  if (!Number.isInteger(totalResults) || geometries.length >= totalResults) {
-    return geometries.length > 0 ? geometries : response.data
-  }
-
-  for (let offset = geometries.length; offset < totalResults; offset += limit) {
-    const pageUrl = new URL(url)
-    pageUrl.searchParams.set('offset', offset)
-    pageUrl.searchParams.set('limit', limit)
-    const page = await axios.get(pageUrl, { timeout: 30000 })
-    geometries.push(...getGeometryItems(page.data))
-  }
-
-  return geometries
-}
-
-function getGeometryItems (data) {
-  if (Array.isArray(data)) return data
-  if (Array.isArray(data?.geometries)) return data.geometries
-  if (Array.isArray(data?.features)) return data.features
-  return []
 }

@@ -2,6 +2,8 @@ import { getVerboseColumns } from '../utils/getVerboseColumns.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { pagination } from '../utils/pagination.js'
+import axios from 'axios'
+import config from '../../config/index.js'
 
 /**
  * @typedef {Object} PaginationOptions
@@ -33,13 +35,13 @@ import { pagination } from '../utils/pagination.js'
 export default class ResponseDetails {
   #cachedFields
   #cachedGeometries
+  #hasFetchedGeometries = false
 
-  constructor (id, response, pagination, columnFieldLog, geometries) {
+  constructor (id, response, pagination, columnFieldLog) {
     this.id = id
     this.response = response
     this.pagination = pagination
     this.columnFieldLog = columnFieldLog
-    this.geometries = geometries
   }
 
   getRows () {
@@ -163,47 +165,50 @@ export default class ResponseDetails {
    *
    * @returns {any[] | undefined }
    */
-  getGeometries () {
-    if (this.#cachedGeometries) {
+  async getGeometries () {
+    if (this.#hasFetchedGeometries) {
       return this.#cachedGeometries
     }
 
-    const geometries = normaliseGeometries(this.geometries)
-    if (geometries?.length > 0) {
-      this.#cachedGeometries = geometries
-      return this.#cachedGeometries
-    }
+    this.#cachedGeometries = await this.#fetchGeometries()
+    this.#hasFetchedGeometries = true
+    return this.#cachedGeometries
+  }
 
-    const rows = this.getRows()
-    if (rows.length === 0) {
+  async #fetchGeometries () {
+    if (!this.id) {
       return undefined
     }
 
-    const item = rows[0]
-    const getGeometryValue = this.#makeGeometryGetter(item)
-    if (!getGeometryValue) {
-      logger.debug('could not create geometry getter', {
-        type: types.App,
-        requestId: this.id
+    const url = new URL(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/geometries`)
+    let response
+    try {
+      response = await axios.get(url, { timeout: 30000 })
+    } catch (error) {
+      logger.warn('failed to fetch response geometries', {
+        type: types.DataFetch,
+        requestId: this.id,
+        errorMessage: error.message
       })
       return undefined
     }
+    const totalResults = Number.parseInt(response.headers?.['x-pagination-total-results'])
+    const limit = Number.parseInt(response.headers?.['x-pagination-limit']) || getGeometryItems(response.data).length || 500
+    const geometries = normaliseGeometries(response.data) ?? []
 
-    const rowGeometries = []
-    for (const item of rows) {
-      const geometry = getGeometryValue(item)
-      if (geometry && geometry.trim() !== '') {
-        rowGeometries.push(geometry)
-      }
+    if (!Number.isInteger(totalResults) || geometries.length >= totalResults) {
+      return geometries.length > 0 ? geometries : normaliseGeometries(response.data)
     }
-    logger.debug('getGetometries()', {
-      type: types.App,
-      requestId: this.id,
-      geometryCount: rowGeometries.length,
-      rowCount: rows.length
-    })
-    this.#cachedGeometries = rowGeometries
-    return this.#cachedGeometries
+
+    for (let offset = geometries.length; offset < totalResults; offset += limit) {
+      const pageUrl = new URL(url)
+      pageUrl.searchParams.set('offset', offset)
+      pageUrl.searchParams.set('limit', limit)
+      const page = await axios.get(pageUrl, { timeout: 30000 })
+      geometries.push(...(normaliseGeometries(page.data) ?? []))
+    }
+
+    return geometries
   }
 
   /**
@@ -249,32 +254,6 @@ export default class ResponseDetails {
       items
     }
   }
-
-  /**
-   * Detects where geometry is stored in the item and returns a function to extract geometry value.
-   * It's caller's responsibility to handle situations where the getter couldn't be returned.
-   * For most common use cases, we can omit displaying the map.
-   *
-   * @param {Object} item - Data item containing geometry information
-   * @returns {Function|undefined} Function that takes an item and returns a geometry string, or undefined if no geometry found
-   */
-  #makeGeometryGetter (item) {
-    /*
-      The api seems to sometimes respond with weird casing, it can be camal case, all lower or all upper
-      I'll implement a fix here, but hopefully infa will be addressing it on the backend to
-    */
-    const trow = item.transformed_row
-    if (trow) {
-      const key = trow.find(obj => obj.field === 'geometry' || obj.field === 'point')?.field
-      const getter = (row) => {
-        const geometry = row.transformed_row?.find(obj => obj.field === key)
-        return geometry?.value
-      }
-      return getter
-    }
-
-    return undefined
-  }
 }
 
 function normaliseGeometries (data) {
@@ -300,4 +279,11 @@ function normaliseGeometries (data) {
     .filter(Boolean)
 
   return geometries.length > 0 ? geometries : undefined
+}
+
+function getGeometryItems (data) {
+  if (Array.isArray(data)) return data
+  if (Array.isArray(data?.geometries)) return data.geometries
+  if (Array.isArray(data?.features)) return data.features
+  return []
 }
