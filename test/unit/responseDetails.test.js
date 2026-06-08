@@ -261,6 +261,20 @@ describe('ResponseDetails', () => {
       expect(result).toEqual(expected)
     })
 
+    it('returns cached geometry-only data before row geometries', () => {
+      const responseDetails = new ResponseDetails(
+        undefined,
+        mockResponse,
+        undefined,
+        undefined,
+        ['POINT (1 2)', { geo: 'POINT (3 4)' }]
+      )
+
+      const result = responseDetails.getGeometries()
+
+      expect(result).toEqual(['POINT (1 2)', { geo: 'POINT (3 4)' }])
+    })
+
     it('handles Geox, GeoY columns', () => {
       const mockColumnFieldLog = []
       const responseDetails = new ResponseDetails(undefined, mockResponsWithGeoXGeoY, undefined, mockColumnFieldLog)

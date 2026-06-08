@@ -147,7 +147,10 @@ export async function fetchResponseDetails (req, res, next) {
     if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
       const detailsOpts = req.locals.detailsOptions ?? {}
       // Original code used a if statement to check template and filter by error severity accordingly, but move to always showing all details in results/results template
-      const responseDetails = await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, { ...detailsOpts })
+      const responseDetails = await req.locals.requestData.fetchResponseDetails(pageNumber - 1, 50, {
+        ...detailsOpts,
+        includeGeometries: req.locals.datasetTypology === 'geography'
+      })
       req.locals.responseDetails = responseDetails
     }
   } catch (e) {

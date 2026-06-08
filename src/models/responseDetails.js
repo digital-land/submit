@@ -32,12 +32,14 @@ import { pagination } from '../utils/pagination.js'
  */
 export default class ResponseDetails {
   #cachedFields
+  #cachedGeometries
 
-  constructor (id, response, pagination, columnFieldLog) {
+  constructor (id, response, pagination, columnFieldLog, geometries) {
     this.id = id
     this.response = response
     this.pagination = pagination
     this.columnFieldLog = columnFieldLog
+    this.geometries = geometries
   }
 
   getRows () {
@@ -162,6 +164,16 @@ export default class ResponseDetails {
    * @returns {any[] | undefined }
    */
   getGeometries () {
+    if (this.#cachedGeometries) {
+      return this.#cachedGeometries
+    }
+
+    const geometries = normaliseGeometries(this.geometries)
+    if (geometries?.length > 0) {
+      this.#cachedGeometries = geometries
+      return this.#cachedGeometries
+    }
+
     const rows = this.getRows()
     if (rows.length === 0) {
       return undefined
@@ -177,20 +189,21 @@ export default class ResponseDetails {
       return undefined
     }
 
-    const geometries = []
+    const rowGeometries = []
     for (const item of rows) {
       const geometry = getGeometryValue(item)
       if (geometry && geometry.trim() !== '') {
-        geometries.push(geometry)
+        rowGeometries.push(geometry)
       }
     }
     logger.debug('getGetometries()', {
       type: types.App,
       requestId: this.id,
-      geometryCount: geometries.length,
+      geometryCount: rowGeometries.length,
       rowCount: rows.length
     })
-    return geometries
+    this.#cachedGeometries = rowGeometries
+    return this.#cachedGeometries
   }
 
   /**
@@ -262,4 +275,29 @@ export default class ResponseDetails {
 
     return undefined
   }
+}
+
+function normaliseGeometries (data) {
+  if (!data) return undefined
+
+  const items = Array.isArray(data)
+    ? data
+    : data.geometries ?? data.features
+
+  if (!Array.isArray(items)) return undefined
+
+  const geometries = items
+    .map(item => {
+      if (typeof item === 'string') return item
+      if (typeof item?.geo === 'string') return item
+      if (typeof item?.geometry === 'string') return item.geometry
+      if (typeof item?.value === 'string') return item.value
+      if (Array.isArray(item?.transformed_row)) {
+        return item.transformed_row.find(obj => obj.field === 'geometry' || obj.field === 'point')?.value
+      }
+      return undefined
+    })
+    .filter(Boolean)
+
+  return geometries.length > 0 ? geometries : undefined
 }
