@@ -193,11 +193,16 @@ export default class ResponseDetails {
       return undefined
     }
     const totalResults = Number.parseInt(response.headers?.['x-pagination-total-results'])
-    const limit = Number.parseInt(response.headers?.['x-pagination-limit']) || getGeometryItems(response.data).length || 500
-    const geometries = normaliseGeometries(response.data) ?? []
+    const geometries = response.data
+
+    if (!Array.isArray(geometries)) {
+      return undefined
+    }
+
+    const limit = Number.parseInt(response.headers?.['x-pagination-limit']) || geometries.length || 500
 
     if (!Number.isInteger(totalResults) || geometries.length >= totalResults) {
-      return geometries.length > 0 ? geometries : normaliseGeometries(response.data)
+      return geometries.length > 0 ? geometries : undefined
     }
 
     for (let offset = geometries.length; offset < totalResults; offset += limit) {
@@ -205,7 +210,10 @@ export default class ResponseDetails {
       pageUrl.searchParams.set('offset', offset)
       pageUrl.searchParams.set('limit', limit)
       const page = await axios.get(pageUrl, { timeout: 30000 })
-      geometries.push(...(normaliseGeometries(page.data) ?? []))
+      if (!Array.isArray(page.data)) {
+        break
+      }
+      geometries.push(...page.data)
     }
 
     return geometries
@@ -254,36 +262,4 @@ export default class ResponseDetails {
       items
     }
   }
-}
-
-function normaliseGeometries (data) {
-  if (!data) return undefined
-
-  const items = Array.isArray(data)
-    ? data
-    : data.geometries ?? data.features
-
-  if (!Array.isArray(items)) return undefined
-
-  const geometries = items
-    .map(item => {
-      if (typeof item === 'string') return item
-      if (typeof item?.geo === 'string') return item
-      if (typeof item?.geometry === 'string') return item.geometry
-      if (typeof item?.value === 'string') return item.value
-      if (Array.isArray(item?.transformed_row)) {
-        return item.transformed_row.find(obj => obj.field === 'geometry' || obj.field === 'point')?.value
-      }
-      return undefined
-    })
-    .filter(Boolean)
-
-  return geometries.length > 0 ? geometries : undefined
-}
-
-function getGeometryItems (data) {
-  if (Array.isArray(data)) return data
-  if (Array.isArray(data?.geometries)) return data.geometries
-  if (Array.isArray(data?.features)) return data.features
-  return []
 }
