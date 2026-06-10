@@ -2,6 +2,8 @@ import { getVerboseColumns } from '../utils/getVerboseColumns.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { pagination } from '../utils/pagination.js'
+import axios from 'axios'
+import config from '../../config/index.js'
 
 /**
  * @typedef {Object} PaginationOptions
@@ -32,6 +34,8 @@ import { pagination } from '../utils/pagination.js'
  */
 export default class ResponseDetails {
   #cachedFields
+  #cachedGeometries
+  #hasFetchedGeometries = false
 
   constructor (id, response, pagination, columnFieldLog) {
     this.id = id
@@ -161,35 +165,57 @@ export default class ResponseDetails {
    *
    * @returns {any[] | undefined }
    */
-  getGeometries () {
-    const rows = this.getRows()
-    if (rows.length === 0) {
+  async getGeometries () {
+    if (this.#hasFetchedGeometries) {
+      return this.#cachedGeometries
+    }
+
+    this.#cachedGeometries = await this.#fetchGeometries()
+    this.#hasFetchedGeometries = true
+    return this.#cachedGeometries
+  }
+
+  async #fetchGeometries () {
+    if (!this.id) {
       return undefined
     }
 
-    const item = rows[0]
-    const getGeometryValue = this.#makeGeometryGetter(item)
-    if (!getGeometryValue) {
-      logger.debug('could not create geometry getter', {
-        type: types.App,
-        requestId: this.id
+    const url = new URL(`${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}/${this.id}/geometries`)
+    let response
+    try {
+      response = await axios.get(url, { timeout: 30000 })
+    } catch (error) {
+      logger.warn('failed to fetch response geometries', {
+        type: types.DataFetch,
+        requestId: this.id,
+        errorMessage: error.message
       })
       return undefined
     }
+    const totalResults = Number.parseInt(response.headers?.['x-pagination-total-results'])
+    const geometries = response.data
 
-    const geometries = []
-    for (const item of rows) {
-      const geometry = getGeometryValue(item)
-      if (geometry && geometry.trim() !== '') {
-        geometries.push(geometry)
-      }
+    if (!Array.isArray(geometries)) {
+      return undefined
     }
-    logger.debug('getGetometries()', {
-      type: types.App,
-      requestId: this.id,
-      geometryCount: geometries.length,
-      rowCount: rows.length
-    })
+
+    const limit = Number.parseInt(response.headers?.['x-pagination-limit']) || geometries.length || 500
+
+    if (!Number.isInteger(totalResults) || geometries.length >= totalResults) {
+      return geometries.length > 0 ? geometries : undefined
+    }
+
+    for (let offset = geometries.length; offset < totalResults; offset += limit) {
+      const pageUrl = new URL(url)
+      pageUrl.searchParams.set('offset', offset)
+      pageUrl.searchParams.set('limit', limit)
+      const page = await axios.get(pageUrl, { timeout: 30000 })
+      if (!Array.isArray(page.data)) {
+        break
+      }
+      geometries.push(...page.data)
+    }
+
     return geometries
   }
 
@@ -235,31 +261,5 @@ export default class ResponseDetails {
       totalPages,
       items
     }
-  }
-
-  /**
-   * Detects where geometry is stored in the item and returns a function to extract geometry value.
-   * It's caller's responsibility to handle situations where the getter couldn't be returned.
-   * For most common use cases, we can omit displaying the map.
-   *
-   * @param {Object} item - Data item containing geometry information
-   * @returns {Function|undefined} Function that takes an item and returns a geometry string, or undefined if no geometry found
-   */
-  #makeGeometryGetter (item) {
-    /*
-      The api seems to sometimes respond with weird casing, it can be camal case, all lower or all upper
-      I'll implement a fix here, but hopefully infa will be addressing it on the backend to
-    */
-    const trow = item.transformed_row
-    if (trow) {
-      const key = trow.find(obj => obj.field === 'geometry' || obj.field === 'point')?.field
-      const getter = (row) => {
-        const geometry = row.transformed_row?.find(obj => obj.field === key)
-        return geometry?.value
-      }
-      return getter
-    }
-
-    return undefined
   }
 }
