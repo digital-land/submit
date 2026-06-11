@@ -79,7 +79,7 @@ class CheckAnswersController extends PageController {
     const datasetMeta = datasets.get(dataset) || {} // eslint-disable-line no-unused-vars
     const requestId = req.sessionModel.get('requestId')
     const checkTool = requestId
-      ? `${config.url}check/results/${requestId}/${config.jira.requestTypeId}`
+      ? `${config.url}check/results/${requestId}/1`
       : 'Check tool link unavailable'
 
     const isNonProd = ['local', 'development', 'staging'].includes(config.environment)

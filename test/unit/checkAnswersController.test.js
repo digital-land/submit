@@ -86,7 +86,7 @@ describe('CheckAnswersController', () => {
 
   describe('createJiraServiceRequest', () => {
     it('should create a Jira service request using the existing requestId and attach a file', async () => {
-      config.jira.requestTypeId = '1'
+      config.jira.requestTypeId = '28'
       req.sessionModel.get.mockImplementation((key) => sessionData[key])
 
       const response = { data: { issueKey: 'TEST-123' } }
@@ -96,6 +96,10 @@ describe('CheckAnswersController', () => {
 
       const result = await controller.createJiraServiceRequest(req, res, next)
 
+      const [jiraRequest, jiraRequestTypeId] = createCustomerRequest.mock.calls[0]
+      expect(jiraRequest.description).toContain(`${config.url}check/results/existing-request-id/1`)
+      expect(jiraRequest.description).not.toContain(`${config.url}check/results/existing-request-id/${config.jira.requestTypeId}`)
+      expect(jiraRequestTypeId).toBe(config.jira.requestTypeId)
       expect(createCustomerRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           description: expect.stringContaining(`${config.url}check/results/existing-request-id/1`)
@@ -148,7 +152,7 @@ describe('CheckAnswersController', () => {
     })
 
     it('should add geometry type for dataset tree', async () => {
-      config.jira.requestTypeId = '1'
+      config.jira.requestTypeId = '28'
       req.sessionModel.get.mockImplementation((key) => ({ ...sessionData, dataset: 'tree', geomType: 'polygon' })[key])
       const response = { data: { issueKey: 'TEST-123' } }
       createCustomerRequest.mockResolvedValue(response)
@@ -166,7 +170,7 @@ describe('CheckAnswersController', () => {
     })
 
     it('should include plugin in CSV attachment when plugin is retrieved', async () => {
-      config.jira.requestTypeId = '1'
+      config.jira.requestTypeId = '28'
       const mockRequestData = { getPlugin: vi.fn().mockReturnValue('wfs'), isComplete: vi.fn().mockReturnValue(true) }
       getRequestData.mockResolvedValue(mockRequestData)
       req.sessionModel.get.mockImplementation((key) => sessionData[key])
@@ -188,7 +192,7 @@ describe('CheckAnswersController', () => {
     })
 
     it('should not include geometry type when dataset is not tree', async () => {
-      config.jira.requestTypeId = '1'
+      config.jira.requestTypeId = '28'
       req.sessionModel.get.mockImplementation((key) => ({ ...sessionData, dataset: 'conservation-area', geomType: 'polygon' })[key])
       const response = { data: { issueKey: 'TEST-123' } }
       createCustomerRequest.mockResolvedValue(response)
