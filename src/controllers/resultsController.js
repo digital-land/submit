@@ -173,65 +173,69 @@ export const fieldToColumnMapping = ({ columns }) => {
  * @param {Function} next - Next middleware function
  * @returns {void}
  */
-export function setupTableParams (req, res, next) {
-  if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-    const responseDetails = req.locals.responseDetails
-    // Optionally filter out all non - error rows from dataset
-    let rows = responseDetails.getRowsWithVerboseColumns(false)
-    // remove any issues that aren't of severity error
-    rows = rows.map((row) => {
-      const { columns, ...rest } = row
+export async function setupTableParams (req, res, next) {
+  try {
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const responseDetails = req.locals.responseDetails
+      // Optionally filter out all non - error rows from dataset
+      let rows = responseDetails.getRowsWithVerboseColumns(false)
+      // remove any issues that aren't of severity error
+      rows = rows.map((row) => {
+        const { columns, ...rest } = row
 
-      const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
-        let error
-        if (value.error && value.error.severity === 'error' && value.error.responsibility !== 'internal') {
-          error = value.error
-        }
-        const newValue = {
-          ...value,
-          error
-        }
-        return [key, newValue]
-      }))
+        const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
+          let error
+          if (value.error && value.error.severity === 'error' && value.error.responsibility !== 'internal') {
+            error = value.error
+          }
+          const newValue = {
+            ...value,
+            error
+          }
+          return [key, newValue]
+        }))
 
-      return {
-        ...rest,
-        columns: columnsOnlyErrors
+        return {
+          ...rest,
+          columns: columnsOnlyErrors
+        }
+      })
+
+      const fieldToColumn = rows.length > 0 ? fieldToColumnMapping(rows[0]) : new Map()
+      const columnToField = new Map()
+      for (const [k, v] of fieldToColumn.entries()) {
+        columnToField.set(v, k)
       }
-    })
 
-    const fieldToColumn = rows.length > 0 ? fieldToColumnMapping(rows[0]) : new Map()
-    const columnToField = new Map()
-    for (const [k, v] of fieldToColumn.entries()) {
-      columnToField.set(v, k)
+      const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
+      // NOTE: the column field log alters the field names (converts '_' -> '-', most of the time 🤷‍♂️), but we want
+      // the original CSV column names because that's what users expect
+      const orderedFields = [...leadingFields, ...trailingFields]
+      const columns = orderedFields
+      const fields = orderedFields
+      req.locals.tableParams = {
+        columns,
+        fields,
+        rows,
+        columnNameProcessing: 'none',
+        mapping: columnToField
+      }
+      req.locals.geometries =
+        req.locals.datasetTypology === 'geography'
+          ? await responseDetails.getGeometries()
+          : null
+      // pagination is on the 'table' tab, so we want to ensure clicking those
+      // links takes us to a page with the table tab *selected*
+      const { pageNumber } = req.parsedParams
+      const pagination = responseDetails.getPagination(pageNumber, { hash: '#table-tab' })
+      req.locals.pagination = pagination
+      req.locals.id = req.params.id
+      req.locals.lastPage = `/check/status/${req.params.id}`
     }
-
-    const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
-    // NOTE: the column field log alters the field names (converts '_' -> '-', most of the time 🤷‍♂️), but we want
-    // the original CSV column names because that's what users expect
-    const orderedFields = [...leadingFields, ...trailingFields]
-    const columns = orderedFields
-    const fields = orderedFields
-    req.locals.tableParams = {
-      columns,
-      fields,
-      rows,
-      columnNameProcessing: 'none',
-      mapping: columnToField
-    }
-    req.locals.geometries =
-      req.locals.datasetTypology === 'geography'
-        ? responseDetails.getGeometries()
-        : null
-    // pagination is on the 'table' tab, so we want to ensure clicking those
-    // links takes us to a page with the table tab *selected*
-    const { pageNumber } = req.parsedParams
-    const pagination = responseDetails.getPagination(pageNumber, { hash: '#table-tab' })
-    req.locals.pagination = pagination
-    req.locals.id = req.params.id
-    req.locals.lastPage = `/check/status/${req.params.id}`
+    next()
+  } catch (error) {
+    next(error)
   }
-  next()
 }
 
 export function setupError (req, res, next) {

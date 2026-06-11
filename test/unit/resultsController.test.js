@@ -132,11 +132,11 @@ describe('Middleware Tests', () => {
         getRowsWithVerboseColumns: vi.fn(() => [{ columns: {}, data: 'rowData' }]),
         getColumns: vi.fn(() => ['column1', 'column2']),
         getFields: vi.fn(() => ['field1', 'field2']),
-        getGeometries: vi.fn(() => 'mockGeometries'),
+        getGeometries: vi.fn().mockResolvedValue('mockGeometries'),
         getPagination: vi.fn(() => 'mockPagination')
       }
 
-      setupTableParams(req, res, mockNext)
+      await setupTableParams(req, res, mockNext)
 
       expect(req.locals.tableParams).toEqual({
         columns: ['field1', 'field2'],
@@ -149,7 +149,7 @@ describe('Middleware Tests', () => {
       expect(req.locals.pagination).toEqual('mockPagination')
       expect(mockNext).toHaveBeenCalled()
     })
-    it('hide map when typology is not geography', () => {
+    it('hide map when typology is not geography', async () => {
       const req = mockRequest()
       const res = mockResponse()
 
@@ -164,7 +164,7 @@ describe('Middleware Tests', () => {
         getFields: vi.fn(() => ['field1', 'field2']),
         getPagination: vi.fn(() => 'mockPagination')
       }
-      setupTableParams(req, res, mockNext)
+      await setupTableParams(req, res, mockNext)
       expect(req.locals.geometries).toBeNull()
     })
   })
