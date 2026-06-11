@@ -128,9 +128,11 @@ describe('PageController', () => {
     })
 
     it('handles missing dataset gracefully', () => {
-      req.sessionModel.get.mockReturnValue({})
+      vi.clearAllMocks()
+      req.sessionModel.get.mockReturnValue(undefined)
       pageController.locals(req, {}, vi.fn())
       expect(req.form.options.datasetName).toBeUndefined()
+      expect(datasetSlugToReadableName.datasetSlugToReadableName).not.toHaveBeenCalled()
     })
 
     it('handles datasetSlugToReadableName errors gracefully', () => {

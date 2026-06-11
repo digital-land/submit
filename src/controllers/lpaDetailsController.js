@@ -9,11 +9,11 @@ class LpaDetailsController extends PageController {
 
     try {
       const requestData = await getRequestData(requestId)
-      if (requestData?.getParams()?.type !== 'check_url') {
+      const params = requestData?.getParams()
+      if (params?.type !== 'check_url' || !params.dataset) {
         return res.redirect('/check/url')
       }
       // Populate submit wizard session from the check request params
-      const params = requestData.getParams()
       const orgId = params.organisationName
       req.sessionModel.set('requestId', requestId)
       req.sessionModel.set('lpa', orgIdToName(orgId))
@@ -33,7 +33,7 @@ class LpaDetailsController extends PageController {
       value: name
     }))
 
-    req.form.options.lastPage = `/check/results/${req.session.checkRequestId}/1`
+    req.form.options.lastPage = `/check/results/${requestId}/1`
 
     super.locals(req, res, next)
   }

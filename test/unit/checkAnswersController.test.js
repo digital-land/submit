@@ -38,6 +38,20 @@ describe('CheckAnswersController', () => {
     addInternalNoteToIssue.mockResolvedValue({ data: {} })
   })
 
+  describe('locals', () => {
+    it('should redirect to /check/url when dataset is missing', async () => {
+      req.sessionModel.get.mockImplementation(key => ({
+        requestId: 'existing-request-id'
+      }[key]))
+
+      await controller.locals(req, res, next)
+
+      expect(res.redirect).toHaveBeenCalledWith('/check/url')
+      expect(getRequestData).not.toHaveBeenCalled()
+      expect(next).not.toHaveBeenCalled()
+    })
+  })
+
   describe('POST to CheckAnswersController', () => {
     it('should return the Manage Service link as JSON locally when Jira is not configured', async () => {
       const originalEnvironment = config.environment

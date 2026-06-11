@@ -88,6 +88,17 @@ describe('lpaDetailsController', async () => {
       expect(next).not.toHaveBeenCalled()
     })
 
+    it('should redirect to /check/url when request params do not include a dataset', async () => {
+      getRequestData.mockResolvedValue({
+        getParams: () => ({ type: 'check_url', organisationName: 'Mock LPA' })
+      })
+
+      await controller.locals(req, res, next)
+
+      expect(res.redirect).toHaveBeenCalledWith('/check/url')
+      expect(next).not.toHaveBeenCalled()
+    })
+
     it('should redirect to /check/url when getRequestData throws', async () => {
       getRequestData.mockRejectedValue(new Error('API error'))
 
