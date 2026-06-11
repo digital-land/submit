@@ -96,10 +96,13 @@ class ColumnMappingController extends PageController {
 
       const params = requestData.getParams() ?? {}
       const uniqueDatasetFields = req.uniqueDatasetFields || []
-      const { columnMappingRows } = await prepareColumnMappingContext(requestData, uniqueDatasetFields)
+      const { columnMappingRows, detectedGeometryMapping } = await prepareColumnMappingContext(requestData, uniqueDatasetFields)
       const spareUploadedColumns = buildSelectableColumns(columnMappingRows)
       const columnMapping = buildSubmittedColumnMapping({
-        existingMapping: params.column_mapping,
+        existingMapping: {
+          ...(params.column_mapping ?? {}),
+          ...detectedGeometryMapping
+        },
         body: req.body,
         spareUploadedColumns
       })
@@ -126,7 +129,8 @@ async function buildColumnMappingOptions ({ requestData, requestId, body = {}, v
   const {
     columnMappingRows,
     specFields,
-    requiredFields
+    requiredFields,
+    responseRows
   } = await prepareColumnMappingContext(requestData, uniqueDatasetFields)
   const mappingRows = buildExpectedFieldRows({
     columnMappingRows,
@@ -136,12 +140,11 @@ async function buildColumnMappingOptions ({ requestData, requestId, body = {}, v
 
   applySubmittedFieldSelections(mappingRows, body)
 
-  const responseDetails = await requestData.fetchResponseDetails(0, 50)
   return {
     id: requestId,
     requestParams: requestData.getParams(),
     mappingRows,
-    uploadedColumns: buildSelectableColumns(columnMappingRows, responseDetails.getRows()),
+    uploadedColumns: buildSelectableColumns(columnMappingRows, responseRows),
     columnMappingErrors: validationErrors,
     lastPage: `/check/status/${requestId}`
   }
@@ -159,6 +162,11 @@ async function prepareColumnMappingContext (requestData, uniqueDatasetFields = [
   if (uniqueDatasetFields.length > 0) {
     columnFieldLog = columnFieldLog.filter(entry => uniqueDatasetFields.includes(entry?.field))
   }
+  const responseDetails = await requestData.fetchResponseDetails(0, 50)
+  const responseRows = responseDetails.getRows()
+  const detectedGeometryMapping = detectGeometryColumnMapping(columnFieldLog, responseRows)
+  columnFieldLog = applyDetectedGeometryColumnMapping(columnFieldLog, responseRows)
+
   const params = requestData.getParams() ?? {}
   const userColumnMapping = params.column_mapping ?? {}
   const columnMappingRows = buildColumnMappingRows({
@@ -171,7 +179,9 @@ async function prepareColumnMappingContext (requestData, uniqueDatasetFields = [
   return {
     columnMappingRows,
     specFields,
-    requiredFields
+    requiredFields,
+    responseRows,
+    detectedGeometryMapping
   }
 }
 
@@ -328,15 +338,16 @@ export function buildColumnMappingRows ({ columnFieldLog = [], userColumnMapping
     }
 
     const userMappedField = userColumnMapping[column]
+    const isDetectedGeometryMapping = entry?.detectedGeometryMapping === true
     const field = entry.field
     const isMapped = Boolean(field) && Boolean(column)
     rows.push({
       column,
       field,
       isMapped,
-      isAutoMapped: isMapped && !userMappedField,
+      isAutoMapped: isMapped && !userMappedField && !isDetectedGeometryMapping,
       isMissing: entry.missing,
-      userDefined: Boolean(userMappedField)
+      userDefined: Boolean(userMappedField || isDetectedGeometryMapping)
     })
   })
 
@@ -349,6 +360,68 @@ export function buildColumnMappingRows ({ columnFieldLog = [], userColumnMapping
   }
 
   return rows
+}
+
+export function applyDetectedGeometryColumnMapping (columnFieldLog = [], responseRows = []) {
+  const detectedMapping = detectGeometryColumnMapping(columnFieldLog, responseRows)
+  if (Object.keys(detectedMapping).length === 0) return columnFieldLog
+
+  const [[detectedColumn, detectedField]] = Object.entries(detectedMapping)
+  return columnFieldLog.map(entry => {
+    if (entry?.field !== detectedField) return entry
+
+    return {
+      ...entry,
+      column: detectedColumn,
+      detectedGeometryMapping: true,
+      missing: false
+    }
+  })
+}
+
+export function detectGeometryColumnMapping (columnFieldLog = [], responseRows = []) {
+  const geometryFields = ['geometry', 'point']
+  const expectedGeometryFields = new Set(
+    columnFieldLog
+      .map(entry => entry?.field)
+      .filter(field => geometryFields.includes(field))
+  )
+
+  if (expectedGeometryFields.size === 0) return {}
+
+  const alreadyMapped = columnFieldLog.some(entry =>
+    geometryFields.includes(entry?.field) && Boolean(entry?.column)
+  )
+  if (alreadyMapped) return {}
+
+  const detectedMapping = detectGeometryColumnFromFirstRow(responseRows, expectedGeometryFields)
+  if (!detectedMapping) return {}
+
+  return {
+    [detectedMapping.column]: detectedMapping.field
+  }
+}
+
+export function detectGeometryColumnFromFirstRow (responseRows = [], expectedFields = new Set(['geometry', 'point'])) {
+  const firstRow = responseRows[0]?.converted_row ?? {}
+
+  for (const [column, value] of Object.entries(firstRow)) {
+    const field = getGeometryFieldForValue(value)
+    if (field && expectedFields.has(field)) {
+      return { column, field }
+    }
+  }
+
+  return null
+}
+
+function getGeometryFieldForValue (value) {
+  if (typeof value !== 'string') return null
+
+  const normalisedValue = value.trimStart().toUpperCase()
+  if (normalisedValue.startsWith('POINT')) return 'point'
+  if (normalisedValue.startsWith('POLYGON') || normalisedValue.startsWith('MULTIPOLYGON')) return 'geometry'
+  return null
 }
 
 // selectable columns are converted rows that have not been auto-mapped by the system
@@ -389,8 +462,8 @@ export function buildExpectedFieldRows ({ columnMappingRows = [], specFields = [
   // - If both are mapped or both are unmapped, leave both rows as-is.
   const geometryRow = rows.find(r => r.field === 'geometry')
   const pointRow = rows.find(r => r.field === 'point')
-  const geometryMapped = Boolean(geometryRow && geometryRow.isAutoMapped)
-  const pointMapped = Boolean(pointRow && pointRow.isAutoMapped)
+  const geometryMapped = Boolean(geometryRow && geometryRow.isMapped && !geometryRow.userIgnored)
+  const pointMapped = Boolean(pointRow && pointRow.isMapped && !pointRow.userIgnored)
   if (geometryMapped && !pointMapped) {
     rows = rows.filter(r => r.field !== 'point')
   } else if (pointMapped && !geometryMapped) {

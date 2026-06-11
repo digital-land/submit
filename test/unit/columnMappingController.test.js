@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
   applySubmittedFieldSelections,
+  applyDetectedGeometryColumnMapping,
   buildExpectedFieldRows,
   buildColumnMappingRows,
   buildSpecFields,
   buildSubmittedColumnMapping,
   buildSelectableColumns,
+  detectGeometryColumnMapping,
   getBracketFields,
   validateColumnMapping
 } from '../../src/controllers/columnMappingController.js'
@@ -200,6 +202,115 @@ describe('columnMappingController helpers', () => {
         userDefined: false,
         userIgnored: false,
         isRequired: false
+      }
+    ])
+  })
+
+  it('detects point geometry from the first data row', () => {
+    const columnFieldLog = [
+      { field: 'point', column: null, missing: true, mandatory: true },
+      { field: 'geometry', column: null, missing: true, mandatory: true }
+    ]
+    const rows = [
+      { converted_row: { Reference: 'abc', WKT: 'POINT (-0.1 51.5)' } }
+    ]
+
+    expect(detectGeometryColumnMapping(columnFieldLog, rows)).toEqual({
+      WKT: 'point'
+    })
+    expect(applyDetectedGeometryColumnMapping(columnFieldLog, rows)).toEqual([
+      { field: 'point', column: 'WKT', detectedGeometryMapping: true, missing: false, mandatory: true },
+      { field: 'geometry', column: null, missing: true, mandatory: true }
+    ])
+  })
+
+  it('detects polygon geometry from the first data row', () => {
+    const columnFieldLog = [
+      { field: 'geometry', column: null, missing: true, mandatory: true }
+    ]
+    const rows = [
+      { converted_row: { Reference: 'abc', Shape: '  MULTIPOLYGON (((-0.1 51.5,-0.2 51.6)))' } }
+    ]
+
+    expect(detectGeometryColumnMapping(columnFieldLog, rows)).toEqual({
+      Shape: 'geometry'
+    })
+    expect(applyDetectedGeometryColumnMapping(columnFieldLog, rows)).toEqual([
+      { field: 'geometry', column: 'Shape', detectedGeometryMapping: true, missing: false, mandatory: true }
+    ])
+    expect(detectGeometryColumnMapping(columnFieldLog, [
+      { converted_row: { Boundary: 'POLYGON ((-0.1 51.5,-0.2 51.6))' } }
+    ])).toEqual({
+      Boundary: 'geometry'
+    })
+  })
+
+  it('does not detect geometry when point or geometry are not expected fields', () => {
+    expect(detectGeometryColumnMapping([
+      { field: 'reference', column: null, missing: true, mandatory: true }
+    ], [
+      { converted_row: { WKT: 'POINT (-0.1 51.5)' } }
+    ])).toEqual({})
+  })
+
+  it('does not override an existing point or geometry mapping', () => {
+    expect(detectGeometryColumnMapping([
+      { field: 'geometry', column: 'Geometry', missing: false, mandatory: true },
+      { field: 'point', column: null, missing: true, mandatory: true }
+    ], [
+      { converted_row: { WKT: 'POINT (-0.1 51.5)' } }
+    ])).toEqual({})
+  })
+
+  it('hides the other geometry field when one is mapped by column mapping', () => {
+    expect(buildExpectedFieldRows({
+      columnMappingRows: [
+        {
+          column: 'WKT',
+          field: 'geometry',
+          isMapped: true,
+          isAutoMapped: false,
+          userDefined: true,
+          userIgnored: false
+        },
+        {
+          column: '',
+          field: 'point',
+          isMapped: false,
+          userDefined: false,
+          userIgnored: false
+        }
+      ],
+      specFields: ['geometry', 'point'],
+      requiredFields: ['geometry', 'point']
+    }).map(row => row.field)).toEqual(['geometry'])
+  })
+
+  it('preselects detected geometry mappings as editable field rows', () => {
+    const columnMappingRows = buildColumnMappingRows({
+      columnFieldLog: applyDetectedGeometryColumnMapping([
+        { field: 'geometry', column: null, missing: true, mandatory: true },
+        { field: 'point', column: null, missing: true, mandatory: true }
+      ], [
+        { converted_row: { WKT: 'POLYGON ((-0.1 51.5,-0.2 51.6))' } }
+      ]),
+      userColumnMapping: {}
+    })
+
+    expect(buildExpectedFieldRows({
+      columnMappingRows,
+      specFields: ['geometry', 'point'],
+      requiredFields: ['geometry', 'point']
+    })).toEqual([
+      {
+        field: 'geometry',
+        column: 'WKT',
+        isMapped: true,
+        isAutoMapped: false,
+        isEditable: true,
+        userDefined: true,
+        userIgnored: false,
+        isRequired: true
       }
     ])
   })
