@@ -96,15 +96,13 @@ class ColumnMappingController extends PageController {
 
       const params = requestData.getParams() ?? {}
       const uniqueDatasetFields = req.uniqueDatasetFields || []
-      const { columnMappingRows, detectedGeometryMapping } = await prepareColumnMappingContext(requestData, uniqueDatasetFields)
-      const spareUploadedColumns = buildSelectableColumns(columnMappingRows)
+      const { detectedGeometryMapping } = await prepareColumnMappingContext(requestData, uniqueDatasetFields)
       const columnMapping = buildSubmittedColumnMapping({
         existingMapping: {
           ...(params.column_mapping ?? {}),
           ...detectedGeometryMapping
         },
-        body: req.body,
-        spareUploadedColumns
+        body: req.body
       })
 
       const newRequestId = await postCheckRequest({
