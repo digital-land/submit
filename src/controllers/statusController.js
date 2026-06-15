@@ -2,13 +2,11 @@ import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { finishedProcessingStatuses } from '../utils/utils.js'
 import { headingTexts, messageTexts, buttonTexts, buttonAriaLabels } from '../content/statusPage.js'
-import { isStatutoryDataset } from '../utils/redisLoader.js'
 import platformApi from '../services/platformApi.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { processSpecificationMiddlewares } from '../middleware/common.middleware.js'
-import datasette from '../services/datasette.js'
-import { addQualityCriteriaLevels } from './resultsController.js'
+import { shouldShowColumnMapping } from '../services/columnMappingDecider.js'
 
 /**
  * Attempts to infer how we ended up on this page.
@@ -76,6 +74,9 @@ class StatusController extends PageController {
     try {
       req.form.options.data = await getRequestData(req.params.id)
       req.form.options.processingComplete = finishedProcessingStatuses.includes(req.form.options.data.status)
+      req.form.options.showColumnMapping = req.form.options.processingComplete
+        ? await shouldShowColumnMapping(req.form.options.data, req.uniqueDatasetFields || [])
+        : false
       req.form.options.headingTexts = headingTexts
       req.form.options.messageTexts = messageTexts
       req.form.options.buttonTexts = buttonTexts
@@ -96,121 +97,6 @@ class StatusController extends PageController {
   }
 }
 
-export async function shouldShowColumnMapping (requestData, uniqueDatasetFields = []) {
-  if (!requestData?.isComplete?.() || requestData?.isFailed?.()) {
-    return false
-  }
-
-  const params = requestData.getParams?.() ?? {}
-
-  try {
-    if (await isStatutoryDataset({
-      organisation: params.organisationName,
-      dataset: params.dataset
-    })) {
-      return false
-    }
-    if (await hasBlockingNonColumnMappingTasks(requestData)) return false
-
-    let columnMapping = requestData.getColumnFieldLog?.() ?? []
-
-    if (uniqueDatasetFields.length > 0) {
-      columnMapping = columnMapping.filter(entry => uniqueDatasetFields.includes(entry?.field))
-    }
-    let allFieldsInDataset = columnMapping.map(column => column?.field).filter(Boolean)
-    // filter out point or geometry field depending on which is present.
-    // If geometry is mapped, do not show point. If point is mapped, do not show geometry.
-    // If both are mapped, no action needed. If neither are mapped, show both options
-    const geometryItem = columnMapping.find(column => column?.field?.toLowerCase() === 'geometry') ?? null
-    const pointFieldItem = columnMapping.find(column => column?.field?.toLowerCase() === 'point') ?? null
-    const geometryMapped = Boolean(geometryItem?.column)
-    const pointMapped = Boolean(pointFieldItem?.column)
-    if (geometryMapped && !pointMapped) {
-      allFieldsInDataset = allFieldsInDataset.filter(field => field.toLowerCase() !== 'point')
-    } else if (pointMapped && !geometryMapped) {
-      allFieldsInDataset = allFieldsInDataset.filter(field => field.toLowerCase() !== 'geometry')
-    }
-    if (allFieldsInDataset.length === 0) return false
-
-    // the column mapping the user has done
-    const userColumnMapping = params.column_mapping ?? {}
-    const hasUserColumnMapping = Object.values(userColumnMapping).some(value => Boolean(value))
-    if (hasUserColumnMapping) return false
-
-    const responseDetails = await requestData.fetchResponseDetails(0, 50)
-    const rows = responseDetails.getRows?.() ?? []
-    // all the columns the user has mapped.
-    const fieldsMappedByUser = buildMappedFields(columnMapping, userColumnMapping)
-
-    // all the fields in the dataset that has not been mapped
-    const unmappedDatasetFields = new Set(allFieldsInDataset.filter(field => !fieldsMappedByUser.has(field)))
-
-    const hasUnmappedExpectedFields = unmappedDatasetFields.size > 0
-    // there are no dataset fields that are unmapped, so no need to show column mapping page
-    if (!hasUnmappedExpectedFields) return false
-
-    // the uploaded columns that have not been mapped either automatically or by the user (they are available for mapping)
-    const spareUploadedColumns = buildSpareUploadedColumns(columnMapping, rows, userColumnMapping)
-
-    // if there are no uploaded columns that can be mapped, then there is no point showing the column mapping page
-    if (spareUploadedColumns.length === 0) return false
-
-    // if there are missing mandatory fields that are not mapped by the user, then we should show the column mapping page
-    const hasMissingMandatoryFields = columnMapping.some(column => column?.mandatory && !column?.column && !fieldsMappedByUser.has(column.field))
-    // Note: at this point we've already ensured there are spare uploaded columns (earlier check),
-    // so a missing mandatory field with spare columns means we should show the mapping page.
-    if (hasMissingMandatoryFields) return true
-
-    // Show column mapping if there are unmapped expected fields (and spareUploadedColumns > 0 ensured earlier)
-    return hasUnmappedExpectedFields
-  } catch {
-    return false
-  }
-}
-
-export async function hasBlockingNonColumnMappingTasks (requestData) {
-  const issueTasks = requestData.getIssueTasks?.() ?? []
-  if (issueTasks.length === 0) return false
-
-  const { formattedData: issueTypes } = await datasette.runQuery(`
-    select issue_type, quality_criteria_level
-    from issue_type
-  `)
-
-  return addQualityCriteriaLevels(issueTasks, issueTypes).some(issue =>
-    issue.responsibility !== 'internal' &&
-    issue.quality_criteria_level === 2 &&
-    !['missing column', 'missing-field'].includes(issue['issue-type'])
-  )
-}
-
-function buildMappedFields (columnMapping = [], userColumnMapping = {}) {
-  const fields = new Set()
-
-  columnMapping.forEach(column => {
-    if (column?.field && column?.column && !column?.missing) fields.add(column.field)
-  })
-
-  Object.values(userColumnMapping).forEach(field => {
-    if (field && field !== 'IGNORE') fields.add(field)
-  })
-
-  return fields
-}
-
-// uploaded columns that have not been mapped either automatically or by the user (they are available for mapping)
-function buildSpareUploadedColumns (columnMapping = [], rows = [], userColumnMapping = {}) {
-  const mappedColumns = new Set(columnMapping.map(column => column?.column).filter(Boolean))
-  Object.entries(userColumnMapping).forEach(([column, field]) => {
-    if (field) mappedColumns.add(column)
-  })
-
-  const uploadedColumns = new Set()
-  rows.forEach(row => {
-    Object.keys(row?.converted_row ?? {}).forEach(column => uploadedColumns.add(column))
-  })
-
-  return [...uploadedColumns].filter(column => !mappedColumns.has(column))
-}
+export { shouldShowColumnMapping }
 
 export default StatusController

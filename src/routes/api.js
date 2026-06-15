@@ -1,5 +1,6 @@
 import express from 'express'
 import { getRequestData } from '../services/asyncRequestApi.js'
+import { shouldShowColumnMapping } from '../services/columnMappingDecider.js'
 import { getBoundaryForLpa } from '../services/boundaryService.js'
 import { getOsMapAccessToken } from '../services/osMapService.js'
 
@@ -16,11 +17,24 @@ const router = express.Router()
  */
 router.get('/status/:result_id', async (req, res) => {
   res.set('Cache-Control', 'no-store')
-  const response = getRequestData(req.params.result_id)
-    .then(data => res.json(data))
-    .catch(error => res.status(500).json({ error }))
-
-  return response
+  try {
+    const resultData = await getRequestData(req.params.result_id)
+    // serialize the result data (plain properties)
+    const payload = { ...resultData }
+    // compute whether we should show column mapping when the request finished
+    if (typeof resultData.isComplete === 'function' && resultData.isComplete() && !resultData.isFailed?.()) {
+      try {
+        const show = await shouldShowColumnMapping(resultData, [])
+        payload.showColumnMapping = show
+        if (show) payload.columnMappingUrl = `/check/column-mapping/${resultData.id}`
+      } catch (e) {
+        // swallow and continue without the flag
+      }
+    }
+    return res.json(payload)
+  } catch (error) {
+    return res.status(500).json({ error })
+  }
 })
 
 /**
