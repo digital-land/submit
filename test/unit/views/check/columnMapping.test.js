@@ -11,7 +11,7 @@ describe('check/column-mapping.html', () => {
         lastPage: '/check/status/123',
         requestParams: {
           organisationName: 'local-authority:ABC',
-          dataset: 'conservation-area'
+          dataset: 'article-4-direction'
         },
         mappingRows: [
           {
@@ -53,6 +53,13 @@ describe('check/column-mapping.html', () => {
     expect(notesRow.className).toContain('govuk-form-group--error')
     expect(notesRow.textContent).toContain('notes')
     expect(document.querySelector('.govuk-form-group').className).not.toContain('govuk-form-group--error')
+    const guidanceLink = [...document.querySelectorAll('a')].find(link =>
+      link.textContent.includes('Find out what we expect in each field')
+    )
+    expect(guidanceLink).not.toBeUndefined()
+    expect(guidanceLink.getAttribute('href')).toBe('/guidance/specifications/article-4-direction')
+    expect(guidanceLink.target).toBe('_blank')
+    expect(guidanceLink.rel).toBe('noopener noreferrer')
     expect(document.querySelector('button[form="columnMappingForm"]').textContent).toContain('Check your data')
   })
 

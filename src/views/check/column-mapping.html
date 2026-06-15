@@ -43,15 +43,20 @@
 
     <h1 class="govuk-heading-l">{{ pageName }}</h1>
     <p class="govuk-body">We could not map all of the fields in your data to what is in the data standard.</p>
-    <p class="govuk-body">You need to select a field for all expected fields.</p>
+    <p class="govuk-body">For all expected fields, you need to select a field found in your data or 'not provided'.</p>
 
     <div class="govuk-!-margin-bottom-6 column-mapping-panel">
 
     {{ columnMapping(options.mappingRows, options.uploadedColumns, options.columnMappingErrors,false) }}
     </div>
+    <br>
+    {% set datasetGuidanceUrl = options.requestParams.dataset | getDatasetGuidanceUrl %}
+    {% if datasetGuidanceUrl %}
+      <a class="govuk-link" href="{{ datasetGuidanceUrl }}" target="_blank" rel="noopener noreferrer">Find out what we expect in each field (opens in new tab)</a>
+    {% endif %}
 
     <!-- Buttons -->
-    <div class="govuk-button-group govuk-!-margin-top-6 right-side-buttons">
+    <div class="govuk-button-group govuk-!-margin-top-4 right-side-buttons">
        <button type="submit" form="columnMappingForm" class="govuk-button">Check your data</button>
     </div>
   </div>
