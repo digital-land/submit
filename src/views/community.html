@@ -1,0 +1,22 @@
+{% extends "layouts/main.html" %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
+{% set pageName = 'Community' %}
+
+{% block main %}
+<div class="govuk-width-container govuk-!-padding-top-6 govuk-!-padding-bottom-6">
+  <h1 class="govuk-heading-xl">Community</h1>
+  <p class="govuk-body">Everyone can join our community to help improve, identify and design data for planning.data.gov.uk.</p>
+
+  <h2 class="govuk-heading-l">Planning data platform</h2>
+  <p class="govuk-body">You can learn more about:</p>
+  <ul class="govuk-list govuk-list--bullet">
+    <li>what we are working on next</li>
+    <li>how you can help design data</li>
+    <li>how to get involved in user research, community events and discussions</li>
+  </ul>
+  <p class="govuk-body"><a href="https://design.planning.data.gov.uk/get-involved-in-designing-data" class="govuk-link">Find out more about helping to design data for planning.data.gov.uk</a></p>
+
+  <h2 class="govuk-heading-l">Open digital planning</h2>
+  <p class="govuk-body"><a href="https://opendigitalplanning.org/community" class="govuk-link">Learn more about the open digital planning community</a></p>
+</div>
+{% endblock %}

@@ -36,7 +36,7 @@ class EndpointSubmissionFormDeepLinkController extends PageController {
   async get (req, res, next) {
     // if the query params don't contain what we need, redirect to the "get started" page,
     // this way the user can still proceed (but need to fill the dataset+orgName themselves)
-    const { dataset, orgName, orgId } = req.query
+    const { dataset, orgName, orgId, requestId } = req.query
     const datasets = await getDatasets()
 
     if (!dataset || !orgName || !datasets.has(dataset)) {
@@ -49,6 +49,9 @@ class EndpointSubmissionFormDeepLinkController extends PageController {
     req.sessionModel.set('dataset', dataset)
     req.sessionModel.set('lpa', orgName)
     req.sessionModel.set('orgId', orgId)
+    if (requestId) {
+      req.sessionModel.set('requestId', requestId)
+    }
     const sessionData = { lpa: orgName, dataset, orgId, datasetName: datasetInfo.text }
     maybeSetReferrer(req, sessionData)
     req.sessionModel.set(this.sessionKey, sessionData)

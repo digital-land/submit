@@ -2,6 +2,7 @@ import axios from 'axios'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import config from '../../config/index.js'
+import * as Sentry from '@sentry/node'
 
 /**
  * Service for querying the Platform API (mainWebsiteUrl)
@@ -143,6 +144,7 @@ async function queryPlatformAPI (url, params = {}) {
 
     return response.data
   } catch (error) {
+    Sentry.metrics.count('platform_api_errors', 1, { attributes: { url } })
     logger.warn({
       message: `queryPlatformAPI(): ${error.message}`,
       type: types.External,

@@ -15,6 +15,7 @@ import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
 import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
 import config from '../../config/index.js'
+import { getOrganisationList } from '../utils/redisLoader.js'
 import { readFileSync } from 'node:fs'
 
 const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
@@ -394,9 +395,9 @@ export const fetchDatasetFields = fetchMany({
  * so that pullOutDatasetSpecification can extract the correct dataset-specific fields.
  */
 export const checkSpecificationFallback = (req, res, next) => {
-  const { specification } = req
+  const { dataset } = req
 
-  if (specification && specification.specification === 'local-plan') {
+  if (dataset && dataset.collection === 'local-plan') {
     const fallbackDataset = planFallback.datasets.find(d => d.dataset === req.dataset.dataset)
     if (fallbackDataset) {
       req.specification = { json: PLAN_FALLBACK_DATASETS_JSON }
@@ -891,7 +892,8 @@ export const fetchEntryIssueCounts = fetchMany({
  * @function
  * @returns {array} An array of middleware functions that construct the necessary data for all the relevant issues.
  */
-export const processRelevantIssuesMiddlewares = [
+export const processRelevantIssuesMiddlewares =
+[
   fetchEntityIssuesForFieldAndType,
   // arguably removeIssuesThatHaveBeenFixed should be s step however we have only currently found one organisation,
   // however this step is very time consuming, so in order to progress im commenting it out for now
@@ -1036,6 +1038,21 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
     dataset: v.string()
   })
 })
+
+export const validateOrg = async (req, res, next) => {
+  try {
+    const orgList = await getOrganisationList()
+    if (orgList) {
+      const orgExists = orgList.some(org => org?.organisation === req.params.lpa)
+      if (!orgExists) {
+        return next(new MiddlewareError('Not found', 404))
+      }
+    }
+  } catch (error) {
+    logger.warn(`validateOrg/redis error: ${error instanceof Error ? error.message : String(error)}`)
+  }
+  next()
+}
 
 // Fetches all currently active data source endpoints for a given organization and dataset, deduplicating by endpoint URL and keeping only the most recently logged entry for each unique endpoint, ordered by when they were last accessed.
 export const fetchSources = fetchMany({

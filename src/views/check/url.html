@@ -8,7 +8,7 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% set serviceType = 'Check' %}
-{% set pageName = 'URL' %}
+{% set pageName = 'Endpoint URL' %}
 
 {% set errorMessage = 'There\'s something wrong with your URL' %}
 
@@ -51,6 +51,21 @@
       {% endif %}
       <form novalidate method="post">
         {{ datasetBanner(options.lpa, options.datasetName) }}
+
+        {% set endpointUrlHint %}
+          <p class="govuk-body">Your endpoint URL is the URL where anyone can download your data.</p>
+          <p class="govuk-body">Endpoints are usually either a:</p>
+          <ul class="govuk-list govuk-list--bullet">
+            <li>file hosted on your web server — like URLs that end in .json or .csv</li>
+            <li>live data feed from an API — hosted by your Geographic Information System (GIS) software or open data platform</li>
+          </ul>
+          <p class="govuk-body-s">If you are not sure about how to find your endpoint details, contact your GIS specialist, or <a href="mailto:DigitalLand@communities.gov.uk" class="govuk-link">DigitalLand@communities.gov.uk</a>.</p>
+          {% if 'url' in errors and errors['url'].type == 'restricted403' %}
+            <p class="govuk-body">You must host the URL on a server which does not block access due to set permissions.</p>
+            <p class="govuk-body">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
+          {% endif %}
+        {% endset %}
+
         {{ govukInput({
           id: "url",
           name: "url",
@@ -60,11 +75,11 @@
             classes: 'govuk-label--l'
           },
           hint: {
-            html: '<p class="govuk-body">You must host the URL on a server which does not block access due to set permissions.</p><p class="govuk-body">Contact your IT team for support if you need it, referencing a \'HTTP status code 403\' error.</p>'
-          } if ('url' in errors and errors['url'].type == 'restricted403') else undefined,
+            html: endpointUrlHint
+          },
           value: data.check.url,
           errorMessage: {
-            text: errorMessage 
+            text: errorMessage
           } if error else undefined
         }) }}
         {{ govukButton({

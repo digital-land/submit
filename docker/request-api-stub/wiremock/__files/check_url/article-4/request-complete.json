@@ -1,0 +1,23 @@
+{
+    "id": "check-url-complete",
+    "type": "check_url",
+    "status": "COMPLETE",
+    "created": "2024-03-27T18:42:17.602511Z",
+    "modified": "2024-03-27T18:42:18.703341Z",
+    "params": {
+        "type": "check_url",
+        "dataset": "article-4-direction-area",
+        "collection": "article-4-direction",
+        "geom_type": null,
+        "column_mapping": null,
+        "url": "https://example.gov.uk/article-4-direction-area.csv",
+        "organisationName": "local-authority-eng:TST"
+    },
+    "response": {
+        "data": {
+            "task-log": [],
+            "column-mapping": []
+        },
+        "error": null
+    }
+}

@@ -29,6 +29,7 @@
           ]
         },
         { "field": "dataset" },
+        { "field": "description" },
         { "field": "period-start-date" },
         { "field": "period-end-date" },
         { "field": "local-planning-authorities" },
@@ -61,6 +62,7 @@
           ]
         },
         { "field": "dataset" },
+        { "field": "description" },
         { "field": "period-start-date" },
         { "field": "period-end-date" },
         { "field": "local-planning-authorities" },
@@ -92,9 +94,10 @@
           ]
         },
         { "field": "dataset" },
+        { "field": "description" },
         { "field": "period-start-date" },
         { "field": "period-end-date" },
-        { "field": "mineral-planning-authorities" },
+        { "field": "minerals-and-waste-planning-authorities" },
         { "field": "documentation-url" },
         {
           "field": "document-url",
@@ -124,9 +127,10 @@
           ]
         },
         { "field": "dataset" },
+        { "field": "description" },
         { "field": "period-start-date" },
         { "field": "period-end-date" },
-        { "field": "waste-planning-authorities" },
+        { "field": "minerals-and-waste-planning-authorities" },
         { "field": "documentation-url" },
         {
           "field": "document-url",

@@ -1,0 +1,33 @@
+.app-c-download-button {
+  .govuk-button {
+    display: inline-flex;
+    align-items: center;
+    gap: govuk-spacing(1);
+  }
+}
+
+.app-c-download-button__button--disabled {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.app-c-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: app-c-spinner-rotate 1s linear infinite;
+}
+
+@keyframes app-c-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-c-spinner {
+    animation: none;
+  }
+}

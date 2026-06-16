@@ -18,6 +18,7 @@ const getConfig = () => {
 
   const configJson = config.toJSON()
   configJson.environment = environment
+  configJson.secureCookies = ['production', 'staging'].includes(environment)
 
   const port = process.env.PORT || configJson.port
   configJson.port = port

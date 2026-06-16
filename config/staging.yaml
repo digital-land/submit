@@ -2,6 +2,7 @@ organisationTypes:
   - local-authority
   - national-park-authority
   - development-corporation
+  - local-planning-group
 asyncRequestApi: {
     url: http://staging-pub-async-api-lb-12493311.eu-west-2.elb.amazonaws.com
 }

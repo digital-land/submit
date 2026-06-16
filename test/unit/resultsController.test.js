@@ -8,7 +8,9 @@ import ResultsController, {
   setupTableParams,
   setupTemplate,
   getFileNameOrUrlAndCheckedTime,
-  getPassedChecks
+  getPassedChecks,
+  extractIssuesFromTaskLog,
+  aggregateIssues
 } from '../../src/controllers/resultsController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
 import PageController from '../../src/controllers/pageController.js'
@@ -130,11 +132,11 @@ describe('Middleware Tests', () => {
         getRowsWithVerboseColumns: vi.fn(() => [{ columns: {}, data: 'rowData' }]),
         getColumns: vi.fn(() => ['column1', 'column2']),
         getFields: vi.fn(() => ['field1', 'field2']),
-        getGeometries: vi.fn(() => 'mockGeometries'),
+        getGeometries: vi.fn().mockResolvedValue('mockGeometries'),
         getPagination: vi.fn(() => 'mockPagination')
       }
 
-      setupTableParams(req, res, mockNext)
+      await setupTableParams(req, res, mockNext)
 
       expect(req.locals.tableParams).toEqual({
         columns: ['field1', 'field2'],
@@ -147,7 +149,7 @@ describe('Middleware Tests', () => {
       expect(req.locals.pagination).toEqual('mockPagination')
       expect(mockNext).toHaveBeenCalled()
     })
-    it('hide map when typology is not geography', () => {
+    it('hide map when typology is not geography', async () => {
       const req = mockRequest()
       const res = mockResponse()
 
@@ -162,7 +164,7 @@ describe('Middleware Tests', () => {
         getFields: vi.fn(() => ['field1', 'field2']),
         getPagination: vi.fn(() => 'mockPagination')
       }
-      setupTableParams(req, res, mockNext)
+      await setupTableParams(req, res, mockNext)
       expect(req.locals.geometries).toBeNull()
     })
   })
@@ -374,5 +376,74 @@ describe('fetchDatasetTypology()', () => {
     const datasets = responseJSON.datasets || []
     const missingTypology = datasets.filter(d => d.typology == null)
     expect(missingTypology).toEqual([])
+  })
+})
+
+describe('extractIssuesFromTaskLog()', () => {
+  it('sets req.issues from requestData.getIssueTasks()', () => {
+    const mockIssues = [
+      { 'issue-type': 'missing value', field: 'reference', count: 4, severity: 'error', responsibility: 'external', summary: '4 reference values are missing' }
+    ]
+    const req = {
+      locals: {
+        requestData: { getIssueTasks: vi.fn(() => mockIssues) }
+      }
+    }
+    const next = vi.fn()
+
+    extractIssuesFromTaskLog(req, {}, next)
+
+    expect(req.locals.requestData.getIssueTasks).toHaveBeenCalled()
+    expect(req.issues).toBe(mockIssues)
+    expect(next).toHaveBeenCalled()
+  })
+})
+
+describe('aggregateIssues()', () => {
+  const makeIssue = (overrides = {}) => ({
+    'issue-type': 'missing value',
+    field: 'reference',
+    quality_criteria_level: 2,
+    count: 4,
+    summary: '4 reference values are missing',
+    ...overrides
+  })
+
+  it('aggregates issues into tasks using pre-aggregated count', () => {
+    const req = { issues: [makeIssue()] }
+    aggregateIssues(req, {}, vi.fn())
+    expect(req.tasks).toHaveLength(1)
+    expect(req.tasks[0].count).toBe(4)
+    expect(req.tasks[0].summary).toBe('4 reference values are missing')
+  })
+
+  it('defaults count to 1 when issue.count is absent (per-row issue_log path)', () => {
+    const req = { issues: [makeIssue({ count: undefined })] }
+    aggregateIssues(req, {}, vi.fn())
+    expect(req.tasks[0].count).toBe(1)
+  })
+
+  it('increments count across duplicate issueType|field entries (per-row path)', () => {
+    const req = {
+      issues: [
+        makeIssue({ count: undefined }),
+        makeIssue({ count: undefined })
+      ]
+    }
+    aggregateIssues(req, {}, vi.fn())
+    expect(req.tasks).toHaveLength(1)
+    expect(req.tasks[0].count).toBe(2)
+  })
+
+  it('excludes issues without a recognised quality_criteria_level', () => {
+    const req = { issues: [makeIssue({ quality_criteria_level: null })] }
+    aggregateIssues(req, {}, vi.fn())
+    expect(req.tasks).toHaveLength(0)
+  })
+
+  it('calls next()', () => {
+    const next = vi.fn()
+    aggregateIssues({ issues: [] }, {}, next)
+    expect(next).toHaveBeenCalled()
   })
 })

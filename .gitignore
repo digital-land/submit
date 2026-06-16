@@ -149,5 +149,8 @@ uploads/*
 # Ignore npm audit report file(static-audit)
 npm-audit-report.json
 .cursor/rules/*
+.claude/
 
 github-pages
+
+.history

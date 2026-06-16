@@ -55,7 +55,8 @@ const validationMessages = {
   'documentation-url': {
     required: 'Enter a documentation URL',
     format: 'Webpage URL must be on a gov.uk or org.uk domain and must link to a webpage, not a file (for example, .csv or .json)',
-    maxlength: 'The URL must be less than 2048 characters'
+    maxlength: 'The URL must be less than 2048 characters',
+    sameAsEndpoint: 'Source webpage URL must be the URL of the page that links to your endpoint URL. It must not be the same as your endpoint URL'
   },
   geomType: {
     required: 'Select whether your geometry data is given as points or polygons'

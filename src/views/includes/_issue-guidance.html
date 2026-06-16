@@ -17,7 +17,7 @@
         How to fix this issue
       </h2>
 
-      <p class="govuk-body">Your dataset is missing the <strong>{{ issueSpecification.field }}</strong> column.</p>
+      <p class="govuk-body">Your data is missing {{ issueSpecification.field | aOrAn }} <strong>{{ issueSpecification.field }}</strong>.</p>
       <p class="govuk-body">The <a href="{{ dataset.dataset | getDatasetGuidanceUrl }}" target="_blank" rel="noopener noreferrer">{{ dataset.name }}</a> guidance explains how to fix the issue:</p>
       {{ govukInsetText({
         html: issueSpecificationInsetHtml

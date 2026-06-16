@@ -2,6 +2,7 @@ import axios from 'axios'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import config from '../../config/index.js'
+import * as Sentry from '@sentry/node'
 
 export default {
   /**
@@ -25,7 +26,8 @@ export default {
         formattedData: formatData(response.data.columns, response.data.rows)
       }
     } catch (error) {
-      logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl: config.datasetteUrl, database })
+      Sentry.metrics.count('datasette_query_errors', 1, { attributes: { url } })
+      logger.warn({ message: `runQuery(): ${error.message}`, type: types.App, query, datasetteUrl: config.datasetteUrl, database, queryUrl: url })
       throw error
     }
   }

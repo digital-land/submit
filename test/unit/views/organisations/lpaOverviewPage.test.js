@@ -32,7 +32,7 @@ const datasetGroup = ({ expect }, key, datasets, document) => {
   const datasetSlugToReadableName = makeDatasetSlugToReadableNameFilter(datasetNameMapping)
 
   datasets.forEach((dataset, i) => {
-    expect(datasetCards[i].querySelector('.govuk-heading-m').textContent).toContain(datasetSlugToReadableName(dataset.dataset))
+    expect(datasetCards[i].querySelector('.govuk-heading-m').textContent.toLowerCase()).toContain(datasetSlugToReadableName(dataset.dataset).toLowerCase())
   })
 }
 

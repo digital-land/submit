@@ -15,6 +15,7 @@ const router = express.Router()
  * If an error occurs, returns a JSON object with an error message and sets the HTTP status code to 500.
  */
 router.get('/status/:result_id', async (req, res) => {
+  res.set('Cache-Control', 'no-store')
   const response = getRequestData(req.params.result_id)
     .then(data => res.json(data))
     .catch(error => res.status(500).json({ error }))

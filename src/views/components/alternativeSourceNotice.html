@@ -1,4 +1,4 @@
-{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "components/download-button.html" import downloadButton %}
 
 {% macro alternativeSourceNotice(organisation, dataset, downloadUrl, alternateSources) %}
   <section>
@@ -14,7 +14,7 @@
     <p class="govuk-body"><a href="/organisations/{{ organisation.organisation }}/{{ dataset.dataset }}/get-started">Follow the steps</a> to publish the data on your website and let us know where we can collect it.</p>
     <p class="govuk-body">To help you get started, you can download the data to review it. This can take longer for larger files.</p>
     <p class="govuk-body">If you need to, you can edit the data before you publish it on your website.</p>
-    {{ govukButton({
+    {{ downloadButton({
       text: "Download alternative source data (CSV)",
       href: downloadUrl,
       preventDoubleClick: true

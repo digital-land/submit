@@ -7,11 +7,13 @@ import getFullServiceName from './getFullServiceName.js'
 import { checkToolDeepLink } from './checkToolDeepLink.js'
 import pluralize from 'pluralize'
 import { datasetSlugToReadableName } from '../utils/datasetSlugToReadableName.js'
+import { orgIdToName } from '../utils/orgIdToName.js'
 import { getDatasetGuidanceUrl } from './getDatasetConfig.js'
 import { schemaIssues } from './schemaIssues.js'
 import { endpointSubmissionFormToolDeepLink } from './endpointSubmissionFormDeepLink.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import { getNavigationLinks } from './getNavigationLinks.js'
+import { aOrAn } from './aOrAn.js'
 /** maps dataset status (as returned by `fetchLpaOverview` middleware to a
  * CSS class used by the govuk-tag component
  */
@@ -34,6 +36,7 @@ const { govukMarkdown, govukDateTime } = xGovFilters
 const addFilters = (nunjucksEnv) => {
   // Wrapper function for datasetSlugToReadableName filter to allow working with async loading of the mapping data
   nunjucksEnv.addFilter('datasetSlugToReadableName', (...args) => datasetSlugToReadableName(...args))
+  nunjucksEnv.addFilter('orgIdToName', (...args) => orgIdToName(...args))
 
   nunjucksEnv.addFilter('govukMarkdown', govukMarkdown)
   nunjucksEnv.addFilter('govukDateTime', govukDateTime)
@@ -45,6 +48,7 @@ const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('getFullServiceName', getFullServiceName)
   nunjucksEnv.addFilter('statusToTagClass', statusToTagClass)
   nunjucksEnv.addFilter('pluralise', pluralize)
+  nunjucksEnv.addFilter('aOrAn', aOrAn)
   nunjucksEnv.addFilter('checkToolDeepLink', checkToolDeepLink)
   nunjucksEnv.addFilter('endpointSubmissionFormToolDeepLink', endpointSubmissionFormToolDeepLink)
   nunjucksEnv.addFilter('getDatasetGuidanceUrl', getDatasetGuidanceUrl)

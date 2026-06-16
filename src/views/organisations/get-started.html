@@ -1,6 +1,6 @@
 {% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
 
-{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance']) %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% set serviceType = 'Manage' %}
 {% set pageName %}
     {{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Get started
@@ -191,9 +191,9 @@
           </div>
 
           <div class="gem-c-step-nav__panel js-panel" id="step-panel-submit-your-data-4">
-              <p class="gem-c-step-nav__paragraph">Always check your data before you provide it. This helps you identify and fix any errors.</p>
+              <p class="gem-c-step-nav__paragraph">Check your endpoint URL — once the check is complete you will be able to submit your data details to us.</p>
               <p class="gem-c-step-nav__paragraph">
-                When you're ready to provide your data to the Planning Data Platform, submit your:
+                When you're ready to provide your data to the Planning Data Platform, you will need to submit your:
               </p>
               <ul class="govuk-list govuk-list--bullet">
                 <li>
@@ -203,16 +203,12 @@
                   work email address
                 </li>
                 <li>
-                  endpoint URL
-                </li>
-                <li>
                   webpage URL
                 </li>
               </ul>
-              </p>
 
               <p class="govuk-body">
-                <a href="{{ organisation | endpointSubmissionFormToolDeepLink(dataset) }}">Provide your data</a>
+                <a href="{{ organisation | checkToolDeepLink(dataset, 'url') }}">Check your data and provide it</a>
               </p>
           </div>
         </li>

@@ -63,6 +63,8 @@ class CheckDeepLinkController extends PageController {
     }
 
     req.sessionModel.set('dataset', dataset)
+    req.sessionModel.set('lpa', orgName)
+    req.sessionModel.set('orgId', orgId)
     const datasetInfo = datasets.get(dataset) ?? { dataSubject: '', requiresGeometryTypeSelection: false }
     req.sessionModel.set('data-subject', datasetInfo.dataSubject)
     const sessionData = { 'data-subject': datasetInfo.dataSubject, orgName, orgId, dataset, datasetName: datasetInfo.text }
@@ -74,6 +76,11 @@ class CheckDeepLinkController extends PageController {
     // Pre-calculate geometry requirement to avoid async timing issues in form wizard async conditional routing
     const requiresGeometry = await requiresGeometryTypeToBeSelectedViaDeepLink(req)
     req.sessionModel.set('requiresGeometryTypeSelection', requiresGeometry)
+
+    if (req.query.uploadMethod === 'url') {
+      req.sessionModel.set('upload-method', 'url')
+      return res.redirect('/check/url')
+    }
 
     super.post(req, res, next)
   }

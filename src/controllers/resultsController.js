@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node'
 import * as v from 'valibot'
 import config from '../../config/index.js'
 import PageController from './pageController.js'
@@ -20,14 +21,14 @@ class ResultsController extends PageController {
     super.middlewareSetup()
     this.use(validateParams)
     this.use(getRequestDataMiddleware)
+    this.use(updateSessionFromRequestData)
     this.use(setupTemplate)
     this.use(fetchDatasetTypology)
     this.use(fetchResponseDetails)
     this.use(checkForErroredResponse)
     this.use(setupTableParams)
     this.use(getIssueTypesWithQualityCriteriaLevels)
-    this.use(extractIssuesFromResults)
-    this.use(filterOutInternalIssues)
+    this.use(extractIssuesFromTaskLog)
     this.use(addQualityCriteriaLevelsToIssues)
     this.use(aggregateIssues)
     this.use(getTotalRows)
@@ -52,6 +53,17 @@ class ResultsController extends PageController {
   }
 }
 
+export function updateSessionFromRequestData (req, res, next) {
+  // Used so check results can be shared and still continue to submit
+  const { requestData } = req.locals
+  const params = requestData?.getParams()
+  req.sessionModel.set('request_id', req.params.id)
+  if (params?.type === 'check_url') {
+    req.sessionModel.set('upload-method', 'url')
+  }
+  next()
+}
+
 export async function getRequestDataMiddleware (req, res, next) {
   try {
     req.locals = {
@@ -71,11 +83,16 @@ export async function getRequestDataMiddleware (req, res, next) {
 }
 
 export async function checkForErroredResponse (req, res, next) {
+  // Sentry metrics will count repeatedly if page reloads - not complete solution.
   if (req.locals.requestData.response?.error) {
     const { errMsg } = req.locals.requestData.response.error
     if (errMsg && errMsg.length > 0) {
+      Sentry.metrics.count('url_submission.async_processing_failure', 1, { attributes: { error_message: errMsg } })
+      // Disable as this is not an error we want to track in Sentry, only need metrics
+      Sentry.getCurrentScope().setTag('async_handled_processing_error', true)
       return next(new MiddlewareError(errMsg, 500, { template: 'check/error-redirect.html' }))
     } else {
+      Sentry.metrics.count('url_submission.async_processing_failure', 1, { attributes: { error_message: 'unknown' } })
       return next(new MiddlewareError('An unknown error occurred when processing your endpoint', 500, { template: 'check/error-redirect.html' }))
     }
   }
@@ -156,65 +173,69 @@ export const fieldToColumnMapping = ({ columns }) => {
  * @param {Function} next - Next middleware function
  * @returns {void}
  */
-export function setupTableParams (req, res, next) {
-  if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
-    const responseDetails = req.locals.responseDetails
-    // Optionally filter out all non - error rows from dataset
-    let rows = responseDetails.getRowsWithVerboseColumns(false)
-    // remove any issues that aren't of severity error
-    rows = rows.map((row) => {
-      const { columns, ...rest } = row
+export async function setupTableParams (req, res, next) {
+  try {
+    if (req.locals.template !== failedFileRequestTemplate && req.locals.template !== failedUrlRequestTemplate) {
+      const responseDetails = req.locals.responseDetails
+      // Optionally filter out all non - error rows from dataset
+      let rows = responseDetails.getRowsWithVerboseColumns(false)
+      // remove any issues that aren't of severity error
+      rows = rows.map((row) => {
+        const { columns, ...rest } = row
 
-      const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
-        let error
-        if (value.error && value.error.severity === 'error' && value.error.responsibility !== 'internal') {
-          error = value.error
-        }
-        const newValue = {
-          ...value,
-          error
-        }
-        return [key, newValue]
-      }))
+        const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
+          let error
+          if (value.error && value.error.severity === 'error' && value.error.responsibility !== 'internal') {
+            error = value.error
+          }
+          const newValue = {
+            ...value,
+            error
+          }
+          return [key, newValue]
+        }))
 
-      return {
-        ...rest,
-        columns: columnsOnlyErrors
+        return {
+          ...rest,
+          columns: columnsOnlyErrors
+        }
+      })
+
+      const fieldToColumn = rows.length > 0 ? fieldToColumnMapping(rows[0]) : new Map()
+      const columnToField = new Map()
+      for (const [k, v] of fieldToColumn.entries()) {
+        columnToField.set(v, k)
       }
-    })
 
-    const fieldToColumn = rows.length > 0 ? fieldToColumnMapping(rows[0]) : new Map()
-    const columnToField = new Map()
-    for (const [k, v] of fieldToColumn.entries()) {
-      columnToField.set(v, k)
+      const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
+      // NOTE: the column field log alters the field names (converts '_' -> '-', most of the time 🤷‍♂️), but we want
+      // the original CSV column names because that's what users expect
+      const orderedFields = [...leadingFields, ...trailingFields]
+      const columns = orderedFields
+      const fields = orderedFields
+      req.locals.tableParams = {
+        columns,
+        fields,
+        rows,
+        columnNameProcessing: 'none',
+        mapping: columnToField
+      }
+      req.locals.geometries =
+        req.locals.datasetTypology === 'geography'
+          ? await responseDetails.getGeometries()
+          : null
+      // pagination is on the 'table' tab, so we want to ensure clicking those
+      // links takes us to a page with the table tab *selected*
+      const { pageNumber } = req.parsedParams
+      const pagination = responseDetails.getPagination(pageNumber, { hash: '#table-tab' })
+      req.locals.pagination = pagination
+      req.locals.id = req.params.id
+      req.locals.lastPage = `/check/status/${req.params.id}`
     }
-
-    const { leading: leadingFields, trailing: trailingFields } = splitByLeading({ fields: responseDetails.getFields() })
-    // NOTE: the column field log alters the field names (converts '_' -> '-', most of the time 🤷‍♂️), but we want
-    // the original CSV column names because that's what users expect
-    const orderedFields = [...leadingFields, ...trailingFields]
-    const columns = orderedFields
-    const fields = orderedFields
-    req.locals.tableParams = {
-      columns,
-      fields,
-      rows,
-      columnNameProcessing: 'none',
-      mapping: columnToField
-    }
-    req.locals.geometries =
-      req.locals.datasetTypology === 'geography'
-        ? responseDetails.getGeometries()
-        : null
-    // pagination is on the 'table' tab, so we want to ensure clicking those
-    // links takes us to a page with the table tab *selected*
-    const { pageNumber } = req.parsedParams
-    const pagination = responseDetails.getPagination(pageNumber, { hash: '#table-tab' })
-    req.locals.pagination = pagination
-    req.locals.id = req.params.id
-    req.locals.lastPage = `/check/status/${req.params.id}`
+    next()
+  } catch (error) {
+    next(error)
   }
-  next()
 }
 
 export function setupError (req, res, next) {
@@ -241,6 +262,11 @@ export function extractIssuesFromResults (req, res, next) {
 
   req.issues = issues
 
+  next()
+}
+
+export function extractIssuesFromTaskLog (req, res, next) {
+  req.issues = req.locals.requestData.getIssueTasks()
   next()
 }
 
@@ -295,10 +321,11 @@ export function aggregateIssues (req, res, next) {
           issueType: issue['issue-type'],
           field: issue.field,
           qualityCriteriaLevel: issue.quality_criteria_level,
-          count: 1
+          count: issue.count ?? 1,
+          summary: issue.summary
         })
       } else {
-        task.count++
+        task.count += issue.count ?? 1
       }
     }
   }
@@ -327,10 +354,11 @@ export function filterOutTasksByQualityCriterialLevel (issue) {
  * @property {string} colour - Status color
  */
 
-/** @type {{mustFix: Status, shouldFix: Status, passed: Status}} */
+/** @type {{mustFix: Status, mustFixNoLink: Status, shouldFix: Status, passed: Status}} */
 const taskStatus = {
   mustFix: { text: 'Must fix', link: true, colour: 'red' },
-  shouldFix: { text: 'Should fix', link: true, colour: 'yellow' },
+  mustFixNoLink: { text: 'Must fix', link: false, colour: 'red' },
+  shouldFix: { text: 'Needs improving', link: true, colour: 'yellow' },
   passed: { text: 'Passed', link: false, colour: 'green' }
 }
 
@@ -382,13 +410,15 @@ export function getTasksByLevel (req, level, status) {
 
   const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
   const taskParams = filteredTasks.map(task => {
-    const taskMessage = performanceDbApi.getTaskMessage({
-      issue_type: task.issueType,
-      num_issues: task.count,
-      rowCount: totalRows,
-      field: task.field,
-      dataset
-    })
+    const taskMessage = (task.summary?.length > 0)
+      ? task.summary
+      : performanceDbApi.getTaskMessage({
+        issue_type: task.issueType,
+        num_issues: task.count,
+        rowCount: totalRows,
+        field: task.field,
+        dataset
+      })
     return makeTaskParam(req, { taskMessage, status, issueType: task.issueType, field: task.field })
   })
   req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
@@ -399,10 +429,9 @@ export const missingColumnTaskMessage = (field) => {
 }
 
 export function getMissingColumnTasks (req) {
-  const { responseDetails } = req.locals
   const taskMap = new Map()
   const tasks = []
-  for (const column of responseDetails.getColumnFieldLog()) {
+  for (const column of req.locals.requestData.getColumnFieldLog()) {
     if (column.missing) {
       taskMap.set(`missing column|${column.field}`, {
         issueType: 'missing column',
@@ -412,7 +441,7 @@ export function getMissingColumnTasks (req) {
       })
       tasks.push(makeTaskParam(req, {
         taskMessage: missingColumnTaskMessage(column.field),
-        status: taskStatus.mustFix,
+        status: taskStatus.mustFixNoLink,
         field: column.field,
         issueType: 'missing column'
       }))

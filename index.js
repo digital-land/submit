@@ -13,11 +13,19 @@ import { setupSession } from './src/serverSetup/session.js'
 import { setupNunjucks } from './src/serverSetup/nunjucks.js'
 import { setupSentry } from './src/serverSetup/sentry.js'
 import { initDatasetSlugToReadableNameFilter } from './src/utils/datasetSlugToReadableName.js'
+import { initOrgIdToNameFilter } from './src/utils/orgIdToName.js'
 
 dotenv.config()
 
 const datasetSlugToReadableName = await initDatasetSlugToReadableNameFilter()
+await initOrgIdToNameFilter()
 const app = express()
+
+app.disable('x-powered-by')
+
+if (config.environment !== 'development') {
+  app.set('trust proxy', 1)
+}
 
 setupMiddlewares(app)
 await setupSession(app)

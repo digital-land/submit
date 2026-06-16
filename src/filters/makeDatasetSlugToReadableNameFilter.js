@@ -20,6 +20,11 @@ export const makeDatasetSlugToReadableNameFilter = (datasetNameMapping) => {
   const lowercaseFirst = (str) => str.charAt(0).toLowerCase() + str.slice(1)
 
   return (slug, capitalize = false) => {
+    if (!slug) {
+      logger.debug(`can't find a dataset name for ${slug}`)
+      return slug
+    }
+
     const name = datasetNameMapping.get(slug)
     if (!name) {
       // ToDo: work out what to do here? potentially update it with data from datasette

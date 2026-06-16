@@ -42,16 +42,24 @@ class PageController extends Controller {
     super.get(req, res, next)
   }
 
+  errorHandler (err, req, res, next) {
+    if (err.code === 'SESSION_TIMEOUT') {
+      return res.redirect('/')
+    }
+    super.errorHandler(err, req, res, next)
+  }
+
   locals (req, res, next) {
     try {
       let backLink
+      req.form.options.lpa = req.sessionModel?.get('lpa')
+      req.form.options.dataset = req.sessionModel?.get('dataset')
+      req.form.options.orgId = req.sessionModel?.get('orgId')
+
       const deepLinkInfo = req?.sessionModel?.get(this.sessionKey)
       if (deepLinkInfo) {
         req.form.options.deepLink = deepLinkInfo
-        req.form.options.dataset = deepLinkInfo.dataset
         req.form.options.datasetName = deepLinkInfo.datasetName
-        req.form.options.lpa = deepLinkInfo.lpa || deepLinkInfo.orgName
-        req.form.options.orgId = deepLinkInfo.orgId
         backLink = wizardBackLink(req.originalUrl, deepLinkInfo)
       }
 
@@ -71,10 +79,12 @@ class PageController extends Controller {
     }
 
     const dataset = req?.sessionModel?.get('dataset')
-    try {
-      req.form.options.datasetName = datasetSlugToReadableName(dataset)
-    } catch (e) {
-      logger.warn(`Failed to get readable dataset name from slug: ${dataset}`)
+    if (dataset) {
+      try {
+        req.form.options.datasetName = datasetSlugToReadableName(dataset)
+      } catch (e) {
+        logger.warn(`Failed to get readable dataset name from slug: ${dataset}`)
+      }
     }
 
     const errors = req?.sessionModel?.get('errors')

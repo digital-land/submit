@@ -12,7 +12,7 @@ export default class ResultsPage extends BasePage {
   }
 
   async expectPageHasTitle () {
-    expect(await this.page.locator('h1').innerText()).toEqual('Your data has been checked')
+    expect(await this.page.locator('h1').innerText()).toEqual('We have checked your data')
   }
 
   async expectIsFailedPage () {

@@ -2,13 +2,25 @@
 import PageController from './pageController.js'
 
 class UploadController extends PageController {
+  get (req, res, next) {
+    const organisationName = req?.sessionModel?.get('orgId')
+    const dataset = req?.sessionModel?.get('dataset')
+    const collection = req?.sessionModel?.get('data-subject')
+    const isEmpty = value => value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
+    // How did you get to this page without going through the previous pages in the journey? Let's send you back to the start.
+    if ([organisationName, dataset, collection].some(isEmpty)) {
+      return res.redirect('/')
+    }
+    super.get(req, res, next)
+  }
+
   async post (req, res, next) {
     super.post(req, res, next)
   }
 
   getBaseFormData (req) {
     return {
-      organisationName: req.sessionModel.get('deep-link-session-key')?.orgName,
+      organisationName: req.sessionModel.get('orgId'),
       dataset: req.sessionModel.get('dataset'),
       collection: req.sessionModel.get('data-subject'),
       geomType: req.sessionModel.get('geomType'),

@@ -3,8 +3,15 @@ import { postFileRequest, postUrlRequest, getRequestData } from '../../src/servi
 import axios from 'axios'
 import RequestData from '../../src/models/requestData.js'
 import config from '../../config/index.js'
+import logger from '../../src/utils/logger.js'
 
 vi.mock('axios')
+vi.mock('../../src/utils/logger.js', () => ({
+  default: {
+    debug: vi.fn(),
+    warn: vi.fn()
+  }
+}))
 
 describe('asyncRequestApi', () => {
   afterEach(() => {
@@ -48,9 +55,43 @@ describe('asyncRequestApi', () => {
         geomType: 'point'
       }
 
-      axios.post.mockRejectedValue({ response: { status: 500, data: 'data' } })
+      const mockError = new Error('Network error')
+      mockError.code = 'ECONNREFUSED'
+      mockError.config = { url: 'http://localhost:8080/requests' }
+      mockError.response = { status: 500, data: { message: 'data' } }
 
-      await expect(postFileRequest(formData)).rejects.toThrow()
+      axios.post.mockRejectedValueOnce(mockError)
+
+      await expect(postFileRequest(formData)).rejects.toMatchObject({
+        message: 'Post request failed with status 500 and message: Network error',
+        cause: mockError,
+        code: 'ECONNREFUSED',
+        response: mockError.response
+      })
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'postRequest()',
+        expect.objectContaining({
+          type: 'App',
+          errorDetails: expect.objectContaining({
+            requestData: {
+              dataset: 'dataset',
+              collection: 'collection',
+              organisationName: undefined,
+              geom_type: 'point',
+              uploaded_filename: 'file.txt',
+              original_filename: 'file.txt',
+              type: 'check_file'
+            },
+            responseStatus: 500,
+            responseData: { message: 'data' },
+            errorCode: 'ECONNREFUSED',
+            errorMessage: 'Network error',
+            errorCause: undefined,
+            url: 'http://localhost:8080/requests'
+          })
+        })
+      )
     })
   })
 
@@ -88,8 +129,42 @@ describe('asyncRequestApi', () => {
         geomType: 'point'
       }
 
-      axios.post.mockRejectedValue({ response: { status: 500, data: 'data' } })
-      await expect(postUrlRequest(formData)).rejects.toThrow()
+      const mockError = new Error('Request failed')
+      mockError.code = 'ERR_BAD_REQUEST'
+      mockError.config = { url: 'http://localhost:8080/requests' }
+      mockError.response = { status: 500, data: { message: 'data' } }
+
+      axios.post.mockRejectedValueOnce(mockError)
+
+      await expect(postUrlRequest(formData)).rejects.toMatchObject({
+        message: 'Post request failed with status 500 and message: Request failed',
+        cause: mockError,
+        code: 'ERR_BAD_REQUEST',
+        response: mockError.response
+      })
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        'postRequest()',
+        expect.objectContaining({
+          type: 'App',
+          errorDetails: expect.objectContaining({
+            requestData: {
+              dataset: 'dataset',
+              collection: 'collection',
+              geom_type: 'point',
+              organisationName: undefined,
+              url: 'https://example.com',
+              type: 'check_url'
+            },
+            responseStatus: 500,
+            responseData: { message: 'data' },
+            errorCode: 'ERR_BAD_REQUEST',
+            errorMessage: 'Request failed',
+            errorCause: undefined,
+            url: 'http://localhost:8080/requests'
+          })
+        })
+      )
     })
   })
 
@@ -110,24 +185,21 @@ describe('asyncRequestApi', () => {
     it('should throw an error if the GET request fails with status 404', async () => {
       const resultId = '123'
 
-      const expectedError = new Error('HTTP error! status: 404')
-      expectedError.message = 'HTTP error! status: 404: Failed to do the thing'
-      expectedError.status = 404
+      const mockError = new Error('Failed to do the thing')
+      mockError.response = { status: 404, message: 'Failed to do the thing' }
+      axios.get.mockRejectedValueOnce(mockError)
 
-      const expectedResponse = { status: 404, message: 'Failed to do the thing' }
-      axios.get.mockRejectedValue(expectedResponse)
-
-      await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
+      await expect(getRequestData(resultId)).rejects.toBe(mockError)
     })
 
     it('should throw an error if the GET request fails with status 500', async () => {
       const resultId = '123'
 
-      const expectedError = new Error('HTTP error! status: 500: Failed to do the thing')
-      const expectedResponse = { status: 500, message: 'Failed to do the thing' }
-      axios.get.mockRejectedValue(expectedResponse)
+      const mockError = new Error('Failed to do the thing')
+      mockError.response = { status: 500, message: 'Failed to do the thing' }
+      axios.get.mockRejectedValueOnce(mockError)
 
-      await expect(getRequestData(resultId)).rejects.toThrow(expectedError)
+      await expect(getRequestData(resultId)).rejects.toThrow('HTTP error! status: 500')
     })
   })
 })

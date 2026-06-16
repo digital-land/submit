@@ -23,16 +23,17 @@
 {% endset %}
 
 {% block beforeContent %}
-  {% set backLinkText %}
-    Back to {{ options.datasetName }} overview
-  {% endset %}
-  {% set backLinkHref %}
-    /organisations/{{options.orgId | urlencode | safe}}/{{options.dataset | lower | urlencode | safe}}/get-started
-  {% endset %}
-  {{ govukBackLink({
-    text: backLinkText,
-    href: backLinkHref
-  }) }}
+  {% if options.lastPage %}
+    {{ govukBackLink({
+      text: "Back",
+      href: options.lastPage
+    }) }}
+  {% else %}
+    {{ govukBackLink({
+      text: "Back to " + options.datasetName + " overview",
+      href: "/organisations/" + (options.orgId | urlencode) + "/" + (options.dataset | lower | urlencode) + "/get-started"
+    }) }}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -49,9 +50,6 @@
 
     {{ pageHeader | safe }}
 
-    <p class="govuk-body">
-    Always <a href="{{ { name: options.lpa, organisation: options.orgId } | checkToolDeepLink({ dataset: options.dataset }) }}">check your data before you provide it</a>. This helps you identify and fix any errors.
-    </p>
     <form novalidate method="post">
 
       {{ govukInput({

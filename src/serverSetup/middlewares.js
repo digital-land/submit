@@ -23,6 +23,12 @@ export function setupMiddlewares (app) {
     next()
   })
 
+  app.use((req, res, next) => {
+    res.setHeader('X-Frame-Options', 'DENY')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    next()
+  })
+
   app.use('/assets', express.static('./node_modules/govuk-frontend/dist/govuk/assets'))
   app.use('/assets', express.static('./node_modules/@x-govuk/govuk-prototype-components/x-govuk'))
   app.use('/public', express.static('./public'))

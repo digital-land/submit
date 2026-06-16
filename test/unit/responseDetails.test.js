@@ -1,5 +1,8 @@
 import ResponseDetails from '../../src/models/responseDetails.js'
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi } from 'vitest'
+import axios from 'axios'
+
+vi.mock('axios')
 
 vi.mock('../../src/utils/getVerboseColumns.js', () => {
   return {
@@ -10,6 +13,10 @@ vi.mock('../../src/utils/getVerboseColumns.js', () => {
 })
 
 describe('ResponseDetails', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   const mockResponse = [
     {
       issue_logs: [],
@@ -48,17 +55,6 @@ describe('ResponseDetails', () => {
       ]
     }
   ]
-
-  const mockResponsWithGeoXGeoY = mockResponse.map(({ converted_row: row, ...entry }, i) => {
-    const { geometry, wkt, ...other } = row
-    return {
-      ...entry,
-      converted_row: { ...other, GeoX: `123.4${i}`, GeoY: `123.4${i}` },
-      transformed_row: [
-        { field: 'geometry', value: `POINT (123.4${i} 123.4${i})` }
-      ]
-    }
-  })
 
   const mockPagination = {
     totalResults: 2,
@@ -233,43 +229,97 @@ describe('ResponseDetails', () => {
   })
 
   describe('getGeometries', () => {
-    it('returns undefined and logs an error if there is no response', () => {
+    it('returns undefined if there is no request id', async () => {
       const responseDetails = new ResponseDetails(undefined, undefined, undefined, undefined)
-      const result = responseDetails.getGeometries()
+      const result = await responseDetails.getGeometries()
+
+      expect(result).toBeUndefined()
+      expect(axios.get).not.toHaveBeenCalled()
+    })
+
+    it('returns undefined if there are no geometries', async () => {
+      axios.get.mockResolvedValueOnce({
+        headers: {},
+        data: []
+      })
+      const responseDetails = new ResponseDetails(1, [], undefined, undefined)
+      const result = await responseDetails.getGeometries()
+
       expect(result).toBeUndefined()
     })
 
-    it('returns null if there are no geometries', () => {
-      const responseDetails = new ResponseDetails(undefined, [], undefined, undefined)
-      const result = responseDetails.getGeometries()
+    it('caches empty geometry responses', async () => {
+      axios.get.mockResolvedValueOnce({
+        headers: {},
+        data: []
+      })
+      const responseDetails = new ResponseDetails(1, [], undefined, undefined)
+
+      await responseDetails.getGeometries()
+      const result = await responseDetails.getGeometries()
+
       expect(result).toBeUndefined()
+      expect(axios.get).toHaveBeenCalledTimes(1)
     })
 
-    it('returns an array of geometries', () => {
-      const mockColumnFieldLog = [
-        { column: 'id', field: 'ID' },
-        { column: 'wkt', field: 'WKT' },
-        { column: 'geometry', field: 'geometry' },
-        { column: 'name', field: 'Name' }
-      ]
-      const responseDetails = new ResponseDetails(undefined, mockResponse, undefined, mockColumnFieldLog)
-      const result = responseDetails.getGeometries()
+    it('returns geometry-only endpoint data', async () => {
+      axios.get.mockResolvedValueOnce({
+        headers: {},
+        data: [
+          'POINT (423432.0000000000000000 564564.0000000000000000)',
+          'POINT (423432.0000000000000000 564564.0000000000000000)'
+        ]
+      })
+      const responseDetails = new ResponseDetails(1, mockResponse, undefined, undefined)
+      const result = await responseDetails.getGeometries()
       const expected = [
         'POINT (423432.0000000000000000 564564.0000000000000000)',
         'POINT (423432.0000000000000000 564564.0000000000000000)'
       ]
+
       expect(result).toEqual(expected)
+      expect(axios.get).toHaveBeenCalledWith(
+        new URL('http://localhost:8001/requests/1/geometries'),
+        { timeout: 30000 }
+      )
     })
 
-    it('handles Geox, GeoY columns', () => {
-      const mockColumnFieldLog = []
-      const responseDetails = new ResponseDetails(undefined, mockResponsWithGeoXGeoY, undefined, mockColumnFieldLog)
-      const result = responseDetails.getGeometries()
-      const expected = [
-        'POINT (123.40 123.40)',
-        'POINT (123.41 123.41)'
-      ]
-      expect(result).toEqual(expected)
+    it('fetches paginated geometry-only endpoint data', async () => {
+      axios.get
+        .mockResolvedValueOnce({
+          headers: {
+            'x-pagination-total-results': 3,
+            'x-pagination-limit': 2
+          },
+          data: ['POINT (1 2)', 'POINT (3 4)']
+        })
+        .mockResolvedValueOnce({
+          headers: {},
+          data: ['POINT (5 6)']
+        })
+
+      const responseDetails = new ResponseDetails(1, mockResponse, undefined, undefined)
+      const result = await responseDetails.getGeometries()
+
+      expect(result).toEqual(['POINT (1 2)', 'POINT (3 4)', 'POINT (5 6)'])
+      expect(axios.get).toHaveBeenCalledWith(
+        new URL('http://localhost:8001/requests/1/geometries?offset=2&limit=2'),
+        { timeout: 30000 }
+      )
+    })
+
+    it('caches geometry-only endpoint data', async () => {
+      axios.get.mockResolvedValueOnce({
+        headers: {},
+        data: ['POINT (1 2)']
+      })
+      const responseDetails = new ResponseDetails(1, mockResponse, undefined, undefined)
+
+      await responseDetails.getGeometries()
+      const result = await responseDetails.getGeometries()
+
+      expect(result).toEqual(['POINT (1 2)'])
+      expect(axios.get).toHaveBeenCalledTimes(1)
     })
   })
 

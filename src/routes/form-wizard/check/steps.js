@@ -9,6 +9,7 @@ import checkDeepLinkController from '../../../controllers/checkDeepLinkControlle
 import shareResultsController from '../../../controllers/ShareResultsController.js'
 import issueDetailsController from '../../../controllers/issueDetailsController.js'
 import checkStartController from '../../../controllers/checkStartController.js'
+import checkConfirmationController from '../../../controllers/checkConfirmationController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -110,7 +111,7 @@ export default {
     ...baseSettings,
     noPost: true,
     checkJourney: false, // ToDo: it would be useful here if we make sure they have selected if their results are ok from the previous step
-    controller: PageController,
+    controller: checkConfirmationController,
     template: 'check/confirmation.html'
   },
   // This step allows to fill in some of the required data via query params.
