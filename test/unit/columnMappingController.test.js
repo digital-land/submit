@@ -286,7 +286,7 @@ describe('columnMappingController helpers', () => {
     }).map(row => row.field)).toEqual(['geometry'])
   })
 
-  it('preselects detected geometry mappings as editable field rows', () => {
+  it('locks detected geometry mappings as mapped field rows', () => {
     const columnMappingRows = buildColumnMappingRows({
       columnFieldLog: applyDetectedGeometryColumnMapping([
         { field: 'geometry', column: null, missing: true, mandatory: true },
@@ -306,9 +306,43 @@ describe('columnMappingController helpers', () => {
         field: 'geometry',
         column: 'WKT',
         isMapped: true,
-        isAutoMapped: false,
-        isEditable: true,
-        userDefined: true,
+        isAutoMapped: true,
+        isEditable: false,
+        userDefined: false,
+        userIgnored: false,
+        isRequired: true
+      }
+    ])
+  })
+
+  it('keeps detected geometry mappings locked after they are persisted as column mappings', () => {
+    const columnMappingRows = buildColumnMappingRows({
+      columnFieldLog: [
+        {
+          field: 'geometry',
+          column: 'WKT',
+          detectedGeometryMapping: true,
+          missing: false,
+          mandatory: true
+        }
+      ],
+      userColumnMapping: {
+        WKT: 'geometry'
+      }
+    })
+
+    expect(buildExpectedFieldRows({
+      columnMappingRows,
+      specFields: ['geometry'],
+      requiredFields: ['geometry']
+    })).toEqual([
+      {
+        field: 'geometry',
+        column: 'WKT',
+        isMapped: true,
+        isAutoMapped: true,
+        isEditable: false,
+        userDefined: false,
         userIgnored: false,
         isRequired: true
       }

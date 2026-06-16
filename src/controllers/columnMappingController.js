@@ -7,6 +7,9 @@ import platformApi from '../services/platformApi.js'
 import { types } from '../utils/logging.js'
 import logger from '../utils/logger.js'
 
+const LOCK_DETECTED_GEOMETRY_MAPPINGS = true
+const GEOMETRY_FIELDS = ['geometry', 'point']
+
 class ColumnMappingController extends PageController {
   middlewareSetup () {
     super.middlewareSetup()
@@ -167,6 +170,7 @@ async function prepareColumnMappingContext (requestData, uniqueDatasetFields = [
 
   const params = requestData.getParams() ?? {}
   const userColumnMapping = params.column_mapping ?? {}
+  columnFieldLog = applyPersistedDetectedGeometryColumnMapping(columnFieldLog, responseRows, userColumnMapping)
   const columnMappingRows = buildColumnMappingRows({
     columnFieldLog,
     userColumnMapping
@@ -337,15 +341,16 @@ export function buildColumnMappingRows ({ columnFieldLog = [], userColumnMapping
 
     const userMappedField = userColumnMapping[column]
     const isDetectedGeometryMapping = entry?.detectedGeometryMapping === true
+    const isLockedDetectedGeometryMapping = LOCK_DETECTED_GEOMETRY_MAPPINGS && isDetectedGeometryMapping
     const field = entry.field
     const isMapped = Boolean(field) && Boolean(column)
     rows.push({
       column,
       field,
       isMapped,
-      isAutoMapped: isMapped && !userMappedField && !isDetectedGeometryMapping,
+      isAutoMapped: isMapped && (isLockedDetectedGeometryMapping || (!userMappedField && !isDetectedGeometryMapping)),
       isMissing: entry.missing,
-      userDefined: Boolean(userMappedField || isDetectedGeometryMapping)
+      userDefined: Boolean((userMappedField || isDetectedGeometryMapping) && !isLockedDetectedGeometryMapping)
     })
   })
 
@@ -378,17 +383,16 @@ export function applyDetectedGeometryColumnMapping (columnFieldLog = [], respons
 }
 
 export function detectGeometryColumnMapping (columnFieldLog = [], responseRows = []) {
-  const geometryFields = ['geometry', 'point']
   const expectedGeometryFields = new Set(
     columnFieldLog
       .map(entry => entry?.field)
-      .filter(field => geometryFields.includes(field))
+      .filter(field => GEOMETRY_FIELDS.includes(field))
   )
 
   if (expectedGeometryFields.size === 0) return {}
 
   const alreadyMapped = columnFieldLog.some(entry =>
-    geometryFields.includes(entry?.field) && Boolean(entry?.column)
+    GEOMETRY_FIELDS.includes(entry?.field) && Boolean(entry?.column)
   )
   if (alreadyMapped) return {}
 
@@ -398,6 +402,26 @@ export function detectGeometryColumnMapping (columnFieldLog = [], responseRows =
   return {
     [detectedMapping.column]: detectedMapping.field
   }
+}
+
+function applyPersistedDetectedGeometryColumnMapping (columnFieldLog = [], responseRows = [], userColumnMapping = {}) {
+  if (!LOCK_DETECTED_GEOMETRY_MAPPINGS) return columnFieldLog
+
+  const firstRow = responseRows[0]?.converted_row ?? {}
+  const detectedUserMappings = Object.entries(userColumnMapping)
+    .filter(([column, field]) => GEOMETRY_FIELDS.includes(field) && getGeometryFieldForValue(firstRow[column]) === field)
+
+  if (detectedUserMappings.length === 0) return columnFieldLog
+
+  return columnFieldLog.map(entry => {
+    const isPersistedDetectedMapping = detectedUserMappings.some(([column, field]) =>
+      entry?.column === column && entry?.field === field
+    )
+
+    return isPersistedDetectedMapping
+      ? { ...entry, detectedGeometryMapping: true }
+      : entry
+  })
 }
 
 export function detectGeometryColumnFromFirstRow (responseRows = [], expectedFields = new Set(['geometry', 'point'])) {

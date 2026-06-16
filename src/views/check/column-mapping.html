@@ -52,7 +52,9 @@
     <br>
     {% set datasetGuidanceUrl = options.requestParams.dataset | getDatasetGuidanceUrl %}
     {% if datasetGuidanceUrl %}
+    <p class="govuk-body">
       <a class="govuk-link" href="{{ datasetGuidanceUrl }}" target="_blank" rel="noopener noreferrer">Find out what we expect in each field (opens in new tab)</a>
+    </p>
     {% endif %}
 
     <!-- Buttons -->
