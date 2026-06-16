@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:22.5.1-alpine as build
+FROM node:22.22.3-alpine as build
 
 COPY package.json package-lock.json .
 
@@ -10,7 +10,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production
-FROM node:22.5.1-alpine
+FROM node:22.22.3-alpine
 
 WORKDIR /app
 
