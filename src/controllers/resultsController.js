@@ -224,6 +224,27 @@ export async function setupTableParams (req, res, next) {
         req.locals.datasetTypology === 'geography'
           ? await responseDetails.getGeometries()
           : null
+      // Show column mapping if the requestParams contains a non-empty mapping object
+      const columnMapping = req.locals.requestParams?.column_mapping
+      const hasMappingObject = columnMapping && typeof columnMapping === 'object' && Object.keys(columnMapping).length > 0
+      const columnMappingEnabled = columnMapping === true || hasMappingObject
+      req.locals.columnMappingEnabled = columnMappingEnabled
+      if (columnMappingEnabled) {
+        const requestData = req.locals.requestData
+        const columnMappingRows = requestData.getColumnFieldLog()
+          .filter(({ field, column, missing, mandatory }) => Boolean(field) && Boolean(column))
+          .map(({ field, column, missing, mandatory }) => {
+            return {
+              field,
+              column: column || ''
+            }
+          }).map(({ field, column }) => ({
+            key: { text: field },
+            value: { text: String(column || '') }
+          }))
+
+        req.locals.columnMappingRows = columnMappingRows
+      }
       // pagination is on the 'table' tab, so we want to ensure clicking those
       // links takes us to a page with the table tab *selected*
       const { pageNumber } = req.parsedParams
@@ -278,9 +299,15 @@ export function filterOutInternalIssues (req, res, next) {
 
 export function addQualityCriteriaLevelsToIssues (req, res, next) {
   const { issues, issueTypes } = req
+  req.issues = addQualityCriteriaLevels(issues, issueTypes)
+
+  next()
+}
+
+export function addQualityCriteriaLevels (issues = [], issueTypes = []) {
   const issueTypeMap = new Map(issueTypes.map(it => [it.issue_type, it]))
 
-  req.issues = issues.map(issue => {
+  return issues.map(issue => {
     const issueType = issueTypeMap.get(issue['issue-type'])
     let qualityLevel = issueType ? issueType.quality_criteria_level : null
 
@@ -294,8 +321,6 @@ export function addQualityCriteriaLevelsToIssues (req, res, next) {
       quality_criteria_level: qualityLevel
     }
   })
-
-  next()
 }
 
 /**

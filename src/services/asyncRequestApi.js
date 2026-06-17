@@ -33,6 +33,10 @@ export const postUrlRequest = async (formData) => {
   })
 }
 
+export const postCheckRequest = async (params) => {
+  return await postRequest(params)
+}
+
 /**
  * POSTs a requeset to the 'publish' API.
  *

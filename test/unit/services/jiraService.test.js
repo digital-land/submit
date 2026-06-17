@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import axios from 'axios'
-import { attachFileToIssue, createCustomerRequest } from '../../../src/services/jiraService'
+import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../../../src/services/jiraService'
 
 vi.mock('axios')
 
@@ -248,6 +248,72 @@ describe('jiraService', () => {
       })
 
       await expect(attachFileToIssue(issueKey, file, additionalComment))
+        .rejects
+        .toThrowError('Request failed with status code 500')
+    })
+  })
+
+  describe('addInternalNoteToIssue', () => {
+    const issueKey = 'SUP-1'
+    const note = 'Internal triage note'
+
+    beforeEach(() => {
+      process.env.JIRA_URL = 'https://jira.example.com'
+      process.env.JIRA_API_KEY = 'apiToken'
+      process.env.JIRA_SERVICE_DESK_ID = 'serviceDeskId'
+    })
+
+    afterEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('should throw an error if JIRA_URL, JIRA_API_KEY, or JIRA_SERVICE_DESK_ID are not set', async () => {
+      delete process.env.JIRA_URL
+
+      await expect(addInternalNoteToIssue(issueKey, note))
+        .rejects
+        .toThrowError('JIRA_URL, JIRA_API_KEY and JIRA_SERVICE_DESK_ID must be set')
+    })
+
+    it('should call axios.post with correct parameters', async () => {
+      const mockResponse = {
+        data: {
+          id: '10000',
+          body: note,
+          public: false
+        }
+      }
+      axios.post.mockResolvedValue(mockResponse)
+
+      const response = await addInternalNoteToIssue(issueKey, note)
+
+      expect(axios.post).toHaveBeenCalledWith(
+        'https://jira.example.com/rest/servicedeskapi/request/SUP-1/comment',
+        {
+          body: 'Internal triage note',
+          public: false
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer apiToken'
+          }
+        }
+      )
+      expect(response).toBe(mockResponse)
+    })
+
+    it('should handle network errors gracefully', async () => {
+      axios.post.mockRejectedValue({
+        response: {
+          status: 500,
+          statusText: 'Internal Server Error',
+          data: { error: 'Internal Server Error' }
+        },
+        message: 'Request failed with status code 500'
+      })
+
+      await expect(addInternalNoteToIssue(issueKey, note))
         .rejects
         .toThrowError('Request failed with status code 500')
     })

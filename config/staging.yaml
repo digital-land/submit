@@ -10,6 +10,7 @@ aws: {
     region: eu-west-2,
     bucket: 'staging-pub-async-request-files',
 }
+manageServiceUrl: 'https://manage.staging.planning.data.gov.uk/'
 redis: {
     secure: true,
     host: 'staging-pub-async-redis-kh1elu.serverless.euw2.cache.amazonaws.com',

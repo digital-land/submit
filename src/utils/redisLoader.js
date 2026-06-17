@@ -2,6 +2,7 @@
 import config from '../../config/index.js'
 import { createClient } from 'redis'
 import logger from '../utils/logger.js'
+import datasette from '../services/datasette.js'
 
 let redisClient
 
@@ -36,7 +37,66 @@ export async function getRedisClient () {
   return redisClient
 }
 
-const CACHE_TTL = 300 // 5min
+const CACHE_TTL = 60 * 60 * 6 // 6 hours
+
+function escapeSqlString (value) {
+  return String(value).replaceAll("'", "''")
+}
+
+async function getCachedJson (key, logPrefix) {
+  const client = await getRedisClient()
+  if (!client) return undefined
+
+  try {
+    const cached = await client.get(cacheKey(key))
+    if (cached) return JSON.parse(cached)
+  } catch (err) {
+    logger.warn(`${logPrefix}/redis get error: ${err.message}`)
+  }
+
+  return undefined
+}
+
+async function setCachedJson (key, value, logPrefix, ttl = CACHE_TTL) {
+  const client = await getRedisClient()
+  if (!client) return
+
+  try {
+    await client.setEx(cacheKey(key), ttl, JSON.stringify(value))
+  } catch (err) {
+    logger.warn(`${logPrefix}/redis set error: ${err.message}`)
+  }
+}
+
+export async function getProvisionReasonsForDataset ({ organisation, dataset }) {
+  if (!organisation || !dataset) return []
+
+  const key = `provision-reasons:${organisation}:${dataset}`
+  const cached = await getCachedJson(key, 'getProvisionReasonsForDataset')
+  if (cached) return cached
+
+  const query = `
+    select provision_reason from provision
+    where organisation = '${escapeSqlString(organisation)}'
+    and dataset = '${escapeSqlString(dataset)}'
+    and (
+      end_date is null
+      or end_date = '')
+  `
+  const response = await datasette.runQuery(query)
+  const provisionReasons = response.formattedData
+    .map(row => row?.provision_reason)
+    .filter(Boolean)
+
+  await setCachedJson(key, provisionReasons, 'getProvisionReasonsForDataset')
+
+  return provisionReasons
+}
+
+export async function isStatutoryDataset ({ organisation, dataset }) {
+  const provisionReasons = await getProvisionReasonsForDataset({ organisation, dataset })
+  return provisionReasons.includes('statutory')
+}
 
 // TODO: future removal of this function in favour of using datasetNameSlug and datasetSubjectLoaded instead.
 export async function fetchDatasetNames (datasetKeys) {

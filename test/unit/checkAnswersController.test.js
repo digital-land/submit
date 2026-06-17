@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
+import { addInternalNoteToIssue, createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
@@ -31,10 +31,11 @@ describe('CheckAnswersController', () => {
       form: { options: {} },
       body: {}
     }
-    res = { redirect: vi.fn() }
+    res = { redirect: vi.fn(), json: vi.fn() }
     next = vi.fn()
     controller = new CheckAnswersController({ route: '/check-answers/:requestId' })
     vi.clearAllMocks()
+    addInternalNoteToIssue.mockResolvedValue({ data: {} })
   })
 
   describe('locals', () => {
@@ -52,6 +53,31 @@ describe('CheckAnswersController', () => {
   })
 
   describe('POST to CheckAnswersController', () => {
+    it('should return the Manage Service link as JSON locally when Jira is not configured', async () => {
+      const originalEnvironment = config.environment
+      config.environment = 'local'
+      vi.stubEnv('JIRA_URL', '')
+      vi.stubEnv('JIRA_API_KEY', '')
+      vi.stubEnv('JIRA_SERVICE_DESK_ID', '')
+      req.sessionModel.get.mockImplementation((key) => sessionData[key])
+
+      try {
+        await controller.post(req, res, next)
+
+        expect(createCustomerRequest).not.toHaveBeenCalled()
+        expect(res.json).toHaveBeenCalledWith({
+          message: 'Jira is not configured for local development. Use this Manage Service link to add the data.',
+          manageServiceLink: expect.stringContaining(`${config.manageServiceUrl}/datamanager`)
+        })
+        expect(res.json.mock.calls[0][0].manageServiceLink).toContain('requestId=existing-request-id')
+        expect(res.json.mock.calls[0][0].manageServiceLink).toContain('documentationUrl=http%3A%2F%2Fexample.com%2Fdoc')
+        expect(next).not.toHaveBeenCalled()
+      } finally {
+        config.environment = originalEnvironment
+        vi.unstubAllEnvs()
+      }
+    })
+
     it('should create a Jira issue and set session data on success', async () => {
       const issue = { issueKey: 'TEST-123' }
       vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(issue)
@@ -157,6 +183,7 @@ describe('CheckAnswersController', () => {
       const response = { data: { issueKey: 'TEST-123' } }
       createCustomerRequest.mockResolvedValue(response)
       attachFileToIssue.mockResolvedValue({ data: {} })
+      vi.spyOn(controller, 'attachFileToIssue').mockResolvedValue()
 
       const result = await controller.createJiraServiceRequest(req, res, next)
 

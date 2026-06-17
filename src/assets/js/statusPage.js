@@ -16,6 +16,7 @@ export default class StatusPage {
     this.interval = null
     this.heading = document.querySelector('#js-async-processing-heading')
     this.processingMessage = document.querySelector('#js-async-processing-message')
+    this.secondaryProcessingMessage = document.querySelector('#js-async-processing-secondary-message')
     this.continueButton = document.querySelector('#js-async-continue-button')
   }
 
@@ -29,7 +30,11 @@ export default class StatusPage {
           console.info('StatusPage: polled request and got a status of: ' + data.status)
           // ToDo: handle other status' here
           if (finishedProcessingStatuses.includes(data.status)) {
-            this.updatePageToComplete()
+            if (data.showColumnMapping) {
+              this.updatePageToColumnMapping(data)
+            } else {
+              this.updatePageToComplete()
+            }
             clearInterval(interval)
           }
         }).catch((reason) => {
@@ -49,7 +54,9 @@ export default class StatusPage {
   updatePageToChecking () {
     // update the page
     this.heading.textContent = headingTexts.checking
+    this.processingMessage.style.display = 'block'
     this.processingMessage.textContent = messageTexts.checking
+    this.hideSecondaryMessage()
     this.continueButton.style.display = 'none'
   }
 
@@ -57,8 +64,20 @@ export default class StatusPage {
     // update the page
     this.heading.textContent = headingTexts.checked
     this.processingMessage.style.display = 'none'
+    this.hideSecondaryMessage()
     this.continueButton.textContent = buttonTexts.checked
     this.continueButton.ariaLabel = buttonAriaLabels.checked
+    this.continueButton.style.display = 'block'
+  }
+
+  updatePageToColumnMapping (data) {
+    // update the page to show column mapping action
+    this.heading.textContent = headingTexts.columnMapping
+    this.processingMessage.style.display = 'block'
+    this.processingMessage.textContent = messageTexts.columnMapping.primary
+    this.showSecondaryMessage(messageTexts.columnMapping.secondary)
+    this.continueButton.textContent = buttonTexts.columnMapping
+    this.continueButton.ariaLabel = buttonAriaLabels.columnMapping
     this.continueButton.style.display = 'block'
   }
 
@@ -67,9 +86,24 @@ export default class StatusPage {
     this.heading.textContent = headingTexts.checking
     this.processingMessage.style.display = 'block'
     this.processingMessage.textContent = messageTexts.checking
+    this.hideSecondaryMessage()
     this.continueButton.textContent = buttonTexts.checking
     this.continueButton.ariaLabel = buttonAriaLabels.checking
     this.continueButton.style.display = 'block'
+  }
+
+  hideSecondaryMessage () {
+    if (!this.secondaryProcessingMessage) return
+
+    this.secondaryProcessingMessage.textContent = ''
+    this.secondaryProcessingMessage.style.display = 'none'
+  }
+
+  showSecondaryMessage (message) {
+    if (!this.secondaryProcessingMessage) return
+
+    this.secondaryProcessingMessage.textContent = message
+    this.secondaryProcessingMessage.style.display = 'block'
   }
 }
 

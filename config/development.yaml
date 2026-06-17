@@ -5,6 +5,7 @@ aws: {
     region: eu-west-2,
     bucket: 'development-pub-async-request-files',
 }
+manageServiceUrl: 'https://manage.development.planning.data.gov.uk'
 datasetteUrl: https://datasette.development.planning.data.gov.uk
 downloadUrl: 'https://download.development.planning.data.gov.uk' 
 redis: {

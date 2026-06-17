@@ -119,6 +119,31 @@ panel: { html: tableTab } } } %}
     {{ govukSummaryList({
       rows: rows
     }) }}
+    
+    {% if options.columnMappingEnabled and options.columnMappingRows and options.columnMappingRows | length > 0 %}
+    <div id="column-mapping-summary " class="">
+      <div class="govuk-grid-row govuk-!-margin-bottom-2">
+        <div class="govuk-grid-column-two-thirds">
+          <h2 class="govuk-heading-m">Field mapping</h2>
+        </div>
+        <div class="govuk-grid-column-one-third" style="text-align: right;">
+          <a class="govuk-link" href="/check/column-mapping/{{options.id}}">Map again</a>
+        </div>
+      </div>
+
+      {% set headerRows = [
+        {
+          key: { text: 'Expected field' },
+          value: { html: '<strong>Field in your data</strong>' }
+        }
+      ] %}
+
+      {% set summaryRows = headerRows.concat(options.columnMappingRows) %}
+
+      {{ govukSummaryList({ rows: summaryRows }) }}
+    </div>
+
+    {% endif %}
 
     {% if options.passedChecks.length > 0 %}
     <div id="passed-checks">
