@@ -7,20 +7,24 @@ vi.mock('redis')
 
 describe('Health checks', () => {
   test('checkS3Bucket returns true when bucket is reachable', async () => {
-    AWS.S3.mockReturnValue({
-      headBucket: vi.fn().mockReturnValue({
-        promise: vi.fn().mockResolvedValue({})
-      })
+    AWS.S3.mockImplementation(function () {
+      return {
+        headBucket: vi.fn().mockReturnValue({
+          promise: vi.fn().mockResolvedValue({})
+        })
+      }
     })
     const result = await checkS3Bucket()
     expect(result).toBe(true)
   })
 
   test('checkS3Bucket returns false when bucket is not reachable', async () => {
-    AWS.S3.mockReturnValue({
-      headBucket: vi.fn().mockReturnValue({
-        promise: vi.fn().mockRejectedValue(new Error())
-      })
+    AWS.S3.mockImplementation(function () {
+      return {
+        headBucket: vi.fn().mockReturnValue({
+          promise: vi.fn().mockRejectedValue(new Error())
+        })
+      }
     })
     const result = await checkS3Bucket()
     expect(result).toBe(false)
