@@ -8,18 +8,20 @@ global.fetch = vi.fn()
 
 vi.mock('maplibre-gl', () => ({
   default: {
-    Map: vi.fn().mockImplementation(() => ({
-      addControl: vi.fn(),
-      on: vi.fn((event, callback) => {
-        if (event === 'load') callback()
-      }),
-      addSource: vi.fn(),
-      addLayer: vi.fn(),
-      fitBounds: vi.fn(),
-      flyTo: vi.fn(),
-      getStyle: vi.fn().mockReturnValue({ layers: [{ type: 'symbol', id: 'symbol-layer' }] }),
-      getCanvas: vi.fn().mockReturnValue({ style: { cursor: '' } })
-    })),
+    Map: vi.fn().mockImplementation(function () {
+      return {
+        addControl: vi.fn(),
+        on: vi.fn((event, callback) => {
+          if (event === 'load') callback()
+        }),
+        addSource: vi.fn(),
+        addLayer: vi.fn(),
+        fitBounds: vi.fn(),
+        flyTo: vi.fn(),
+        getStyle: vi.fn().mockReturnValue({ layers: [{ type: 'symbol', id: 'symbol-layer' }] }),
+        getCanvas: vi.fn().mockReturnValue({ style: { cursor: '' } })
+      }
+    }),
     ScaleControl: vi.fn(),
     NavigationControl: vi.fn(),
     FullscreenControl: vi.fn()

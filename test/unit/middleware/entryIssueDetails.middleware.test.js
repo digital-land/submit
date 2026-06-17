@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { addResourceMetaDataToResources, getIssueDetails, prepareEntry, setRecordCount } from '../../../src/middleware/entryIssueDetails.middleware'
+import { MiddlewareError } from '../../../src/utils/errors.js'
 
 describe('entryIssueDetails.middleware.test.js', () => {
   describe('addResourceMetaDataToResources', () => {
@@ -129,7 +130,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
       const next = vi.fn()
       prepareEntry(req, res, next)
 
-      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object: entryIssues: present, entryIssues[0]: missing, resources: present'))
+      expect(next).toHaveBeenCalledWith(new MiddlewareError('Missing required values on request object: entryIssues: present, entryIssues[0]: missing, resources: present', 404))
     })
 
     it('should throw error if resources is missing', () => {
@@ -150,7 +151,7 @@ describe('entryIssueDetails.middleware.test.js', () => {
 
       prepareEntry(req, res, next)
 
-      expect(next).toHaveBeenCalledWith(new Error('Missing required values on request object: entryIssues: present, entryIssues[0]: present, resources: missing'))
+      expect(next).toHaveBeenCalledWith(new MiddlewareError('Missing required values on request object: entryIssues: present, entryIssues[0]: present, resources: missing', 404))
     })
   })
 

@@ -166,7 +166,7 @@ describe('asyncRequestApi', () => {
       const mockResultData = { id: 'request-123', status: 'complete' }
 
       axios.get.mockResolvedValueOnce({ data: mockResponseData })
-      ResultData.mockImplementationOnce(() => mockResultData)
+      ResultData.mockImplementationOnce(function () { return mockResultData })
 
       const result = await getRequestData('request-123')
 
