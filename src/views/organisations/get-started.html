@@ -59,7 +59,9 @@
 
   <div class="govuk-grid-column-two-thirds">
     <div class="govuk-grid-row">
-      {% include "includes/_dataset-page-header.html" %}
+      <div class="govuk-grid-column-full">
+        {% include "includes/_dataset-page-header.html" %}
+      </div>
     </div>
     {% if authority and authority === "some" %}
       <h2 class="govuk-heading-m">How to improve {{ organisation.name }}'s data</h2>
