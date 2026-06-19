@@ -118,16 +118,16 @@
       <div class="govuk-inset-text">
         <p class="govuk-body">Help with providing data using an ArcGIS data layer</p>
         <p class="govuk-body">An ArcGIS data layer URL usually looks like this:</p>
+        <p class="govuk-body govuk-!-text-break-word"><code>https://maps.example.gov.uk/arcgis/rest/services/Planning/LocalPlans/FeatureServer/0</code></p>
+        <p class="govuk-body">This URL is made up of:</p>
+        <ul class="govuk-list govuk-list--bullet">
+          <li>the organisation's website (maps.example.gov.uk)</li>
+          <li>the ArcGIS REST services path (/arcgis/rest/services)</li>
+          <li>the name of the service (Planning/LocalPlans)</li>
+          <li>the type of service (for example FeatureServer or MapServer)</li>
+          <li>a number that identifies the layer within the service (/0)</li>
+        </ul>
       </div>
-      <p class="govuk-body"><a class="govuk-link" href="https://maps.example.gov.uk/arcgis/rest/services/Planning/LocalPlans/FeatureServer/0">https://maps.example.gov.uk/arcgis/rest/services/Planning/LocalPlans/FeatureServer/0</a></p>
-      <p class="govuk-body">This URL is made up of:</p>
-      <ul class="govuk-list govuk-list--bullet">
-        <li>the organisation's website (maps.example.gov.uk)</li>
-        <li>the ArcGIS REST services path (/arcgis/rest/services)</li>
-        <li>the name of the service (Planning/LocalPlans)</li>
-        <li>the type of service (for example FeatureServer or MapServer)</li>
-        <li>a number that identifies the layer within the service (/0)</li>
-      </ul>
       <p class="govuk-body">You only need to make changes to your data at your endpoint URL. Do not change your endpoint URL when you make updates.</p>
 
       <h3 class="govuk-heading-s">Create your webpage</h3>
@@ -143,9 +143,9 @@
       <p class="govuk-body">Each record in your dataset needs a documentation-url, so that we can find the part of your webpage that includes the record.</p>
       <p class="govuk-body">Each documentation-URL must be unique. There are 2 ways that you can create a unique URL.</p>
       <p class="govuk-body"><strong>1. One page per record</strong></p>
-      <p class="govuk-body">Give each record its own webpage, so that the documentation-url is the full page address. For example, <a class="govuk-link" href="http://www.yourwebsite.gov.uk/planning/article-4-directions/smith-road">www.yourwebsite.gov.uk/planning/article-4-directions/smith-road</a>.</p>
+      <p class="govuk-body govuk-!-text-break-word">Give each record its own webpage, so that the documentation-url is the full page address. For example, <code>www.yourwebsite.gov.uk/planning/article-4-directions/smith-road</code>.</p>
       <p class="govuk-body"><strong>2. Multiple records</strong></p>
-      <p class="govuk-body">List all records on a single page and add an anchor link for each one. For example, <a class="govuk-link" href="http://yourwebsite.gov.uk/planning/article-4-directions#smith-road">yourwebsite.gov.uk/planning/article-4-directions#smith-road</a>.</p>
+      <p class="govuk-body govuk-!-text-break-word">List all records on a single page and add an anchor link for each one. For example, <code>yourwebsite.gov.uk/planning/article-4-directions#smith-road</code>.</p>
       <p class="govuk-body">You need to check that your publishing system supports anchor links (also called fragment identifiers).</p>
 
       <h3 class="govuk-heading-s">Legal documents</h3>
