@@ -453,8 +453,8 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
  * Organisation (LPA) overview page middleware chain.
  */
 export default [
+  fetchOrgInfo,
   parallel([
-    fetchOrgInfo,
     fetchLocalPlanningGroups,
     fetchEndpointSummary,
     fetchEntityIssueCountsPerformanceDb,

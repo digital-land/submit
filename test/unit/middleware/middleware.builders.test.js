@@ -1,6 +1,7 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest'
 import datasette from '../../../src/services/datasette.js'
 import * as middleware from '../../../src/middleware/middleware.builders.js'
+import { MiddlewareError } from '../../../src/utils/errors.js'
 
 vi.mock('../../../src/services/datasette.js', () => ({
   default: {
@@ -16,6 +17,12 @@ describe('middleware.builders', () => {
   const baseMw = {
     query: (req) => 'select * from whatever',
     result: 'output'
+  }
+
+  const mockResponse = () => {
+    const res = { status: vi.fn() }
+    res.status.mockReturnValue({ render: vi.fn() })
+    return res
   }
 
   describe('fetchOne', () => {
@@ -48,21 +55,17 @@ describe('middleware.builders', () => {
       expect(queryArgs[1]).toEqual('fun-dataset')
     })
 
-    const mockResponse = () => {
-      const res = { status: vi.fn() }
-      res.status.mockReturnValue({ render: vi.fn() })
-      return res
-    }
-
-    it('should call next with error when no records found', async () => {
+    it('should call next with 404 error when no records found', async () => {
       const mw = middleware.fetchOne({ ...baseMw })
       vi.mocked(datasette.runQuery).mockResolvedValue({ formattedData: [] })
       const req = { params: {} }
       const res = mockResponse()
       const next = vi.fn()
       await mw(req, res, next)
-      expect(next).toBeCalledTimes(0)
-      expect(res.status).toHaveBeenCalledWith(404)
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(new MiddlewareError('Not found', 404))
+      expect(res.status).not.toHaveBeenCalled()
+      expect(req.handlerName).toBe("fetching 'output'")
       expect(req).toBe(req)
     })
 
@@ -135,6 +138,44 @@ describe('middleware.builders', () => {
       expect(next).toHaveBeenCalledTimes(1)
       expect(next).not.toHaveBeenCalledWith(expect.any(Error))
       expect(fallbackPolicy).toHaveBeenCalledOnce()
+    })
+
+    it('waits for slow sibling middleware before sending a fetchOne 404 to the final error handler', async () => {
+      let releaseSlowMiddleware
+      const slowMiddleware = vi.fn((_req, _res, next) => {
+        return new Promise(resolve => {
+          releaseSlowMiddleware = () => {
+            next()
+            resolve()
+          }
+        })
+      })
+
+      const mw = middleware.parallel([
+        middleware.fetchOne({ ...baseMw, result: 'r1' }),
+        slowMiddleware
+      ])
+
+      vi.mocked(datasette.runQuery).mockResolvedValueOnce({ formattedData: [] })
+
+      const req = { params: {} }
+      const res = mockResponse()
+      const next = vi.fn()
+
+      const middlewarePromise = mw(req, res, next)
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(next).not.toHaveBeenCalled()
+      expect(res.status).not.toHaveBeenCalled()
+
+      releaseSlowMiddleware()
+      await middlewarePromise
+
+      expect(next).toHaveBeenCalledTimes(1)
+      expect(next).toHaveBeenCalledWith(new MiddlewareError('Not found', 404))
+      expect(res.status).not.toHaveBeenCalled()
+      expect(req.handlerName).toBe("fetching 'r1'")
     })
   })
 
