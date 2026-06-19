@@ -248,6 +248,39 @@ code * {
   border-left: govuk-spacing(1) solid $govuk-error-colour;
 }
 
+.column-mapping__row--error {
+  padding-left: 0;
+
+  .govuk-table__cell:first-child {
+    border-left: govuk-spacing(1) solid $govuk-error-colour;
+  }
+}
+
+.column-mapping-table {
+  th,
+  td {
+    padding-top: govuk-spacing(2);
+    padding-bottom: govuk-spacing(2);
+  }
+}
+
+.column-mapping-panel {
+  background-color: govuk-colour("light-grey");
+  padding: 15px 20px;
+}
+
+.column-mapping__unmap-select {
+  background-color: govuk-colour("green");
+  color: govuk-colour("white");
+  font-weight: bold;
+  font-size: 0.875rem;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  appearance: auto;
+}
+
 .app-content__markdown img {
   max-width: 100%;
 }

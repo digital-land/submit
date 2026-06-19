@@ -6,6 +6,7 @@ describe('StatusPage', () => {
   let statusPage
   let mockHeading
   let mockMessage
+  let mockSecondaryMessage
   let mockButton
 
   beforeEach(async () => {
@@ -34,6 +35,7 @@ describe('StatusPage', () => {
     mockHeading = { textContent: 'Checking File' }
     mockButton = { textContent: 'Check latest status', style: { display: 'block' } }
     mockMessage = { textContent: 'Please wait', style: { display: 'block' } }
+    mockSecondaryMessage = { textContent: '', style: { display: 'none' } }
     global.window = {
       addEventListener: vi.fn()
     }
@@ -46,6 +48,8 @@ describe('StatusPage', () => {
             return mockButton
           case '#js-async-processing-message':
             return mockMessage
+          case '#js-async-processing-secondary-message':
+            return mockSecondaryMessage
           default:
             return null
         }
@@ -77,6 +81,25 @@ describe('StatusPage', () => {
     expect(statusPage.heading.textContent).toBe(headingTexts.checked)
     expect(statusPage.continueButton.style.display).toBe('block')
     expect(statusPage.processingMessage.style.display).toBe('none')
+    expect(statusPage.secondaryProcessingMessage.style.display).toBe('none')
+  })
+
+  it('should update the page when column mapping is required', async () => {
+    const mockResponse = { status: 'COMPLETE', showColumnMapping: true }
+    global.fetch.mockResolvedValueOnce({
+      json: () => Promise.resolve(mockResponse)
+    })
+
+    statusPage.beginPolling('http://test.com', '123')
+    await vi.advanceTimersByTimeAsync(1000)
+    await Promise.resolve()
+
+    expect(statusPage.heading.textContent).toBe(headingTexts.columnMapping)
+    expect(statusPage.processingMessage.textContent).toBe(messageTexts.columnMapping.primary)
+    expect(statusPage.secondaryProcessingMessage.textContent).toBe(messageTexts.columnMapping.secondary)
+    expect(statusPage.secondaryProcessingMessage.style.display).toBe('block')
+    expect(statusPage.continueButton.textContent).toBe('Map your fields')
+    expect(statusPage.continueButton.style.display).toBe('block')
   })
 
   it('should begin polling and update the page when the status is FAILED', async () => {

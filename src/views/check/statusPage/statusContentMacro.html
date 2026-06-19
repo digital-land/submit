@@ -1,4 +1,5 @@
-{% macro statusContent(heading, message) %}
+{% macro statusContent(heading, message, secondaryMessage = null) %}
     <h1 class="govuk-heading-l"  id="js-async-processing-heading">{{heading}}</h1>
     <p id="js-async-processing-message">{{message}}</p>
+    <p id="js-async-processing-secondary-message"{% if not secondaryMessage %} class="js-hidden"{% endif %}>{{secondaryMessage}}</p>
 {% endmacro %}

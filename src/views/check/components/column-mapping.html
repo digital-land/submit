@@ -1,0 +1,99 @@
+{% from 'govuk/components/button/macro.njk' import govukButton %}
+{% from "govuk/components/error-message/macro.njk" import govukErrorMessage %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+
+
+{% macro columnMapping(mappingRows, uploadedColumns=[], errors={}, allowUnmapping=true) %}
+<form method="post" id="columnMappingForm" name="columnMappingForm">
+  <div class="govuk-!-margin-bottom-6 column-mapping-panel">
+    <table class="govuk-table dl-table column-mapping-table">
+      <colgroup>
+        <col style="width: 35%;">
+        <col style="width: 45%;">
+        <col style="width: 20%;">
+        <!-- <col style="width: 20%;"> -->
+      </colgroup>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Expected fields</th>
+          <th scope="col" class="govuk-table__header">Fields we found in your data</th>
+          <th scope="col" class="govuk-table__header">Status</th>
+          <!-- <th scope="col" class="govuk-table__header">Required</th> -->
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for row in mappingRows %}
+          {% set isEditable = row.isEditable%}
+          <tr class="govuk-table__row{% if errors[row.field] %} govuk-form-group--error column-mapping__row--error{% endif %}">
+            <td class="govuk-table__cell" style="vertical-align: middle; overflow-wrap: anywhere; word-break: break-word;">
+              <strong>{{ row.field }}</strong>
+            </td>
+            <td class="govuk-table__cell" style="vertical-align: middle; overflow-wrap: anywhere; word-break: break-word;">
+              {% if not isEditable %}
+              {{ row.column }}
+              {% else %}
+                {% set selectItems = [
+                  {
+                    value: "",
+                    text: "-- Select a field --",
+                    selected: not row.column and not row.userIgnored
+                  }
+                ] %}
+                  {% set _ = selectItems.push({
+                    value: "na",
+                    text: "Not provided",
+                    selected: row.userIgnored
+                  }) %}
+                {% for column in uploadedColumns %}
+                  {% set _ = selectItems.push({
+                    value: column,
+                    text: column,
+                    selected: column == row.column
+                  }) %}
+                {% endfor %}
+                {% if errors[row.field] %}
+                  {{ govukErrorMessage({
+                    id: "fieldMap-" + loop.index0 + "-error",
+                    text: errors[row.field].text
+                  }) }}
+                {% endif %}
+                {{ govukSelect({
+                  id: "fieldMap-" + loop.index0,
+                  name: "fieldMap[" + row.field + "]",
+                  classes: "govuk-!-width-full govuk-select--error" if errors[row.field] else "govuk-!-width-full",
+                  describedBy: "fieldMap-" + loop.index0 + "-error" if errors[row.field] else "",
+                  label: {
+                    text: "fields we found in your data",
+                    classes: "govuk-visually-hidden"
+                  },
+                  formGroup: {
+                    classes: "govuk-!-margin-bottom-0"
+                  },
+                  items: selectItems
+                }) }}
+                {% endif %}
+            </td>
+            <td class="govuk-table__cell" style="vertical-align: middle; overflow-wrap: anywhere; word-break: break-word;">
+              {% if not isEditable %}
+                {% if allowUnmapping %}
+                  <select name="map[{{ row.column }}]" class="column-mapping__unmap-select">
+                  <option value="">Mapped</option>
+                  <option value="IGNORE">Un-Map</option>
+                </select>
+                {% else %}
+                  <strong class="govuk-tag govuk-tag--green">Mapped</strong>
+                {% endif %}
+              {% else %}
+                <strong class="govuk-tag govuk-tag--red">Unmapped</strong>
+              {% endif %}
+            </td>
+            <!-- <td class="govuk-table__cell" style="vertical-align: middle; overflow-wrap: anywhere; word-break: break-word;">
+              {{ "Yes" if row.isRequired else "No" }}
+            </td> -->
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</form>
+{% endmacro %}

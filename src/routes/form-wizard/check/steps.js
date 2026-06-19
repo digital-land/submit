@@ -10,6 +10,7 @@ import shareResultsController from '../../../controllers/ShareResultsController.
 import issueDetailsController from '../../../controllers/issueDetailsController.js'
 import checkStartController from '../../../controllers/checkStartController.js'
 import checkConfirmationController from '../../../controllers/checkConfirmationController.js'
+import columnMappingController from '../../../controllers/columnMappingController.js'
 
 const baseSettings = {
   controller: PageController,
@@ -78,6 +79,14 @@ export default {
     ...baseSettings,
     template: 'statusPage/status',
     controller: statusController,
+    checkJourney: false,
+    entryPoint: true,
+    next: (req, res) => `results/${req.params.id}/1`
+  },
+  '/column-mapping/:id': {
+    ...baseSettings,
+    template: 'check/column-mapping.html',
+    controller: columnMappingController,
     checkJourney: false,
     entryPoint: true,
     next: (req, res) => `results/${req.params.id}/1`

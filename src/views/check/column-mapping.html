@@ -1,0 +1,66 @@
+{% extends "layouts/main.html" %}
+
+{% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
+{% from 'govuk/components/error-summary/macro.njk' import govukErrorSummary %}
+{% from '../components/dataset-banner.html' import datasetBanner %}
+{% from './components/column-mapping.html' import columnMapping %}
+
+{% set serviceType = 'Check' %}
+{% set pageName = 'Map your fields' %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: options.lastPage
+  }) }}
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    {{ datasetBanner(options.requestParams.organisationName | orgIdToName, options.requestParams.dataset) }}
+
+    {% set columnMappingErrorKeys = options.columnMappingErrors | getkeys %}
+    {% if columnMappingErrorKeys | length > 0 %}
+      {% set errorList = [] %}
+      {% for row in options.mappingRows %}
+        {% if options.columnMappingErrors[row.field] %}
+          {% set _ = errorList.push({
+            text: options.columnMappingErrors[row.field].text,
+            href: "#fieldMap-" + loop.index0
+          }) %}
+        {% endif %}
+      {% endfor %}
+      {{ govukErrorSummary({
+        titleText: "The following fields need to be mapped before you can check your data",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+
+
+
+
+    <h1 class="govuk-heading-l">{{ pageName }}</h1>
+    <p class="govuk-body">We could not map all of the fields in your data to what is in the data standard.</p>
+    <p class="govuk-body">For all expected fields, you need to select a field found in your data or 'not provided'.</p>
+
+    <div class="govuk-!-margin-bottom-6 column-mapping-panel">
+
+    {{ columnMapping(options.mappingRows, options.uploadedColumns, options.columnMappingErrors,false) }}
+    </div>
+    <br>
+    {% set datasetGuidanceUrl = options.requestParams.dataset | getDatasetGuidanceUrl %}
+    {% if datasetGuidanceUrl %}
+    <p class="govuk-body">
+      <a class="govuk-link" href="{{ datasetGuidanceUrl }}" target="_blank" rel="noopener noreferrer">Find out what we expect in each field (opens in new tab)</a>
+    </p>
+    {% endif %}
+
+    <!-- Buttons -->
+    <div class="govuk-button-group govuk-!-margin-top-4 right-side-buttons">
+       <button type="submit" form="columnMappingForm" class="govuk-button">Check your data</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

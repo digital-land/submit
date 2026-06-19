@@ -90,3 +90,32 @@ export async function attachFileToIssue (issueKey, file, additionalComment = 'Pl
 
   return attachment
 }
+
+/**
+ * Adds an internal note (non-public comment) to an existing JIRA Service Desk issue.
+ *
+ * @doc https://developer.atlassian.com/cloud/jira/service-desk/rest/api-group-request/#api-rest-servicedeskapi-request-issueidorkey-comment-post
+ * @param {string} issueKey - The key of the issue to which the note will be added.
+ * @param {string} note - The internal note body text.
+ * @returns {Promise} - A promise that resolves to the response of the JIRA API.
+ * @throws {Error} - Throws an error if JIRA_URL, JIRA_API_KEY, or JIRA_SERVICE_DESK_ID are not set.
+ */
+export async function addInternalNoteToIssue (issueKey, note) {
+  const JIRA_URL = process.env.JIRA_URL
+  const JIRA_API_KEY = process.env.JIRA_API_KEY
+  const JIRA_SERVICE_DESK_ID = process.env.JIRA_SERVICE_DESK_ID
+
+  if (!JIRA_URL || !JIRA_API_KEY || !JIRA_SERVICE_DESK_ID) {
+    throw new Error('JIRA_URL, JIRA_API_KEY and JIRA_SERVICE_DESK_ID must be set')
+  }
+
+  return await axios.post(`${JIRA_URL}/rest/servicedeskapi/request/${issueKey}/comment`, {
+    body: note,
+    public: false
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${JIRA_API_KEY}`
+    }
+  })
+}

@@ -2,19 +2,19 @@ import RequestData from '../../src/models/requestData.js'
 import ResponseDetails from '../../src/models/responseDetails.js'
 import { describe, it, expect, vi } from 'vitest'
 import axios from 'axios'
-import logger from '../../src/utils/logger.js'
 
 vi.mock('axios')
 
-vi.mock('../utils/logger.js', () => {
+vi.mock('../../src/utils/logger.js', () => {
   return {
     default: {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
       error: vi.fn()
     }
   }
 })
-
-vi.spyOn(logger, 'error')
 
 // Tech Debt: we should write some more tests around the requestData.js file
 describe('RequestData', () => {
@@ -31,7 +31,7 @@ describe('RequestData', () => {
 
       const response = {
         id: 1,
-        getColumnFieldLog: () => []
+        getColumnMapping: () => []
       }
       const requestData = new RequestData(response)
 
@@ -60,7 +60,7 @@ describe('RequestData', () => {
 
       const response = {
         id: 1,
-        getColumnFieldLog: () => []
+        getColumnMapping: () => []
       }
       const requestData = new RequestData(response)
 
@@ -89,7 +89,7 @@ describe('RequestData', () => {
 
       const response = {
         id: 1,
-        getColumnFieldLog: () => []
+        getColumnMapping: () => []
       }
       const requestData = new RequestData(response)
 
@@ -260,8 +260,8 @@ describe('RequestData', () => {
       const requestData = new RequestData({ response })
 
       expect(requestData.getColumnFieldLog()).toStrictEqual([
-        { field: 'name', column: 'name', missing: false },
-        { field: 'geometry', column: 'geom', missing: false }
+        { field: 'name', column: 'name', missing: false, mandatory: undefined },
+        { field: 'geometry', column: 'geom', missing: false, mandatory: undefined }
       ])
     })
 
@@ -288,8 +288,8 @@ describe('RequestData', () => {
       const requestData = new RequestData({ response })
 
       expect(requestData.getColumnFieldLog()).toStrictEqual([
-        { field: 'name', column: 'name', missing: false },
-        { field: 'geometry', missing: true }
+        { field: 'name', column: 'name', missing: false, mandatory: undefined },
+        { field: 'geometry', column: null, missing: true, mandatory: true }
       ])
     })
 

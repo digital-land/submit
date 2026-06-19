@@ -1,6 +1,6 @@
 import PageController from './pageController.js'
 import config from '../../config/index.js'
-import { attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
+import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
@@ -42,6 +42,12 @@ class CheckAnswersController extends PageController {
   async post (req, res, next) {
     try {
       const issue = await this.createJiraServiceRequest(req, res, next)
+      if (issue?.localJiraFallback) {
+        return res.json({
+          message: issue.message,
+          manageServiceLink: issue.manageServiceLink
+        })
+      }
       if (issue) {
         req.sessionModel.set('reference', issue.issueKey)
         req.sessionModel.set('errors', [])
@@ -81,6 +87,18 @@ class CheckAnswersController extends PageController {
     const checkTool = requestId
       ? `${config.url}check/results/${requestId}/1`
       : 'Check tool link unavailable'
+    const manageServiceLink = buildManageServiceLink(requestId, data)
+
+    // Theres no point in attempting to create a Jira issue if we're going to fail, so we check
+    // first and return early with a message about using the Manage Service for local development
+    // if Jira isn't configured
+    if (config.environment === 'local' && !isJiraConfigured()) {
+      return {
+        localJiraFallback: true,
+        message: 'Jira is not configured for local development. Use this Manage Service link to add the data.',
+        manageServiceLink
+      }
+    }
 
     const isNonProd = ['local', 'development', 'staging'].includes(config.environment)
     const summary = `${isNonProd ? '[TEST] ' : ''}Dataset URL request: ${data.organisationName} for ${data.dataset}`
@@ -113,14 +131,22 @@ class CheckAnswersController extends PageController {
       return null
     }
 
-    this.attachFileToIssue(requestId, data, description, response).catch((error) => {
-      logger.error('CheckAnswersController.attachFileToIssue(): Failed to attach CSV to Jira issue', {
+    const internalNote = `This request is ready to be added in the Manage Service.\n\n[Open this request in Manage Service|${manageServiceLink}]\n\nIf the link does not open, copy and paste this URL in your browser:\n${manageServiceLink}`
+    await addInternalNoteToIssue(response.data.issueKey, internalNote).catch((error) => {
+      logger.error('CheckAnswersController.addInternalNoteToIssue(): Failed to add internal note to Jira issue', {
         errorMessage: error.message,
         errorStack: error,
         type: types.External
       })
     })
 
+    await this.attachFileToIssue(requestId, data, description, response).catch((error) => {
+      logger.error('CheckAnswersController.attachFileToIssue(): Failed to attach CSV to Jira issue', {
+        errorMessage: error.message,
+        errorStack: error,
+        type: types.External
+      })
+    })
     return response.data
   }
 
@@ -187,6 +213,15 @@ class CheckAnswersController extends PageController {
       })
     }
   }
+}
+
+function buildManageServiceLink (requestId, data) {
+  const urlSearchParams = new URLSearchParams({ requestId, documentationUrl: data.documentationUrl })
+  return `${config.manageServiceUrl}/datamanager${urlSearchParams.toString() ? `?${urlSearchParams.toString()}` : ''}`
+}
+
+function isJiraConfigured () {
+  return Boolean(process.env.JIRA_URL && process.env.JIRA_API_KEY && process.env.JIRA_SERVICE_DESK_ID)
 }
 
 export default CheckAnswersController
