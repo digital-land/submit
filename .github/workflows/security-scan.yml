@@ -22,7 +22,7 @@ jobs:
       alerts_high: ${{ steps.report.outputs.alerts_high }}
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         
       - name: Setup dependencies
         run: |
@@ -37,7 +37,7 @@ jobs:
           cat zap-working-dir/zap-report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload ZAP logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: zap.log
@@ -62,7 +62,7 @@ jobs:
       alerts_critical: ${{ steps.report.outputs.alerts_critical }}
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Setup dependencies
       run: |
@@ -74,7 +74,7 @@ jobs:
         cat npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload npm audit report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: npm-audit-report
@@ -98,13 +98,13 @@ jobs:
       - static-audit
     steps:
       - name: send report notification
-        uses: slackapi/slack-github-action@v1
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: slackapi/slack-github-action@v3
         with:
-          channel-id: 'planning-data-notifications'
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
             {
+              "channel": "planning-data-notifications",
               "text": "Security Scan: LPA Validator Frontend Pipeline(Submit)",
               "icon_emoji": ":lock:",
               "username": "SecurityScanner",
@@ -199,13 +199,13 @@ jobs:
     if: always() && contains(join(needs.*.result, ','), 'failure')
     steps:
       - name: send failure notification
-        uses: slackapi/slack-github-action@v1
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: slackapi/slack-github-action@v3
         with:
-          channel-id: 'planning-data-notifications'
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
             {
+              "channel": "planning-data-notifications",
               "text": "Security Scan: LPA Validator Frontend Pipeline(Submit)",
               "icon_emoji": ":alert:",
               "username": "SecurityScanner",
