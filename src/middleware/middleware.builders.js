@@ -16,7 +16,7 @@ import { render } from '../utils/custom-renderer.js'
 import datasette from '../services/datasette.js'
 import platformApi from '../services/platformApi.js'
 import * as v from 'valibot'
-import { errorTemplateContext, MiddlewareError } from '../utils/errors.js'
+import { MiddlewareError } from '../utils/errors.js'
 
 import { getDataSubjects } from '../utils/utils.js'
 
@@ -65,8 +65,7 @@ export const datasetOverride = (val, req) => {
 }
 
 const fetchOneFallbackPolicy = (req, res, next) => {
-  const err = new MiddlewareError('Not found', 404)
-  res.status(err.statusCode).render(err.template, { ...errorTemplateContext(), err })
+  next(new MiddlewareError('Not found', 404))
 }
 
 /**
@@ -75,7 +74,7 @@ const fetchOneFallbackPolicy = (req, res, next) => {
      */
 export const FetchOneFallbackPolicy = {
   /**
-       * Renders a 404 response.
+       * Passes a 404 response to the next error handler.
        */
   'not-found-error': fetchOneFallbackPolicy,
 
@@ -115,6 +114,7 @@ async function fetchOneFn (req, res, next) {
     if (result.formattedData.length === 0) {
       // we can make the 404 more informative by informing the use what exactly was "not found"
       // Bind the context so the fallback policy can access `this.result`
+      req.handlerName = `fetching '${this.result}'`
       fallbackPolicy.call(this, req, res, next)
     } else {
       req[this.result] = result.formattedData[0]
