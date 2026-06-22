@@ -63,7 +63,10 @@ describe('middleware.builders', () => {
       const next = vi.fn()
       await mw(req, res, next)
       expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(new MiddlewareError('Not found', 404))
+      const err = next.mock.calls[0][0]
+      expect(err).toBeInstanceOf(MiddlewareError)
+      expect(err.message).toBe('Not found')
+      expect(err.statusCode).toBe(404)
       expect(res.status).not.toHaveBeenCalled()
       expect(req.handlerName).toBe("fetching 'output'")
       expect(req).toBe(req)
@@ -173,7 +176,10 @@ describe('middleware.builders', () => {
       await middlewarePromise
 
       expect(next).toHaveBeenCalledTimes(1)
-      expect(next).toHaveBeenCalledWith(new MiddlewareError('Not found', 404))
+      const err = next.mock.calls[0][0]
+      expect(err).toBeInstanceOf(MiddlewareError)
+      expect(err.message).toBe('Not found')
+      expect(err.statusCode).toBe(404)
       expect(res.status).not.toHaveBeenCalled()
       expect(req.handlerName).toBe("fetching 'r1'")
     })
