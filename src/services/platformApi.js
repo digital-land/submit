@@ -121,6 +121,25 @@ export default {
       data,
       formattedData: datasets
     }
+  },
+
+  fetchTasks: async (params) => {
+    const queryParams = new URLSearchParams()
+
+    if (params.organisation) queryParams.append('organisation', params.organisation)
+    if (params.dataset) queryParams.append('dataset', params.dataset)
+    if (params.severity) queryParams.append('severity', params.severity)
+    if (params.responsibility) queryParams.append('responsibility', params.responsibility)
+    if (params.task_source) queryParams.append('task_source', params.task_source)
+    if (params.limit) queryParams.append('limit', params.limit)
+
+    const url = `${config.mainWebsiteUrl}/task.json?${queryParams.toString()}`
+    const data = await queryPlatformAPI(url, params)
+
+    return {
+      data,
+      formattedData: { tasks: data?.tasks ?? [], count: data?.count ?? 0 }
+    }
   }
 
 }

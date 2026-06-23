@@ -1,11 +1,14 @@
 import config from '../../config/index.js'
 import {
   createPaginationTemplateParams,
+  expectationFetcher,
+  expectations,
   extractJsonFieldFromEntities,
   fetchDatasetInfo,
   fetchLocalPlanningGroups,
   fetchProvisionsByOrgsAndDatasets,
   fetchOrgInfo,
+  noop,
   processAuthoritativeMiddlewares,
   processSpecificationMiddlewares,
   replaceUnderscoreInEntities,
@@ -17,10 +20,11 @@ import {
   logPageError,
   fetchResources,
   fetchEntityCount,
-  fetchEntityIssueCountsPerformanceDb,
+  fetchTasksFromPlatformApi,
   fetchEntitiesPlatformDb
 } from './common.middleware.js'
 import { fetchMany, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
+import { isFeatureEnabled } from '../utils/features.js'
 import * as v from 'valibot'
 import { splitByLeading } from '../utils/table.js'
 
@@ -82,11 +86,16 @@ export const constructTableParams = (req, res, next) => {
   next()
 }
 
-export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, entityIssueCounts, authority, alternateSources, uniqueDatasetFields, provisions } = req
+const fetchOutOfBoundsExpectations = expectationFetcher({
+  expectation: expectations.entitiesOutOfBounds,
+  result: 'expectationOutOfBounds'
+})
 
-  // Hard code task count for 'some' authority
-  const taskCount = authority !== 'some' ? (entityIssueCounts ? entityIssueCounts.length : 0) : 1
+export const prepareTemplateParams = (req, res, next) => {
+  const { orgInfo, dataset, tableParams, pagination, dataRange, tasks, authority, alternateSources, uniqueDatasetFields, provisions, expectationOutOfBounds } = req
+
+  const outOfBoundsCount = (expectationOutOfBounds?.length ?? 0) > 0 ? 1 : 0
+  const taskCount = authority !== 'some' ? (tasks?.count ?? 0) + outOfBoundsCount : 1
   // Build the fields query parameter and download url
   const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
     ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')
@@ -129,7 +138,8 @@ export default [
   fetchDatasetInfo,
 
   fetchResources,
-  fetchEntityIssueCountsPerformanceDb,
+  fetchTasksFromPlatformApi,
+  isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
 
   ...processAuthoritativeMiddlewares, // Sets authority and entityCount from Platform API
 

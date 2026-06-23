@@ -1225,6 +1225,41 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
 })
 
 /**
+ * Fetches error-severity issue tasks from the platform API for the current organisation,
+ * then deduplicates by (dataset, issue_type, field) keeping the highest count per group.
+ * When `req.params.dataset` is set (e.g. dataset task list page), filters to that
+ * dataset and uses a limit of 100. Without a dataset (e.g. LPA overview page),
+ * fetches across all datasets with a limit of 500.
+ * Result is stored on `req.tasks` as `{ tasks: [...], count: N }`.
+ */
+export const fetchTasksFromPlatformApi = async (req, res, next) => {
+  const dataset = req.params.dataset
+  try {
+    const { formattedData } = await platformApi.fetchTasks({
+      organisation: req.orgInfo?.organisation,
+      ...(dataset && { dataset }),
+      severity: 'error',
+      task_source: 'issue',
+      limit: dataset ? 100 : 500
+    })
+    const deduplicated = Object.values(
+      (formattedData.tasks ?? []).reduce((acc, task) => {
+        const key = `${task.dataset}::${task.details?.issue_type}::${task.details?.field}`
+        if (!acc[key] || task.details?.count > acc[key].details?.count) acc[key] = task
+        return acc
+      }, {})
+    )
+    req.tasks = { tasks: deduplicated, count: deduplicated.length }
+    next()
+  } catch (err) {
+    logger.warn('fetchTasksFromPlatformApi: failed to fetch tasks', { err })
+    req.tasks = { tasks: [], count: 0 }
+    next()
+  }
+}
+
+
+/**
  * Middleware. Fetches all local-planning-group entities from the Platform API in a single call and derives two outputs:
  *. - takes org code and:
  * - req.parentGroup {Object[]|null} - If this org is a member of any planning group(s), returns an array of those

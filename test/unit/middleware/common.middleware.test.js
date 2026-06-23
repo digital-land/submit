@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority } from '../../../src/middleware/common.middleware'
+import { filterOutEntitiesWithoutIssues, createPaginationTemplateParams, addDatabaseFieldToSpecification, replaceUnderscoreInSpecification, pullOutDatasetSpecification, extractJsonFieldFromEntities, replaceUnderscoreInEntities, setDefaultParams, getUniqueDatasetFieldsFromSpecification, show404IfPageNumberNotInRange, removeIssuesThatHaveBeenFixed, addFieldMappingsToIssue, getSetDataRange, getErrorSummaryItems, getSetBaseSubPath, prepareIssueDetailsTemplateParams, preventIndexing, getIssueSpecification, fetchEntities, prepareAuthority, fetchTasksFromPlatformApi } from '../../../src/middleware/common.middleware'
 import logger from '../../../src/utils/logger'
 import datasette from '../../../src/services/datasette.js'
 import performanceDbApi from '../../../src/services/performanceDbApi.js'
@@ -18,7 +18,8 @@ vi.mock('../../../src/services/performanceDbApi.js')
 vi.mock('../../../src/services/platformApi.js', () => ({
   default: {
     fetchEntities: vi.fn(),
-    fetchAllEntities: vi.fn()
+    fetchAllEntities: vi.fn(),
+    fetchTasks: vi.fn()
   }
 }))
 
@@ -1652,5 +1653,82 @@ describe('preventIndexing middleware', () => {
       expect(req.authority).toBe('')
       expect(next).toHaveBeenCalledTimes(1)
     })
+  })
+})
+
+describe('fetchTasksFromPlatformApi', () => {
+  const next = vi.fn()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls the API with dataset filter and limit 100 when dataset param is set', async () => {
+    platformApi.fetchTasks.mockResolvedValueOnce({ formattedData: { tasks: [], count: 0 } })
+
+    const req = { orgInfo: { organisation: 'local-authority:TST' }, params: { dataset: 'brownfield-land' } }
+    await fetchTasksFromPlatformApi(req, {}, next)
+
+    expect(platformApi.fetchTasks).toHaveBeenCalledWith(expect.objectContaining({
+      organisation: 'local-authority:TST',
+      dataset: 'brownfield-land',
+      severity: 'error',
+      task_source: 'issue',
+      limit: 100
+    }))
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('calls the API without dataset and with limit 500 when no dataset param', async () => {
+    platformApi.fetchTasks.mockResolvedValueOnce({ formattedData: { tasks: [], count: 0 } })
+
+    const req = { orgInfo: { organisation: 'local-authority:TST' }, params: {} }
+    await fetchTasksFromPlatformApi(req, {}, next)
+
+    expect(platformApi.fetchTasks).toHaveBeenCalledWith(expect.objectContaining({
+      limit: 500
+    }))
+    expect(platformApi.fetchTasks.mock.calls[0][0]).not.toHaveProperty('dataset')
+  })
+
+  it('deduplicates tasks keeping the highest count per (dataset, issue_type, field)', async () => {
+    const tasks = [
+      { dataset: 'brownfield-land', details: { issue_type: 'invalid URI', field: 'SiteplanURL', count: 6 } },
+      { dataset: 'brownfield-land', details: { issue_type: 'invalid URI', field: 'SiteplanURL', count: 9 } },
+      { dataset: 'brownfield-land', details: { issue_type: 'missing value', field: 'name', count: 1 } }
+    ]
+    platformApi.fetchTasks.mockResolvedValueOnce({ formattedData: { tasks, count: 3 } })
+
+    const req = { orgInfo: { organisation: 'local-authority:TST' }, params: {} }
+    await fetchTasksFromPlatformApi(req, {}, next)
+
+    expect(req.tasks.tasks).toHaveLength(2)
+    const uriTask = req.tasks.tasks.find(t => t.details.field === 'SiteplanURL')
+    expect(uriTask.details.count).toBe(9)
+    expect(req.tasks.count).toBe(2)
+  })
+
+  it('does not merge tasks with the same issue_type+field across different datasets', async () => {
+    const tasks = [
+      { dataset: 'brownfield-land', details: { issue_type: 'missing value', field: 'name', count: 2 } },
+      { dataset: 'conservation-area', details: { issue_type: 'missing value', field: 'name', count: 3 } }
+    ]
+    platformApi.fetchTasks.mockResolvedValueOnce({ formattedData: { tasks, count: 2 } })
+
+    const req = { orgInfo: { organisation: 'local-authority:TST' }, params: {} }
+    await fetchTasksFromPlatformApi(req, {}, next)
+
+    expect(req.tasks.tasks).toHaveLength(2)
+    expect(req.tasks.count).toBe(2)
+  })
+
+  it('falls back to empty tasks on API error', async () => {
+    platformApi.fetchTasks.mockRejectedValueOnce(new Error('API down'))
+
+    const req = { orgInfo: { organisation: 'local-authority:TST' }, params: { dataset: 'brownfield-land' } }
+    await fetchTasksFromPlatformApi(req, {}, next)
+
+    expect(req.tasks).toEqual({ tasks: [], count: 0 })
+    expect(next).toHaveBeenCalledTimes(1)
   })
 })

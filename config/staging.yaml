@@ -11,6 +11,7 @@ aws: {
     bucket: 'staging-pub-async-request-files',
 }
 manageServiceUrl: 'https://manage.staging.planning.data.gov.uk/'
+mainWebsiteUrl: 'https://www.staging.planning.data.gov.uk'
 redis: {
     secure: true,
     host: 'staging-pub-async-redis-kh1elu.serverless.euw2.cache.amazonaws.com',

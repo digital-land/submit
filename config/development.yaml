@@ -6,8 +6,9 @@ aws: {
     bucket: 'development-pub-async-request-files',
 }
 manageServiceUrl: 'https://manage.development.planning.data.gov.uk'
+mainWebsiteUrl: 'https://www.development.planning.data.gov.uk'
 datasetteUrl: https://datasette.development.planning.data.gov.uk
-downloadUrl: 'https://download.development.planning.data.gov.uk' 
+downloadUrl: 'https://download.development.planning.data.gov.uk'
 redis: {
     secure: true,
     host: 'development-pub-async-redis-3dqynz.serverless.euw2.cache.amazonaws.com',

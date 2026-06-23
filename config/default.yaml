@@ -16,7 +16,7 @@ aws: {
 }
 # ToDo: url and name might need updating
 url: 'https://provide.planning.data.gov.uk'
-mainWebsiteUrl: https://www.planning.data.gov.uk
+mainWebsiteUrl: https://www.development.planning.data.gov.uk
 dataDesignUrl: https://design.planning.data.gov.uk
 downloadUrl: 'https://download.planning.data.gov.uk' 
 # NOTE: this property is deprecated, use serviceNames instead

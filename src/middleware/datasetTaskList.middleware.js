@@ -19,8 +19,7 @@ import {
   expectations,
   fetchDatasetInfo,
   fetchEntityCount,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchTasksFromPlatformApi,
   fetchLocalPlanningGroups,
   fetchProvisionsByOrgsAndDatasets,
   fetchOrgInfo, fetchResources, fetchSources,
@@ -108,7 +107,7 @@ export function entityOutOfBoundsMessage (dataset, count) {
 export const prepareTasks = (req, res, next) => {
   const { lpa, dataset } = req.parsedParams
   const { entityCount, resources, sources, authority } = req
-  const { entryIssueCounts, entityIssueCounts, expectationOutOfBounds = [] } = req
+  const { tasks: tasksData = { tasks: [] }, expectationOutOfBounds = [] } = req
 
   // First check, if non authoritative dataset, only one task to show: Provide authoritative data
   if (authority && authority === 'some') {
@@ -121,25 +120,17 @@ export const prepareTasks = (req, res, next) => {
     }]
     return next()
   }
-  let issues = [...entryIssueCounts, ...entityIssueCounts]
 
-  issues = issues.filter(
-    issue => issue.issue_type !== '' &&
-    issue.issue_type !== undefined &&
-    issue.field !== '' &&
-    issue.field !== undefined
-  )
-
-  const taskList = Object.values(issues).map(({ field, issue_type: type, count }) => {
-    // if the issue doesn't have an entity, or is one of the special case issue types then we should use the resource_row_count
+  // Tasks are pre-deduplicated by fetchTasksFromPlatformApi (highest count per issue_type+field)
+  // TODO: show tasks broken down by endpoint
+  const taskList = (tasksData.tasks || [])
+    .filter(task => task.details?.issue_type && task.details?.field !== undefined)
+    .map(task => {
+    const { issue_type: type, field, count } = task.details
 
     let rowCount = entityCount.count
     if (SPECIAL_ISSUE_TYPES.includes(type)) {
-      if (resources.length > 0) {
-        rowCount = resources[0].entry_count
-      } else {
-        rowCount = 0
-      }
+      rowCount = resources.length > 0 ? resources[0].entry_count : 0
     }
 
     let title
@@ -156,9 +147,7 @@ export const prepareTasks = (req, res, next) => {
     }
 
     return {
-      title: {
-        text: title
-      },
+      title: { text: title },
       href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(type)}/${encodeURIComponent(field)}`,
       status: getStatusTag('Needs improving')
     }
@@ -241,8 +230,7 @@ export default [
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
   addEntityCountsToResources,
   fetchEntityCount,
-  fetchEntityIssueCounts,
-  fetchEntryIssueCounts,
+  fetchTasksFromPlatformApi,
   prepareTasks,
   prepareDatasetTaskListTemplateParams,
   getDatasetTaskList,
