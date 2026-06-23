@@ -1258,7 +1258,6 @@ export const fetchTasksFromPlatformApi = async (req, res, next) => {
   }
 }
 
-
 /**
  * Middleware. Fetches all local-planning-group entities from the Platform API in a single call and derives two outputs:
  *. - takes org code and:

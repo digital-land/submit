@@ -126,32 +126,32 @@ export const prepareTasks = (req, res, next) => {
   const taskList = (tasksData.tasks || [])
     .filter(task => task.details?.issue_type && task.details?.field !== undefined)
     .map(task => {
-    const { issue_type: type, field, count } = task.details
+      const { issue_type: type, field, count } = task.details
 
-    let rowCount = entityCount.count
-    if (SPECIAL_ISSUE_TYPES.includes(type)) {
-      rowCount = resources.length > 0 ? resources[0].entry_count : 0
-    }
+      let rowCount = entityCount.count
+      if (SPECIAL_ISSUE_TYPES.includes(type)) {
+        rowCount = resources.length > 0 ? resources[0].entry_count : 0
+      }
 
-    let title
-    try {
-      title = performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type, dataset })
-    } catch (e) {
-      logger.warn('Failed to generate task title', {
-        type: types.App,
-        errorMessage: e.message,
-        errorStack: e.stack,
-        params: { num_issues: count, rowCount, field, issue_type: type }
-      })
-      title = `${count} issue${count > 1 ? 's' : ''} of type ${type}`
-    }
+      let title
+      try {
+        title = performanceDbApi.getTaskMessage({ num_issues: count, rowCount, field, issue_type: type, dataset })
+      } catch (e) {
+        logger.warn('Failed to generate task title', {
+          type: types.App,
+          errorMessage: e.message,
+          errorStack: e.stack,
+          params: { num_issues: count, rowCount, field, issue_type: type }
+        })
+        title = `${count} issue${count > 1 ? 's' : ''} of type ${type}`
+      }
 
-    return {
-      title: { text: title },
-      href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(type)}/${encodeURIComponent(field)}`,
-      status: getStatusTag('Needs improving')
-    }
-  })
+      return {
+        title: { text: title },
+        href: `/organisations/${encodeURIComponent(lpa)}/${encodeURIComponent(dataset)}/${encodeURIComponent(type)}/${encodeURIComponent(field)}`,
+        status: getStatusTag('Needs improving')
+      }
+    })
 
   // include sources which couldn't be accessed
   for (const source of sources) {
