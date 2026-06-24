@@ -1,8 +1,19 @@
+.app-grid-row--flex {
+  display: flex;
+  flex-wrap: wrap;
+
+  &::after {
+    display: none;
+  }
+}
+
 .app-subnav {
   // Since the back to top link is outside the flow of the document we need to create a space for it.
   // This number is magic and was determined by manually judging the visual spacing.
   margin-bottom: 100px;
   padding: 0 govuk-spacing(3) 0 0;
+  position: sticky;
+  top: govuk-spacing(3);
   @include govuk-font(16);
 }
 
