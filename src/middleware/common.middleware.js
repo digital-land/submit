@@ -803,6 +803,7 @@ export const addFieldMappingsToIssue = (req, res, next) => {
 export const fetchEntryIssues = fetchMany({
   dataset: FetchOptions.fromParams,
   query: ({ req, params }) => {
+    if (!req.resources[0]) return 'SELECT 1 WHERE 0'
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
