@@ -668,6 +668,7 @@ export const filterOutEntitiesWithoutIssues = (req, res, next) => {
 // entity issues
 
 const fetchEntityIssuesForFieldAndType = fetchMany({
+  dataset: FetchOptions.fromParams,
   query: ({ req, params }) => {
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
@@ -679,18 +680,14 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
             field,
             entity,
             message,
-            severity,
             value,
             ROW_NUMBER() OVER (
               PARTITION BY i.issue_type, entity
               ORDER BY i.rowid
             ) AS rn
           FROM issue i
-          LEFT JOIN issue_type it ON i.issue_type = it.issue_type
           WHERE resource IN ('${req.resources.map(resource => resource.resource).join("', '")}')
             ${issueTypeClause}
-            AND it.responsibility = 'external'
-            AND it.severity = 'error'
             ${issueFieldClause}
             AND i.dataset = '${req.params.dataset}'
             AND entity != ''
@@ -704,7 +701,6 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
           field,
           entity,
           message,
-          severity,
           value
         FROM ranked
         WHERE rn = 1
@@ -805,17 +801,15 @@ export const addFieldMappingsToIssue = (req, res, next) => {
 
 // We can only get the issues without entity from the latest resource as we have no way of knowing if those in previous resources have been fixed?
 export const fetchEntryIssues = fetchMany({
+  dataset: FetchOptions.fromParams,
   query: ({ req, params }) => {
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
-      select i.issue_type, field, entity, message, severity, value, line_number
+      select i.issue_type, field, entity, message, value, line_number
       from issue i
-      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource = '${req.resources[0].resource}'
       ${issueTypeClause}
-      AND it.responsibility = 'external'
-      AND it.severity = 'error'
       AND i.dataset = '${req.params.dataset}'
       ${issueFieldClause}
       AND (entity = '' OR entity is NULL OR i.issue_type in ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))

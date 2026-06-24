@@ -42,6 +42,7 @@ export const addResourceMetaDataToResources = (req, res, next) => {
 }
 
 const fetchIssueCount = fetchOne({
+  dataset: FetchOptions.fromParams,
   query: ({ req, params }) => {
     if (!req.resources[0]) {
       return 'SELECT 0 AS count'
@@ -49,10 +50,8 @@ const fetchIssueCount = fetchOne({
     return `
       SELECT count(*) AS count
       FROM issue i
-      LEFT JOIN issue_type it ON i.issue_type = it.issue_type
       WHERE resource = '${req.resources[0].resource}'
       AND i.issue_type = '${params.issue_type}'
-      AND it.responsibility = 'external'
       AND field = '${params.issue_field}'
     `
   },
