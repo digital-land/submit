@@ -11,6 +11,7 @@ aws: {
     bucket: 'production-pub-async-request-files',
 }
 manageServiceUrl: 'https://manage.planning.data.gov.uk'
+mainWebsiteUrl: 'https://www.planning.data.gov.uk'
 redis: {
     secure: true,
     host: 'production-pub-async-redis-eihmmv.serverless.euw2.cache.amazonaws.com',

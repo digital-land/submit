@@ -36,15 +36,7 @@ describe('Dataset Overview Middleware', () => {
           { endpoint: 'endpoint1', endpoint_url: 'endpoint1', documentation_url: 'doc-url1', status: 200, endpoint_entry_date: '2024-02-01', latest_log_entry_date: 'LA1', resource_start_date: '2023-01-01' },
           { endpoint: 'endpoint2', endpoint_url: 'endpoint2', documentation_url: 'doc-url2', status: 404, exception: 'exception', endpoint_entry_date: '2023-01-01', latest_log_entry_date: 'LA2', resource_start_date: '2023-01-02' }
         ],
-        entityIssueCounts: [
-          {
-            issue: 'Example issue 1',
-            issue_type: 'Example issue type 1',
-            field: 'Example issue field 1',
-            num_issues: 1,
-            status: 'Error'
-          }
-        ],
+        tasks: { tasks: [{ reference: 'task-1', severity: 'error' }], count: 1 },
         notice: undefined,
         authority: ''
       }

@@ -1,5 +1,5 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
-import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareDatasetObjects, prepareOverviewTemplateParams, prepareAuthorityBatch } from '../../../src/middleware/lpa-overview.middleware.js'
+import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareDatasetObjects, prepareOverviewTemplateParams, prepareAuthorityBatch, groupIssuesCountsByDataset } from '../../../src/middleware/lpa-overview.middleware.js'
 import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
 import platformApi from '../../../src/services/platformApi.js'
@@ -498,6 +498,48 @@ describe('lpa-overview.middleware', () => {
       await prepareAuthorityBatch(req, res, next)
       expect(platformApi.fetchEntities).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()
+    })
+  })
+
+  describe('groupIssuesCountsByDataset', () => {
+    it('groups tasks by dataset into req.issues', () => {
+      const req = {
+        tasks: {
+          tasks: [
+            { dataset: 'brownfield-land', details: { issue_type: 'missing value', field: 'name', count: 1 } },
+            { dataset: 'brownfield-land', details: { issue_type: 'invalid URI', field: 'SiteplanURL', count: 3 } },
+            { dataset: 'conservation-area', details: { issue_type: 'missing value', field: 'name', count: 2 } }
+          ],
+          count: 3
+        }
+      }
+      const next = vi.fn()
+
+      groupIssuesCountsByDataset(req, {}, next)
+
+      expect(req.issues['brownfield-land']).toHaveLength(2)
+      expect(req.issues['conservation-area']).toHaveLength(1)
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('produces an empty object when tasks is empty', () => {
+      const req = { tasks: { tasks: [], count: 0 } }
+      const next = vi.fn()
+
+      groupIssuesCountsByDataset(req, {}, next)
+
+      expect(req.issues).toEqual({})
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles missing tasks gracefully', () => {
+      const req = {}
+      const next = vi.fn()
+
+      groupIssuesCountsByDataset(req, {}, next)
+
+      expect(req.issues).toEqual({})
+      expect(next).toHaveBeenCalledTimes(1)
     })
   })
 })

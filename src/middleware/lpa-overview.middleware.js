@@ -4,7 +4,7 @@
  * @description Middleware for oragnisation (LPA) overview page
  */
 
-import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchEntityIssueCountsPerformanceDb, fetchLocalPlanningGroups } from './common.middleware.js'
+import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchTasksFromPlatformApi, fetchLocalPlanningGroups } from './common.middleware.js'
 import { fetchMany, renderTemplate, parallel } from './middleware.builders.js'
 import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
 import _ from 'lodash'
@@ -417,9 +417,9 @@ export const getOverview = renderTemplate({
 })
 
 export function groupIssuesCountsByDataset (req, res, next) {
-  const { entityIssueCounts = [] } = req
+  const tasks = req.tasks?.tasks ?? []
 
-  req.issues = entityIssueCounts.reduce((acc, current) => {
+  req.issues = tasks.reduce((acc, current) => {
     if (!acc[current.dataset]) {
       acc[current.dataset] = []
     }
@@ -457,7 +457,7 @@ export default [
   parallel([
     fetchLocalPlanningGroups,
     fetchEndpointSummary,
-    fetchEntityIssueCountsPerformanceDb,
+    fetchTasksFromPlatformApi,
     fetchProvisions
   ]),
 

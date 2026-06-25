@@ -176,3 +176,58 @@ describe('platformApi.fetchEntities', () => {
     await expect(platformApi.fetchEntities(params)).rejects.toThrow('Network Error')
   })
 })
+
+describe('platformApi.fetchTasks', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('builds the correct URL with dataset filter', async () => {
+    axios.get.mockResolvedValueOnce({ data: { tasks: [], count: 0 } })
+
+    await platformApi.fetchTasks({
+      organisation: 'local-authority:TST',
+      dataset: 'brownfield-land',
+      severity: 'error',
+      task_source: 'issue',
+      limit: 100
+    })
+
+    expect(axios.get).toHaveBeenCalledWith(
+      'https://www.planning.data.gov.uk/task.json?organisation=local-authority%3ATST&dataset=brownfield-land&severity=error&task_source=issue&limit=100',
+      expect.any(Object)
+    )
+  })
+
+  it('omits dataset param when not provided', async () => {
+    axios.get.mockResolvedValueOnce({ data: { tasks: [], count: 0 } })
+
+    await platformApi.fetchTasks({
+      organisation: 'local-authority:TST',
+      severity: 'error',
+      task_source: 'issue',
+      limit: 500
+    })
+
+    const calledUrl = axios.get.mock.calls[0][0]
+    expect(calledUrl).not.toContain('dataset=')
+    expect(calledUrl).toContain('limit=500')
+  })
+
+  it('returns formattedData with tasks and count', async () => {
+    const tasks = [{ reference: 'abc', dataset: 'brownfield-land', details: { issue_type: 'missing value', field: 'name', count: 1 } }]
+    axios.get.mockResolvedValueOnce({ data: { tasks, count: 1 } })
+
+    const result = await platformApi.fetchTasks({ organisation: 'local-authority:TST' })
+
+    expect(result.formattedData).toEqual({ tasks, count: 1 })
+  })
+
+  it('returns empty formattedData when response is missing fields', async () => {
+    axios.get.mockResolvedValueOnce({ data: {} })
+
+    const result = await platformApi.fetchTasks({ organisation: 'local-authority:TST' })
+
+    expect(result.formattedData).toEqual({ tasks: [], count: 0 })
+  })
+})
