@@ -110,7 +110,7 @@ class CheckAnswersController extends PageController {
     - Email: ${data.email}\n
     - Organisation ID: ${data.organisationId}\n
     - Organisation Name: ${data.organisationName}\n
-    - LPA Dashboard: https://provide.planning.data.gov.uk/organisations/${data.organisationId}\n
+    - LPA Dashboard: - LPA Dashboard: ${config.url}organisations/${data.organisationId}\n
     - Dataset: ${data.dataset}\n
     - Documentation URL: ${data.documentationUrl}\n
     - Endpoint URL: ${data.endpoint}\n
