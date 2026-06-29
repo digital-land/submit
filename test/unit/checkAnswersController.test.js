@@ -125,6 +125,7 @@ describe('CheckAnswersController', () => {
       const [jiraRequest, jiraRequestTypeId] = createCustomerRequest.mock.calls[0]
       expect(jiraRequest.description).toContain(`${config.url}check/results/existing-request-id/1`)
       expect(jiraRequest.description).not.toContain(`${config.url}check/results/existing-request-id/${config.jira.requestTypeId}`)
+      expect(jiraRequest.description).toContain(`LPA Dashboard: https://provide.planning.data.gov.uk/organisations/${sessionData.orgId}`)
       expect(jiraRequestTypeId).toBe(config.jira.requestTypeId)
       expect(createCustomerRequest).toHaveBeenCalledWith(
         expect.objectContaining({
