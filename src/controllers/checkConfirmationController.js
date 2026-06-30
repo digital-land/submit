@@ -21,7 +21,8 @@ class CheckConfirmationController extends PageController {
         }
         req.form.options.alreadyCollectingEndpoint = await endpointAlreadyCollectedForDataset({
           endpointUrl: params.url,
-          dataset: params.dataset
+          dataset: params.dataset,
+          organisation: params.organisationName
         })
       } catch (error) {
         logger.warn('CheckConfirmationController: could not check whether endpoint is already collected', {

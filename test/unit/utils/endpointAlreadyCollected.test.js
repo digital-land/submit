@@ -18,7 +18,8 @@ describe('endpointAlreadyCollectedForDataset', () => {
 
     await expect(endpointAlreadyCollectedForDataset({
       endpointUrl: 'https://example.com/data.csv',
-      dataset: 'brownfield-land'
+      dataset: 'brownfield-land',
+      organisation: 'local-authority:ABC'
     })).resolves.toBe(true)
   })
 
@@ -27,7 +28,8 @@ describe('endpointAlreadyCollectedForDataset', () => {
 
     await expect(endpointAlreadyCollectedForDataset({
       endpointUrl: 'https://example.com/data.csv',
-      dataset: 'article-4-direction'
+      dataset: 'article-4-direction',
+      organisation: 'local-authority:ABC'
     })).resolves.toBe(false)
   })
 
@@ -36,17 +38,29 @@ describe('endpointAlreadyCollectedForDataset', () => {
 
     await endpointAlreadyCollectedForDataset({
       endpointUrl: "https://example.com/data's.csv",
-      dataset: "dataset's"
+      dataset: "dataset's",
+      organisation: "local-authority:O'RG"
     })
 
     expect(datasette.runQuery.mock.calls[0][0]).toContain("https://example.com/data''s.csv")
     expect(datasette.runQuery.mock.calls[0][0]).toContain("dataset''s")
+    expect(datasette.runQuery.mock.calls[0][0]).toContain("local-authority:O''RG")
   })
 
   it('does not query Datasette when endpoint URL or dataset is missing', async () => {
     await expect(endpointAlreadyCollectedForDataset({
       endpointUrl: '',
       dataset: 'brownfield-land'
+    })).resolves.toBe(false)
+
+    expect(datasette.runQuery).not.toHaveBeenCalled()
+  })
+
+  it('does not query Datasette when organisation is missing', async () => {
+    await expect(endpointAlreadyCollectedForDataset({
+      endpointUrl: 'https://example.com/data.csv',
+      dataset: 'brownfield-land',
+      organisation: ''
     })).resolves.toBe(false)
 
     expect(datasette.runQuery).not.toHaveBeenCalled()

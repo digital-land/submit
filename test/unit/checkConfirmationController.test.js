@@ -63,7 +63,8 @@ describe('CheckConfirmationController', () => {
     expect(getRequestData).toHaveBeenCalledWith('request-123')
     expect(endpointAlreadyCollectedForDataset).toHaveBeenCalledWith({
       endpointUrl: 'https://example.com/data.csv',
-      dataset: 'brownfield-land'
+      dataset: 'brownfield-land',
+      organisation: 'local-authority:ABC'
     })
     expect(req.sessionModel.set).toHaveBeenCalledWith('dataset', 'brownfield-land')
     expect(req.sessionModel.set).toHaveBeenCalledWith('orgId', 'local-authority:ABC')
