@@ -89,5 +89,23 @@ describe('Check confirmation View', () => {
       expect(overviewLink).not.toBeNull()
       expect(overviewLink.textContent.trim()).toBe('Return to brownfield-land overview')
     })
+
+    it('should render a home link when an overview URL cannot be built', () => {
+      const html = stripWhitespace(nunjucks.render('check/confirmation.html', {
+        options: {
+          ...baseOptions,
+          requestId: 'abc-123',
+          alreadyCollectingEndpoint: true,
+          orgId: undefined,
+          dataset: 'brownfield-land'
+        }
+      }))
+      const doc = new JSDOM(html).window.document
+      const homeLink = doc.querySelector('a[href="/"]')
+
+      expect(homeLink).not.toBeNull()
+      expect(homeLink.textContent.trim()).toBe('Return to Home')
+      expect(doc.body.textContent).not.toContain('Return to brownfield-land overview')
+    })
   })
 })

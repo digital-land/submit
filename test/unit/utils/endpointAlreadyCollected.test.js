@@ -33,6 +33,32 @@ describe('endpointAlreadyCollectedForDataset', () => {
     })).resolves.toBe(false)
   })
 
+  it('returns false when the same endpoint URL and dataset belong to a different organisation', async () => {
+    datasette.runQuery.mockImplementation(query => ({
+      formattedData: query.includes("local-authority:ABC'") ? [{ 1: 1 }] : []
+    }))
+
+    await expect(endpointAlreadyCollectedForDataset({
+      endpointUrl: 'https://example.com/data.csv',
+      dataset: 'brownfield-land',
+      organisation: 'local-authority:XYZ'
+    })).resolves.toBe(false)
+
+    expect(datasette.runQuery.mock.calls[0][0]).toContain("local-authority:XYZ'")
+  })
+
+  it('returns true when the same endpoint URL and dataset belong to the same organisation', async () => {
+    datasette.runQuery.mockImplementation(query => ({
+      formattedData: query.includes("local-authority:ABC'") ? [{ 1: 1 }] : []
+    }))
+
+    await expect(endpointAlreadyCollectedForDataset({
+      endpointUrl: 'https://example.com/data.csv',
+      dataset: 'brownfield-land',
+      organisation: 'local-authority:ABC'
+    })).resolves.toBe(true)
+  })
+
   it('escapes endpoint URL and dataset values in the query', async () => {
     datasette.runQuery.mockResolvedValue({ formattedData: [] })
 
