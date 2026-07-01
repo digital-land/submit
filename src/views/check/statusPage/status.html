@@ -59,7 +59,7 @@
   {{ super() }}
   <script>
     window.serverContext = {
-      pollingEndpoint: "{{ options.pollingEndpoint }}"
+      pollingEndpoint: {{ options.pollingEndpoint | dump | safe }}
     }
   </script>
   <script src="/public/js/statusPage.bundle.js"></script>

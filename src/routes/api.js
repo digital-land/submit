@@ -15,7 +15,7 @@ const router = express.Router()
  * @returns {Promise<object>} Returns a JSON object with the request data if successful.
  * If an error occurs, returns a JSON object with an error message and sets the HTTP status code to 500.
  */
-router.get('/status/:result_id', async (req, res) => {
+export async function getStatus (req, res) {
   res.set('Cache-Control', 'no-store')
   try {
     const resultData = await getRequestData(req.params.result_id)
@@ -24,7 +24,8 @@ router.get('/status/:result_id', async (req, res) => {
     // compute whether we should show column mapping when the request finished
     if (typeof resultData.isComplete === 'function' && resultData.isComplete() && !resultData.isFailed?.()) {
       try {
-        const show = await shouldShowColumnMapping(resultData, [])
+        const uniqueDatasetFields = getUniqueDatasetFieldsFromQuery(req.query)
+        const show = await shouldShowColumnMapping(resultData, uniqueDatasetFields)
         payload.showColumnMapping = show
         if (show) payload.columnMappingUrl = `/check/column-mapping/${resultData.id}`
       } catch (e) {
@@ -35,7 +36,17 @@ router.get('/status/:result_id', async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error })
   }
-})
+}
+
+router.get('/status/:result_id', getStatus)
+
+export function getUniqueDatasetFieldsFromQuery (query = {}) {
+  if (!query.field) return []
+
+  return Array.isArray(query.field)
+    ? query.field
+    : [query.field]
+}
 
 /**
  * Retrieves the boundary data for a local planning authority (LPA) by boundary ID.

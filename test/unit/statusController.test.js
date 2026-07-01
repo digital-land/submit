@@ -73,6 +73,26 @@ describe('StatusController', () => {
 
       expect(req.form.options.data).toBe(mockResult)
     })
+
+    it('should include unique dataset fields in the polling endpoint', async () => {
+      const mockResult = { id: 'test_id', status: 'PROCESSING', response: { test: 'test' }, hasErrors: () => false }
+      asyncRequestApi.getRequestData = vi.fn().mockResolvedValue(mockResult)
+
+      const req = {
+        form: {
+          options: {}
+        },
+        params: { id: 'fake_id' },
+        uniqueDatasetFields: ['reference', 'geometry', 'entry-date']
+      }
+
+      const res = {}
+      const next = vi.fn()
+
+      await statusController.locals(req, res, next)
+
+      expect(req.form.options.pollingEndpoint).toBe('/api/status/test_id?field=reference&field=geometry&field=entry-date')
+    })
   })
 
   describe('post', () => {

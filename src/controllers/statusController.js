@@ -81,7 +81,11 @@ class StatusController extends PageController {
       req.form.options.messageTexts = messageTexts
       req.form.options.buttonTexts = buttonTexts
       req.form.options.buttonAriaLabels = buttonAriaLabels
-      req.form.options.pollingEndpoint = `/api/status/${req.form.options.data.id}`
+      const pollingParams = new URLSearchParams()
+      const uniqueDatasetFields = req.uniqueDatasetFields || []
+      uniqueDatasetFields.forEach(field => pollingParams.append('field', field))
+      const pollingQuery = pollingParams.toString()
+      req.form.options.pollingEndpoint = `/api/status/${req.form.options.data.id}${pollingQuery ? `?${pollingQuery}` : ''}`
       const now = new Date()
       req.form.options.lastUpdated = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Europe/London' }).replace(' ', '').toLowerCase() +
         ' on ' +
