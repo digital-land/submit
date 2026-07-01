@@ -102,10 +102,11 @@ describe('Check confirmation View', () => {
       }))
       const doc = new JSDOM(html).window.document
       const homeLink = doc.querySelector('a[href="/"]')
+      const overviewLink = doc.querySelector('a[href^="/organisations/"]')
 
       expect(homeLink).not.toBeNull()
       expect(homeLink.textContent.trim()).toBe('Return to Home')
-      expect(doc.body.textContent).not.toContain('Return to brownfield-land overview')
+      expect(overviewLink).toBeNull()
     })
   })
 })

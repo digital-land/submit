@@ -79,6 +79,11 @@ describe('endpointAlreadyCollectedForDataset', () => {
       dataset: 'brownfield-land'
     })).resolves.toBe(false)
 
+    await expect(endpointAlreadyCollectedForDataset({
+      endpointUrl: 'https://example.com/data.csv',
+      dataset: ''
+    })).resolves.toBe(false)
+
     expect(datasette.runQuery).not.toHaveBeenCalled()
   })
 
