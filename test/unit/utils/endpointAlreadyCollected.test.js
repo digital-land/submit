@@ -73,6 +73,19 @@ describe('endpointAlreadyCollectedForDataset', () => {
     expect(datasette.runQuery.mock.calls[0][0]).toContain("local-authority:O''RG")
   })
 
+  it('matches organisation directly', async () => {
+    datasette.runQuery.mockResolvedValue({ formattedData: [] })
+
+    await endpointAlreadyCollectedForDataset({
+      endpointUrl: 'https://example.com/data.csv',
+      dataset: 'brownfield-land',
+      organisation: 'local-authority:ABC'
+    })
+
+    expect(datasette.runQuery.mock.calls[0][0]).toContain("ro.organisation = 'local-authority:ABC'")
+    expect(datasette.runQuery.mock.calls[0][0]).not.toContain('REPLACE')
+  })
+
   it('does not query Datasette when endpoint URL or dataset is missing', async () => {
     await expect(endpointAlreadyCollectedForDataset({
       endpointUrl: '',

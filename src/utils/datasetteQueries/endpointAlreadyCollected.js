@@ -16,7 +16,7 @@ export async function endpointAlreadyCollectedForDataset ({ endpointUrl, dataset
     JOIN resource_organisation ro ON r.resource = ro.resource
     WHERE e.endpoint_url = '${sqlString(endpointUrl)}'
       AND rd.dataset = '${sqlString(dataset)}'
-      AND REPLACE(ro.organisation, '-eng', '') = '${sqlString(organisation)}'
+      AND ro.organisation = '${sqlString(organisation)}'
       AND (e.end_date IS NULL OR e.end_date = '')
       AND (r.end_date IS NULL OR r.end_date = '')
     LIMIT 1`
