@@ -6,10 +6,18 @@
 
 {% set serviceType = 'Check' %}
 
-{% if options.requestId %}
+{% if options.alreadyCollectingEndpoint %}
+  {% set pageName = "Data checked" %}
+{% elif options.requestId %}
   {% set pageName = "Provide your data" %}
 {% else %}
   {% set pageName = "Publish your data" %}
+{% endif %}
+
+{% if options.deepLink %}
+  {% set datasetOverviewHref = options.deepLink.referrer %}
+{% elif options.orgId and options.dataset %}
+  {% set datasetOverviewHref = "/organisations/" + options.orgId + "/" + options.dataset %}
 {% endif %}
 
 {% block beforeContent %}
@@ -22,15 +30,29 @@
 
 {% set content %}
 
-  # What happens next
+  ## What happens next
 
-  {% if options.requestId %}
+  {% if options.alreadyCollectingEndpoint %}
 
-  ## 1. Make sure that your data is published on your website
+  We are already collecting data from this endpoint URL, so we will process any changes you make automatically.
+
+  You do not need to submit this endpoint URL again.
+
+  {% if datasetOverviewHref and options.dataset %}
+<p><a class="govuk-link" href="{{ datasetOverviewHref }}">Return to {{ options.dataset | datasetSlugToReadableName | replace("-", " ") }} overview</a></p>
+  {% else %}
+<p><a class="govuk-link" href="/">Return to Home</a></p>
+  {% endif %}
 
   {% else %}
 
-  ## 1. Publish data to your website
+  {% if options.requestId %}
+
+  ### 1. Make sure that your data is published on your website
+
+  {% else %}
+
+  ### 1. Publish data to your website
 
   {% endif %}
 
@@ -41,7 +63,7 @@
 
   {% if options.requestId %}
 
-  ## 2. Provide your data
+  ### 2. Provide your data
 
   You need to submit:
 
@@ -54,7 +76,7 @@
   <div class="govuk-button-group">
     <a class="govuk-button submit-link" href="/submit/lpa-details">Provide your data</a>
     {% if options.deepLink %}
-      <a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName }} overview</a>
+      <a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName  | replace("-", " ") }} overview</a>
     {% else %}
       <a class="govuk-link" href="/">Return to Home</a>
     {% endif %}
@@ -62,16 +84,18 @@
 
   {% else %}
 
-  ## 2. Provide your data
+  ### 2. Provide your data
 
   After you publish, you should [provide your data to the Planning Data Platform](/check/url).
 
   [Find out more about how to check and provide your data](/guidance)
 
   {% if options.deepLink %}
-    <p><a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName }} overview</a></p>
+    <p><a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName | replace("-", " ") }} overview</a></p>
   {% else %}
     <p><a class="govuk-link" href="/">Return to Home</a></p>
+  {% endif %}
+
   {% endif %}
 
   {% endif %}

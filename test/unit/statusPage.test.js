@@ -75,7 +75,7 @@ describe('StatusPage', () => {
       json: () => Promise.resolve(mockResponse)
     })
     statusPage.beginPolling('http://test.com', '123')
-    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(statusPage.pollingInterval)
     await Promise.resolve() // wait for promises to resolve
 
     expect(statusPage.heading.textContent).toBe(headingTexts.checked)
@@ -91,7 +91,7 @@ describe('StatusPage', () => {
     })
 
     statusPage.beginPolling('http://test.com', '123')
-    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(statusPage.pollingInterval)
     await Promise.resolve()
 
     expect(statusPage.heading.textContent).toBe(headingTexts.columnMapping)
@@ -108,7 +108,7 @@ describe('StatusPage', () => {
       json: () => Promise.resolve(mockResponse)
     })
     statusPage.beginPolling('http://test.com', '123')
-    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(statusPage.pollingInterval)
     await Promise.resolve() // wait for promises to resolve
     expect(statusPage.heading.textContent).toBe(headingTexts.checked)
     expect(statusPage.continueButton.style.display).toBe('block')
@@ -120,18 +120,18 @@ describe('StatusPage', () => {
       json: () => Promise.resolve(mockResponse)
     })
     statusPage.beginPolling('http://test.com', '123')
-    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(statusPage.pollingInterval)
     await Promise.resolve() // wait for promises to resolve
     expect(statusPage.heading.textContent).toBe(headingTexts.checking)
     expect(statusPage.continueButton.style.display).toBe('none')
-    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(statusPage.pollingInterval)
     await Promise.resolve()
     expect(statusPage.heading.textContent).toBe(headingTexts.checking)
     expect(statusPage.continueButton.style.display).toBe('none')
     global.fetch.mockResolvedValueOnce({
       json: () => Promise.resolve({ status: 'COMPLETE' })
     })
-    await vi.advanceTimersByTimeAsync(1000)
+    await vi.advanceTimersByTimeAsync(statusPage.pollingInterval)
     await Promise.resolve()
 
     expect(statusPage.heading.textContent).toBe(headingTexts.checked)

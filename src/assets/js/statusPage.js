@@ -8,7 +8,7 @@ const finishedProcessingStatuses = [
 
 export default class StatusPage {
   constructor (pollingInterval, maxPollAttempts) {
-    this.pollingInterval = pollingInterval || 1000
+    this.pollingInterval = pollingInterval || 3000
     this.maxPollAttempts = maxPollAttempts || 30
     this.pollingOffset = 400
     this.pollAttempts = 0
