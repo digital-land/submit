@@ -32,6 +32,15 @@ describe('Check confirmation View', () => {
     it('should not render the submit link when requestId is absent', () => {
       expect(doc.querySelector('a.submit-link')).toBeNull()
     })
+
+    it('should render the standard confirmation heading structure', () => {
+      expect(doc.querySelector('main h1')?.textContent.trim()).toBe('Publish your data')
+      expect(doc.querySelector('main h2')?.textContent.trim()).toBe('What happens next')
+      expect([...doc.querySelectorAll('main h3')].map(heading => heading.textContent.trim())).toEqual([
+        '1. Publish data to your website',
+        '2. Provide your data'
+      ])
+    })
   })
 
   describe('with requestId', () => {
@@ -49,6 +58,15 @@ describe('Check confirmation View', () => {
       const submitLink = doc.querySelector('a.submit-link')
       expect(submitLink).not.toBeNull()
       expect(submitLink.getAttribute('href')).toBe('/submit/lpa-details')
+    })
+
+    it('should render the standard confirmation heading structure', () => {
+      expect(doc.querySelector('main h1')?.textContent.trim()).toBe('Provide your data')
+      expect(doc.querySelector('main h2')?.textContent.trim()).toBe('What happens next')
+      expect([...doc.querySelectorAll('main h3')].map(heading => heading.textContent.trim())).toEqual([
+        '1. Make sure that your data is published on your website',
+        '2. Provide your data'
+      ])
     })
   })
 
@@ -76,8 +94,8 @@ describe('Check confirmation View', () => {
     })
 
     it('should render the already collecting content', () => {
-      expect(doc.body.textContent).toContain('We are already collecting data from your endpoint URL, so we will update your changes automatically.')
-      expect(doc.body.textContent).toContain('You do not need to submit your endpoint URL again.')
+      expect(doc.body.textContent).toContain('We are already collecting data from this endpoint URL, so we will process any changes you make automatically.')
+      expect(doc.body.textContent).toContain('You do not need to submit this endpoint URL again.')
     })
 
     it('should not render the submit link', () => {
@@ -87,7 +105,13 @@ describe('Check confirmation View', () => {
     it('should render a dataset overview link', () => {
       const overviewLink = doc.querySelector('a[href="/organisations/local-authority:ABC/brownfield-land"]')
       expect(overviewLink).not.toBeNull()
-      expect(overviewLink.textContent.trim()).toBe('Return to brownfield-land overview')
+      expect(overviewLink.textContent.trim()).toBe('Return to brownfield land overview')
+    })
+
+    it('should render What happens next as a second-level heading', () => {
+      expect(doc.querySelector('main h1')?.textContent.trim()).toBe('Data checked')
+      expect(doc.querySelector('main h2')?.textContent.trim()).toBe('What happens next')
+      expect([...doc.querySelectorAll('main h1')]).toHaveLength(1)
     })
 
     it('should render a home link when an overview URL cannot be built', () => {

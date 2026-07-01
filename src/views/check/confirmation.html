@@ -34,12 +34,12 @@
 
   {% if options.alreadyCollectingEndpoint %}
 
-  We are already collecting data from this endpoint URL, so we will process any changes you make automatically..
+  We are already collecting data from this endpoint URL, so we will process any changes you make automatically.
 
   You do not need to submit this endpoint URL again.
 
   {% if datasetOverviewHref and options.dataset %}
-<p><a class="govuk-link" href="{{ datasetOverviewHref }}">Return to {{ options.dataset | datasetSlugToReadableName }} overview</a></p>
+<p><a class="govuk-link" href="{{ datasetOverviewHref }}">Return to {{ options.dataset | datasetSlugToReadableName | replace("-", " ") }} overview</a></p>
   {% else %}
 <p><a class="govuk-link" href="/">Return to Home</a></p>
   {% endif %}
@@ -76,7 +76,7 @@
   <div class="govuk-button-group">
     <a class="govuk-button submit-link" href="/submit/lpa-details">Provide your data</a>
     {% if options.deepLink %}
-      <a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName }} overview</a>
+      <a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName  | replace("-", " ") }} overview</a>
     {% else %}
       <a class="govuk-link" href="/">Return to Home</a>
     {% endif %}
@@ -91,7 +91,7 @@
   [Find out more about how to check and provide your data](/guidance)
 
   {% if options.deepLink %}
-    <p><a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName }} overview</a></p>
+    <p><a class="govuk-link" href="{{ options.deepLink.referrer }}">Return to {{ options.deepLink.dataset | datasetSlugToReadableName | replace("-", " ") }} overview</a></p>
   {% else %}
     <p><a class="govuk-link" href="/">Return to Home</a></p>
   {% endif %}
