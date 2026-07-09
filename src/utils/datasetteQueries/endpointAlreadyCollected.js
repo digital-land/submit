@@ -18,7 +18,6 @@ export async function endpointAlreadyCollectedForDataset ({ endpointUrl, dataset
       AND rd.dataset = '${sqlString(dataset)}'
       AND ro.organisation = '${sqlString(organisation)}'
       AND (e.end_date IS NULL OR e.end_date = '')
-      AND (r.end_date IS NULL OR r.end_date = '')
     LIMIT 1`
 
   const response = await datasette.runQuery(sql)
