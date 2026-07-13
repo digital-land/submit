@@ -4,7 +4,7 @@ organisationTypes:
   - development-corporation
   - local-planning-group
 asyncRequestApi: {
-    url: http://production-pub-async-api-lb-636110663.eu-west-2.elb.amazonaws.com
+    url: https://pub-async.planning.data.gov.uk
 }
 aws: {
     region: eu-west-2,
