@@ -25,6 +25,13 @@ jobs:
     parameters:
       maxDuration: 1
 
+  - type: alertFilter
+    parameters:
+      deleteGlobalAlerts: false
+    alertFilters:
+      - ruleId: 10062
+        newRisk: 'False Positive'
+
   - type: report
     parameters:
       template: traditional-md
@@ -39,7 +46,6 @@ jobs:
       - high
       - medium
       - low
-      - falsepositive
 
   - type: report
     parameters:
@@ -55,4 +61,3 @@ jobs:
       - high
       - medium
       - low
-      - falsepositive
