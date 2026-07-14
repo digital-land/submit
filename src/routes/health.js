@@ -3,6 +3,7 @@ import config from '../../config/index.js'
 import AWS from 'aws-sdk'
 import { createClient } from 'redis'
 import logger from '../utils/logger.js'
+import datasette from '../services/datasette.js'
 
 const router = express.Router()
 
@@ -16,21 +17,28 @@ router.get('/', async (req, res) => {
   const dependencies = [
     {
       name: 's3-bucket',
-      status: await checkS3Bucket() ? 'ok' : 'unreachable'
+      status: await checkS3Bucket() ? 'ok' : 'down'
     },
     {
       name: 'request-api',
-      status: await checkRequestApi() ? 'ok' : 'unreachable'
+      status: await checkRequestApi() ? 'ok' : 'down'
+    },
+    {
+      name: 'datasette',
+      status: await checkDatasette() ? 'ok' : 'down'
     }
   ]
   if (config.redis) {
     dependencies.push({
       name: 'redis',
-      status: await checkRedis() ? 'ok' : 'unreachable'
+      status: await checkRedis() ? 'ok' : 'down',
+      required: false
     })
   }
 
+  const status = getStatus(dependencies)
   const toReturn = {
+    status,
     name: config.serviceNames.submit,
     environment: config.environment,
     version: process.env.GIT_COMMIT || 'unknown',
@@ -38,13 +46,22 @@ router.get('/', async (req, res) => {
     dependencies
   }
 
-  const isAnyServiceUnreachable = toReturn.dependencies.some(service => service.status === 'unreachable')
-  if (isAnyServiceUnreachable) {
+  if (status === 'down') {
     res.status(500).json(toReturn)
   } else {
     res.json(toReturn)
   }
 })
+
+const getStatus = (dependencies) => {
+  if (dependencies.some(service => service.status === 'down' && service.required !== false)) {
+    return 'down'
+  }
+  if (dependencies.some(service => service.status === 'down')) {
+    return 'degraded'
+  }
+  return 'ok'
+}
 
 const checkS3Bucket = async () => {
   const s3 = new AWS.S3()
@@ -57,6 +74,15 @@ const checkRequestApi = async () => {
   try {
     const response = await fetch(`${config.asyncRequestApi.url}/health`)
     return response.ok
+  } catch (error) {
+    return false
+  }
+}
+
+const checkDatasette = async () => {
+  try {
+    await datasette.runQuery('SELECT 1')
+    return true
   } catch (error) {
     return false
   }
@@ -85,4 +111,4 @@ const checkRedis = async () => {
 }
 
 export default router
-export { checkS3Bucket, checkRequestApi, checkRedis }
+export { checkS3Bucket, checkRequestApi, checkDatasette, checkRedis, getStatus }
