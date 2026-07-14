@@ -86,6 +86,21 @@ describe('endpointAlreadyCollectedForDataset', () => {
     expect(datasette.runQuery.mock.calls[0][0]).not.toContain('REPLACE')
   })
 
+  it('does not exclude ended resources from the duplicate endpoint check', async () => {
+    datasette.runQuery.mockResolvedValue({ formattedData: [] })
+
+    await endpointAlreadyCollectedForDataset({
+      endpointUrl: 'https://example.com/data.csv',
+      dataset: 'brownfield-land',
+      organisation: 'local-authority:ABC'
+    })
+
+    const query = datasette.runQuery.mock.calls[0][0]
+
+    expect(query).toContain("(e.end_date IS NULL OR e.end_date = '')")
+    expect(query).not.toContain('r.end_date')
+  })
+
   it('does not query Datasette when endpoint URL or dataset is missing', async () => {
     await expect(endpointAlreadyCollectedForDataset({
       endpointUrl: '',
