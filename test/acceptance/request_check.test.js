@@ -284,7 +284,11 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageHasTabs(false)
     })
 
-    test('request check of a @url that should cause a SSL error and display custom content', async ({ page }) => {
+    // TODO: skipped because serverErrorFile's SSL certificate has been renewed and now
+    // validates, so it no longer triggers the SSL error this test relies on. We need a
+    // reliable way to force an SSL failure (e.g. a badssl.com endpoint or a locally-served
+    // bad cert) before re-enabling. See https://github.com/digital-land/submit/pull/1231
+    test.skip('request check of a @url that should cause a SSL error and display custom content', async ({ page }) => {
       log('request check of a @url that should cause a SSL error and display custom content', true)
 
       const startPage = await navigateToCheck(page)
