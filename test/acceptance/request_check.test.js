@@ -22,7 +22,7 @@ const navigateToCheck = async (page) => {
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
 // TODO: this file should cause a SSL Certificate error when served to the async. It currently does but is temporary (A link that causes a Server Timeout Error or SSL Error is required)
-const serverErrorFile = 'https://www.tendringdc.gov.uk/sites/default/files/documents/planning/CAD%20csv.csv'
+const serverErrorFile = 'http://expired.badssl.com'
 const htmlFile = 'https://en.wikipedia.org/wiki/John_Doe'
 
 let lastTimestamp = 0
@@ -284,11 +284,7 @@ test.describe('Request Check', () => {
       await resultsPage.expectPageHasTabs(false)
     })
 
-    // TODO: skipped because serverErrorFile's SSL certificate has been renewed and now
-    // validates, so it no longer triggers the SSL error this test relies on. We need a
-    // reliable way to force an SSL failure (e.g. a badssl.com endpoint or a locally-served
-    // bad cert) before re-enabling. See https://github.com/digital-land/submit/pull/1231
-    test.skip('request check of a @url that should cause a SSL error and display custom content', async ({ page }) => {
+    test('request check of a @url that should cause a SSL error and display custom content', async ({ page }) => {
       log('request check of a @url that should cause a SSL error and display custom content', true)
 
       const startPage = await navigateToCheck(page)
