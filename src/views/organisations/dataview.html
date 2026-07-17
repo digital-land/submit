@@ -60,6 +60,18 @@
 </div>
 
 <div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <section>
+      <h2 class="govuk-heading-m">About this data</h2>
+      <p class="govuk-body">We accept data in different formats and standardise it, so that we can combine it with data from other sources. This means the data we show might be in a different format to the data you provided. For example, we standardise all dates as YYYY-MM-DD.</p>
+      {% if endpointCount > 1 %}
+        <p class="govuk-body">The information within this data is from all {{ endpointCount }} of your endpoints.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
     {{ table(tableParams) }}
   </div>

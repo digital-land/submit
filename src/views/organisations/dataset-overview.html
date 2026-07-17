@@ -213,7 +213,7 @@
     {% if authority !== 'some' %}
     <section>
       <h2 class="govuk-heading-m">Active endpoints</h2>
-      <p class="govuk-body">You have {{ endpointCount }} endpoint{% if endpointCount != 1 %}s{% endif %} we are currently checking for data.</p>
+      <p class="govuk-body">You have {{ endpointCount }} endpoint{% if endpointCount != 1 %}s{% endif %} we are currently checking for data.{% if endpointCount > 1 %} The information within dataset details includes data from all {{ endpointCount }} endpoints.{% endif %}</p>
       {% for endpointSummaryCard in endpointSummaryCards %}
         {{ govukSummaryList(endpointSummaryCard) }}
       {% endfor %}

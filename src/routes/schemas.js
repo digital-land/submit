@@ -213,6 +213,7 @@ export const OrgDataView = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   taskCount: v.integer(),
+  endpointCount: v.integer(),
   authority: v.string(),
   tableParams,
   pagination: PaginationParams,
