@@ -21,7 +21,6 @@ const navigateToCheck = async (page) => {
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
-// TODO: this file should cause a SSL Certificate error when served to the async. It currently does but is temporary (A link that causes a Server Timeout Error or SSL Error is required)
 const serverErrorFile = 'http://expired.badssl.com'
 const htmlFile = 'https://en.wikipedia.org/wiki/John_Doe'
 
