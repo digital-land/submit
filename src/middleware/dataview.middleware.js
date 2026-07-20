@@ -8,6 +8,7 @@ import {
   fetchLocalPlanningGroups,
   fetchProvisionsByOrgsAndDatasets,
   fetchOrgInfo,
+  fetchSources,
   noop,
   processAuthoritativeMiddlewares,
   processSpecificationMiddlewares,
@@ -92,7 +93,11 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
 })
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, tasks, authority, alternateSources, uniqueDatasetFields, provisions, expectationOutOfBounds } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, tasks, authority, alternateSources, uniqueDatasetFields, provisions, expectationOutOfBounds, sources } = req
+
+  // Match the overview page: 'some' authority uses alternative/pre-populated
+  // sources, not the LPA's own endpoints, so it reports no endpoints.
+  const endpointCount = authority === 'some' ? 0 : (sources?.length ?? 0)
 
   const outOfBoundsCount = (expectationOutOfBounds?.length ?? 0) > 0 ? 1 : 0
   const taskCount = authority !== 'some' ? (tasks?.count ?? 0) + outOfBoundsCount : 1
@@ -112,6 +117,7 @@ export const prepareTemplateParams = (req, res, next) => {
     authority,
     dataset,
     taskCount,
+    endpointCount,
     tableParams,
     pagination,
     dataRange,
@@ -138,6 +144,7 @@ export default [
   fetchDatasetInfo,
 
   fetchResources,
+  fetchSources,
   fetchTasksFromPlatformApi,
   isFeatureEnabled('expectationOutOfBoundsTask') ? fetchOutOfBoundsExpectations : noop,
 

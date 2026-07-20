@@ -206,6 +206,7 @@ describe('dataview.middleware.test.js', () => {
         dataset: { name: 'Mock Dataset', dataset: 'mock-dataset' },
         authority: 'mock-authority',
         taskCount: 0,
+        endpointCount: 0,
         tableParams: { columns: ['foo'], fields: ['foo'] },
         pagination: {},
         dataRange: {
