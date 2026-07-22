@@ -230,4 +230,37 @@ describe('getDatasetNameMap', () => {
       vi.resetModules()
     }
   })
+
+  it('should return false for missing statutory dataset params without querying Datasette', async () => {
+    const mockDatasette = {
+      default: {
+        runQuery: vi.fn()
+      }
+    }
+
+    try {
+      vi.resetModules()
+      vi.doMock('../../config/index.js', () => ({
+        default: {
+          redis: false,
+          mainWebsiteUrl: config.mainWebsiteUrl
+        }
+      }))
+      vi.doMock('../../src/services/datasette.js', () => mockDatasette)
+
+      const { isStatutoryDataset } = await import('../../src/utils/redisLoader.js')
+
+      await expect(isStatutoryDataset(null)).resolves.toBe(false)
+      await expect(isStatutoryDataset()).resolves.toBe(false)
+      await expect(isStatutoryDataset({
+        organisation: 'local-authority:TST'
+      })).resolves.toBe(false)
+
+      expect(mockDatasette.default.runQuery).not.toHaveBeenCalled()
+    } finally {
+      vi.unmock('../../config/index.js')
+      vi.unmock('../../src/services/datasette.js')
+      vi.resetModules()
+    }
+  })
 })
