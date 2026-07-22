@@ -42,6 +42,15 @@ describe('columnMappingController helpers', () => {
 
     expect(next).toHaveBeenCalledWith(expect.any(MiddlewareError))
     expect(next.mock.calls[0][0].statusCode).toBe(404)
+
+    vi.clearAllMocks()
+
+    await handleUnavailableColumnMappingRequest({
+      locals: {}
+    }, res, next)
+
+    expect(next).toHaveBeenCalledWith(expect.any(MiddlewareError))
+    expect(next.mock.calls[0][0].statusCode).toBe(404)
   })
 
   it('builds rows from mapped, missing and unmapped columns', () => {
