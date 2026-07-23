@@ -555,7 +555,7 @@ export function getFileNameOrUrlAndCheckedTime (req, res, next) {
 
 const validateParams = validateQueryParams({
   schema: v.object({
-    pageNumber: v.optional(v.pipe(v.string(), v.transform(parseInt), v.minValue(1)), '1')
+    pageNumber: v.optional(v.pipe(v.string(), v.transform(s => parseInt(s, 10)), v.number(), v.integer(), v.minValue(1)), '1')
   })
 })
 
