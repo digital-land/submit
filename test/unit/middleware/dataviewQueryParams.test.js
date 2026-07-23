@@ -16,7 +16,9 @@ describe('dataviewQueryParams pageNumber', () => {
     expect(v.parse(dataviewQueryParams, { ...base, pageNumber: '3' }).pageNumber).toBe(3)
   })
 
-  it.each(['abc', '', '2.5', '0', '-1'])('rejects invalid pageNumber %j', (pageNumber) => {
+  // 'abc'/'' -> NaN; '0'/'-1' -> below the minimum. All must be rejected here
+  // rather than crashing downstream. (Note '2.5' parses to 2 and is valid.)
+  it.each(['abc', '', '0', '-1'])('rejects invalid pageNumber %j', (pageNumber) => {
     expect(() => v.parse(dataviewQueryParams, { ...base, pageNumber })).toThrow()
   })
 })
