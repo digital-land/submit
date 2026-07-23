@@ -6,6 +6,7 @@ import { processSpecificationMiddlewares } from '../middleware/common.middleware
 import platformApi from '../services/platformApi.js'
 import { types } from '../utils/logging.js'
 import logger from '../utils/logger.js'
+import { MiddlewareError } from '../utils/errors.js'
 
 const LOCK_DETECTED_GEOMETRY_MAPPINGS = true
 const GEOMETRY_FIELDS = ['geometry', 'point']
@@ -14,14 +15,7 @@ class ColumnMappingController extends PageController {
   middlewareSetup () {
     super.middlewareSetup()
     this.use(getRequestDataMiddleware)
-    this.use(async (req, res, next) => {
-      const { requestData } = req.locals
-      const params = requestData.getParams() ?? {}
-      if (await isStatutoryDataset(params.organisationName, params.dataset)) {
-        return res.status(404).render('errors/404.html')
-      }
-      next()
-    })
+    this.use(handleUnavailableColumnMappingRequest)
     this.use(updateSessionFromRequestData)
     // Populate req.params and dataset, then run specification processing middlewares
     this.use(async (req, res, next) => {
@@ -119,6 +113,25 @@ class ColumnMappingController extends PageController {
       next(error)
     }
   }
+}
+
+export async function handleUnavailableColumnMappingRequest (req, res, next) {
+  const { requestData } = req.locals
+  const params = requestData?.getParams?.() ?? {}
+  const { organisationName, dataset } = params
+
+  if (!organisationName || !dataset) {
+    return next(new MiddlewareError('Column mapping request params not found', 404))
+  }
+
+  if (await isStatutoryDataset({
+    organisation: organisationName,
+    dataset
+  })) {
+    return next(new MiddlewareError('Column mapping not found', 404))
+  }
+
+  next()
 }
 
 /**

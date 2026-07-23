@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   applySubmittedFieldSelections,
   applyDetectedGeometryColumnMapping,
@@ -9,10 +9,50 @@ import {
   buildSelectableColumns,
   detectGeometryColumnMapping,
   getBracketFields,
+  handleUnavailableColumnMappingRequest,
   validateColumnMapping
 } from '../../src/controllers/columnMappingController.js'
+import { MiddlewareError } from '../../src/utils/errors.js'
 
 describe('columnMappingController helpers', () => {
+  it('returns a 404 when column mapping request params are missing', async () => {
+    const res = {}
+    const next = vi.fn()
+
+    await handleUnavailableColumnMappingRequest({
+      locals: {
+        requestData: {
+          getParams: () => ({ dataset: 'tree' })
+        }
+      }
+    }, res, next)
+
+    expect(next).toHaveBeenCalledWith(expect.any(MiddlewareError))
+    expect(next.mock.calls[0][0].statusCode).toBe(404)
+
+    vi.clearAllMocks()
+
+    await handleUnavailableColumnMappingRequest({
+      locals: {
+        requestData: {
+          getParams: () => ({ organisationName: 'local-authority:TST' })
+        }
+      }
+    }, res, next)
+
+    expect(next).toHaveBeenCalledWith(expect.any(MiddlewareError))
+    expect(next.mock.calls[0][0].statusCode).toBe(404)
+
+    vi.clearAllMocks()
+
+    await handleUnavailableColumnMappingRequest({
+      locals: {}
+    }, res, next)
+
+    expect(next).toHaveBeenCalledWith(expect.any(MiddlewareError))
+    expect(next.mock.calls[0][0].statusCode).toBe(404)
+  })
+
   it('builds rows from mapped, missing and unmapped columns', () => {
     const rows = buildColumnMappingRows({
       columnFieldLog: [

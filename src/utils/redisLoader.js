@@ -93,7 +93,8 @@ export async function getProvisionReasonsForDataset ({ organisation, dataset }) 
   return provisionReasons
 }
 
-export async function isStatutoryDataset ({ organisation, dataset }) {
+export async function isStatutoryDataset (requestParams = {}) {
+  const { organisation, dataset } = requestParams ?? {}
   const provisionReasons = await getProvisionReasonsForDataset({ organisation, dataset })
   return provisionReasons.includes('statutory')
 }
