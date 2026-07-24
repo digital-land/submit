@@ -32,7 +32,7 @@ import { splitByLeading } from '../utils/table.js'
 export const dataviewQueryParams = v.object({
   lpa: v.string(),
   dataset: v.string(),
-  pageNumber: v.optional(v.pipe(v.string(), v.transform(s => parseInt(s, 10)), v.minValue(1)), '1'),
+  pageNumber: v.optional(v.pipe(v.string(), v.transform(s => parseInt(s, 10)), v.number(), v.integer(), v.minValue(1)), '1'),
   resourceId: v.optional(v.string())
 })
 
