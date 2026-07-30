@@ -285,6 +285,11 @@ code * {
   max-width: 100%;
 }
 
+.govuk-inset-text img {
+  max-width: 100%;
+  height: auto;
+}
+
 .schema-issue {
   display: flex;
   flex-direction: column;

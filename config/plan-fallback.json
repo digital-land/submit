@@ -18,9 +18,13 @@
     {
       "dataset": "local-plan",
       "fields": [
-        { "field": "reference" },
+        {
+          "field": "reference",
+          "guidance": "Give each plan a unique reference. For example:\n\n- LP-BRX-2024\n- barnet-local-plan-2021-2036\n- hertfordshire-minerals-and-waste-plan\n- essex-minerals-plan\n- essex-waste-plan\n- county-durham-supplementary-plan\n\nFor minerals and waste plans with multiple documents, give each minerals and waste plan document a unique reference."
+        },
         {
           "field": "name",
+          "guidance": "Use the title of the plan. For example:\n\n- York Local Plan\n- Plymouth and South West Devon Joint Local Plan",
           "assertions": [
             {
               "reference": "plan-A001",
@@ -28,14 +32,33 @@
             }
           ]
         },
-        { "field": "dataset" },
-        { "field": "description" },
-        { "field": "period-start-date" },
-        { "field": "period-end-date" },
-        { "field": "local-planning-authorities" },
-        { "field": "documentation-url" },
+        {
+          "field": "dataset",
+          "guidance": "Enter one of the following values to show the type of plan or plan document:\n\n- local-plan\n- supplementary-plan\n- minerals-plan\n- waste-plan\n\nIf your plan includes multiple types, enter the list of types and separate each of them with a semi-colon. For example:\n\n- minerals-plan;waste-plan\n- local-plan;minerals-plan\n- local-plan;minerals-plan;waste-plan"
+        },
+        {
+          "field": "description",
+          "guidance": "Enter a short description of the matters that the plan is to deal with."
+        },
+        {
+          "field": "period-start-date",
+          "guidance": "Enter the start of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2026\n- 2030"
+        },
+        {
+          "field": "period-end-date",
+          "guidance": "Enter the end of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2038\n- 2040\n\nIf you do not have a plan document on the day you publish your data, leave this field blank."
+        },
+        {
+          "field": "local-planning-authorities",
+          "guidance": "Enter the GSS code for the local planning authority area that this local or supplementary plan covers. For a joint plan, enter the list of references and separate each of them with a semi-colon. For example:\n\n- E60000001\n- E60000132;E60000133;E60000135;E60000136"
+        },
+        {
+          "field": "documentation-url",
+          "guidance": "Enter the URL of the webpage which links to your main or core plan document.\n\nIf there are several plans listed on a single webpage, you can use an anchor link (fragment identifier) to make the document-url value for each plan unique. For example:\n\n- https://eastcambs.gov.uk/planning-and-building-control/planning-policy-and-guidance/adopted-local-plan/local-plan\n- https://example.com/local-plans/#example-local-plan-2027"
+        },
         {
           "field": "document-url",
+          "guidance": "Enter the URL for the relevant plan document, which is usually a PDF file. For example, https://eastcambs.gov.uk/sites/default/files/2024-10/Local%20Plan%20adopted%2019%20October%202023%20-%20final%20with%20cover.pdf.",
           "assertions": [
             {
               "reference": "plan-A002",
@@ -43,17 +66,30 @@
             }
           ]
         },
-        { "field": "required-housing" },
-        { "field": "entry-date" },
-        { "field": "notes" }
+        {
+          "field": "required-housing",
+          "guidance": "Enter the minimum number of homes that the plan expects to provide during the plan period.\n\nYou must provide your required-housing when you launch your consultation on your proposed local plan. You must update your required-housing when you:\n\n- submit your plan for examination\n- publish the examiner's recommendations and reasons\n- publish your adopted local plan\n\nFor example:\n\n- 10852\n- 10012"
+        },
+        {
+          "field": "entry-date",
+          "guidance": "Enter the date you created or modified the data."
+        },
+        {
+          "field": "notes",
+          "guidance": "You may provide notes on how you made this data to help users differentiate the plan from others with a similar name. For example, Barnsley's Local Plan as adopted by Full Council on 3 January 2019."
+        }
       ]
     },
     {
       "dataset": "supplementary-plan",
       "fields": [
-        { "field": "reference" },
+        {
+          "field": "reference",
+          "guidance": "Give each plan a unique reference. For example:\n\n- LP-BRX-2024\n- barnet-local-plan-2021-2036\n- hertfordshire-minerals-and-waste-plan\n- essex-minerals-plan\n- essex-waste-plan\n- county-durham-supplementary-plan\n\nFor minerals and waste plans with multiple documents, give each minerals and waste plan document a unique reference."
+        },
         {
           "field": "name",
+          "guidance": "Use the title of the plan. For example:\n\n- York Local Plan\n- Plymouth and South West Devon Joint Local Plan",
           "assertions": [
             {
               "reference": "plan-A001",
@@ -61,14 +97,33 @@
             }
           ]
         },
-        { "field": "dataset" },
-        { "field": "description" },
-        { "field": "period-start-date" },
-        { "field": "period-end-date" },
-        { "field": "local-planning-authorities" },
-        { "field": "documentation-url" },
+        {
+          "field": "dataset",
+          "guidance": "Enter one of the following values to show the type of plan or plan document:\n\n- local-plan\n- supplementary-plan\n- minerals-plan\n- waste-plan\n\nIf your plan includes multiple types, enter the list of types and separate each of them with a semi-colon. For example:\n\n- minerals-plan;waste-plan\n- local-plan;minerals-plan\n- local-plan;minerals-plan;waste-plan"
+        },
+        {
+          "field": "description",
+          "guidance": "Enter a short description of the matters that the plan is to deal with."
+        },
+        {
+          "field": "period-start-date",
+          "guidance": "Enter the start of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2026\n- 2030"
+        },
+        {
+          "field": "period-end-date",
+          "guidance": "Enter the end of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2038\n- 2040\n\nIf you do not have a plan document on the day you publish your data, leave this field blank."
+        },
+        {
+          "field": "local-planning-authorities",
+          "guidance": "Enter the GSS code for the local planning authority area that this local or supplementary plan covers. For a joint plan, enter the list of references and separate each of them with a semi-colon. For example:\n\n- E60000001\n- E60000132;E60000133;E60000135;E60000136"
+        },
+        {
+          "field": "documentation-url",
+          "guidance": "Enter the URL of the webpage which links to your main or core plan document.\n\nIf there are several plans listed on a single webpage, you can use an anchor link (fragment identifier) to make the document-url value for each plan unique. For example:\n\n- https://eastcambs.gov.uk/planning-and-building-control/planning-policy-and-guidance/adopted-local-plan/local-plan\n- https://example.com/local-plans/#example-local-plan-2027"
+        },
         {
           "field": "document-url",
+          "guidance": "Enter the URL for the relevant plan document, which is usually a PDF file. For example, https://eastcambs.gov.uk/sites/default/files/2024-10/Local%20Plan%20adopted%2019%20October%202023%20-%20final%20with%20cover.pdf.",
           "assertions": [
             {
               "reference": "plan-A002",
@@ -76,16 +131,26 @@
             }
           ]
         },
-        { "field": "entry-date" },
-        { "field": "notes" }
+        {
+          "field": "entry-date",
+          "guidance": "Enter the date you created or modified the data."
+        },
+        {
+          "field": "notes",
+          "guidance": "You may provide notes on how you made this data to help users differentiate the plan from others with a similar name. For example, Barnsley's Local Plan as adopted by Full Council on 3 January 2019."
+        }
       ]
     },
     {
       "dataset": "minerals-plan",
       "fields": [
-        { "field": "reference" },
+        {
+          "field": "reference",
+          "guidance": "Give each plan a unique reference. For example:\n\n- LP-BRX-2024\n- barnet-local-plan-2021-2036\n- hertfordshire-minerals-and-waste-plan\n- essex-minerals-plan\n- essex-waste-plan\n- county-durham-supplementary-plan\n\nFor minerals and waste plans with multiple documents, give each minerals and waste plan document a unique reference."
+        },
         {
           "field": "name",
+          "guidance": "Use the title of the plan. For example:\n\n- York Local Plan\n- Plymouth and South West Devon Joint Local Plan",
           "assertions": [
             {
               "reference": "plan-A001",
@@ -93,14 +158,33 @@
             }
           ]
         },
-        { "field": "dataset" },
-        { "field": "description" },
-        { "field": "period-start-date" },
-        { "field": "period-end-date" },
-        { "field": "minerals-and-waste-planning-authorities" },
-        { "field": "documentation-url" },
+        {
+          "field": "dataset",
+          "guidance": "Enter one of the following values to show the type of plan or plan document:\n\n- local-plan\n- supplementary-plan\n- minerals-plan\n- waste-plan\n\nIf your plan includes multiple types, enter the list of types and separate each of them with a semi-colon. For example:\n\n- minerals-plan;waste-plan\n- local-plan;minerals-plan\n- local-plan;minerals-plan;waste-plan"
+        },
+        {
+          "field": "description",
+          "guidance": "Enter a short description of the matters that the plan is to deal with."
+        },
+        {
+          "field": "period-start-date",
+          "guidance": "Enter the start of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2026\n- 2030"
+        },
+        {
+          "field": "period-end-date",
+          "guidance": "Enter the end of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2038\n- 2040\n\nIf you do not have a plan document on the day you publish your data, leave this field blank."
+        },
+        {
+          "field": "minerals-and-waste-planning-authorities",
+          "guidance": "Enter the GSS code for the minerals and waste planning authority area that this minerals and waste plan document or supplementary plan covers. For a joint minerals and waste plan document, enter the list of references and separate each of them with a semi-colon. For example:\n\n- E47000001\n- E60000331;E60000225"
+        },
+        {
+          "field": "documentation-url",
+          "guidance": "Enter the URL of the webpage which links to your main or core plan document.\n\nIf there are several plans listed on a single webpage, you can use an anchor link (fragment identifier) to make the document-url value for each plan unique. For example:\n\n- https://eastcambs.gov.uk/planning-and-building-control/planning-policy-and-guidance/adopted-local-plan/local-plan\n- https://example.com/local-plans/#example-local-plan-2027"
+        },
         {
           "field": "document-url",
+          "guidance": "Enter the URL for the relevant plan document, which is usually a PDF file. For example, https://eastcambs.gov.uk/sites/default/files/2024-10/Local%20Plan%20adopted%2019%20October%202023%20-%20final%20with%20cover.pdf.",
           "assertions": [
             {
               "reference": "plan-A002",
@@ -108,17 +192,30 @@
             }
           ]
         },
-        { "field": "document-count" },
-        { "field": "entry-date" },
-        { "field": "notes" }
+        {
+          "field": "document-count",
+          "guidance": "Enter the number of documents which collectively form the plan. This field is only required for a minerals and waste plan."
+        },
+        {
+          "field": "entry-date",
+          "guidance": "Enter the date you created or modified the data."
+        },
+        {
+          "field": "notes",
+          "guidance": "You may provide notes on how you made this data to help users differentiate the plan from others with a similar name. For example, Barnsley's Local Plan as adopted by Full Council on 3 January 2019."
+        }
       ]
     },
     {
       "dataset": "waste-plan",
       "fields": [
-        { "field": "reference" },
+        {
+          "field": "reference",
+          "guidance": "Give each plan a unique reference. For example:\n\n- LP-BRX-2024\n- barnet-local-plan-2021-2036\n- hertfordshire-minerals-and-waste-plan\n- essex-minerals-plan\n- essex-waste-plan\n- county-durham-supplementary-plan\n\nFor minerals and waste plans with multiple documents, give each minerals and waste plan document a unique reference."
+        },
         {
           "field": "name",
+          "guidance": "Use the title of the plan. For example:\n\n- York Local Plan\n- Plymouth and South West Devon Joint Local Plan",
           "assertions": [
             {
               "reference": "plan-A001",
@@ -126,14 +223,33 @@
             }
           ]
         },
-        { "field": "dataset" },
-        { "field": "description" },
-        { "field": "period-start-date" },
-        { "field": "period-end-date" },
-        { "field": "minerals-and-waste-planning-authorities" },
-        { "field": "documentation-url" },
+        {
+          "field": "dataset",
+          "guidance": "Enter one of the following values to show the type of plan or plan document:\n\n- local-plan\n- supplementary-plan\n- minerals-plan\n- waste-plan\n\nIf your plan includes multiple types, enter the list of types and separate each of them with a semi-colon. For example:\n\n- minerals-plan;waste-plan\n- local-plan;minerals-plan\n- local-plan;minerals-plan;waste-plan"
+        },
+        {
+          "field": "description",
+          "guidance": "Enter a short description of the matters that the plan is to deal with."
+        },
+        {
+          "field": "period-start-date",
+          "guidance": "Enter the start of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2026\n- 2030"
+        },
+        {
+          "field": "period-end-date",
+          "guidance": "Enter the end of the plan period. This is usually just a year in YYYY format. For example:\n\n- 2038\n- 2040\n\nIf you do not have a plan document on the day you publish your data, leave this field blank."
+        },
+        {
+          "field": "minerals-and-waste-planning-authorities",
+          "guidance": "Enter the GSS code for the minerals and waste planning authority area that this minerals and waste plan document or supplementary plan covers. For a joint minerals and waste plan document, enter the list of references and separate each of them with a semi-colon. For example:\n\n- E47000001\n- E60000331;E60000225"
+        },
+        {
+          "field": "documentation-url",
+          "guidance": "Enter the URL of the webpage which links to your main or core plan document.\n\nIf there are several plans listed on a single webpage, you can use an anchor link (fragment identifier) to make the document-url value for each plan unique. For example:\n\n- https://eastcambs.gov.uk/planning-and-building-control/planning-policy-and-guidance/adopted-local-plan/local-plan\n- https://example.com/local-plans/#example-local-plan-2027"
+        },
         {
           "field": "document-url",
+          "guidance": "Enter the URL for the relevant plan document, which is usually a PDF file. For example, https://eastcambs.gov.uk/sites/default/files/2024-10/Local%20Plan%20adopted%2019%20October%202023%20-%20final%20with%20cover.pdf.",
           "assertions": [
             {
               "reference": "plan-A002",
@@ -141,16 +257,28 @@
             }
           ]
         },
-        { "field": "document-count" },
-        { "field": "entry-date" },
-        { "field": "notes" }
+        {
+          "field": "document-count",
+          "guidance": "Enter the number of documents which collectively form the plan. This field is only required for a minerals and waste plan."
+        },
+        {
+          "field": "entry-date",
+          "guidance": "Enter the date you created or modified the data."
+        },
+        {
+          "field": "notes",
+          "guidance": "You may provide notes on how you made this data to help users differentiate the plan from others with a similar name. For example, Barnsley's Local Plan as adopted by Full Council on 3 January 2019."
+        }
       ]
     },
     {
       "dataset": "plan-timetable",
       "fields": [
         { "field": "reference" },
-        { "field": "plan" },
+        {
+          "field": "plan",
+          "guidance": "This is the unique reference for your overall plan. For example:\n\n- LP-BRX-2024\n- barnet-local-plan-2021-2036\n- hertfordshire-minerals-and-waste-plan\n- essex-minerals-plan\n- essex-waste-plan\n- county-durham-supplementary-plan\n\nThe 'plan' field in your plan timetable dataset must match the 'reference' field from your plan dataset.\n\n![This diagram shows the relationship between the plan dataset and the plan timetable dataset. The reference value from your plan dataset needs to match the plan value in your plan timetable dataset. This is so that we can match your timetable to the right plan.](/public/static/images/plan-timetable-plan-relationship.svg)"
+        },
         {
           "field": "plan-event",
           "dataset": "plan-event"
