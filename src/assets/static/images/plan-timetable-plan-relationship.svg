@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 320" width="600" height="320" role="img" aria-labelledby="diagram-title">
+  <title id="diagram-title">The relationship between the plan dataset and the plan timetable dataset. The reference value from your plan dataset needs to match the plan value in your plan timetable dataset.</title>
+
+  <style>
+    .tbl { fill: #ffffff; stroke: #b1b4b6; stroke-width: 1; }
+    .hdr { fill: #0b0c0c; }
+    .hdr-text { fill: #ffffff; font-weight: bold; font-size: 10px; text-anchor: middle; }
+    .rule { stroke: #b1b4b6; stroke-width: 1; }
+    .cell { fill: #0b0c0c; font-size: 8.5px; }
+    text { font-family: arial, helvetica, sans-serif; }
+  </style>
+
+  <!-- ================= plan ================= -->
+  <rect class="tbl" x="8.5" y="8.5" width="271" height="301"/>
+  <rect class="hdr" x="8" y="8" width="272" height="22"/>
+  <text class="hdr-text" x="144" y="23">plan</text>
+  <line class="rule" x1="8" y1="30" x2="280" y2="30"/>
+  <line class="rule" x1="204" y1="30" x2="204" y2="310"/>
+
+  <line class="rule" x1="8" y1="50" x2="280" y2="50"/>
+  <line class="rule" x1="8" y1="70" x2="280" y2="70"/>
+  <line class="rule" x1="8" y1="90" x2="280" y2="90"/>
+  <line class="rule" x1="8" y1="110" x2="280" y2="110"/>
+  <line class="rule" x1="8" y1="130" x2="280" y2="130"/>
+  <line class="rule" x1="8" y1="150" x2="280" y2="150"/>
+  <line class="rule" x1="8" y1="170" x2="280" y2="170"/>
+  <line class="rule" x1="8" y1="190" x2="280" y2="190"/>
+  <line class="rule" x1="8" y1="210" x2="280" y2="210"/>
+  <line class="rule" x1="8" y1="230" x2="280" y2="230"/>
+  <line class="rule" x1="8" y1="250" x2="280" y2="250"/>
+  <line class="rule" x1="8" y1="270" x2="280" y2="270"/>
+  <line class="rule" x1="8" y1="290" x2="280" y2="290"/>
+
+  <text class="cell" x="16" y="43">reference</text>
+  <text class="cell" x="212" y="43">string</text>
+  <text class="cell" x="16" y="63">name</text>
+  <text class="cell" x="212" y="63">string</text>
+  <text class="cell" x="16" y="83">description</text>
+  <text class="cell" x="212" y="83">string</text>
+  <text class="cell" x="16" y="103">datasets</text>
+  <text class="cell" x="212" y="103">reference*</text>
+  <text class="cell" x="16" y="123">period-start-date</text>
+  <text class="cell" x="212" y="123">datetime</text>
+  <text class="cell" x="16" y="143">period-end-date</text>
+  <text class="cell" x="212" y="143">datetime</text>
+  <text class="cell" x="16" y="163">local-planning-authorities</text>
+  <text class="cell" x="212" y="163">reference*</text>
+  <text class="cell" x="16" y="183">minerals-and-waste-planning-authorities</text>
+  <text class="cell" x="212" y="183">reference*</text>
+  <text class="cell" x="16" y="203">documentation-url</text>
+  <text class="cell" x="212" y="203">url</text>
+  <text class="cell" x="16" y="223">document-url</text>
+  <text class="cell" x="212" y="223">url</text>
+  <text class="cell" x="16" y="243">required-housing</text>
+  <text class="cell" x="212" y="243">integer</text>
+  <text class="cell" x="16" y="263">document-count</text>
+  <text class="cell" x="212" y="263">integer</text>
+  <text class="cell" x="16" y="283">entry-date</text>
+  <text class="cell" x="212" y="283">datetime</text>
+  <text class="cell" x="16" y="303">notes</text>
+  <text class="cell" x="212" y="303">text</text>
+
+  <!-- ============ plan-timetable ============ -->
+  <rect class="tbl" x="364.5" y="8.5" width="227" height="161"/>
+  <rect class="hdr" x="364" y="8" width="228" height="22"/>
+  <text class="hdr-text" x="478" y="23">plan-timetable</text>
+  <line class="rule" x1="364" y1="30" x2="592" y2="30"/>
+  <line class="rule" x1="516" y1="30" x2="516" y2="170"/>
+
+  <line class="rule" x1="364" y1="50" x2="592" y2="50"/>
+  <line class="rule" x1="364" y1="70" x2="592" y2="70"/>
+  <line class="rule" x1="364" y1="90" x2="592" y2="90"/>
+  <line class="rule" x1="364" y1="110" x2="592" y2="110"/>
+  <line class="rule" x1="364" y1="130" x2="592" y2="130"/>
+  <line class="rule" x1="364" y1="150" x2="592" y2="150"/>
+
+  <text class="cell" x="372" y="43">reference</text>
+  <text class="cell" x="524" y="43">string</text>
+  <text class="cell" x="372" y="63">plan</text>
+  <text class="cell" x="524" y="63">reference</text>
+  <text class="cell" x="372" y="83">plan-event</text>
+  <text class="cell" x="524" y="83">reference</text>
+  <text class="cell" x="372" y="103">event-date</text>
+  <text class="cell" x="524" y="103">datetime</text>
+  <text class="cell" x="372" y="123">actual-date</text>
+  <text class="cell" x="524" y="123">datetime</text>
+  <text class="cell" x="372" y="143">entry-date</text>
+  <text class="cell" x="524" y="143">datetime</text>
+  <text class="cell" x="372" y="163">notes</text>
+  <text class="cell" x="524" y="163">text</text>
+
+  <!-- plan.reference ──► plan-timetable.plan -->
+  <path d="M 284 40 C 312 40, 332 60, 360 60" fill="none" stroke="#0b0c0c" stroke-width="1.5"/>
+  <circle cx="280" cy="40" r="4" fill="#0b0c0c"/>
+  <circle cx="364" cy="60" r="3.5" fill="#ffffff" stroke="#0b0c0c" stroke-width="1.5"/>
+</svg>

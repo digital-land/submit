@@ -2,11 +2,13 @@
 
 {% if issueSpecification %}
   {% set issueSpecificationInsetHtml %}
-    <div>
+    <div class="app-issue-guidance">
       <h3 class="govuk-heading-m">{{ issueSpecification.field }}</h3>
 
       {% if issueSpecification.guidance %}
-        {{ issueSpecification.guidance | govukMarkdown | safe }}
+        <div class="app-issue-guidance__markdown">
+          {{ issueSpecification.guidance | govukMarkdown | safe }}
+        </div>
       {% endif %}
     </div>
   {% endset %}

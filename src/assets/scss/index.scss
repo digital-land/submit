@@ -285,6 +285,11 @@ code * {
   max-width: 100%;
 }
 
+.app-issue-guidance__markdown img {
+  max-width: 100%;
+  height: auto;
+}
+
 .schema-issue {
   display: flex;
   flex-direction: column;
