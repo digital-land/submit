@@ -263,4 +263,81 @@ describe('getDatasetNameMap', () => {
       vi.resetModules()
     }
   })
+
+  it('should store submitted endpoints in Redis for 24 hours and find them using the same key', async () => {
+    const mockRedisClient = {
+      isOpen: false,
+      connect: vi.fn().mockImplementation(async () => {
+        mockRedisClient.isOpen = true
+      }),
+      exists: vi.fn().mockResolvedValue(1),
+      set: vi.fn().mockResolvedValue('OK'),
+      eval: vi.fn().mockResolvedValue(1)
+    }
+
+    try {
+      vi.resetModules()
+      vi.doMock('redis', () => ({
+        createClient: vi.fn(() => mockRedisClient)
+      }))
+      vi.doMock('../../config/index.js', () => ({
+        default: {
+          redis: {
+            secure: false,
+            host: 'localhost',
+            port: 6379
+          },
+          mainWebsiteUrl: config.mainWebsiteUrl
+        }
+      }))
+
+      const {
+        reserveSubmittedEndpoint,
+        settleSubmittedEndpoint,
+        wasEndpointRecentlySubmitted
+      } = await import('../../src/utils/redisLoader.js')
+      const submission = {
+        endpointUrl: 'https://example.com/data.csv',
+        dataset: 'brownfield-land',
+        organisation: 'local-authority:ABC'
+      }
+
+      const reservationToken = await reserveSubmittedEndpoint(submission)
+      await expect(wasEndpointRecentlySubmitted(submission)).resolves.toBe(true)
+
+      expect(mockRedisClient.set).toHaveBeenCalledWith(
+        expect.stringMatching(/^submitted-endpoint:[a-f0-9]{64}$/),
+        reservationToken,
+        { EX: 120, NX: true }
+      )
+      expect(mockRedisClient.exists).toHaveBeenCalledWith(mockRedisClient.set.mock.calls[0][0])
+
+      await settleSubmittedEndpoint(submission, reservationToken, 86400)
+
+      expect(mockRedisClient.eval).toHaveBeenCalledWith(
+        expect.stringContaining('redis.call("EXPIRE", KEYS[1], ARGV[2])'),
+        {
+          keys: [mockRedisClient.set.mock.calls[0][0]],
+          arguments: [reservationToken, '86400']
+        }
+      )
+
+      await settleSubmittedEndpoint(submission, reservationToken, 0)
+
+      expect(mockRedisClient.eval).toHaveBeenCalledWith(
+        expect.stringContaining('redis.call("DEL", KEYS[1])'),
+        {
+          keys: [mockRedisClient.set.mock.calls[0][0]],
+          arguments: [reservationToken, '0']
+        }
+      )
+
+      mockRedisClient.set.mockResolvedValueOnce(null)
+      await expect(reserveSubmittedEndpoint(submission)).resolves.toBe(false)
+    } finally {
+      vi.unmock('redis')
+      vi.unmock('../../config/index.js')
+      vi.resetModules()
+    }
+  })
 })

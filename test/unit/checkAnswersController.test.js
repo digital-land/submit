@@ -3,9 +3,11 @@ import { addInternalNoteToIssue, createCustomerRequest, attachFileToIssue } from
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
+import { reserveSubmittedEndpoint, settleSubmittedEndpoint } from '../../src/utils/redisLoader.js'
 
 vi.mock('../../src/services/jiraService.js')
 vi.mock('../../src/services/asyncRequestApi.js')
+vi.mock('../../src/utils/redisLoader.js')
 
 describe('CheckAnswersController', () => {
   let req, res, next, controller
@@ -35,6 +37,8 @@ describe('CheckAnswersController', () => {
     next = vi.fn()
     controller = new CheckAnswersController({ route: '/check-answers/:requestId' })
     vi.clearAllMocks()
+    reserveSubmittedEndpoint.mockResolvedValue('reservation-token')
+    settleSubmittedEndpoint.mockResolvedValue()
     addInternalNoteToIssue.mockResolvedValue({ data: {} })
   })
 
@@ -65,6 +69,11 @@ describe('CheckAnswersController', () => {
         await controller.post(req, res, next)
 
         expect(createCustomerRequest).not.toHaveBeenCalled()
+        expect(settleSubmittedEndpoint).toHaveBeenCalledWith({
+          endpointUrl: sessionData['endpoint-url'],
+          dataset: sessionData.dataset,
+          organisation: sessionData.orgId
+        }, 'reservation-token', 0)
         expect(res.json).toHaveBeenCalledWith({
           message: 'Jira is not configured for local development. Use this Manage Service link to add the data.',
           manageServiceLink: expect.stringContaining(`${config.manageServiceUrl}/datamanager`)
@@ -80,32 +89,68 @@ describe('CheckAnswersController', () => {
 
     it('should create a Jira issue and set session data on success', async () => {
       const issue = { issueKey: 'TEST-123' }
+      req.sessionModel.get.mockImplementation((key) => sessionData[key])
       vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(issue)
       await controller.post(req, res, next)
 
       expect(req.sessionModel.set).toHaveBeenCalledWith('reference', issue.issueKey)
       expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [])
+      expect(reserveSubmittedEndpoint).toHaveBeenCalledWith({
+        endpointUrl: sessionData['endpoint-url'],
+        dataset: sessionData.dataset,
+        organisation: sessionData.orgId
+      })
+      expect(settleSubmittedEndpoint).toHaveBeenCalledWith({
+        endpointUrl: sessionData['endpoint-url'],
+        dataset: sessionData.dataset,
+        organisation: sessionData.orgId
+      }, 'reservation-token', 86400)
       expect(res.redirect).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()
     })
 
     it('should set session errors and redirect on failure to create Jira issue', async () => {
+      req.sessionModel.get.mockImplementation((key) => sessionData[key])
       vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue(null)
 
       await controller.post(req, res, next)
 
       expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
+      expect(settleSubmittedEndpoint).toHaveBeenCalledWith({
+        endpointUrl: sessionData['endpoint-url'],
+        dataset: sessionData.dataset,
+        organisation: sessionData.orgId
+      }, 'reservation-token', 0)
       expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
       expect(next).not.toHaveBeenCalled()
     })
 
     it('should set session errors and redirect on unexpected error', async () => {
+      req.sessionModel.get.mockImplementation((key) => sessionData[key])
       vi.spyOn(controller, 'createJiraServiceRequest').mockRejectedValue(new Error('Unexpected error'))
 
       await controller.post(req, res, next)
 
       expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
+      expect(settleSubmittedEndpoint).toHaveBeenCalledWith({
+        endpointUrl: sessionData['endpoint-url'],
+        dataset: sessionData.dataset,
+        organisation: sessionData.orgId
+      }, 'reservation-token', 0)
       expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('should not create another Jira issue when the endpoint is already reserved', async () => {
+      req.sessionModel.get.mockImplementation((key) => sessionData[key])
+      reserveSubmittedEndpoint.mockResolvedValue(false)
+      const createJiraSpy = vi.spyOn(controller, 'createJiraServiceRequest')
+
+      await controller.post(req, res, next)
+
+      expect(createJiraSpy).not.toHaveBeenCalled()
+      expect(req.sessionModel.set).not.toHaveBeenCalled()
+      expect(res.redirect).toHaveBeenCalledWith('/check/confirmation')
       expect(next).not.toHaveBeenCalled()
     })
   })

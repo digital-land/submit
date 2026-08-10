@@ -6,6 +6,7 @@ import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { getDatasets } from '../utils/utils.js'
+import { reserveSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
 
 class CheckAnswersController extends PageController {
   async locals (req, res, next) {
@@ -40,6 +41,22 @@ class CheckAnswersController extends PageController {
    * @param {Function} next - The next middleware function.
    */
   async post (req, res, next) {
+    const submission = {
+      endpointUrl: req.sessionModel.get('endpoint-url'),
+      dataset: req.sessionModel.get('dataset'),
+      organisation: req.sessionModel.get('orgId')
+    }
+
+    // Reserve before calling Jira so rapid or concurrent POSTs cannot both submit.
+    const reservationToken = await reserveSubmittedEndpoint(submission)
+
+    // A false result means another request already owns this endpoint reservation.
+    if (reservationToken === false) {
+      return res.redirect('/check/confirmation')
+    }
+
+    let isSubmitted = false
+
     try {
       const issue = await this.createJiraServiceRequest(req, res, next)
       if (issue?.localJiraFallback) {
@@ -49,6 +66,9 @@ class CheckAnswersController extends PageController {
         })
       }
       if (issue) {
+        // Keep successful submissions visible to duplicate checks until the nightly import.
+        await settleSubmittedEndpoint(submission, reservationToken, 24 * 60 * 60)
+        isSubmitted = true
         req.sessionModel.set('reference', issue.issueKey)
         req.sessionModel.set('errors', [])
         req.sessionModel.set('processing', true)
@@ -64,6 +84,8 @@ class CheckAnswersController extends PageController {
       })
       req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
       return res.redirect('/submit/check-answers')
+    } finally {
+      if (!isSubmitted) await settleSubmittedEndpoint(submission, reservationToken, 0)
     }
 
     super.post(req, res, next)
