@@ -1,6 +1,7 @@
 // src/utils/redisLoader.js
 import config from '../../config/index.js'
 import { createClient } from 'redis'
+import { createHash, randomUUID } from 'node:crypto'
 import logger from '../utils/logger.js'
 import datasette from '../services/datasette.js'
 
@@ -38,6 +39,113 @@ export async function getRedisClient () {
 }
 
 const CACHE_TTL = 60 * 60 * 6 // 6 hours
+
+// Build a fixed-length key from the fields that define a duplicate endpoint submission.
+// This key deliberately does not use the deployment cache namespace so it survives deployments.
+function submittedEndpointKey ({ endpointUrl, dataset, organisation }) {
+  const submission = JSON.stringify({ endpointUrl, dataset, organisation })
+  const digest = createHash('sha256').update(submission).digest('hex')
+  return `submitted-endpoint:${digest}`
+}
+
+/**
+ * Check whether an endpoint is currently being processed or was submitted recently.
+ * Redis failures return false so the existing Datasette duplicate check can still run.
+ */
+export async function wasEndpointRecentlySubmitted ({ endpointUrl, dataset, organisation }) {
+  if (!endpointUrl || !dataset || !organisation) return false
+
+  try {
+    const client = await getRedisClient()
+    if (!client) return false
+
+    return (await client.exists(submittedEndpointKey({ endpointUrl, dataset, organisation }))) > 0
+  } catch (error) {
+    logger.warn(`redisLoader/submitted endpoint get error: ${error.message}`)
+    return false
+  }
+}
+
+/**
+ * Atomically reserve an endpoint before starting the external submission work.
+ * Returns an ownership token when acquired, false when another request owns the
+ * reservation, or null when Redis is unavailable and submission should fail open.
+ */
+export async function reserveSubmittedEndpoint ({ endpointUrl, dataset, organisation }) {
+  if (!endpointUrl || !dataset || !organisation) return null
+
+  try {
+    const client = await getRedisClient()
+    if (!client) return null
+
+    const reservationToken = randomUUID()
+    // NX makes checking for an existing submission and acquiring the lock atomic.
+    // Only the first concurrent request receives OK and proceeds with submission.
+    const result = await client.set(
+      submittedEndpointKey({ endpointUrl, dataset, organisation }),
+      reservationToken,
+      { EX: 2 * 60, NX: true } // Two minutes, so a crashed submission does not block retries for long
+    )
+
+    return result === 'OK' ? reservationToken : false
+  } catch (error) {
+    logger.warn(`redisLoader/submitted endpoint reservation error: ${error.message}`)
+    return null
+  }
+}
+
+/**
+ * Keep an owned submission marker for the supplied TTL, or release it when the
+ * TTL is zero. The token comparison prevents one request from changing another
+ * request's reservation.
+ */
+export async function settleSubmittedEndpoint ({ endpointUrl, dataset, organisation }, reservationToken, ttl) {
+  if (!endpointUrl || !dataset || !organisation || !reservationToken) return
+
+  try {
+    const client = await getRedisClient()
+    if (!client) return
+
+    await client.eval(
+      'if redis.call("GET", KEYS[1]) ~= ARGV[1] then return 0 end if ARGV[2] == "0" then return redis.call("DEL", KEYS[1]) end return redis.call("EXPIRE", KEYS[1], ARGV[2])',
+      {
+        keys: [submittedEndpointKey({ endpointUrl, dataset, organisation })],
+        arguments: [reservationToken, String(ttl)]
+      }
+    )
+  } catch (error) {
+    logger.warn(`redisLoader/submitted endpoint settlement error: ${error.message}`)
+  }
+}
+
+/**
+ * Renew the TTL of an owned reservation to prevent expiry during long operations.
+ * Only extends if the reservation's stored token still matches the provided token,
+ * preventing renewal of locks that were already released or acquired by someone else.
+ * Returns true if renewal succeeded, false otherwise.
+ */
+export async function renewSubmittedEndpoint ({ endpointUrl, dataset, organisation }, reservationToken, ttl) {
+  if (!endpointUrl || !dataset || !organisation || !reservationToken) return false
+
+  try {
+    const client = await getRedisClient()
+    if (!client) return false
+
+    // Lua script atomically checks token and extends TTL
+    const result = await client.eval(
+      'if redis.call("GET", KEYS[1]) ~= ARGV[1] then return 0 end return redis.call("EXPIRE", KEYS[1], ARGV[2])',
+      {
+        keys: [submittedEndpointKey({ endpointUrl, dataset, organisation })],
+        arguments: [reservationToken, String(ttl)]
+      }
+    )
+
+    return result === 1
+  } catch (error) {
+    logger.warn(`redisLoader/submitted endpoint renewal error: ${error.message}`)
+    return false
+  }
+}
 
 function escapeSqlString (value) {
   return String(value).replaceAll("'", "''")

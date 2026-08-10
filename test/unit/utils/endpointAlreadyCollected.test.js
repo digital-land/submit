@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import datasette from '../../../src/services/datasette.js'
 import { endpointAlreadyCollectedForDataset } from '../../../src/utils/datasetteQueries/endpointAlreadyCollected.js'
+import { wasEndpointRecentlySubmitted } from '../../../src/utils/redisLoader.js'
 
 vi.mock('../../../src/services/datasette.js', () => ({
   default: {
@@ -8,9 +9,26 @@ vi.mock('../../../src/services/datasette.js', () => ({
   }
 }))
 
+vi.mock('../../../src/utils/redisLoader.js', () => ({
+  wasEndpointRecentlySubmitted: vi.fn()
+}))
+
 describe('endpointAlreadyCollectedForDataset', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    wasEndpointRecentlySubmitted.mockResolvedValue(false)
+  })
+
+  it('returns true when the endpoint has been submitted but is not yet in Datasette', async () => {
+    wasEndpointRecentlySubmitted.mockResolvedValue(true)
+
+    await expect(endpointAlreadyCollectedForDataset({
+      endpointUrl: 'https://example.com/data.csv',
+      dataset: 'brownfield-land',
+      organisation: 'local-authority:ABC'
+    })).resolves.toBe(true)
+
+    expect(datasette.runQuery).not.toHaveBeenCalled()
   })
 
   it('returns true when Datasette finds a matching active endpoint resource for the dataset', async () => {

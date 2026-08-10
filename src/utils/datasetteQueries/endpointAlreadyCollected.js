@@ -1,4 +1,5 @@
 import datasette from '../../services/datasette.js'
+import { wasEndpointRecentlySubmitted } from '../redisLoader.js'
 
 function sqlString (value) {
   return String(value).replaceAll("'", "''")
@@ -6,6 +7,11 @@ function sqlString (value) {
 
 export async function endpointAlreadyCollectedForDataset ({ endpointUrl, dataset, organisation }) {
   if (!endpointUrl || !dataset || !organisation) return false
+
+  // Redis covers submissions waiting for the nightly import into Datasette.
+  if (await wasEndpointRecentlySubmitted({ endpointUrl, dataset, organisation })) {
+    return true
+  }
 
   const sql = /* sql */ `
     SELECT 1
