@@ -118,6 +118,35 @@ export async function settleSubmittedEndpoint ({ endpointUrl, dataset, organisat
   }
 }
 
+/**
+ * Renew the TTL of an owned reservation to prevent expiry during long operations.
+ * Only extends if the reservation's stored token still matches the provided token,
+ * preventing renewal of locks that were already released or acquired by someone else.
+ * Returns true if renewal succeeded, false otherwise.
+ */
+export async function renewSubmittedEndpoint ({ endpointUrl, dataset, organisation }, reservationToken, ttl) {
+  if (!endpointUrl || !dataset || !organisation || !reservationToken) return false
+
+  try {
+    const client = await getRedisClient()
+    if (!client) return false
+
+    // Lua script atomically checks token and extends TTL
+    const result = await client.eval(
+      'if redis.call("GET", KEYS[1]) ~= ARGV[1] then return 0 end return redis.call("EXPIRE", KEYS[1], ARGV[2])',
+      {
+        keys: [submittedEndpointKey({ endpointUrl, dataset, organisation })],
+        arguments: [reservationToken, String(ttl)]
+      }
+    )
+
+    return result === 1
+  } catch (error) {
+    logger.warn(`redisLoader/submitted endpoint renewal error: ${error.message}`)
+    return false
+  }
+}
+
 function escapeSqlString (value) {
   return String(value).replaceAll("'", "''")
 }

@@ -6,7 +6,7 @@ import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { getDatasets } from '../utils/utils.js'
-import { reserveSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
+import { reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
 
 class CheckAnswersController extends PageController {
   async locals (req, res, next) {
@@ -56,8 +56,21 @@ class CheckAnswersController extends PageController {
     }
 
     let isSubmitted = false
+    let renewalInterval = null
 
     try {
+      // Start periodic renewal to prevent reservation expiry during long Jira operations.
+      // Renew every 60 seconds (well before the 120-second TTL).
+      renewalInterval = setInterval(async () => {
+        const renewed = await renewSubmittedEndpoint(submission, reservationToken, 2 * 60)
+        if (!renewed) {
+          logger.warn('CheckAnswersController.post(): Failed to renew endpoint reservation', {
+            submission,
+            type: types.External
+          })
+        }
+      }, 60 * 1000)
+
       const issue = await this.createJiraServiceRequest(req, res, next)
       if (issue?.localJiraFallback) {
         return res.json({
@@ -85,6 +98,7 @@ class CheckAnswersController extends PageController {
       req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
       return res.redirect('/submit/check-answers')
     } finally {
+      if (renewalInterval) clearInterval(renewalInterval)
       if (!isSubmitted) await settleSubmittedEndpoint(submission, reservationToken, 0)
     }
 

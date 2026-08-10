@@ -340,4 +340,135 @@ describe('getDatasetNameMap', () => {
       vi.resetModules()
     }
   })
+
+  it('should renew an owned reservation with the correct token', async () => {
+    const mockRedisClient = {
+      isOpen: false,
+      connect: vi.fn().mockImplementation(async () => {
+        mockRedisClient.isOpen = true
+      }),
+      set: vi.fn().mockResolvedValue('OK'),
+      eval: vi.fn().mockResolvedValue(1)
+    }
+
+    try {
+      vi.resetModules()
+      vi.doMock('redis', () => ({
+        createClient: vi.fn(() => mockRedisClient)
+      }))
+      vi.doMock('../../config/index.js', () => ({
+        default: {
+          redis: {
+            secure: false,
+            host: 'localhost',
+            port: 6379
+          },
+          mainWebsiteUrl: config.mainWebsiteUrl
+        }
+      }))
+
+      const {
+        reserveSubmittedEndpoint,
+        renewSubmittedEndpoint
+      } = await import('../../src/utils/redisLoader.js')
+      const submission = {
+        endpointUrl: 'https://example.com/data.csv',
+        dataset: 'brownfield-land',
+        organisation: 'local-authority:ABC'
+      }
+
+      const reservationToken = await reserveSubmittedEndpoint(submission)
+      const renewed = await renewSubmittedEndpoint(submission, reservationToken, 120)
+
+      expect(renewed).toBe(true)
+      expect(mockRedisClient.eval).toHaveBeenCalledWith(
+        expect.stringContaining('redis.call("EXPIRE", KEYS[1], ARGV[2])'),
+        {
+          keys: [expect.stringMatching(/^submitted-endpoint:[a-f0-9]{64}$/)],
+          arguments: [reservationToken, '120']
+        }
+      )
+
+      // Verify the Lua script checks the token before renewing
+      const luaScript = mockRedisClient.eval.mock.calls[0][0]
+      expect(luaScript).toContain('if redis.call("GET", KEYS[1]) ~= ARGV[1] then return 0 end')
+    } finally {
+      vi.unmock('redis')
+      vi.unmock('../../config/index.js')
+      vi.resetModules()
+    }
+  })
+
+  it('should not renew a reservation with the wrong token', async () => {
+    const mockRedisClient = {
+      isOpen: false,
+      connect: vi.fn().mockImplementation(async () => {
+        mockRedisClient.isOpen = true
+      }),
+      set: vi.fn().mockResolvedValue('OK'),
+      eval: vi.fn().mockResolvedValue(0) // Token mismatch returns 0
+    }
+
+    try {
+      vi.resetModules()
+      vi.doMock('redis', () => ({
+        createClient: vi.fn(() => mockRedisClient)
+      }))
+      vi.doMock('../../config/index.js', () => ({
+        default: {
+          redis: {
+            secure: false,
+            host: 'localhost',
+            port: 6379
+          },
+          mainWebsiteUrl: config.mainWebsiteUrl
+        }
+      }))
+
+      const {
+        reserveSubmittedEndpoint,
+        renewSubmittedEndpoint
+      } = await import('../../src/utils/redisLoader.js')
+      const submission = {
+        endpointUrl: 'https://example.com/data.csv',
+        dataset: 'brownfield-land',
+        organisation: 'local-authority:ABC'
+      }
+
+      await reserveSubmittedEndpoint(submission)
+      const wrongToken = 'wrong-token-123'
+      const renewed = await renewSubmittedEndpoint(submission, wrongToken, 120)
+
+      expect(renewed).toBe(false)
+    } finally {
+      vi.unmock('redis')
+      vi.unmock('../../config/index.js')
+      vi.resetModules()
+    }
+  })
+
+  it('should return false when renewing without Redis connection', async () => {
+    try {
+      vi.resetModules()
+      vi.doMock('../../config/index.js', () => ({
+        default: {
+          redis: false,
+          mainWebsiteUrl: config.mainWebsiteUrl
+        }
+      }))
+
+      const { renewSubmittedEndpoint } = await import('../../src/utils/redisLoader.js')
+      const submission = {
+        endpointUrl: 'https://example.com/data.csv',
+        dataset: 'brownfield-land',
+        organisation: 'local-authority:ABC'
+      }
+
+      const renewed = await renewSubmittedEndpoint(submission, 'any-token', 120)
+      expect(renewed).toBe(false)
+    } finally {
+      vi.unmock('../../config/index.js')
+      vi.resetModules()
+    }
+  })
 })
