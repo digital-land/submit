@@ -76,8 +76,20 @@ async function setDetailsOptions (req, res, next) {
   next()
 }
 
+/**
+ * Get the specification identifier for a dataset or subject.
+ *
+ * local-plan data uses the shared plan specification.
+ *
+ * @param {string} datasetOrSubject - Dataset or subject from the check request.
+ * @returns {string} Specification identifier.
+ */
+function getSpecificationSubject (datasetOrSubject) {
+  return datasetOrSubject === 'local-plan' ? 'plan' : datasetOrSubject
+}
+
 const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.sessionModel.get('data-subject')}'`,
+  query: ({ req }) => `select * from specification WHERE specification = '${getSpecificationSubject(req.sessionModel.get('data-subject'))}'`,
   result: 'specification'
 })
 
@@ -99,8 +111,11 @@ async function getIssueSpecification (req, res, next) {
 
   if (!specification) return next()
 
-  const datasetSpecification = JSON.parse(specification.json).find((spec) => spec.dataset === req.sessionModel.get('dataset'))
-  const fieldSpecification = datasetSpecification.fields.find(f => f.field === issueField)
+  const datasetSpecification = JSON.parse(specification.json)
+    .find((spec) => spec.dataset === getSpecificationSubject(req.sessionModel.get('dataset')))
+  const fieldSpecification = datasetSpecification?.fields?.find(f => f.field === issueField)
+
+  // if (!fieldSpecification) return next()
 
   req.locals.issueSpecification = fieldSpecification
   req.locals.datasetDetails = datasetDetails
@@ -113,6 +128,7 @@ const middlewares = [
     ? validateParams
     : (req, res, next) => { return next(new MiddlewareError('Not found', 404)) },
   results.getRequestDataMiddleware,
+  results.updateSessionFromRequestData,
   setDetailsOptions,
   fetchDatasetInfo,
   fetchSpecification,
