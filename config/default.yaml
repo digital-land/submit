@@ -50,6 +50,9 @@ contact:
   issues:
     # description: should be used for general issues, e.g. if user lands on 404 doesn't know how to proceed
     email: digitalland@communities.gov.uk
+# Relationship diagrams downloaded at build time and shown in the issue guidance.
+specificationDiagrams:
+  baseUrl: 'https://raw.githubusercontent.com/digital-land/specification/refs/heads/main/docs/specification'
 datasetsConfig:
   article-4-direction:
     guidanceUrl: /guidance/specifications/article-4-direction

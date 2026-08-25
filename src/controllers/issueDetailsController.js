@@ -5,6 +5,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import { validateQueryParams } from '../middleware/common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import { withAssociatedEntityDiagram } from '../utils/associatedEntityDiagrams.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { fetchOne } from '../middleware/middleware.builders.js'
@@ -81,9 +82,9 @@ const fetchSpecification = fetchOne({
   result: 'specification'
 })
 
-const fetchDatasetInfo = fetchOne({
+export const fetchDatasetInfo = fetchOne({
   query: ({ req }) => {
-    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${req.sessionModel.get('data-subject')}'`
+    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${req.sessionModel.get('dataset')}'`
   },
   result: 'datasetDetails'
 })
@@ -99,10 +100,11 @@ async function getIssueSpecification (req, res, next) {
 
   if (!specification) return next()
 
-  const datasetSpecification = JSON.parse(specification.json).find((spec) => spec.dataset === req.sessionModel.get('dataset'))
+  const dataset = req.sessionModel.get('dataset')
+  const datasetSpecification = JSON.parse(specification.json).find((spec) => spec.dataset === dataset)
   const fieldSpecification = datasetSpecification.fields.find(f => f.field === issueField)
 
-  req.locals.issueSpecification = fieldSpecification
+  req.locals.issueSpecification = withAssociatedEntityDiagram(fieldSpecification, dataset)
   req.locals.datasetDetails = datasetDetails
 
   next()

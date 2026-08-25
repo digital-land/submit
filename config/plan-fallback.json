@@ -277,7 +277,7 @@
         { "field": "reference" },
         {
           "field": "plan",
-          "guidance": "This is the unique reference for your overall plan. For example:\n\n- LP-BRX-2024\n- barnet-local-plan-2021-2036\n- hertfordshire-minerals-and-waste-plan\n- essex-minerals-plan\n- essex-waste-plan\n- county-durham-supplementary-plan\n\nThe 'plan' field in your plan timetable dataset must match the 'reference' field from your plan dataset.\n\n![This diagram shows the relationship between the plan dataset and the plan timetable dataset. The reference value from your plan dataset needs to match the plan value in your plan timetable dataset. This is so that we can match your timetable to the right plan.](/public/static/images/plan-timetable-plan-relationship.svg)"
+          "guidance": "This is the unique reference for your overall plan. For example:\n\n- LP-BRX-2024\n- barnet-local-plan-2021-2036\n- hertfordshire-minerals-and-waste-plan\n- essex-minerals-plan\n- essex-waste-plan\n- county-durham-supplementary-plan\n\nThe 'plan' field in your plan timetable dataset must match the 'reference' field from your plan dataset."
         },
         {
           "field": "plan-event",
