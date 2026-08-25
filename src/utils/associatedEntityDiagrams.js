@@ -13,8 +13,21 @@ import { associatedEntityDiagrams, diagramsPath } from '../content/associatedEnt
 const readableDatasetName = (slug) => slug.replace(/-/g, ' ')
 
 /**
+ * @typedef {Object} FieldSpecification
+ * @property {string} field
+ * @property {string} [guidance]
+ */
+
+/**
+ * @typedef {Object} DiagramEntry
+ * @property {string} diagram - slug of the diagram in the specification repo
+ * @property {string} parentDataset - the dataset the reference points at
+ * @property {string} field - the back reference field on the dataset itself
+ */
+
+/**
  * @param {string} dataset
- * @param {{ parentDataset: string, field: string }} entry
+ * @param {DiagramEntry} entry
  * @returns {string}
  */
 const diagramAltText = (dataset, { parentDataset, field }) => {
@@ -34,9 +47,9 @@ const diagramAltText = (dataset, { parentDataset, field }) => {
  * is also shown for e.g. a missing value on the same field - the relationship is worth explaining
  * either way. Returns the specification unchanged when the dataset or field doesn't have a diagram.
  *
- * @param {{ field: string, guidance?: string }} [fieldSpecification]
+ * @param {FieldSpecification} [fieldSpecification]
  * @param {string} [dataset]
- * @returns {{ field: string, guidance?: string } | undefined}
+ * @returns {FieldSpecification|undefined}
  */
 export function withAssociatedEntityDiagram (fieldSpecification, dataset) {
   if (!fieldSpecification || !dataset) return fieldSpecification
