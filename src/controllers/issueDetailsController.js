@@ -82,9 +82,9 @@ const fetchSpecification = fetchOne({
   result: 'specification'
 })
 
-const fetchDatasetInfo = fetchOne({
+export const fetchDatasetInfo = fetchOne({
   query: ({ req }) => {
-    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${req.sessionModel.get('data-subject')}'`
+    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${req.sessionModel.get('dataset')}'`
   },
   result: 'datasetDetails'
 })
