@@ -120,7 +120,7 @@ async function getIssueSpecification (req, res, next) {
 
   if (!fieldSpecification) return next()
 
-  req.locals.issueSpecification = withAssociatedEntityDiagram(fieldSpecification, dataset)
+  req.locals.issueSpecification = withAssociatedEntityDiagram(fieldSpecification, datasetDetails.dataset)
   req.locals.datasetDetails = datasetDetails
 
   next()
