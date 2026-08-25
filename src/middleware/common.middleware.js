@@ -16,6 +16,7 @@ import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
 import config from '../../config/index.js'
 import { getOrganisationList } from '../utils/redisLoader.js'
+import { withAssociatedEntityDiagram } from '../utils/associatedEntityDiagrams.js'
 import { readFileSync } from 'node:fs'
 
 const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
@@ -986,7 +987,7 @@ export function getIssueSpecification (req, res, next) {
 
   if (specification) {
     const fieldSpecification = specification.fields.find(f => f.field === issueField)
-    req.issueSpecification = fieldSpecification
+    req.issueSpecification = withAssociatedEntityDiagram(fieldSpecification, req.dataset?.dataset)
   }
 
   next()

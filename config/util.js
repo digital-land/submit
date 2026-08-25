@@ -64,6 +64,9 @@ export const ConfigSchema = v.object({
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
   }),
+  specificationDiagrams: v.object({
+    baseUrl: v.url()
+  }),
   datasetsConfig: v.object(
     [
       'article-4-direction',

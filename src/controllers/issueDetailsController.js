@@ -5,6 +5,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import { validateQueryParams } from '../middleware/common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import { withAssociatedEntityDiagram } from '../utils/associatedEntityDiagrams.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { fetchOne } from '../middleware/middleware.builders.js'
@@ -117,9 +118,9 @@ async function getIssueSpecification (req, res, next) {
     .find((spec) => spec.dataset === getSpecificationSubject(datasetDetails.dataset))
   const fieldSpecification = datasetSpecification?.fields?.find(f => f.field === issueField)
 
-  // if (!fieldSpecification) return next()
+  if (!fieldSpecification) return next()
 
-  req.locals.issueSpecification = fieldSpecification
+  req.locals.issueSpecification = withAssociatedEntityDiagram(fieldSpecification, dataset)
   req.locals.datasetDetails = datasetDetails
 
   next()
