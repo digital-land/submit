@@ -38,7 +38,8 @@ describe('Check confirmation View', () => {
       expect(doc.querySelector('main h2')?.textContent.trim()).toBe('What happens next')
       expect([...doc.querySelectorAll('main h3')].map(heading => heading.textContent.trim())).toEqual([
         '1. Publish data to your website',
-        '2. Provide your data'
+        '2. Provide your data',
+        '3. After you provide your data'
       ])
     })
   })
@@ -65,7 +66,8 @@ describe('Check confirmation View', () => {
       expect(doc.querySelector('main h2')?.textContent.trim()).toBe('What happens next')
       expect([...doc.querySelectorAll('main h3')].map(heading => heading.textContent.trim())).toEqual([
         '1. Make sure that your data is published on your website',
-        '2. Provide your data'
+        '2. Provide your data',
+        '3. After you provide your data'
       ])
     })
   })
