@@ -32,6 +32,7 @@ export const ConfigSchema = v.object({
   aws: v.object({
     region: v.string(),
     bucket: v.string(),
+    endpoint: v.optional(v.url()),
     s3ForcePathStyle: v.boolean()
   }),
   redis: v.optional(

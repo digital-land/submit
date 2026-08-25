@@ -89,14 +89,16 @@ function getSpecificationSubject (datasetOrSubject) {
 }
 
 const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${getSpecificationSubject(req.sessionModel.get('data-subject'))}'`,
+  query: () => 'SELECT * FROM specification WHERE specification = :specification',
+  queryParams: ({ req }) => ({
+    specification: getSpecificationSubject(req.datasetDetails.collection)
+  }),
   result: 'specification'
 })
 
 const fetchDatasetInfo = fetchOne({
-  query: ({ req }) => {
-    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${req.sessionModel.get('data-subject')}'`
-  },
+  query: () => 'SELECT name, dataset, collection FROM dataset WHERE dataset = :dataset',
+  queryParams: ({ req }) => ({ dataset: req.sessionModel.get('dataset') }),
   result: 'datasetDetails'
 })
 
@@ -112,7 +114,7 @@ async function getIssueSpecification (req, res, next) {
   if (!specification) return next()
 
   const datasetSpecification = JSON.parse(specification.json)
-    .find((spec) => spec.dataset === getSpecificationSubject(req.sessionModel.get('dataset')))
+    .find((spec) => spec.dataset === getSpecificationSubject(datasetDetails.dataset))
   const fieldSpecification = datasetSpecification?.fields?.find(f => f.field === issueField)
 
   // if (!fieldSpecification) return next()
