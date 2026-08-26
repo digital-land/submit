@@ -439,6 +439,21 @@ export function parallel (middlewares) {
   return parallelFn.bind({ middlewares })
 }
 
+/**
+ * Returns a middleware that runs `middlewareFn` only when `condition(req)` holds, and
+ * otherwise calls `next()` to skip straight past it.
+ *
+ * Usage: conditionally including a step in a chain, e.g. skipping a fetch when a cache hit
+ * already put the data on `req`, or gating a step behind a feature flag.
+ *
+ * Unlike {@link fetchIf} this takes any middleware, not just a fetch, and has no "else"
+ * branch. Note that `next()` is only called by this wrapper on the skip path — when the
+ * condition holds it is `middlewareFn`'s job to continue the chain.
+ *
+ * @param {function(object): boolean} condition - evaluated against the request
+ * @param {Function} middlewareFn - middleware to run when the condition holds
+ * @returns {Function} Express middleware function
+ */
 export const onlyIf = (condition, middlewareFn) => {
   return async (req, res, next) => {
     if (condition(req)) {

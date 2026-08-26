@@ -1,0 +1,9 @@
+{
+  "architecture": { "title": "Architecture" },
+  "check-data": { "title": "Check data" },
+  "dependencies": { "title": "Dependencies" },
+  "get-started": { "title": "Get started and deep links" },
+  "middleware-guidelines": { "title": "Middleware guidelines" },
+  "review-data-quality": { "title": "Review data quality" },
+  "submit-data": { "title": "Submit data" }
+}
