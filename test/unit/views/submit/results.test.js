@@ -142,6 +142,8 @@ describe('results.html', () => {
 
       expect(link).not.toBeNull()
       expect(link.textContent.trim()).toBe('Check what conditional fields may apply to your plan dataset')
+      expect(link.target).toBe('_blank')
+      expect(link.rel).toBe('noopener noreferrer')
     })
 
     it('does not show conditional field guidance for other datasets', async () => {

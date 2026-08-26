@@ -211,7 +211,8 @@ panel: { html: tableTab } } } %}
 
     <p><a href="./share">Share these results</a></p>
     {% if options.requestParams.dataset === 'local-plan' %}
-    <p><a class="govuk-link" href="https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data#:~:text=modified%20the%20data.-,Conditional%20fields,-Your%20plan%20data">Check what conditional fields may apply to your plan dataset</a></p>
+    {% set conditionalFieldsGuidanceUrl = (options.requestParams.dataset | getDatasetGuidanceUrl) + '#:~:text=modified%20the%20data.-,Conditional%20fields,-Your%20plan%20data' %}
+    <p><a class="govuk-link" href="{{ conditionalFieldsGuidanceUrl }}" target="_blank" rel="noopener noreferrer">Check what conditional fields may apply to your plan dataset</a></p>
     {% endif %}
   </div>
 </div>
