@@ -210,6 +210,9 @@ panel: { html: tableTab } } } %}
     <h3 class="govuk-heading-s">Dataset actions</h3>
 
     <p><a href="./share">Share these results</a></p>
+    {% if options.requestParams.dataset === 'local-plan' %}
+    <p><a class="govuk-link" href="https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data#:~:text=modified%20the%20data.-,Conditional%20fields,-Your%20plan%20data">Check what conditional fields may apply to your plan dataset</a></p>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
