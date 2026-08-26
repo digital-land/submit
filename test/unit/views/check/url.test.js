@@ -12,6 +12,6 @@ describe('check URL page', () => {
     })
 
     expect(html).toContain('bot protection, such as Cloudflare or Imperva')
-    expect(html).toContain('We could not access this URL automatically. It may be protected by a bot-protection service, such as Cloudflare or Imperva.')
+    expect(html).toContain('The URL must be accessible')
   })
 })

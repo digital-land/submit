@@ -31,7 +31,7 @@ const validationMessages = {
     exists: 'The URL does not exist. Check the URL you\'ve entered is correct',
     filetype: 'The file referenced by URL must be a CSV, GeoJSON, GML or GeoPackage file',
     size: 'The file referenced by URL must be smaller than 100MB',
-    restricted403: 'We could not access this URL automatically. It may be protected by a bot-protection service, such as Cloudflare or Imperva.'
+    restricted403: 'The URL must be accessible'
   },
   validationResult: {
     required: 'Sorry, there is a problem with the service. Try again later'
