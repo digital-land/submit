@@ -36,6 +36,12 @@ describe('datasette', () => {
     })
   })
 
+  it('passes named SQL parameters to Datasette', async () => {
+    await datasette.runQuery('SELECT * FROM dataset WHERE dataset = :dataset', 'digital-land', { dataset: 'local-plan' })
+
+    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('&dataset=local-plan'))
+  })
+
   it('throws an error if the query fails', async () => {
     vi.spyOn(axios, 'get').mockRejectedValue(new Error('Query failed'))
 

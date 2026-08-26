@@ -1427,6 +1427,48 @@ describe('preventIndexing middleware', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
+    it('appends the relationship diagram for a back reference field', () => {
+      const req = {
+        params: { issue_field: 'tree-preservation-order' },
+        dataset: { dataset: 'tree' },
+        specification: {
+          fields: [
+            { field: 'reference', guidance: 'reference guidance' },
+            { field: 'tree-preservation-order', guidance: 'existing guidance' }
+          ]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification.guidance).toBe(
+        'existing guidance\n\n![This diagram shows the relationship between the tree preservation order ' +
+        'dataset and the tree dataset. The reference value from your tree preservation order dataset needs ' +
+        'to match the tree-preservation-order value in your tree dataset.]' +
+        '(/public/static/images/diagrams/tree-preservation-order.svg)'
+      )
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not append a diagram to other fields on the same dataset', () => {
+      const req = {
+        params: { issue_field: 'reference' },
+        dataset: { dataset: 'tree' },
+        specification: {
+          fields: [{ field: 'reference', guidance: 'reference guidance' }]
+        }
+      }
+      const res = {}
+      const next = vi.fn()
+
+      getIssueSpecification(req, res, next)
+
+      expect(req.issueSpecification).toEqual({ field: 'reference', guidance: 'reference guidance' })
+      expect(next).toHaveBeenCalledTimes(1)
+    })
+
     it('sets req.issueSpecification to undefined if field is not found', () => {
       const req = {
         params: { issue_field: 'nonexistentField' },
