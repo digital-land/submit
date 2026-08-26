@@ -9,6 +9,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import { splitByLeading } from '../utils/table.js'
 import { MiddlewareError } from '../utils/errors.js'
+import { orgIdToName } from '../utils/orgIdToName.js'
 
 const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
 const failedFileRequestTemplate = 'results/failedFileRequest'
@@ -71,6 +72,10 @@ export function updateSessionFromRequestData (req, res, next) {
   const { requestData } = req.locals
   const params = requestData?.getParams()
   req.sessionModel.set('request_id', req.params.id)
+  req.sessionModel.set('orgId', params?.organisationName)
+  req.sessionModel.set('lpa', params?.organisationName ? orgIdToName(params.organisationName) : undefined)
+  req.sessionModel.set('dataset', params?.dataset)
+  req.sessionModel.set('data-subject', params?.collection)
   if (params?.type === 'check_url') {
     req.sessionModel.set('upload-method', 'url')
   }
