@@ -13,35 +13,18 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 {% set exceptionType = err.errorDetail.exceptionType %}
 {% set contentType = err.errorDetail.contentType %}
 {% set plugin = err.errorDetail.plugin %}
-{% if errorCode == "403" or errorCode == 403 %}
-<div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
-    <h1 class="govuk-heading-xl">We cannot access your endpoint URL</h1>
 
-    <p class="govuk-body">You need to:</p>
-    <ul class="govuk-list govuk-list--bullet">
-      <li>host the URL on a server that does not block access with set permissions</li>
-      <li>remove any bot protection that blocks automated downloads</li>
-    </ul>
-
-    <p class="govuk-body">If you need help, contact your IT team for support and tell them that you have a ‘HTTP status code 403’ error.</p>
-    <p class="govuk-body">If your IT team needs the Planning Data platform IP addresses, email <a class="govuk-link" href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
-
-    {% if err.organisationId and err.organisationName %}
-      <p class="govuk-body"><a class="govuk-link" href="/organisations/{{ err.organisationId | urlencode }}">Return to {{ err.organisationName }} overview</a></p>
-    {% endif %}
-  </div>
-</div>
-{% else %}
+{% if errorCode != "403" and errorCode != 403 %}
 {{ govukErrorSummary({
-          titleText: "There’s a problem",
-          errorList: [
-            {
-              text: errorMessage,
-              href: "#bad-upload"
-            }
-          ]
+  titleText: "There’s a problem",
+  errorList: [
+    {
+      text: errorMessage,
+      href: "#bad-upload"
+    }
+  ]
 }) }}
+{% endif %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
@@ -63,8 +46,20 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
     {% elif errorCode == "403" or errorCode == 403 %}
-      <p class="govuk-body" id="bad-upload" tabindex="-1">You must host the URL on a server which does not block access due to set permissions.</p>
-      <p class="govuk-body" id="bad-upload" tabindex="-1">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
+      <h1 class="govuk-heading-xl">We cannot access your endpoint URL</h1>
+
+      <p class="govuk-body">You need to:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>host the URL on a server that does not block access with set permissions</li>
+        <li>remove any bot protection that blocks automated downloads</li>
+      </ul>
+
+      <p class="govuk-body">If you need help, contact your IT team for support and tell them that you have a ‘HTTP status code 403’ error.</p>
+      <p class="govuk-body">If your IT team needs the Planning Data platform IP addresses, email <a class="govuk-link" href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
+
+      {% if err.organisationId and err.organisationName %}
+        <p class="govuk-body"><a class="govuk-link" href="/organisations/{{ err.organisationId | urlencode }}">Return to {{ err.organisationName }} overview</a></p>
+      {% endif %}
     {% elif contentType and "text/html" in contentType %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">The URL returns a HTML webpage. This must be a data file.</p>
 
@@ -90,13 +85,12 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       </p>
     {% endif %}
     {# Specific case where we don't want duplication of contact reasons #}
-    {% if plugin != "arcgis" or (errorCode != "200" and errorCode != 200) %}
+    {% if (errorCode != "403" and errorCode != 403) and (plugin != "arcgis" or (errorCode != "200" and errorCode != 200)) %}
       <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
           href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>
     {% endif %}
   </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block beforeContent %}
