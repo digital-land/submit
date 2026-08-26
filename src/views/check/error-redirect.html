@@ -13,6 +13,26 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 {% set exceptionType = err.errorDetail.exceptionType %}
 {% set contentType = err.errorDetail.contentType %}
 {% set plugin = err.errorDetail.plugin %}
+{% if errorCode == "403" or errorCode == 403 %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl">We cannot access your endpoint URL</h1>
+
+    <p class="govuk-body">You need to:</p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>host the URL on a server that does not block access with set permissions</li>
+      <li>remove any bot protection that blocks automated downloads</li>
+    </ul>
+
+    <p class="govuk-body">If you need help, contact your IT team for support and tell them that you have a ‘HTTP status code 403’ error.</p>
+    <p class="govuk-body">If your IT team needs the Planning Data platform IP addresses, email <a class="govuk-link" href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
+
+    {% if err.organisationId and err.organisationName %}
+      <p class="govuk-body"><a class="govuk-link" href="/organisations/{{ err.organisationId | urlencode }}">Return to {{ err.organisationName }} overview</a></p>
+    {% endif %}
+  </div>
+</div>
+{% else %}
 {{ govukErrorSummary({
           titleText: "There’s a problem",
           errorList: [
@@ -44,7 +64,6 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
     {% elif errorCode == "403" or errorCode == 403 %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">You must host the URL on a server which does not block access due to set permissions.</p>
-      <p class="govuk-body">The website may also use bot protection, such as Cloudflare or Imperva, which blocks automated downloads.</p>
       <p class="govuk-body" id="bad-upload" tabindex="-1">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
     {% elif contentType and "text/html" in contentType %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">The URL returns a HTML webpage. This must be a data file.</p>
@@ -77,12 +96,14 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
     {% endif %}
   </div>
 </div>
-
+{% endif %}
 {% endblock %}
 
 {% block beforeContent %}
+{% if err.errorDetail.errCode != "403" and err.errorDetail.errCode != 403 %}
 {{ govukBackLink({
 text: "Back",
 href: "javascript:window.history.back()"
 }) }}
+{% endif %}
 {% endblock %}

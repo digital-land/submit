@@ -3,10 +3,11 @@ import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
-const renderError = (errorDetail) => nunjucks.render('check/error-redirect.html', {
+const renderError = (errorDetail, organisation = {}) => nunjucks.render('check/error-redirect.html', {
   err: {
     message: 'A user-facing message that may change',
-    errorDetail
+    errorDetail,
+    ...organisation
   }
 })
 
@@ -17,12 +18,20 @@ describe('check error redirect page', () => {
     expect(html).toContain('We could not verify the Secure Sockets Layer (SSL) certificate')
   })
 
-  it('uses the 403 error code for inaccessible URLs', () => {
-    const html = renderError({ errCode: '403', contentType: 'text/html' })
+  it('renders the dedicated 403 page and LPA overview link', () => {
+    const html = renderError({ errCode: '403', contentType: 'text/html' }, {
+      organisationId: 'local-authority:ABC',
+      organisationName: 'Example Council'
+    })
 
-    expect(html).toContain("referencing a 'HTTP status code 403' error")
-    expect(html).toContain('bot protection, such as Cloudflare or Imperva')
-    expect(html).not.toContain('The URL returns a HTML webpage')
+    expect(html).toContain('We cannot access your endpoint URL')
+    expect(html).toContain('host the URL on a server that does not block access with set permissions')
+    expect(html).toContain('remove any bot protection that blocks automated downloads')
+    expect(html).toContain('‘HTTP status code 403’ error')
+    expect(html).toContain('digitalland@communities.gov.uk')
+    expect(html).toContain('href="/organisations/local-authority%3AABC"')
+    expect(html).toContain('Return to Example Council overview')
+    expect(html).not.toContain('There’s a problem')
   })
 
   it('uses the content type for HTML responses', () => {
