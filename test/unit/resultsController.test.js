@@ -10,7 +10,8 @@ import ResultsController, {
   getFileNameOrUrlAndCheckedTime,
   getPassedChecks,
   extractIssuesFromTaskLog,
-  aggregateIssues
+  aggregateIssues,
+  updateSessionFromRequestData
 } from '../../src/controllers/resultsController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
 import PageController from '../../src/controllers/pageController.js'
@@ -67,6 +68,42 @@ describe('Middleware Tests', () => {
 
       expect(res.redirect).toHaveBeenCalledWith(`/check/status/${req.params.id}`)
       expect(mockNext).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('updateSessionFromRequestData', () => {
+    it('clears check context omitted by a later request in the same session', () => {
+      const values = new Map()
+      const sessionModel = { set: (key, value) => values.set(key, value) }
+      const firstRequest = {
+        params: { id: 'first-request' },
+        sessionModel,
+        locals: {
+          requestData: {
+            getParams: () => ({
+              organisationName: 'local-authority:ABC',
+              dataset: 'local-plan',
+              collection: 'local-plan'
+            })
+          }
+        }
+      }
+      const secondRequest = {
+        params: { id: 'second-request' },
+        sessionModel,
+        locals: { requestData: { getParams: () => ({}) } }
+      }
+
+      updateSessionFromRequestData(firstRequest, {}, vi.fn())
+      updateSessionFromRequestData(secondRequest, {}, vi.fn())
+
+      expect(Object.fromEntries(values)).toMatchObject({
+        request_id: 'second-request',
+        orgId: undefined,
+        lpa: undefined,
+        dataset: undefined,
+        'data-subject': undefined
+      })
     })
   })
 

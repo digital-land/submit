@@ -130,6 +130,32 @@ describe('results.html', () => {
     })
   })
 
+  describe('dataset actions', () => {
+    const conditionalFieldsGuidanceUrl = 'https://www.gov.uk/government/publications/publish-your-plan-data/publish-your-plan-data#:~:text=modified%20the%20data.-,Conditional%20fields,-Your%20plan%20data'
+
+    it('shows conditional field guidance for local-plan results', async () => {
+      const html = await nunjucksEnv.render(resultsTemplatePath, {
+        options: { requestParams: { dataset: 'local-plan' } }
+      })
+      const document = new JSDOM(html).window.document
+      const link = document.querySelector(`a[href="${conditionalFieldsGuidanceUrl}"]`)
+
+      expect(link).not.toBeNull()
+      expect(link.textContent.trim()).toBe('Check what conditional fields may apply to your plan dataset')
+      expect(link.target).toBe('_blank')
+      expect(link.rel).toBe('noopener noreferrer')
+    })
+
+    it('does not show conditional field guidance for other datasets', async () => {
+      const html = await nunjucksEnv.render(resultsTemplatePath, {
+        options: { requestParams: { dataset: 'conservation-area' } }
+      })
+      const document = new JSDOM(html).window.document
+
+      expect(document.querySelector(`a[href="${conditionalFieldsGuidanceUrl}"]`)).toBeNull()
+    })
+  })
+
   describe('tabbing functionality', () => {
     it('should show both tabs when both have data', async () => {
       const params = {
