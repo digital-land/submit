@@ -62,6 +62,7 @@
           <p class="govuk-body-s">If you are not sure about how to find your endpoint details, contact your GIS specialist, or <a href="mailto:DigitalLand@communities.gov.uk" class="govuk-link">DigitalLand@communities.gov.uk</a>.</p>
           {% if 'url' in errors and errors['url'].type == 'restricted403' %}
             <p class="govuk-body">You must host the URL on a server which does not block access due to set permissions.</p>
+            <p class="govuk-body">The website may also use bot protection, such as Cloudflare or Imperva, which blocks automated downloads.</p>
             <p class="govuk-body">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
           {% endif %}
         {% endset %}

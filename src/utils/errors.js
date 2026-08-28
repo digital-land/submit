@@ -22,6 +22,8 @@ export class MiddlewareError extends Error {
    * @param {Object} [options] - Additional options
    * @param {string} [options.template] - Custom error template path
    * @param {Error} [options.cause] - Cause of the error
+   * @param {string} [options.organisationId] - Organisation ID for a return link
+   * @param {string} [options.organisationName] - Organisation name for a return link
    */
   constructor (message, statusCode, options = {}) {
     super(message, options)
@@ -31,5 +33,7 @@ export class MiddlewareError extends Error {
     this.statusCode = statusCode
     this.template = options?.template ?? 'errorPages/error.njk'
     this.errorDetail = options?.errorDetail
+    this.organisationId = options?.organisationId
+    this.organisationName = options?.organisationName
   }
 }

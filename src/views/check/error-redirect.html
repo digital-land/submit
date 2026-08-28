@@ -9,20 +9,27 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
 
 {% block content %}
 {% set errorMessage = err.message | default("An error occurred, please try again later.", true) %}
+{% set errorCode = err.errorDetail.errCode %}
+{% set exceptionType = err.errorDetail.exceptionType %}
+{% set contentType = err.errorDetail.contentType %}
+{% set plugin = err.errorDetail.plugin %}
+
+{% if errorCode != "403" and errorCode != 403 %}
 {{ govukErrorSummary({
-          titleText: "There’s a problem",
-          errorList: [
-            {
-              text: errorMessage,
-              href: "#bad-upload"
-            }
-          ]
+  titleText: "There’s a problem",
+  errorList: [
+    {
+      text: errorMessage,
+      href: "#bad-upload"
+    }
+  ]
 }) }}
+{% endif %}
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     {# Display specific error details for certain errors else show error message if available #}
-    {% if errorMessage == "SSL certificate verification failed" %}
+    {% if exceptionType == "SSLError" or exceptionType == "SSLCertVerificationError" %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">
         The link we’re trying to access is not loading using a secure connection. We could not verify the Secure Sockets Layer (SSL) certificate.
       </p>
@@ -38,7 +45,22 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       </ul>
 
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
-    {% elif errorMessage == "The selected file must be a CSV, GeoJSON, GML or GeoPackage file" %}
+    {% elif errorCode == "403" or errorCode == 403 %}
+      <h1 class="govuk-heading-xl">We cannot access your endpoint URL</h1>
+
+      <p class="govuk-body">You need to:</p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>host the URL on a server that does not block access with set permissions</li>
+        <li>remove any bot protection that blocks automated downloads</li>
+      </ul>
+
+      <p class="govuk-body">If you need help, contact your IT team for support and tell them that you have a ‘HTTP status code 403’ error.</p>
+      <p class="govuk-body">If your IT team needs the Planning Data platform IP addresses, email <a class="govuk-link" href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
+
+      {% if err.organisationId and err.organisationName %}
+        <p class="govuk-body"><a class="govuk-link" href="/organisations/{{ err.organisationId | urlencode }}">Return to {{ err.organisationName }} overview</a></p>
+      {% endif %}
+    {% elif contentType and "text/html" in contentType %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">The URL returns a HTML webpage. This must be a data file.</p>
 
       <p class="govuk-body">Provide a direct link to the data file in one of the following formats:</p>
@@ -52,10 +74,7 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       </ul>
 
       <p class="govuk-body">Contact your IT team for support if you need it.</p>
-    {% elif errorMessage == "The URL must be accessible" %}
-      <p class="govuk-body" id="bad-upload" tabindex="-1">You must host the URL on a server which does not block access due to set permissions.</p>
-      <p class="govuk-body" id="bad-upload" tabindex="-1">Contact your IT team for support if you need it, referencing a 'HTTP status code 403' error.</p>
-    {% elif errorMessage == "URL must be the data layer" %}
+    {% elif plugin == "arcgis" and (errorCode == "200" or errorCode == 200) %}
       <p class="govuk-body" id="bad-upload" tabindex="-1">The URL you have provided is an ArcGIS link, which is not the data layer.</p>
       <p class="govuk-body" id="bad-upload" tabindex="-1">The link to the data layer ends with a forward slash, followed by a number. For example, /8.</p>
       <p class="govuk-body" id="bad-upload" tabindex="-1">If you believe you have provided the information correctly and the problem persists, contact us at <a
@@ -66,18 +85,19 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
       </p>
     {% endif %}
     {# Specific case where we don't want duplication of contact reasons #}
-    {% if errorMessage != "URL must be the data layer" %}
+    {% if (errorCode != "403" and errorCode != 403) and (plugin != "arcgis" or (errorCode != "200" and errorCode != 200)) %}
       <p class="govuk-body">Please <a href="/check/upload-method">try again</a> or <a
           href="mailto:digitalland@communities.gov.uk">contact support</a> if the problem persists.</p>
     {% endif %}
   </div>
 </div>
-
 {% endblock %}
 
 {% block beforeContent %}
+{% if err.errorDetail.errCode != "403" and err.errorDetail.errCode != 403 %}
 {{ govukBackLink({
 text: "Back",
 href: "javascript:window.history.back()"
 }) }}
+{% endif %}
 {% endblock %}
