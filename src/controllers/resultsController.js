@@ -9,6 +9,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import { splitByLeading } from '../utils/table.js'
 import { MiddlewareError } from '../utils/errors.js'
+import { orgIdToName } from '../utils/orgIdToName.js'
 
 const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
 const failedFileRequestTemplate = 'results/failedFileRequest'
@@ -53,11 +54,28 @@ class ResultsController extends PageController {
   }
 }
 
+/**
+ * Middleware. Repairs the check wizard session from the request being viewed.
+ *
+ * This is what makes a results URL shareable. Someone arriving at
+ * `/check/results/:id/1` from a link — rather than by walking the wizard — has no
+ * `request_id` or `upload-method` in session, so the confirmation page would not offer
+ * them the "Provide your data" button. Setting both here means the handover to submit
+ * works identically whichever way the page was reached.
+ *
+ * `upload-method` is only set for `check_url` requests: a file check has no endpoint to
+ * provide, so it must not gain the button.
+ *
+ * @param {object} req - expects `req.locals.requestData` and `req.params.id`
+ */
 export function updateSessionFromRequestData (req, res, next) {
-  // Used so check results can be shared and still continue to submit
   const { requestData } = req.locals
   const params = requestData?.getParams()
   req.sessionModel.set('request_id', req.params.id)
+  req.sessionModel.set('orgId', params?.organisationName)
+  req.sessionModel.set('lpa', params?.organisationName ? orgIdToName(params.organisationName) : undefined)
+  req.sessionModel.set('dataset', params?.dataset)
+  req.sessionModel.set('data-subject', params?.collection)
   if (params?.type === 'check_url') {
     req.sessionModel.set('upload-method', 'url')
   }

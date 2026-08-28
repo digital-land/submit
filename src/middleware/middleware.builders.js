@@ -97,7 +97,7 @@ export const FetchOneFallbackPolicy = {
  * Middleware. Attempts to fetch data from datasette and short-circuits with 404 when
  * data for given query does not exist. Meant to be used to fetch singular records.
  *
- * `this` needs `{ query({ req, params }) => any, result: string, dataset?: FetchParams | (req) => string, fallbackPolicy: (req, res, next) => void }`
+ * `this` needs `{ query({ req, params }) => any, queryParams?({ req, params }) => Record<string, string>, result: string, dataset?: FetchParams | (req) => string, fallbackPolicy: (req, res, next) => void }`
  *
  * where the `result` is the key under which result of the query will be stored in `req`
  *
@@ -109,7 +109,8 @@ async function fetchOneFn (req, res, next) {
   logger.debug({ type: types.DataFetch, message: 'fetchOne', resultKey: this.result })
   try {
     const query = this.query({ req, params: req.params })
-    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req))
+    const queryParams = this.queryParams?.({ req, params: req.params })
+    const result = await datasette.runQuery(query, datasetOverride(this.dataset, req), queryParams)
     const fallbackPolicy = this.fallbackPolicy ?? FetchOneFallbackPolicy['not-found-error']
     if (result.formattedData.length === 0) {
       // we can make the 404 more informative by informing the use what exactly was "not found"
@@ -439,6 +440,21 @@ export function parallel (middlewares) {
   return parallelFn.bind({ middlewares })
 }
 
+/**
+ * Returns a middleware that runs `middlewareFn` only when `condition(req)` holds, and
+ * otherwise calls `next()` to skip straight past it.
+ *
+ * Usage: conditionally including a step in a chain, e.g. skipping a fetch when a cache hit
+ * already put the data on `req`, or gating a step behind a feature flag.
+ *
+ * Unlike {@link fetchIf} this takes any middleware, not just a fetch, and has no "else"
+ * branch. Note that `next()` is only called by this wrapper on the skip path — when the
+ * condition holds it is `middlewareFn`'s job to continue the chain.
+ *
+ * @param {function(object): boolean} condition - evaluated against the request
+ * @param {Function} middlewareFn - middleware to run when the condition holds
+ * @returns {Function} Express middleware function
+ */
 export const onlyIf = (condition, middlewareFn) => {
   return async (req, res, next) => {
     if (condition(req)) {

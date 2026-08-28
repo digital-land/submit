@@ -16,6 +16,7 @@ import { dataRangeParams } from '../routes/schemas.js'
 import platformApi from '../services/platformApi.js'
 import config from '../../config/index.js'
 import { getOrganisationList } from '../utils/redisLoader.js'
+import { withAssociatedEntityDiagram } from '../utils/associatedEntityDiagrams.js'
 import { readFileSync } from 'node:fs'
 
 const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
@@ -139,6 +140,20 @@ export function validateQueryParamsFn (req, res, next) {
   }
 }
 
+/**
+ * Builds middleware that validates `req.params` against a valibot schema and puts the
+ * parsed result on `req.parsedParams` for later steps to use.
+ *
+ * On failure it does **not** call `next(err)` — it renders the 400 error page directly and
+ * ends the chain there.
+ *
+ * Usage: the first step of almost every chain in this app. Schemas live in
+ * [routes/schemas.js](../routes/schemas.js).
+ *
+ * @param {object} context
+ * @param {object} context.schema - valibot schema to parse `req.params` with
+ * @returns {Function} Express middleware function
+ */
 export function validateQueryParams (context) {
   return validateQueryParamsFn.bind(context)
 }
@@ -284,6 +299,14 @@ export const getDatasetTaskListError = renderTemplate({
   handlerName: 'getDatasetTaskListError'
 })
 
+/**
+ * Middleware. 404s when the requested page number falls outside the available range.
+ *
+ * Must run after something has set `req.dataRange` (see `getSetDataRange`), since the
+ * upper bound comes from `dataRange.maxPageNumber`.
+ *
+ * @param {object} req - expects `req.dataRange` and `req.parsedParams.pageNumber`
+ */
 export const show404IfPageNumberNotInRange = (req, res, next) => {
   const { dataRange } = req
   const { pageNumber } = req.parsedParams
@@ -711,6 +734,19 @@ const fetchEntityIssuesForFieldAndType = fetchMany({
   result: 'issues'
 })
 
+/**
+ * Middleware. Drops issues that were raised against an older resource and no longer apply
+ * to the current one, by checking for a more recent fact for each issue's entity/field.
+ *
+ * **Currently unused.** It is commented out of `processRelevantIssuesMiddlewares` — the
+ * per-issue lookups proved too slow, and the problem it solves had only been seen for one
+ * organisation. Nothing in `src/` calls it; only its unit tests do. Issue counts in the UI
+ * therefore include issues the provider may have already fixed.
+ *
+ * Keep or delete deliberately — do not assume it is running.
+ *
+ * No-ops when `req.resources` is empty. Reads and rewrites `req.issues`.
+ */
 export const removeIssuesThatHaveBeenFixed = async (req, res, next) => {
   const { issues, resources } = req
 
@@ -986,7 +1022,7 @@ export function getIssueSpecification (req, res, next) {
 
   if (specification) {
     const fieldSpecification = specification.fields.find(f => f.field === issueField)
-    req.issueSpecification = fieldSpecification
+    req.issueSpecification = withAssociatedEntityDiagram(fieldSpecification, req.dataset?.dataset)
   }
 
   next()
@@ -1034,6 +1070,16 @@ export const validateOrgAndDatasetQueryParams = validateQueryParams({
   })
 })
 
+/**
+ * Middleware. 404s when `req.params.lpa` is not a known organisation.
+ *
+ * Mounted with `router.use('/:lpa', ...)` so it guards every organisation-scoped page.
+ *
+ * Fails **open**: the organisation list comes from Redis, and if that lookup errors (or
+ * Redis is unavailable and the list is empty) the request is allowed through rather than
+ * 404ing every dashboard page. A later fetch will 404 if the organisation genuinely does
+ * not exist.
+ */
 export const validateOrg = async (req, res, next) => {
   try {
     const orgList = await getOrganisationList()
