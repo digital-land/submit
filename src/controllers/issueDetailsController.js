@@ -5,6 +5,7 @@ import performanceDbApi from '../services/performanceDbApi.js'
 import { validateQueryParams } from '../middleware/common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { isFeatureEnabled } from '../utils/features.js'
+import { withAssociatedEntityDiagram } from '../utils/associatedEntityDiagrams.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { fetchOne } from '../middleware/middleware.builders.js'
@@ -76,15 +77,29 @@ async function setDetailsOptions (req, res, next) {
   next()
 }
 
+/**
+ * Get the specification identifier for a dataset or subject.
+ *
+ * local-plan data uses the shared plan specification.
+ *
+ * @param {string} datasetOrSubject - Dataset or subject from the check request.
+ * @returns {string} Specification identifier.
+ */
+function getSpecificationSubject (datasetOrSubject) {
+  return datasetOrSubject === 'local-plan' ? 'plan' : datasetOrSubject
+}
+
 const fetchSpecification = fetchOne({
-  query: ({ req }) => `select * from specification WHERE specification = '${req.sessionModel.get('data-subject')}'`,
+  query: () => 'SELECT * FROM specification WHERE specification = :specification',
+  queryParams: ({ req }) => ({
+    specification: getSpecificationSubject(req.datasetDetails.collection)
+  }),
   result: 'specification'
 })
 
 const fetchDatasetInfo = fetchOne({
-  query: ({ req }) => {
-    return `SELECT name, dataset, collection FROM dataset WHERE dataset = '${req.sessionModel.get('data-subject')}'`
-  },
+  query: () => 'SELECT name, dataset, collection FROM dataset WHERE dataset = :dataset',
+  queryParams: ({ req }) => ({ dataset: req.sessionModel.get('dataset') }),
   result: 'datasetDetails'
 })
 
@@ -99,10 +114,13 @@ async function getIssueSpecification (req, res, next) {
 
   if (!specification) return next()
 
-  const datasetSpecification = JSON.parse(specification.json).find((spec) => spec.dataset === req.sessionModel.get('dataset'))
-  const fieldSpecification = datasetSpecification.fields.find(f => f.field === issueField)
+  const datasetSpecification = JSON.parse(specification.json)
+    .find((spec) => spec.dataset === getSpecificationSubject(datasetDetails.dataset))
+  const fieldSpecification = datasetSpecification?.fields?.find(f => f.field === issueField)
 
-  req.locals.issueSpecification = fieldSpecification
+  if (!fieldSpecification) return next()
+
+  req.locals.issueSpecification = withAssociatedEntityDiagram(fieldSpecification, datasetDetails.dataset)
   req.locals.datasetDetails = datasetDetails
 
   next()
@@ -113,6 +131,7 @@ const middlewares = [
     ? validateParams
     : (req, res, next) => { return next(new MiddlewareError('Not found', 404)) },
   results.getRequestDataMiddleware,
+  results.updateSessionFromRequestData,
   setDetailsOptions,
   fetchDatasetInfo,
   fetchSpecification,

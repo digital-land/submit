@@ -10,14 +10,17 @@ export default {
  *
  * @param {string} query - The SQL query to execute.
  * @param {string} database - The name of the database to query. Defaults to 'digital-land'.
+ * @param {Record<string, string>} queryParams - Named SQL parameters for Datasette.
  * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to an object with the following properties:
  *   - `data`: The raw data returned by Datasette.
  *   - `formattedData`: The formatted data, with columns and rows parsed into a usable format.
  * @throws {Error} If the query fails or there is an error communicating with Datasette.
  */
-  runQuery: async (query, database = 'digital-land') => {
+  runQuery: async (query, database = 'digital-land', queryParams = {}) => {
     const encodedQuery = encodeURIComponent(query)
-    const url = `${config.datasetteUrl}/${database}.json?sql=${encodedQuery}`
+    const parameters = new URLSearchParams(queryParams)
+    const queryString = parameters.size > 0 ? `&${parameters}` : ''
+    const url = `${config.datasetteUrl}/${database}.json?sql=${encodedQuery}${queryString}`
 
     try {
       const response = await axios.get(url)

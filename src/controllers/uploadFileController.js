@@ -12,11 +12,21 @@ import { types } from '../utils/logging.js'
 import { postFileRequest } from '../services/asyncRequestApi.js'
 import { allowedFileTypes } from '../utils/utils.js'
 
-AWS.config.update({
+const awsConfig = {
   region: config.aws.region,
   endpoint: config.aws.endpoint,
   s3ForcePathStyle: config.aws.s3ForcePathStyle || false
-})
+}
+
+// Prevent local uploads from querying EC2 metadata for credentials.
+if (config.aws.endpoint) {
+  awsConfig.credentials = {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'local',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'local'
+  }
+}
+
+AWS.config.update(awsConfig)
 
 const upload = multer({ dest: 'uploads/' })
 

@@ -7,6 +7,8 @@ import { types } from '../utils/logging.js'
 import axios from 'axios'
 import { allowedFileTypes } from '../utils/utils.js'
 import config from '../../config/index.js'
+import { MiddlewareError } from '../utils/errors.js'
+import { orgIdToName } from '../utils/orgIdToName.js'
 
 const HTTP_STATUS_METHOD_NOT_ALLOWED = 405
 const HTTP_STATUS_BLOCKED = 403
@@ -17,6 +19,17 @@ class SubmitUrlController extends UploadController {
     const localValidationErrorType = await SubmitUrlController.localUrlValidation(req.body.url)
 
     if (localValidationErrorType) {
+      if (localValidationErrorType === 'restricted403') {
+        const organisationId = req.sessionModel.get('orgId')
+        const organisationName = req.sessionModel.get('lpa') ?? orgIdToName(organisationId)
+        return next(new MiddlewareError('We cannot access your endpoint URL', 403, {
+          template: 'check/error-redirect.html',
+          errorDetail: { errCode: '403' },
+          organisationId,
+          organisationName
+        }))
+      }
+
       const error = {
         key: 'url',
         type: localValidationErrorType

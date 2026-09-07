@@ -210,6 +210,10 @@ panel: { html: tableTab } } } %}
     <h3 class="govuk-heading-s">Dataset actions</h3>
 
     <p><a href="./share">Share these results</a></p>
+    {% if options.requestParams.dataset === 'local-plan' %}
+    {% set conditionalFieldsGuidanceUrl = (options.requestParams.dataset | getDatasetGuidanceUrl) + '#:~:text=modified%20the%20data.-,Conditional%20fields,-Your%20plan%20data' %}
+    <p><a class="govuk-link" href="{{ conditionalFieldsGuidanceUrl }}" target="_blank" rel="noopener noreferrer">Check what conditional fields may apply to your plan dataset</a></p>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

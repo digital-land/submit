@@ -126,6 +126,30 @@ describe('SubmitUrlController', async () => {
       expect(asyncRequestApi.postUrlRequest).not.toHaveBeenCalled()
       expect(next).toHaveBeenCalled()
     })
+
+    it('should render the dedicated page for a locally detected 403', async () => {
+      const localUrlValidation = vi.spyOn(SubmitUrlController, 'localUrlValidation').mockResolvedValue('restricted403')
+      const req = {
+        body: { url: 'http://example.com' },
+        sessionModel: {
+          get: vi.fn((key) => ({ orgId: 'local-authority:ABC', lpa: 'Example Council' })[key])
+        },
+        session: { id: '1234' }
+      }
+      const next = vi.fn()
+
+      await submitUrlController.post(req, {}, next)
+
+      expect(asyncRequestApi.postUrlRequest).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalledWith(expect.objectContaining({
+        statusCode: 403,
+        template: 'check/error-redirect.html',
+        errorDetail: { errCode: '403' },
+        organisationId: 'local-authority:ABC',
+        organisationName: 'Example Council'
+      }))
+      localUrlValidation.mockRestore()
+    })
   })
 
   describe('getHeadRequest', () => {

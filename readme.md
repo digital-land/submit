@@ -2,9 +2,65 @@
 
 Project is a web application for validating and submitting planning and housing data for England.
 
+The service does two related things. **Checking** validates a URL or uploaded file against a dataset
+specification and reports what is wrong, nothing is committed, and the user is under no obligation
+to go further. **Providing** takes a URL that has passed a check and raises a request with the data
+team so the endpoint is collected by the pipeline. Alongside those, the service publishes data
+quality dashboards for local planning authorities.
+
 ## Code Documentation
 
-https://digital-land.github.io/submit/
+Generated API reference and guides: **https://digital-land.github.io/submit/**
+
+| Guide | Covers |
+|---|---|
+| [Architecture](https://digital-land.github.io/submit/tutorial-architecture.html) | boot sequence, routes, form wizards, error handling, config, testing |
+| [Middleware guidelines](https://digital-land.github.io/submit/tutorial-middleware-guidelines.html) | conventions and builder reference — read before adding a route |
+| [Check data](https://digital-land.github.io/submit/tutorial-check-data.html) | the check wizard, async request lifecycle, URL failure modes |
+| [Submit data](https://digital-land.github.io/submit/tutorial-submit-data.html) | the provide wizard, Jira submission |
+| [Review data quality](https://digital-land.github.io/submit/tutorial-review-data-quality.html) | the `/organisations` dashboards and their middleware chains |
+| [Get started and deep links](https://digital-land.github.io/submit/tutorial-get-started.html) | the get-started page and deep links into the check tool |
+| [Dependencies](https://digital-land.github.io/submit/tutorial-dependencies.html) | services, external systems, datasette, Digital Land repos |
+
+Sources live in [docs/](docs) and are published as tutorials by `npm run generate:docs`.
+
+## Architecture at a glance
+
+The app is an Express server rendering nunjucks templates, assembled in
+[index.js](index.js) by one module per concern from [src/serverSetup/](src/serverSetup):
+`setupMiddlewares`, `setupSession`, `setupNunjucks`, `setupRoutes`, `setupSentry`,
+`setupErrorHandlers`. Two datasette-backed filter initialisers are awaited before the app is built,
+so a boot failure there is deliberate rather than a page with missing names.
+
+| Mount | Router | Guide |
+|---|---|---|
+| `/` | `routes/manage.js` | — landing page |
+| `/check` | `routes/form-wizard/check/` | [Check data](https://digital-land.github.io/submit/tutorial-check-data.html) |
+| `/submit` | `routes/form-wizard/endpoint-submission-form/` | [Submit data](https://digital-land.github.io/submit/tutorial-submit-data.html) |
+| `/organisations` | `routes/organisations.js` | [Review data quality](https://digital-land.github.io/submit/tutorial-review-data-quality.html) |
+| `/api` | `routes/api.js` | status polling for the check status page |
+| `/health` | `routes/health.js` | dependency status |
+| `/guidance` | `routes/guidance.js` | 302 to planning.data.gov.uk |
+| `/community`, `/extract`, `/accessibility`, `/privacy-notice`, `/cookies` | one router each | static pages |
+
+```
+src/
+├── serverSetup/   # app assembly, one module per concern
+├── routes/        # express routers, form wizard definitions, template schemas
+├── controllers/   # form wizard step controllers (PageController subclasses)
+├── middleware/    # middleware chains, one file per page, plus shared builders
+├── services/      # clients for external systems
+├── models/        # wrappers over async request API payloads
+├── filters/       # nunjucks filters
+├── utils/         # helpers, datasette queries, logging, validators
+├── views/         # nunjucks templates
+├── content/       # long-form copy used in templates
+└── assets/        # scss, client-side js, static images
+```
+
+Pages are built as chains of small middleware functions — see
+[Middleware guidelines](https://digital-land.github.io/submit/tutorial-middleware-guidelines.html)
+before adding a route.
 
 ## Dependencies
 

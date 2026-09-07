@@ -32,6 +32,7 @@ export const ConfigSchema = v.object({
   aws: v.object({
     region: v.string(),
     bucket: v.string(),
+    endpoint: v.optional(v.url()),
     s3ForcePathStyle: v.boolean()
   }),
   redis: v.optional(
@@ -62,6 +63,9 @@ export const ConfigSchema = v.object({
       AcknowledgementTemplateId: v.uuid()
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
+  }),
+  specificationDiagrams: v.object({
+    baseUrl: v.url()
   }),
   datasetsConfig: v.object(
     [
