@@ -98,18 +98,10 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
     - **Description**: Source code hosting
     - **Used for**: Storing the code and as a dependency source of internal packages.
     - **Contact**: Infrastructure Team @ MHCLG
-- [Smartlook](https://smartlook.com)
-    - **Description**: Web Analytics
-    - **Used for**: Collecting _anonymised_ data on website usage
-    - **Contact**: Providers team @ MHCLG
 - [Sentry](https://sentry.io)
     - **Description**: Application monitoring service
     - **Used for**: Monotoring warnings and errors.
     - **Contact**: Infrastructure Team @ MHCLG
-- [Google Analytics](https://analytics.google.com/analytics)
-    - **Description**: Web Analytics
-    - **Used for**: Collecting data on website usage
-    - **Contact**: Providers team @ MHCLG
 
 ## Software
 
