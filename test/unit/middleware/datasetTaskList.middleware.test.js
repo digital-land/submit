@@ -39,7 +39,7 @@ describe('datasetTaskList.middleware.js', () => {
   })
 
   describe('prepareTasks', () => {
-    it('prepares the task list with issues', async () => {
+    it.each(['error', 'critical'])('prepares the task list with %s issues', async (severity) => {
       const req = {
         parsedParams: {
           lpa: 'some-lpa',
@@ -51,8 +51,8 @@ describe('datasetTaskList.middleware.js', () => {
         resources: [{ entry_count: 10 }],
         tasks: {
           tasks: [
-            { details: { field: 'field1', issue_type: 'issue-type1', count: 1 }, severity: 'error' },
-            { details: { field: 'field2', issue_type: 'issue-type2', count: 1 }, severity: 'error' }
+            { details: { field: 'field1', issue_type: 'issue-type1', count: 1 }, severity },
+            { details: { field: 'field2', issue_type: 'issue-type2', count: 1 }, severity }
           ],
           count: 2
         }
