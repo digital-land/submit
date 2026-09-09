@@ -25,17 +25,9 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 
 {% block head %}
   <link rel="stylesheet" href="/public/stylesheets/index.css">
-  {% if smartlookKey %}
-    {% block smartlook %}
-      <script type='text/javascript'>
-      {% include "common/smartlook.js" %}
-      </script>
-    {% endblock %}
-  {% endif %}
 {% endblock %}
 
 {% block header %}
-  {% include "components/cookie-banner.html" %}
   {% include 'components/app-header.html' %}
 {% endblock %}
 
@@ -66,11 +58,5 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
     </script>
     <script src="/public/js/application.bundle.js"></script>
 
-    {% if googleAnalyticsMeasurementId and (cookiesAccepted == true or cookiesAccepted == 'true') %}
-      <script async src="https://www.googletagmanager.com/gtag/js?id={{ googleAnalyticsMeasurementId }}"></script>
-      <script type='text/javascript'>
-        {% include "common/google-analytics.js" %}
-      </script>
-    {% endif %}
   {% endblock %}
 {% endblock %}

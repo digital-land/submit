@@ -4,15 +4,10 @@ import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 describe('Main layout tests', () => {
-  it('should include the google analytics script if cookies are accepted', () => {
-    const html = nunjucks.render('layouts/main.html', { cookiesAccepted: true })
+  it.each([true, false])('does not include third-party analytics scripts when cookiesAccepted is %s', (cookiesAccepted) => {
+    const html = nunjucks.render('layouts/main.html', { cookiesAccepted })
 
-    expect(html).toContain('<script async src="https://www.googletagmanager.com/gtag/js?id=G-TEST-CODE"></script>')
-  })
-
-  it('should not include the google analytics script if cookies are not accepted', () => {
-    const html = nunjucks.render('layouts/main.html', { cookiesAccepted: false })
-
-    expect(html).not.toContain('<script async src="https://www.googletagmanager.com/gtag/js?id=G-TEST-CODE"></script>')
+    expect(html).not.toContain('googletagmanager.com')
+    expect(html).not.toContain('smartlook.com')
   })
 })
