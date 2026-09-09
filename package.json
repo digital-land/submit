@@ -117,7 +117,6 @@
   "standard": {
     "ignore": [
       "performance-test/",
-      "src/views/common/smartlook.js",
       "docs"
     ]
   }

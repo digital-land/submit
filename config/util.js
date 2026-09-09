@@ -90,17 +90,6 @@ export const ConfigSchema = v.object({
       return acc
     }, {})
   ),
-  smartlook: v.optional(
-    v.object({
-      key: v.string(),
-      region: v.string()
-    })
-  ),
-  googleAnalytics: v.optional(
-    v.object({
-      measurementId: v.string()
-    })
-  ),
   tablePageLength: v.number(),
   contact: v.object({
     issues: v.object({
