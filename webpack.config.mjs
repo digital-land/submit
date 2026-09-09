@@ -24,8 +24,7 @@ export default {
     map: '/src/assets/js/map.js',
     application: '/src/assets/js/application.js',
     statusPage: '/src/assets/js/statusPage.js',
-    'list-filter': '/src/assets/js/list-filter.js',
-    'cookie-banner': '/src/assets/js/components/cookie-banner.js'
+    'list-filter': '/src/assets/js/list-filter.js'
   },
   output: {
     filename: '[name].bundle.js',
