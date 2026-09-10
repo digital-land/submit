@@ -199,6 +199,21 @@ describe('platformApi.fetchTasks', () => {
     )
   })
 
+  it('sends multiple severities as repeated query parameters', async () => {
+    axios.get.mockResolvedValueOnce({ data: { tasks: [], count: 0 } })
+
+    await platformApi.fetchTasks({
+      organisation: 'local-authority:TST',
+      severity: ['error', 'critical'],
+      task_source: 'issue',
+      limit: 500
+    })
+
+    const url = new URL(axios.get.mock.calls[0][0])
+    expect(url.searchParams.getAll('severity')).toEqual(['error', 'critical'])
+    expect(url.searchParams.get('task_source')).toBe('issue')
+  })
+
   it('omits dataset param when not provided', async () => {
     axios.get.mockResolvedValueOnce({ data: { tasks: [], count: 0 } })
 
