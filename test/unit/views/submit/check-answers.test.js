@@ -1,9 +1,18 @@
 /* eslint-disable prefer-regex-literals */
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from '../../generic-page.js'
 import { stripWhitespace } from '../../../utils/stripWhiteSpace.js'
+
+vi.mock('../../../../src/utils/datasetSlugToReadableName.js', async () => {
+  const { makeDatasetSlugToReadableNameFilter } = await import('../../../../src/filters/makeDatasetSlugToReadableNameFilter.js')
+  return {
+    datasetSlugToReadableName: makeDatasetSlugToReadableNameFilter(new Map([
+      ['local-plan', 'local plan'], ['minerals-plan', 'minerals plan']
+    ]))
+  }
+})
 
 describe('check-answers View', async () => {
   const params = {
@@ -42,8 +51,18 @@ describe('check-answers View', async () => {
   })
 
   it('should render the dataset entered', () => {
-    const datasetRegex = new RegExp('<div class="govuk-summary-list__row govuk-summary-list__row--no-actions">.*Dataset.*mockDataset.*</div>', 'g')
+    const datasetRegex = new RegExp('<div class="govuk-summary-list__row govuk-summary-list__row--no-actions">.*Dataset.*MockDataset.*</div>', 'g')
     expect(html).toMatch(datasetRegex)
+  })
+
+  it('renders multiple datasets through the strict page schema', () => {
+    const html = stripWhitespace(nunjucks.render('check-answers.html', {
+      ...params,
+      options: { ...params.options, datasetsInResource: ['local-plan', 'minerals-plan'] }
+    }))
+    expect(html).toContain('Check your answers before providing your datasets')
+    expect(html).toContain('Local plan, Minerals plan')
+    expect(html).toContain('By providing these datasets')
   })
 
   it('should render the endpoint url from options without a Change link', () => {

@@ -2,6 +2,7 @@ import nunjucks from 'nunjucks'
 import { JSDOM } from 'jsdom'
 import { expect, describe, it } from 'vitest'
 import addFilters from '../../../../src/filters/filters'
+import { makeDatasetSlugToReadableNameFilter } from '../../../../src/filters/makeDatasetSlugToReadableNameFilter.js'
 
 // Configure Nunjucks
 const nunjucksEnv = nunjucks.configure([
@@ -17,6 +18,12 @@ const nunjucksEnv = nunjucks.configure([
 })
 
 addFilters(nunjucksEnv, { dataSubjects: {} })
+nunjucksEnv.addFilter('datasetSlugToReadableName', makeDatasetSlugToReadableNameFilter(new Map([
+  ['local-plan', 'Local plan'],
+  ['minerals-plan', 'Minerals plan'],
+  ['waste-plan', 'Waste plan'],
+  ['supplementary-plan', 'Supplementary plan']
+])))
 
 const resultsTemplatePath = 'results/results.html'
 
@@ -227,5 +234,55 @@ describe('results.html', () => {
       expect(mapTab.classList.contains('govuk-tabs__panel--hidden')).to.equal(false)
       expect(tableTab.classList.contains('govuk-tabs__panel--hidden')).to.equal(true)
     })
+  })
+})
+
+describe('plans in the checked resource', () => {
+  const render = (template, options) => new JSDOM(nunjucksEnv.render(template, { options })).window.document
+  const datasetsInResource = ['local-plan', 'minerals-plan']
+
+  it.each([
+    ['results/results.html', { requestParams: { dataset: 'minerals-plan' } }, 'We have detected more than one plan', 'the results are below'],
+    ['check/confirmation.html', { dataset: 'minerals-plan', requestId: 'request-123' }, 'We detected multiple plans', 'You do not need to check and provide them separately.']
+  ])('uses the uploaded dataset and correct message in %s', (template, options, opening, detail) => {
+    const inset = render(template, { ...options, datasetsInResource }).querySelector('#multiple-plan-types.govuk-inset-text')
+    expect(inset.textContent).toContain(`${opening} in your minerals plan data.`)
+    expect(inset.textContent).toContain(detail)
+  })
+
+  it.each([undefined, [], ['local-plan']])('hides the inset for %j on both pages', datasetsInResource => {
+    for (const template of ['results/results.html', 'check/confirmation.html']) {
+      expect(render(template, { datasetsInResource }).querySelector('#multiple-plan-types')).toBeNull()
+    }
+  })
+
+  it('keeps blocking tasks alongside the inset and prevents continuing', () => {
+    const document = render(resultsTemplatePath, { datasetsInResource, tasksBlocking: [{ title: { text: 'Document-count column missing' }, status: { text: 'Must fix' } }] })
+    expect(document.querySelector('#multiple-plan-types')).not.toBeNull()
+    expect(document.querySelector('#required-checks').textContent).toContain('Document-count column missing')
+    expect(document.querySelector('a.govuk-button').textContent.trim()).toBe('Check data')
+    expect(document.querySelector('button[type="submit"]')).toBeNull()
+  })
+
+  it.each([undefined, 'request-123'])('preserves confirmation actions for request %j', requestId => {
+    const document = render('check/confirmation.html', { datasetsInResource, requestId })
+    const baseline = render('check/confirmation.html', { requestId })
+    expect(document.querySelector('#multiple-plan-types')).not.toBeNull()
+    expect(document.querySelector('.govuk-button-group')?.outerHTML).toBe(baseline.querySelector('.govuk-button-group')?.outerHTML)
+    expect(document.querySelector('.submit-link')?.getAttribute('href')).toBe(requestId ? '/submit/lpa-details' : undefined)
+  })
+
+  it.each([
+    [undefined, undefined], [[], undefined], [['local-plan'], 'Local plan'],
+    [datasetsInResource, 'Local plan, Minerals plan'], [['waste-plan', 'supplementary-plan'], 'Waste plan, Supplementary plan']
+  ])('shows the dataset names after Found for %j', (datasetsInResource, expected) => {
+    const document = render(resultsTemplatePath, { datasetsInResource, totalRows: 3 })
+    const rows = [...document.querySelectorAll('.govuk-summary-list__row')]
+    const row = rows.find(row => row.querySelector('dt').textContent.trim() === 'Datasets')
+    expect(row?.querySelector('dd').textContent.trim()).toBe(expected)
+    if (row) {
+      expect(row.previousElementSibling.querySelector('dt').textContent.trim()).toBe('Found')
+      expect(row.previousElementSibling.querySelector('dd').textContent.trim()).toBe('3 rows')
+    }
   })
 })

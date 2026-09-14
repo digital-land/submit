@@ -41,6 +41,7 @@ describe('CheckAnswersController', () => {
     renewSubmittedEndpoint.mockResolvedValue(true)
     settleSubmittedEndpoint.mockResolvedValue()
     addInternalNoteToIssue.mockResolvedValue({ data: {} })
+    getRequestData.mockResolvedValue({ getDatasetsInResource: () => [], getPlugin: () => 'wfs', isComplete: () => true })
   })
 
   describe('locals', () => {
@@ -269,6 +270,97 @@ describe('CheckAnswersController', () => {
       expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
 
       vi.useRealTimers()
+    })
+  })
+
+  describe('multiple plan submission', () => {
+    let saved
+
+    beforeEach(() => {
+      saved = { ...sessionData, dataset: 'local-plan' }
+      req.sessionModel.get.mockImplementation(key => saved[key])
+      req.sessionModel.set.mockImplementation((key, value) => { saved[key] = value })
+      getRequestData.mockResolvedValue({ getDatasetsInResource: () => ['local-plan', 'minerals-plan', 'waste-plan'] })
+    })
+
+    it('creates a request per plan type and displays every reference', async () => {
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+        .mockResolvedValueOnce({ issueKey: 'PLAN-1' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-2' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-3' })
+
+      await controller.post(req, res, next)
+
+      expect(create.mock.calls.map(call => call[3])).toEqual(['local-plan', 'minerals-plan', 'waste-plan'])
+      expect(reserveSubmittedEndpoint.mock.calls.map(([submission]) => submission.dataset)).toEqual(['local-plan', 'minerals-plan', 'waste-plan'])
+      expect(settleSubmittedEndpoint.mock.calls.map(([submission, token, ttl]) => [submission.dataset, ttl])).toEqual([['local-plan', 86400], ['minerals-plan', 86400], ['waste-plan', 86400]])
+      expect(saved.reference).toBe('PLAN-1, PLAN-2, PLAN-3')
+      expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('skips reserved datasets and submits the remaining datasets', async () => {
+      reserveSubmittedEndpoint.mockResolvedValueOnce(false)
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+        .mockResolvedValueOnce({ issueKey: 'PLAN-2' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-3' })
+      await controller.post(req, res, next)
+      expect(create.mock.calls.map(call => call[3])).toEqual(['minerals-plan', 'waste-plan'])
+      expect(saved.references).toEqual(['PLAN-2', 'PLAN-3'])
+      expect(settleSubmittedEndpoint.mock.calls.map(([submission]) => submission.dataset)).toEqual(['minerals-plan', 'waste-plan'])
+    })
+
+    it('creates requests for non-plan datasets returned by the backend', async () => {
+      getRequestData.mockResolvedValue({ getDatasetsInResource: () => ['tree', 'conservation-area'] })
+      const create = vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issueKey: 'DATA-1' })
+      await controller.post(req, res, next)
+      expect(create.mock.calls.map(call => call[3])).toEqual(['tree', 'conservation-area'])
+    })
+
+    it('retries only unfinished plans after partial failure', async () => {
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+        .mockResolvedValueOnce({ issueKey: 'PLAN-1' })
+        .mockRejectedValueOnce(new Error('Jira unavailable'))
+
+      await controller.post(req, res, next)
+      expect(saved.jiraRequests.completed).toEqual({ 'local-plan': 'PLAN-1' })
+      expect(saved.processing).toBeUndefined()
+      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+
+      create.mockResolvedValueOnce({ issueKey: 'PLAN-2' }).mockResolvedValueOnce({ issueKey: 'PLAN-3' })
+      await controller.post(req, res, next)
+      expect(create.mock.calls.map(call => call[3])).toEqual(['local-plan', 'minerals-plan', 'minerals-plan', 'waste-plan'])
+      expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
+    })
+
+    it('does not reuse references from another check request', async () => {
+      saved.jiraRequests = { submissionKey: 'old-check', completed: { 'local-plan': 'OLD-1' } }
+      const create = vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issueKey: 'NEW-1' })
+      await controller.createJiraServiceRequests(req, res, next)
+      expect(create).toHaveBeenCalledTimes(3)
+    })
+
+    it('does not submit anything when the check metadata cannot be fetched', async () => {
+      getRequestData.mockRejectedValue(new Error('Request API unavailable'))
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+      await controller.post(req, res, next)
+      expect(create).not.toHaveBeenCalled()
+      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+    })
+
+    it('uses the individual plan in Jira, the attachment and Manage Service', async () => {
+      createCustomerRequest.mockResolvedValue({ data: { issueKey: 'PLAN-2' } })
+      const attach = vi.spyOn(controller, 'attachFileToIssue').mockResolvedValue()
+      await controller.createJiraServiceRequest(req, res, next, 'minerals-plan')
+      expect(createCustomerRequest).toHaveBeenCalledWith(expect.objectContaining({
+        summary: expect.stringContaining('for minerals-plan'),
+        description: expect.stringContaining('dataset *minerals-plan*')
+      }), config.jira.requestTypeId)
+      expect(attach).toHaveBeenCalledWith('existing-request-id', expect.objectContaining({ dataset: 'minerals-plan' }), expect.any(String), expect.any(Object))
+      const note = addInternalNoteToIssue.mock.calls[0][1]
+      expect(note).toContain('requestId=existing-request-id')
+      expect(note).toContain('dataset=minerals-plan')
+      expect(note).not.toContain('import_data=true')
     })
   })
 

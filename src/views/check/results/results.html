@@ -116,6 +116,17 @@ panel: { html: tableTab } } } %}
       }
     ] %}
     
+    {% if options.datasetsInResource | length > 0 %}
+      {% set datasetNames = [] %}
+      {% for dataset in options.datasetsInResource %}
+        {% set _ = datasetNames.push(dataset | datasetSlugToReadableName(true)) %}
+      {% endfor %}
+      {% set _ = rows.push({
+        key: { text: "Datasets" },
+        value: { text: datasetNames | join(", ") }
+      }) %}
+    {% endif %}
+
     {{ govukSummaryList({
       rows: rows
     }) }}
@@ -143,6 +154,10 @@ panel: { html: tableTab } } } %}
       {{ govukSummaryList({ rows: summaryRows }) }}
     </div>
 
+    {% endif %}
+
+    {% if options.datasetsInResource | length > 1 %}
+      {{ govukInsetText({ id: "multiple-plan-types", text: "We have detected more than one plan in your " + ((options.requestParams.dataset or options.dataset) | datasetSlugToReadableName) + " data. All plans in your data have been checked and the results are below. If your data contains more than one plan when you provide it, we will process all plans." }) }}
     {% endif %}
 
     {% if options.passedChecks.length > 0 %}

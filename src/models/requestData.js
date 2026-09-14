@@ -169,6 +169,11 @@ export default class ResultData {
       .filter(Boolean) // remove nulls from failed parses
   }
 
+  getDatasetsInResource () {
+    const datasets = this.response?.data?.['datasets-in-resource']
+    return Array.isArray(datasets) ? datasets : []
+  }
+
   getParams () {
     return this.params
   }

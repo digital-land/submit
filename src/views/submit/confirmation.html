@@ -30,7 +30,7 @@ If there are any issues processing your data will we contact you on the email ad
   <div class="govuk-grid-column-two-thirds">
     {{ govukPanel({
       titleHtml: pageName,
-      html: "Your reference number<br><strong>" + values['reference'] + "</strong>"
+      html: ("Your reference numbers" if values['references'] | length > 1 else "Your reference number") + "<br><strong>" + values['reference'] + "</strong>"
     }) }}
 
     {{content | govukMarkdown(headingsStartWith="l") | safe}}
