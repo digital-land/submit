@@ -428,6 +428,7 @@ describe('datasets in the resource', () => {
   it.each([
     [undefined, []],
     [null, []],
+    [[null, undefined, 42, {}, [], true, '', '  ', 'local-plan'], ['local-plan']],
     ['local-plan;waste-plan', []],
     [[], []],
     [['local-plan'], ['local-plan']],

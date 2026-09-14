@@ -1,13 +1,16 @@
+import { EventEmitter } from 'node:events'
+import { endpointAlreadyCollectedForDataset } from '../../src/utils/datasetteQueries/endpointAlreadyCollected.js'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { addInternalNoteToIssue, createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
-import { reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../../src/utils/redisLoader.js'
+import { reserveEndpointSubmission, renewEndpointSubmission, releaseEndpointSubmission, reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../../src/utils/redisLoader.js'
 
 vi.mock('../../src/services/jiraService.js')
 vi.mock('../../src/services/asyncRequestApi.js')
 vi.mock('../../src/utils/redisLoader.js')
+vi.mock('../../src/utils/datasetteQueries/endpointAlreadyCollected.js')
 
 describe('CheckAnswersController', () => {
   let req, res, next, controller
@@ -33,10 +36,14 @@ describe('CheckAnswersController', () => {
       form: { options: {} },
       body: {}
     }
-    res = { redirect: vi.fn(), json: vi.fn() }
+    res = Object.assign(new EventEmitter(), { redirect: vi.fn(), json: vi.fn() })
     next = vi.fn()
     controller = new CheckAnswersController({ route: '/check-answers/:requestId' })
     vi.clearAllMocks()
+    reserveEndpointSubmission.mockResolvedValue('submission-token')
+    renewEndpointSubmission.mockResolvedValue(true)
+    releaseEndpointSubmission.mockResolvedValue()
+    endpointAlreadyCollectedForDataset.mockResolvedValue(false)
     reserveSubmittedEndpoint.mockResolvedValue('reservation-token')
     renewSubmittedEndpoint.mockResolvedValue(true)
     settleSubmittedEndpoint.mockResolvedValue()
@@ -163,7 +170,7 @@ describe('CheckAnswersController', () => {
 
       // Mock Jira creation to take 130 seconds (longer than the 120-second reservation TTL)
       const createJiraSpy = vi.spyOn(controller, 'createJiraServiceRequest').mockImplementation(async () => {
-        await vi.advanceTimersByTimeAsync(130 * 1000)
+        await new Promise(resolve => setTimeout(resolve, 130 * 1000))
         return issue
       })
 
@@ -198,7 +205,7 @@ describe('CheckAnswersController', () => {
 
       // First request: simulate long Jira creation (150 seconds)
       const createJiraSpy = vi.spyOn(controller, 'createJiraServiceRequest').mockImplementation(async () => {
-        await vi.advanceTimersByTimeAsync(150 * 1000)
+        await new Promise(resolve => setTimeout(resolve, 150 * 1000))
         return issue
       })
 
@@ -210,6 +217,7 @@ describe('CheckAnswersController', () => {
 
       // Verify renewals have happened
       expect(renewSubmittedEndpoint).toHaveBeenCalled()
+      expect(renewEndpointSubmission).toHaveBeenCalled()
 
       // Simulate a second concurrent request arriving after 130 seconds
       const req2 = {
@@ -225,11 +233,11 @@ describe('CheckAnswersController', () => {
       const next2 = vi.fn()
 
       // Second request should be rejected because the reservation is still held (renewed)
-      reserveSubmittedEndpoint.mockResolvedValueOnce(false)
+      reserveEndpointSubmission.mockResolvedValueOnce(false)
       const controller2 = new CheckAnswersController({ route: '/check-answers/:requestId' })
       await controller2.post(req2, res2, next2)
 
-      expect(res2.redirect).toHaveBeenCalledWith('/check/confirmation')
+      expect(res2.redirect).toHaveBeenCalledWith('/submit/check-answers')
       expect(next2).not.toHaveBeenCalled()
 
       // Complete first request
@@ -248,7 +256,7 @@ describe('CheckAnswersController', () => {
 
       // Mock Jira creation to fail after some time
       vi.spyOn(controller, 'createJiraServiceRequest').mockImplementation(async () => {
-        await vi.advanceTimersByTimeAsync(70 * 1000)
+        await new Promise(resolve => setTimeout(resolve, 70 * 1000))
         throw new Error('Jira creation failed')
       })
 
@@ -308,6 +316,52 @@ describe('CheckAnswersController', () => {
       expect(create.mock.calls.map(call => call[3])).toEqual(['minerals-plan', 'waste-plan'])
       expect(saved.references).toEqual(['PLAN-2', 'PLAN-3'])
       expect(settleSubmittedEndpoint.mock.calls.map(([submission]) => submission.dataset)).toEqual(['minerals-plan', 'waste-plan'])
+    })
+
+    it.each([false, true])('serializes concurrent posts, including early disconnect: %s', async (disconnect) => {
+      let finishFirst
+      const pending = new Promise(resolve => { finishFirst = resolve })
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+        .mockImplementationOnce(() => pending)
+        .mockResolvedValueOnce({ issueKey: 'PLAN-2' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-3' })
+      reserveEndpointSubmission.mockResolvedValueOnce('submission-token').mockResolvedValue(false)
+      const first = controller.post(req, res, next)
+      await vi.waitFor(() => expect(create).toHaveBeenCalledTimes(1))
+      if (disconnect) res.emit('close')
+      expect(releaseEndpointSubmission).not.toHaveBeenCalled()
+      const competing = { ...req, sessionModel: { get: req.sessionModel.get, set: vi.fn() } }
+      const secondResponse = Object.assign(new EventEmitter(), { redirect: vi.fn() })
+      await controller.post(competing, secondResponse, vi.fn())
+      expect(competing.sessionModel.set).not.toHaveBeenCalled()
+      expect(create).toHaveBeenCalledTimes(1)
+      expect(secondResponse.redirect).toHaveBeenCalledWith('/submit/check-answers')
+      finishFirst({ issueKey: 'PLAN-1' })
+      await first
+      expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
+      if (!disconnect) expect(releaseEndpointSubmission).not.toHaveBeenCalled()
+      res.emit('finish')
+      res.emit('close')
+      expect(releaseEndpointSubmission).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not submit when the submission lock is unavailable', async () => {
+      reserveEndpointSubmission.mockResolvedValue(null)
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+      await controller.post(req, res, next)
+      expect(create).not.toHaveBeenCalled()
+      expect(saved.processing).toBeUndefined()
+    })
+
+    it('submits only datasets not already collected', async () => {
+      endpointAlreadyCollectedForDataset.mockImplementation(async ({ dataset }) => dataset === 'local-plan')
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+        .mockResolvedValueOnce({ issueKey: 'PLAN-2' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-3' })
+      await controller.post(req, res, next)
+      expect(create.mock.calls.map(call => call[3])).toEqual(['minerals-plan', 'waste-plan'])
+      expect(reserveSubmittedEndpoint.mock.calls.map(([submission]) => submission.dataset)).toEqual(['minerals-plan', 'waste-plan'])
+      expect(saved.references).toEqual(['PLAN-2', 'PLAN-3'])
     })
 
     it('creates requests for non-plan datasets returned by the backend', async () => {

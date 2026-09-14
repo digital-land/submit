@@ -64,7 +64,7 @@ describe('CheckConfirmationController', () => {
     expect(getRequestData).toHaveBeenCalledWith('request-123')
     expect(endpointAlreadyCollectedForDataset).toHaveBeenCalledWith({
       endpointUrl: 'https://example.com/data.csv',
-      dataset: 'brownfield-land',
+      dataset: 'local-plan',
       organisation: 'local-authority:ABC'
     })
     expect(req.sessionModel.set).toHaveBeenCalledWith('dataset', 'brownfield-land')
@@ -74,6 +74,14 @@ describe('CheckConfirmationController', () => {
     expect(req.form.options.alreadyCollectingEndpoint).toBe(false)
     expect(req.session.checkRequestId).toBe('request-123')
     expect(superLocalsSpy).toHaveBeenCalledWith(req, res, next)
+  })
+
+  it('keeps submission available when only some detected datasets are collected', async () => {
+    endpointAlreadyCollectedForDataset.mockImplementation(async ({ dataset }) => dataset === 'local-plan')
+    await controller.locals(req, res, next)
+    expect(endpointAlreadyCollectedForDataset.mock.calls.map(([submission]) => submission.dataset)).toEqual(['local-plan', 'waste-plan'])
+    expect(req.form.options.alreadyCollectingEndpoint).toBe(false)
+    expect(req.session.checkRequestId).toBe('request-123')
   })
 
   it('clears the submit handoff when endpoint is already collected for the dataset', async () => {

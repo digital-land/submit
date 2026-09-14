@@ -22,11 +22,14 @@ class CheckConfirmationController extends PageController {
           req.sessionModel.set('orgId', params.organisationName)
         }
         if (isUrlCheck) {
-          req.form.options.alreadyCollectingEndpoint = await endpointAlreadyCollectedForDataset({
+          const detected = req.form.options.datasetsInResource
+          const datasets = detected.length ? detected : [params.dataset]
+          const collected = await Promise.all(datasets.map(dataset => endpointAlreadyCollectedForDataset({
             endpointUrl: params.url,
-            dataset: params.dataset,
+            dataset,
             organisation: params.organisationName
-          })
+          })))
+          req.form.options.alreadyCollectingEndpoint = collected.every(Boolean)
         }
       } catch (error) {
         logger.warn('CheckConfirmationController: could not load check confirmation context', {

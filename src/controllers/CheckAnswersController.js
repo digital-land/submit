@@ -1,11 +1,12 @@
 import PageController from './pageController.js'
+import { endpointAlreadyCollectedForDataset } from '../utils/datasetteQueries/endpointAlreadyCollected.js'
 import config from '../../config/index.js'
 import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
 import { getRequestData } from '../services/asyncRequestApi.js'
-import { reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
+import { reserveEndpointSubmission, renewEndpointSubmission, releaseEndpointSubmission, reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
 
 class CheckAnswersController extends PageController {
   async locals (req, res, next) {
@@ -41,6 +42,25 @@ class CheckAnswersController extends PageController {
    * @param {Function} next - The next middleware function.
    */
   async post (req, res, next) {
+    const submission = {
+      endpointUrl: req.sessionModel.get('endpoint-url'),
+      organisation: req.sessionModel.get('orgId')
+    }
+    const token = await reserveEndpointSubmission(submission)
+    if (!token) return res.redirect('/submit/check-answers')
+    let released = false
+    let processing = true
+    let responseFinished = false
+    const release = () => {
+      responseFinished = true
+      if (processing || released) return
+      released = true
+      return releaseEndpointSubmission(submission, token)
+    }
+    // Keep the lock until the response has saved the session.
+    res.once('finish', release)
+    res.once('close', release)
+    const renewal = setInterval(() => renewEndpointSubmission(submission, token), 60 * 1000)
     try {
       const issue = await this.createJiraServiceRequests(req, res, next)
       if (issue?.localJiraFallback) {
@@ -62,6 +82,10 @@ class CheckAnswersController extends PageController {
       })
       req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
       return res.redirect('/submit/check-answers')
+    } finally {
+      clearInterval(renewal)
+      processing = false
+      if (responseFinished) release()
     }
 
     super.post(req, res, next)
@@ -85,6 +109,7 @@ class CheckAnswersController extends PageController {
           dataset,
           organisation: req.sessionModel.get('orgId')
         }
+        if (await endpointAlreadyCollectedForDataset(submission)) continue
         const reservationToken = await reserveSubmittedEndpoint(submission)
         if (reservationToken === false) continue
         let isSubmitted = false

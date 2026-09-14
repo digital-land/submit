@@ -171,7 +171,7 @@ export default class ResultData {
 
   getDatasetsInResource () {
     const datasets = this.response?.data?.['datasets-in-resource']
-    return Array.isArray(datasets) ? datasets : []
+    return Array.isArray(datasets) ? datasets.filter(dataset => typeof dataset === 'string' && dataset.trim()) : []
   }
 
   getParams () {
