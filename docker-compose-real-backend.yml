@@ -10,12 +10,19 @@ services:
       AWS_DEFAULT_REGION: eu-west-2
       AWS_ENDPOINT_URL: http://localstack:4566
     depends_on:
-      - planning-api
+      planning-api:
+        condition: service_healthy
     ports:
       - "8085:5000"
 
   planning-api:
     image: wiremock/wiremock:3.4.2
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/__admin/mappings"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
     volumes:
       - "./docker/planning-api-stub:/home/wiremock:ro"
 
