@@ -484,8 +484,6 @@ export function getTasksByLevel (req, level, status, update = false) {
   req.locals[taskListName] = update
     ? [...existingTasks, ...taskParams]
     : taskParams
-  // let Tasks = if update = true { ...req.locals[`tasks${status === taskStatus.mustFix ? 'Blocking' : 'NonBlocking'}`], ...taskParams }
-  // req.locals[`tasks${status === taskStatus.mustFix ? 'Blocking' : 'NonBlocking'}`] = { ...taskParams }
 }
 
 export const missingColumnTaskMessage = (field) => {
@@ -540,9 +538,13 @@ export async function getBlockingTasks (req, res, next) {
   next()
 }
 
-export function getNonBlockingTasks (req, res, next) {
-  getTasksByLevel(req, 3, taskStatus.shouldFix)
-  next()
+export async function getNonBlockingTasks (req, res, next) {
+  const params = req.locals.requestData?.getParams?.() ?? {}
+  if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })) next()
+  else {
+    getTasksByLevel(req, 3, taskStatus.shouldFix, true)
+    next()
+  }
 }
 
 export function getPassedChecks (req, res, next) {
