@@ -128,7 +128,10 @@ export default {
 
     if (params.organisation) queryParams.append('organisation', params.organisation)
     if (params.dataset) queryParams.append('dataset', params.dataset)
-    if (params.severity) queryParams.append('severity', params.severity)
+    if (params.severity) {
+      const severities = Array.isArray(params.severity) ? params.severity : [params.severity]
+      severities.forEach(severity => queryParams.append('severity', severity))
+    }
     if (params.responsibility) queryParams.append('responsibility', params.responsibility)
     if (params.task_source) queryParams.append('task_source', params.task_source)
     if (params.limit) queryParams.append('limit', params.limit)

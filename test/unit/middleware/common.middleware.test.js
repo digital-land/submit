@@ -1714,7 +1714,7 @@ describe('fetchTasksFromPlatformApi', () => {
     expect(platformApi.fetchTasks).toHaveBeenCalledWith(expect.objectContaining({
       organisation: 'local-authority:TST',
       dataset: 'brownfield-land',
-      severity: 'error',
+      severity: ['error', 'critical'],
       task_source: 'issue',
       limit: 100
     }))
@@ -1728,6 +1728,7 @@ describe('fetchTasksFromPlatformApi', () => {
     await fetchTasksFromPlatformApi(req, {}, next)
 
     expect(platformApi.fetchTasks).toHaveBeenCalledWith(expect.objectContaining({
+      severity: ['error', 'critical'],
       limit: 500
     }))
     expect(platformApi.fetchTasks.mock.calls[0][0]).not.toHaveProperty('dataset')
@@ -1735,8 +1736,8 @@ describe('fetchTasksFromPlatformApi', () => {
 
   it('deduplicates tasks keeping the highest count per (dataset, issue_type, field)', async () => {
     const tasks = [
-      { dataset: 'brownfield-land', details: { issue_type: 'invalid URI', field: 'SiteplanURL', count: 6 } },
-      { dataset: 'brownfield-land', details: { issue_type: 'invalid URI', field: 'SiteplanURL', count: 9 } },
+      { dataset: 'brownfield-land', severity: 'error', details: { issue_type: 'invalid URI', field: 'SiteplanURL', count: 6 } },
+      { dataset: 'brownfield-land', severity: 'critical', details: { issue_type: 'invalid URI', field: 'SiteplanURL', count: 9 } },
       { dataset: 'brownfield-land', details: { issue_type: 'missing value', field: 'name', count: 1 } }
     ]
     platformApi.fetchTasks.mockResolvedValueOnce({ formattedData: { tasks, count: 3 } })
