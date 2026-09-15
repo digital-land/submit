@@ -1,0 +1,10 @@
+{
+  "priority": 100,
+  "request": {
+    "method": "GET",
+    "urlPattern": ".*"
+  },
+  "response": {
+    "proxyBaseUrl": "https://www.planning.data.gov.uk"
+  }
+}

@@ -9,8 +9,15 @@ services:
       AWS_SECRET_ACCESS_KEY: example
       AWS_DEFAULT_REGION: eu-west-2
       AWS_ENDPOINT_URL: http://localstack:4566
+    depends_on:
+      - planning-api
     ports:
       - "8085:5000"
+
+  planning-api:
+    image: wiremock/wiremock:3.4.2
+    volumes:
+      - "./docker/planning-api-stub:/home/wiremock:ro"
 
   redis:
     image: redis:6.0.9
@@ -77,4 +84,3 @@ services:
       replicas: 2
     volumes:
       - "./request-processor-celery/docker_volume:/opt"
-

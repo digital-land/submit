@@ -1,0 +1,22 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/dataset.json",
+    "queryParameters": {
+      "dataset": {
+        "equalTo": "brownfield-land"
+      },
+      "field": {
+        "absent": true
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "brownfield-dataset.json"
+  }
+}
