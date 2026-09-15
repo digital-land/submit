@@ -1266,7 +1266,7 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
 })
 
 /**
- * Fetches error-severity issue tasks from the platform API for the current organisation,
+ * Fetches error and critical severity issue tasks from the platform API for the current organisation,
  * then deduplicates by (dataset, issue_type, field) keeping the highest count per group.
  * When `req.params.dataset` is set (e.g. dataset task list page), filters to that
  * dataset and uses a limit of 100. Without a dataset (e.g. LPA overview page),
@@ -1279,7 +1279,7 @@ export const fetchTasksFromPlatformApi = async (req, res, next) => {
     const { formattedData } = await platformApi.fetchTasks({
       organisation: req.orgInfo?.organisation,
       ...(dataset && { dataset }),
-      severity: 'error',
+      severity: ['error', 'critical'],
       task_source: 'issue',
       limit: dataset ? 100 : 500
     })
