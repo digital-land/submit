@@ -345,12 +345,17 @@ describe('CheckAnswersController', () => {
       expect(releaseEndpointSubmission).toHaveBeenCalledTimes(1)
     })
 
-    it('does not submit when the submission lock is unavailable', async () => {
+    it('shows an explicit error when the submission lock is unavailable', async () => {
       reserveEndpointSubmission.mockResolvedValue(null)
       const create = vi.spyOn(controller, 'createJiraServiceRequest')
       await controller.post(req, res, next)
       expect(create).not.toHaveBeenCalled()
       expect(saved.processing).toBeUndefined()
+      expect(saved.errors).toEqual([{ text: 'We cannot submit your data at the moment. Please try again later.' }])
+      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+      expect(renewEndpointSubmission).not.toHaveBeenCalled()
+      expect(releaseEndpointSubmission).not.toHaveBeenCalled()
+      expect(next).not.toHaveBeenCalled()
     })
 
     it('submits only datasets not already collected', async () => {

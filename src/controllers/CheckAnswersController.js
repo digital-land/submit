@@ -47,7 +47,12 @@ class CheckAnswersController extends PageController {
       organisation: req.sessionModel.get('orgId')
     }
     const token = await reserveEndpointSubmission(submission)
-    if (!token) return res.redirect('/submit/check-answers')
+    if (token === false) return res.redirect('/submit/check-answers')
+    if (token === null) {
+      logger.error('CheckAnswersController.post(): Submission lock unavailable', { type: types.External })
+      req.sessionModel.set('errors', [{ text: 'We cannot submit your data at the moment. Please try again later.' }])
+      return res.redirect('/submit/check-answers')
+    }
     let released = false
     let processing = true
     let responseFinished = false
