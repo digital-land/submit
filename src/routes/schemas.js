@@ -301,7 +301,8 @@ export const OrgIssueDetails = v.strictObject({
 
 export const CheckAnswers = v.strictObject({
   options: v.strictObject({
-    endpointUrl: v.optional(v.string())
+    endpointUrl: v.optional(v.string()),
+    datasetsInResource: v.optional(v.array(NonEmptyString))
   }),
   values: v.strictObject({
     lpa: NonEmptyString,
@@ -341,7 +342,9 @@ export const DatasetDetails = v.strictObject({
 const SubmitEndpointConfirmation = v.strictObject({
   values: v.object({
     dataset: NonEmptyString,
-    email: NonEmptyString
+    email: NonEmptyString,
+    reference: v.optional(NonEmptyString),
+    references: v.optional(v.array(NonEmptyString))
   })
 })
 

@@ -423,3 +423,26 @@ describe('RequestData', () => {
     })
   })
 })
+
+describe('datasets in the resource', () => {
+  it.each([
+    [undefined, []],
+    [null, []],
+    [[null, undefined, 42, {}, [], true, '', '  ', 'local-plan'], ['local-plan']],
+    ['local-plan;waste-plan', []],
+    [[], []],
+    [['local-plan'], ['local-plan']],
+    [['local-plan', 'local-plan'], ['local-plan', 'local-plan']],
+    [['local-plan', 'tree'], ['local-plan', 'tree']],
+    [['tree', 'conservation-area'], ['tree', 'conservation-area']],
+    [['local-plan', 'minerals-plan', 'waste-plan'], ['local-plan', 'minerals-plan', 'waste-plan']],
+    [['supplementary-plan', 'local-plan'], ['supplementary-plan', 'local-plan']]
+  ])('handles metadata %j', (datasets, expected) => {
+    const request = new RequestData({ response: { data: { 'datasets-in-resource': datasets } } })
+    expect(request.getDatasetsInResource()).toEqual(expected)
+  })
+
+  it('handles older requests without a response', () => {
+    expect(new RequestData({}).getDatasetsInResource()).toEqual([])
+  })
+})

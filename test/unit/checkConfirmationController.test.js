@@ -45,6 +45,7 @@ describe('CheckConfirmationController', () => {
     res = {}
     next = vi.fn()
     getRequestData.mockResolvedValue({
+      getDatasetsInResource: () => ['local-plan', 'waste-plan'],
       getParams: () => ({
         type: 'check_url',
         url: 'https://example.com/data.csv',
@@ -63,15 +64,24 @@ describe('CheckConfirmationController', () => {
     expect(getRequestData).toHaveBeenCalledWith('request-123')
     expect(endpointAlreadyCollectedForDataset).toHaveBeenCalledWith({
       endpointUrl: 'https://example.com/data.csv',
-      dataset: 'brownfield-land',
+      dataset: 'local-plan',
       organisation: 'local-authority:ABC'
     })
     expect(req.sessionModel.set).toHaveBeenCalledWith('dataset', 'brownfield-land')
     expect(req.sessionModel.set).toHaveBeenCalledWith('orgId', 'local-authority:ABC')
     expect(req.form.options.requestId).toBe('request-123')
+    expect(req.form.options.datasetsInResource).toEqual(['local-plan', 'waste-plan'])
     expect(req.form.options.alreadyCollectingEndpoint).toBe(false)
     expect(req.session.checkRequestId).toBe('request-123')
     expect(superLocalsSpy).toHaveBeenCalledWith(req, res, next)
+  })
+
+  it('keeps submission available when only some detected datasets are collected', async () => {
+    endpointAlreadyCollectedForDataset.mockImplementation(async ({ dataset }) => dataset === 'local-plan')
+    await controller.locals(req, res, next)
+    expect(endpointAlreadyCollectedForDataset.mock.calls.map(([submission]) => submission.dataset)).toEqual(['local-plan', 'waste-plan'])
+    expect(req.form.options.alreadyCollectingEndpoint).toBe(false)
+    expect(req.session.checkRequestId).toBe('request-123')
   })
 
   it('clears the submit handoff when endpoint is already collected for the dataset', async () => {
@@ -89,7 +99,8 @@ describe('CheckConfirmationController', () => {
 
     await controller.locals(req, res, next)
 
-    expect(getRequestData).not.toHaveBeenCalled()
+    expect(getRequestData).toHaveBeenCalledWith('request-123')
+    expect(req.form.options.datasetsInResource).toEqual(['local-plan', 'waste-plan'])
     expect(endpointAlreadyCollectedForDataset).not.toHaveBeenCalled()
     expect(req.form.options.requestId).toBeUndefined()
     expect(req.session.checkRequestId).toBeUndefined()
@@ -101,6 +112,7 @@ describe('CheckConfirmationController', () => {
     await controller.locals(req, res, next)
 
     expect(req.form.options.requestId).toBe('request-123')
+    expect(req.form.options.datasetsInResource).toEqual([])
     expect(req.form.options.alreadyCollectingEndpoint).toBeUndefined()
     expect(req.session.checkRequestId).toBe('request-123')
   })

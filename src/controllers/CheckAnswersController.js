@@ -1,12 +1,12 @@
 import PageController from './pageController.js'
+import { endpointAlreadyCollectedForDataset } from '../utils/datasetteQueries/endpointAlreadyCollected.js'
 import config from '../../config/index.js'
 import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
 import { getRequestData } from '../services/asyncRequestApi.js'
-import { getDatasets } from '../utils/utils.js'
-import { reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
+import { reserveEndpointSubmission, renewEndpointSubmission, releaseEndpointSubmission, reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
 
 class CheckAnswersController extends PageController {
   async locals (req, res, next) {
@@ -17,6 +17,7 @@ class CheckAnswersController extends PageController {
     }
     try {
       const requestData = await getRequestData(requestId)
+      req.form.options.datasetsInResource = requestData.getDatasetsInResource()
       const endpointUrl = requestData.getParams()?.url
       req.form.options.endpointUrl = endpointUrl
       req.sessionModel.set('endpoint-url', endpointUrl)
@@ -43,52 +44,41 @@ class CheckAnswersController extends PageController {
   async post (req, res, next) {
     const submission = {
       endpointUrl: req.sessionModel.get('endpoint-url'),
-      dataset: req.sessionModel.get('dataset'),
       organisation: req.sessionModel.get('orgId')
     }
-
-    // Reserve before calling Jira so rapid or concurrent POSTs cannot both submit.
-    const reservationToken = await reserveSubmittedEndpoint(submission)
-
-    // A false result means another request already owns this endpoint reservation.
-    if (reservationToken === false) {
-      return res.redirect('/check/confirmation')
+    const token = await reserveEndpointSubmission(submission)
+    if (token === false) return res.redirect('/submit/check-answers')
+    if (token === null) {
+      logger.error('CheckAnswersController.post(): Submission lock unavailable', { type: types.External })
+      req.sessionModel.set('errors', [{ text: 'We cannot submit your data at the moment. Please try again later.' }])
+      return res.redirect('/submit/check-answers')
     }
-
-    let isSubmitted = false
-    let renewalInterval = null
-
+    let released = false
+    let processing = true
+    let responseFinished = false
+    const release = () => {
+      responseFinished = true
+      if (processing || released) return
+      released = true
+      return releaseEndpointSubmission(submission, token)
+    }
+    // Keep the lock until the response has saved the session.
+    res.once('finish', release)
+    res.once('close', release)
+    const renewal = setInterval(() => renewEndpointSubmission(submission, token), 60 * 1000)
     try {
-      // Start periodic renewal to prevent reservation expiry during long Jira operations.
-      // Renew every 60 seconds (well before the 120-second TTL).
-      renewalInterval = setInterval(async () => {
-        const renewed = await renewSubmittedEndpoint(submission, reservationToken, 2 * 60)
-        if (!renewed) {
-          logger.warn('CheckAnswersController.post(): Failed to renew endpoint reservation', {
-            submission,
-            type: types.External
-          })
-        }
-      }, 60 * 1000)
-
-      const issue = await this.createJiraServiceRequest(req, res, next)
+      const issue = await this.createJiraServiceRequests(req, res, next)
       if (issue?.localJiraFallback) {
         return res.json({
           message: issue.message,
           manageServiceLink: issue.manageServiceLink
         })
       }
-      if (issue) {
-        // Keep successful submissions visible to duplicate checks until the nightly import.
-        await settleSubmittedEndpoint(submission, reservationToken, 24 * 60 * 60)
-        isSubmitted = true
-        req.sessionModel.set('reference', issue.issueKey)
-        req.sessionModel.set('errors', [])
-        req.sessionModel.set('processing', true)
-      } else {
-        req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
-        return res.redirect('/submit/check-answers')
-      }
+      if (!issue.issueKeys.length) return res.redirect('/check/confirmation')
+      req.sessionModel.set('reference', issue.issueKeys.join(', '))
+      req.sessionModel.set('references', issue.issueKeys)
+      req.sessionModel.set('errors', [])
+      req.sessionModel.set('processing', true)
     } catch (error) {
       logger.error('CheckAnswersController.post(): Failed to create Jira issue', {
         errorMessage: error.message,
@@ -98,27 +88,69 @@ class CheckAnswersController extends PageController {
       req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
       return res.redirect('/submit/check-answers')
     } finally {
-      if (renewalInterval) clearInterval(renewalInterval)
-      if (!isSubmitted) await settleSubmittedEndpoint(submission, reservationToken, 0)
+      clearInterval(renewal)
+      processing = false
+      if (responseFinished) release()
     }
 
     super.post(req, res, next)
   }
 
-  async createJiraServiceRequest (req, res, next) {
+  async createJiraServiceRequests (req, res, next) {
+    const requestId = req.sessionModel.get('requestId')
+    const requestData = await getRequestData(requestId)
+    const selectedDataset = req.sessionModel.get('dataset')
+    const datasetsInResource = requestData.getDatasetsInResource()
+    const datasets = datasetsInResource.length ? datasetsInResource : [selectedDataset]
+    const submissionKey = JSON.stringify([requestId, req.sessionModel.get('endpoint-url'), req.sessionModel.get('orgId'), selectedDataset])
+    const previous = req.sessionModel.get('jiraRequests')
+    const completed = previous?.submissionKey === submissionKey ? { ...previous.completed } : {}
+    const issueKeys = []
+
+    for (const dataset of datasets) {
+      if (!completed[dataset]) {
+        const submission = {
+          endpointUrl: req.sessionModel.get('endpoint-url'),
+          dataset,
+          organisation: req.sessionModel.get('orgId')
+        }
+        if (await endpointAlreadyCollectedForDataset(submission)) continue
+        const reservationToken = await reserveSubmittedEndpoint(submission)
+        if (reservationToken === false) continue
+        let isSubmitted = false
+        const renewalInterval = setInterval(async () => {
+          const renewed = await renewSubmittedEndpoint(submission, reservationToken, 2 * 60)
+          if (!renewed) logger.warn('Failed to renew endpoint reservation', { submission, type: types.External })
+        }, 60 * 1000)
+        try {
+          const issue = await this.createJiraServiceRequest(req, res, next, dataset)
+          if (issue?.localJiraFallback) return issue
+          if (!issue?.issueKey) throw new Error(`Failed to create Jira request for ${dataset}`)
+          completed[dataset] = issue.issueKey
+          req.sessionModel.set('jiraRequests', { submissionKey, completed: { ...completed } })
+          await settleSubmittedEndpoint(submission, reservationToken, 24 * 60 * 60)
+          isSubmitted = true
+        } finally {
+          clearInterval(renewalInterval)
+          if (!isSubmitted) await settleSubmittedEndpoint(submission, reservationToken, 0)
+        }
+      }
+      issueKeys.push(completed[dataset])
+    }
+    return { issueKeys }
+  }
+
+  async createJiraServiceRequest (req, res, next, dataset = req.sessionModel.get('dataset')) {
     const data = {
       name: req.sessionModel.get('name'),
       email: req.sessionModel.get('email'),
       organisationId: req.sessionModel.get('orgId'),
       organisationName: req.sessionModel.get('lpa'),
-      dataset: req.sessionModel.get('dataset'),
+      dataset,
       documentationUrl: req.sessionModel.get('documentation-url'),
       endpoint: req.sessionModel.get('endpoint-url'),
       geomType: req.sessionModel.get('geomType')
     }
-    const datasets = await getDatasets()
-    const dataset = req.sessionModel.get('dataset')
-    const datasetMeta = datasets.get(dataset) || {} // eslint-disable-line no-unused-vars
     const requestId = req.sessionModel.get('requestId')
     const checkTool = requestId
       ? `${config.url}check/results/${requestId}/1`
@@ -161,7 +193,7 @@ class CheckAnswersController extends PageController {
 
     if (response.error || !response.data) {
       logger.error('CheckAnswersController.createJiraServiceRequest(): Failed to create Jira service request', {
-        errorMessage: response.error.message,
+        errorMessage: response.error?.message ?? 'Jira returned no request data',
         errorStack: response.error,
         type: types.External
       })
@@ -253,7 +285,7 @@ class CheckAnswersController extends PageController {
 }
 
 function buildManageServiceLink (requestId, data) {
-  const urlSearchParams = new URLSearchParams({ requestId, documentationUrl: data.documentationUrl })
+  const urlSearchParams = new URLSearchParams({ requestId, dataset: data.dataset, documentationUrl: data.documentationUrl })
   return `${config.manageServiceUrl}/datamanager${urlSearchParams.toString() ? `?${urlSearchParams.toString()}` : ''}`
 }
 

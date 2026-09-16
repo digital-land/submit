@@ -1,0 +1,25 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/entity.json",
+    "queryParameters": {
+      "prefix": {
+        "equalTo": "local-planning-group"
+      },
+      "limit": {
+        "equalTo": "100"
+      },
+      "offset": {
+        "equalTo": "0"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "planning-groups.json"
+  }
+}

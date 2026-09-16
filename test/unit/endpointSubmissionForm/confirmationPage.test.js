@@ -29,3 +29,16 @@ describe('Submit confirmation View', () => {
     expect(html).toMatch(/email&#64;example.com/)
   })
 })
+
+it('shows all Jira references for a multiple-plan submission', () => {
+  const html = stripWhitespace(nunjucks.render('submit/confirmation.html', {
+    values: {
+      dataset: 'local-plan',
+      email: 'email@example.com',
+      reference: 'PLAN-1, PLAN-2',
+      references: ['PLAN-1', 'PLAN-2']
+    }
+  }))
+  expect(html).toContain('Your reference numbers')
+  expect(html).toContain('PLAN-1, PLAN-2')
+})

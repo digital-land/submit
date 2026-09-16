@@ -116,11 +116,13 @@ describe('Middleware Tests', () => {
         isFailed: vi.fn(() => true),
         getType: vi.fn(() => 'check_file'),
         hasErrors: vi.fn(() => false),
+        getDatasetsInResource: vi.fn(() => ['local-plan', 'waste-plan']),
         getParams: vi.fn(() => ({}))
       }
 
       await setupTemplate(req, res, mockNext)
 
+      expect(req.locals.datasetsInResource).toEqual(['local-plan', 'waste-plan'])
       expect(req.locals.template).toEqual('results/failedFileRequest')
       expect(mockNext).toHaveBeenCalled()
     })

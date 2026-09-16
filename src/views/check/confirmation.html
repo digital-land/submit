@@ -1,3 +1,4 @@
+{% from 'govuk/components/inset-text/macro.njk' import govukInsetText %}
 {% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from 'govuk/components/panel/macro.njk' import govukPanel %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
@@ -33,6 +34,10 @@
   ## What happens next
 
   {% if options.alreadyCollectingEndpoint %}
+
+{% if options.datasetsInResource | length > 1 %}
+{{ govukInsetText({ id: "multiple-plan-types", text: "We detected multiple plans in your " + (options.dataset | datasetSlugToReadableName) + " data. When you provide your data, we will process all plans. You do not need to check and provide them separately." }) }}
+{% endif %}
 
   We are already collecting data from this endpoint URL, so we will process any changes you make automatically.
 
@@ -74,6 +79,10 @@
   We will send you a confirmation email when we receive your data.
 
 
+{% if options.datasetsInResource | length > 1 %}
+{{ govukInsetText({ id: "multiple-plan-types", text: "We detected multiple plans in your " + (options.dataset | datasetSlugToReadableName) + " data. When you provide your data, we will process all plans. You do not need to check and provide them separately." }) }}
+{% endif %}
+
   ### 3. After you provide your data
 
   We continue to check your data after you provide it.
@@ -102,6 +111,10 @@
 
   After you publish, you should [provide your data to the Planning Data Platform](/check/url).
 
+
+{% if options.datasetsInResource | length > 1 %}
+{{ govukInsetText({ id: "multiple-plan-types", text: "We detected multiple plans in your " + (options.dataset | datasetSlugToReadableName) + " data. When you provide your data, we will process all plans. You do not need to check and provide them separately." }) }}
+{% endif %}
 
   ### 3. After you provide your data
 

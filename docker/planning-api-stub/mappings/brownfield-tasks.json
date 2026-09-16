@@ -1,0 +1,31 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/task.json",
+    "queryParameters": {
+      "organisation": {
+        "equalTo": "local-authority:LBH"
+      },
+      "dataset": {
+        "equalTo": "brownfield-land"
+      },
+      "severity": {
+        "equalTo": "error"
+      },
+      "task_source": {
+        "equalTo": "issue"
+      },
+      "limit": {
+        "equalTo": "100"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "brownfield-tasks.json"
+  }
+}

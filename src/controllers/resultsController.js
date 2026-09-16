@@ -136,6 +136,7 @@ export function setupTemplate (req, res, next) {
     } else {
       req.locals.template = resultsTemplate
     }
+    req.locals.datasetsInResource = req.locals.requestData.getDatasetsInResource()
     req.locals.requestParams = req.locals.requestData.getParams()
     next()
   } catch (e) {

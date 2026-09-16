@@ -48,6 +48,12 @@ function submittedEndpointKey ({ endpointUrl, dataset, organisation }) {
   return `submitted-endpoint:${digest}`
 }
 
+// Serialize the whole Jira submission separately from individual dataset reservations.
+const submissionLock = (submission) => ({ ...submission, dataset: '__submission__' })
+export const reserveEndpointSubmission = (submission) => reserveSubmittedEndpoint(submissionLock(submission))
+export const renewEndpointSubmission = (submission, token) => renewSubmittedEndpoint(submissionLock(submission), token, 120)
+export const releaseEndpointSubmission = (submission, token) => settleSubmittedEndpoint(submissionLock(submission), token, 0)
+
 /**
  * Check whether an endpoint is currently being processed or was submitted recently.
  * Redis failures return false so the existing Datasette duplicate check can still run.

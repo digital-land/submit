@@ -292,6 +292,9 @@ describe('getDatasetNameMap', () => {
       }))
 
       const {
+        reserveEndpointSubmission,
+        renewEndpointSubmission,
+        releaseEndpointSubmission,
         reserveSubmittedEndpoint,
         settleSubmittedEndpoint,
         wasEndpointRecentlySubmitted
@@ -331,6 +334,16 @@ describe('getDatasetNameMap', () => {
           arguments: [reservationToken, '0']
         }
       )
+
+      const submissionToken = await reserveEndpointSubmission(submission)
+      const lockKey = mockRedisClient.set.mock.calls.at(-1)[0]
+      expect(lockKey).not.toBe(mockRedisClient.set.mock.calls[0][0])
+      await reserveEndpointSubmission({ ...submission, dataset: 'waste-plan' })
+      expect(mockRedisClient.set.mock.calls.at(-1)[0]).toBe(lockKey)
+      await renewEndpointSubmission(submission, submissionToken)
+      expect(mockRedisClient.eval.mock.calls.at(-1)[1]).toEqual({ keys: [lockKey], arguments: [submissionToken, '120'] })
+      await releaseEndpointSubmission(submission, submissionToken)
+      expect(mockRedisClient.eval.mock.calls.at(-1)[1]).toEqual({ keys: [lockKey], arguments: [submissionToken, '0'] })
 
       mockRedisClient.set.mockResolvedValueOnce(null)
       await expect(reserveSubmittedEndpoint(submission)).resolves.toBe(false)

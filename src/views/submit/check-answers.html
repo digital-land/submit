@@ -25,8 +25,15 @@
       }) }}
     {% endif %}
 
+    {% set datasets = options.datasetsInResource if options.datasetsInResource | length else [values['dataset']] %}
+    {% set datasetNames = [] %}
+    {% for dataset in datasets %}
+      {% set _ = datasetNames.push(dataset | datasetSlugToReadableName(true)) %}
+    {% endfor %}
+    {% set datasetLabel = "datasets" if datasets | length > 1 else "dataset" %}
+
     <h1 class="govuk-heading-xl">
-      Check your answers before providing your dataset
+      Check your answers before providing your {{ datasetLabel }}
     </h1>
 
     {% set rows = [
@@ -40,10 +47,10 @@
       },
       {
         key: {
-          text: "Dataset"
+          text: datasetLabel | capitalize
         },
         value: {
-          text: values['dataset'] | datasetSlugToReadableName(true)
+          text: datasetNames | join(", ")
         }
       },
       {
@@ -150,11 +157,11 @@
     {{ govukSummaryList({ rows: rows }) }}
 
     <h2 class="govuk-heading-m">
-      Now provide your dataset
+      Now provide your {{ datasetLabel }}
     </h2>
 
     <p class="govuk-body">
-      By providing this dataset you are confirming that, to the best of your knowledge, the details you are providing are correct.
+      By providing {{ "these datasets" if datasets | length > 1 else "this dataset" }} you are confirming that, to the best of your knowledge, the details you are providing are correct.
     </p>
 
     <form method="post" novalidate>
