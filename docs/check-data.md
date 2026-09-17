@@ -89,7 +89,7 @@ results page is reached.
 Offered when the user's columns could plausibly be mapped to expected fields that are currently
 unmapped. [`shouldShowColumnMapping`](https://github.com/digital-land/submit/blob/main/src/services/columnMappingDecider.js) returns false if
 any of these hold: the request failed, the dataset is statutory, there are blocking non-mapping
-issues (quality criteria level 2, external responsibility), the user already supplied a column
+issues (critical severity, external responsibility), the user already supplied a column
 mapping, every expected field is mapped, or there are no spare uploaded columns to map from.
 
 Geometry and point are treated as interchangeable — if one is mapped, the other is not counted as
@@ -219,3 +219,13 @@ Run against a stub backend with `npm run mock:api`, or `NODE_ENV=wiremock` for p
 useful for reproducing a specific results payload without a real check.
 
 See [architecture.md](https://digital-land.github.io/submit/tutorial-architecture.html#testing-and-local-development) for the general test setup.
+
+## Data Quality Framework severity rollout
+
+Task severity now determines the result: `critical` is **Must fix**; `error` is
+**Needs improving** and allows submission. Missing mandatory columns still block.
+Internal issues and other severities are excluded from these task lists.
+
+Merge only after the specification assigns critical severities, including any
+required missing-reference checks. Deploy with the async-service change that
+includes both critical and error tasks.

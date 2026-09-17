@@ -413,3 +413,13 @@ describe('ResponseDetails', () => {
     })
   })
 })
+
+describe('critical row issues', () => {
+  it('retains critical rows when filtering errors and marks them as errors', () => {
+    const details = new ResponseDetails('123', [
+      { entry_number: 1, issue_logs: [{ severity: 'critical' }] },
+      { entry_number: 2, issue_logs: [{ severity: 'warning' }] }
+    ], {}, [])
+    expect(details.getRowsWithVerboseColumns(true).map(row => [row.entryNumber, row.hasErrors])).toEqual([[1, true]])
+  })
+})

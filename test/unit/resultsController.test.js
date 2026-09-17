@@ -11,6 +11,8 @@ import ResultsController, {
   getPassedChecks,
   extractIssuesFromTaskLog,
   aggregateIssues,
+  getBlockingTasks,
+  getNonBlockingTasks,
   updateSessionFromRequestData
 } from '../../src/controllers/resultsController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
@@ -442,7 +444,7 @@ describe('aggregateIssues()', () => {
   const makeIssue = (overrides = {}) => ({
     'issue-type': 'missing value',
     field: 'reference',
-    quality_criteria_level: 2,
+    severity: 'critical',
     count: 4,
     summary: '4 reference values are missing',
     ...overrides
@@ -474,15 +476,53 @@ describe('aggregateIssues()', () => {
     expect(req.tasks[0].count).toBe(2)
   })
 
-  it('excludes issues without a recognised quality_criteria_level', () => {
-    const req = { issues: [makeIssue({ quality_criteria_level: null })] }
+  it('excludes warning issues', () => {
+    const req = { issues: [makeIssue({ severity: 'warning' })] }
     aggregateIssues(req, {}, vi.fn())
     expect(req.tasks).toHaveLength(0)
+  })
+
+  it.each(['critical', 'error'])('includes %s tasks independently of quality level', severity => {
+    const req = { issues: [makeIssue({ severity, quality_criteria_level: null })] }
+    aggregateIssues(req, {}, vi.fn())
+    expect(req.tasks[0].severity).toBe(severity)
+  })
+
+  it('excludes internal critical tasks', () => {
+    const req = { issues: [makeIssue({ responsibility: 'internal' })] }
+    aggregateIssues(req, {}, vi.fn())
+    expect(req.tasks).toEqual([])
+  })
+
+  it('preserves critical severity when aggregating mixed severities', () => {
+    const req = { issues: [makeIssue({ severity: 'error' }), makeIssue()] }
+    aggregateIssues(req, {}, vi.fn())
+    expect(req.tasks[0].severity).toBe('critical')
   })
 
   it('calls next()', () => {
     const next = vi.fn()
     aggregateIssues({ issues: [] }, {}, next)
     expect(next).toHaveBeenCalled()
+  })
+})
+
+describe('severity-based task lists', () => {
+  it('blocks critical issues and missing columns, but allows error issues', () => {
+    const req = {
+      params: { id: '123' },
+      locals: { requestData: { getColumnFieldLog: () => [{ field: 'reference', missing: true }] } },
+      issues: [
+        { 'issue-type': 'invalid WKT', field: 'geometry', severity: 'critical', summary: 'Invalid geometry', quality_criteria_level: 3 },
+        { 'issue-type': 'missing value', field: 'reference', severity: 'error', summary: 'Missing references', quality_criteria_level: 2 }
+      ]
+    }
+    aggregateIssues(req, {}, vi.fn())
+    getBlockingTasks(req, {}, vi.fn())
+    getNonBlockingTasks(req, {}, vi.fn())
+    expect(req.locals.tasksBlocking.map(task => task.title.text)).toEqual(['Invalid geometry', 'reference column is missing'])
+    expect(req.locals.tasksBlocking.every(task => task.status.tag.text === 'Must fix')).toBe(true)
+    expect(req.locals.tasksNonBlocking.map(task => task.title.text)).toEqual(['Missing references'])
+    expect(req.locals.tasksNonBlocking[0].status.tag.text).toBe('Needs improving')
   })
 })

@@ -30,9 +30,9 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    {% set criteriaLabels = { '2': 'You cannot submit your data until you fix the issues', '3': 'You can submit your data and fix these issues later' } %}
+    {% set severityLabels = { 'critical': 'You cannot submit your data until you fix the issues', 'error': 'You can submit your data and fix these issues later' } %}
     {{ govukErrorSummary({
-      titleText: criteriaLabels[options.task.qualityCriteriaLevel] or 'There is a problem',
+      titleText: severityLabels[options.task.severity] or 'There is a problem',
       errorList: [ { html: options.task.message, href: ""}]
     }) }}
 

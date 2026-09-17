@@ -128,7 +128,7 @@ export default class ResponseDetails {
     if (filterNonErrors) {
       rows = rows.filter(
         (row) =>
-          row.issue_logs.filter((issue) => issue.severity === 'error').length >
+          row.issue_logs.filter((issue) => ['critical', 'error'].includes(issue.severity)).length >
           0
       )
     }
@@ -137,7 +137,7 @@ export default class ResponseDetails {
     return rows.map((row) => ({
       entryNumber: row.entry_number,
       hasErrors:
-        row.issue_logs.filter((issue) => issue.severity === 'error').length > 0,
+        row.issue_logs.filter((issue) => ['critical', 'error'].includes(issue.severity)).length > 0,
       columns: getVerboseColumns(row, this.getColumnFieldLog())
     }))
   }
