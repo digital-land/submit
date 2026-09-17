@@ -524,7 +524,7 @@ export function getMissingColumnTasks (req) {
  */
 
 export async function getBlockingTasks (req, res, next) {
-  getTasksByLevel(req, 2, taskStatus.mustFix, true)
+  getTasksByLevel(req, 2, taskStatus.mustFix)
   const params = req.locals.requestData?.getParams?.() ?? {}
   if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })
   ) { getTasksByLevel(req, 3, taskStatus.mustFix, true) }
@@ -540,8 +540,9 @@ export async function getBlockingTasks (req, res, next) {
 
 export async function getNonBlockingTasks (req, res, next) {
   const params = req.locals.requestData?.getParams?.() ?? {}
-  if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })) next()
-  else {
+  if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })) {
+    next()
+  } else {
     getTasksByLevel(req, 3, taskStatus.shouldFix, true)
     next()
   }
