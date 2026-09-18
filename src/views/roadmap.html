@@ -5,6 +5,23 @@
 {% block main %}
 <div class="govuk-width-container govuk-!-padding-top-6 govuk-!-padding-bottom-6">
   <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-third" style="position: sticky; top: 20px;">
+      <aside role="complementary">
+        <h2 class="govuk-heading-s">On this page</h2>
+        <ul class="govuk-list">
+          <li><a class="govuk-link" href="#goal">Our goal</a></li>
+          <li><a class="govuk-link" href="#what-this-means">What this means for you</a></li>
+          <li><a class="govuk-link" href="#progress">Our progress so far</a></li>
+          <li><a class="govuk-link" href="#next">What we're planning to do next</a></li>
+          <li><a class="govuk-link" href="#more-information">More information</a></li>
+        </ul>
+        <h2 class="govuk-heading-s govuk-!-margin-top-6">Related</h2>
+        <ul class="govuk-list">
+          <li><a class="govuk-link" href="https://www.planning.data.gov.uk/about/roadmap">Planning Data Platform roadmap</a></li>
+        </ul>
+      </aside>
+    </div>
+
     <div class="govuk-grid-column-two-thirds">
 
       <h1 class="govuk-heading-xl">Making it easier for councils to provide planning data</h1>
@@ -14,10 +31,10 @@
       <p class="govuk-body">Our plans can change based on what we learn from our users and from testing. We aim to update this roadmap every 3 months. You can also read the <a href="https://www.planning.data.gov.uk/about/roadmap" class="govuk-link">roadmap for the whole Planning Data Platform</a>.</p>
       <p class="govuk-body-s">Last updated 18 September 2026. Next update due December 2026.</p>
 
-      <h2 class="govuk-heading-l govuk-!-margin-top-8">Our goal</h2>
+      <h2 class="govuk-heading-l govuk-!-margin-top-8" id="goal">Our goal</h2>
       <p class="govuk-body">Local planning authorities can provide good quality planning data quickly, and always know what to do next to improve it.</p>
 
-      <h2 class="govuk-heading-l govuk-!-margin-top-8">What this means for you</h2>
+      <h2 class="govuk-heading-l govuk-!-margin-top-8" id="what-this-means">What this means for you</h2>
       <p class="govuk-body">If you provide planning data for a local planning authority, you'll experience:</p>
       <ul class="govuk-list govuk-list--bullet">
         <li><strong>Clearer priorities:</strong> you'll see exactly where a problem is and which fixes will make the biggest difference to the quality of your data.</li>
@@ -26,50 +43,63 @@
         <li><strong>More control:</strong> you'll be able to tell us directly when a check doesn't apply to your data, or when an endpoint should be retired.</li>
       </ul>
 
-      <h2 class="govuk-heading-l govuk-!-margin-top-8">Our progress so far</h2>
+      <h2 class="govuk-heading-l govuk-!-margin-top-8" id="progress">Our progress so far</h2>
 
-      <h3 class="govuk-heading-m">December 2025: redesigned LPA dashboard</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">December 2025</h3>
+      <h4 class="govuk-heading-s">Redesigned LPA dashboard</h4>
       <p class="govuk-body">You can now see every dataset you're responsible for in one place, including those still in development. Your dashboard shows whether data was provided by you or comes from another source, uses clearer task labels, and loads faster.</p>
 
-      <h3 class="govuk-heading-m">February 2026: review data from other sources</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">February 2026</h3>
+      <h4 class="govuk-heading-s">Review data from other sources</h4>
       <p class="govuk-body">Where we hold data about your area that you didn't provide, for example data MHCLG has collected from public sources, you can now review it and download it as a CSV. This gives you a starting point for publishing your own authoritative version.</p>
 
-      <h3 class="govuk-heading-m">April 2026: provide local plans data</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">April 2026</h3>
+      <h4 class="govuk-heading-s">Provide local plans data</h4>
       <p class="govuk-body">You can now check and provide your local plans data through the service. We've also improved how the service handles multiple endpoints for the same dataset, and changed "should fix" to "needs improving" to make clearer what's essential.</p>
 
-      <h3 class="govuk-heading-m">May 2026: check before you provide</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">May 2026</h3>
+      <h4 class="govuk-heading-s">Check before you provide</h4>
       <p class="govuk-body">You now check your data before you provide it, so problems are caught before your submission reaches us, not afterwards.</p>
 
-      <h3 class="govuk-heading-m">June 2026: match your columns to our standards</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">June 2026</h3>
+      <h4 class="govuk-heading-s">Match your columns to our standards</h4>
       <p class="govuk-body">If your column names don't match the specification, you can now tell us how they map during the check. You don't need to change your source system. Tasks for your data are also now shown directly on your dashboard.</p>
 
-      <h3 class="govuk-heading-m">July 2026: avoid duplicate submissions</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">July 2026</h3>
+      <h4 class="govuk-heading-s">Avoid duplicate submissions</h4>
       <p class="govuk-body">The service now tells you if you try to submit an endpoint we already have, including ones that are still being processed.</p>
 
-      <h3 class="govuk-heading-m">September 2026: clearer help with local plans</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">September 2026</h3>
+      <h4 class="govuk-heading-s">Clearer help with local plans</h4>
       <p class="govuk-body">You now get guidance and warnings for local plan fields that only become required at certain stages of your timetable. The service also tells you when it detects more than one plan in your data.</p>
 
-      <h2 class="govuk-heading-l govuk-!-margin-top-8">What we're planning to do next</h2>
+      <h2 class="govuk-heading-l govuk-!-margin-top-8" id="next">What we're planning to do next</h2>
 
-      <h3 class="govuk-heading-m">By December 2026: secure sign-in for your authority</h3>
-      <p class="govuk-body">You'll sign in with your council email address using a secure link sent to your inbox, so there's no password to remember. Only people from your authority will be able to provide data for it. For example, to submit Camden's brownfield land register you'll need a camden.gov.uk email address.</p>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">By December 2026</h3>
 
-      <h3 class="govuk-heading-m">By December 2026: a clearer view of what needs fixing</h3>
-      <p class="govuk-body">Your dashboard will break tasks down by endpoint. If you have five brownfield land registers, you'll see which one needs attention. You'll also be able to compare the data you gave us with how it appears on the platform, so issues are easier to trace. We're redesigning the dashboard so it stays easy to use as the number of datasets grows. If you publish data from ArcGIS or a Web Feature Service (WFS), you'll also get clearer guidance on what we need and how to set up your systems.</p>
+      <h4 class="govuk-heading-s">Secure authentication for your authority</h4>
+      <p class="govuk-body">You'll authenticate with your LPA email address using a secure link sent to your inbox, so there's no password to remember. Only people from your authority will be able to provide data for it. For example, to submit Camden's brownfield land register you'll need a `camden.gov.uk` email address.</p>
 
-      <h3 class="govuk-heading-m">By March 2027: more control over your tasks and endpoints</h3>
+      <h4 class="govuk-heading-s">A clearer view of what needs fixing</h4>
+      <p class="govuk-body">Your dashboard will break tasks down by endpoint. If you have five brownfield land registers, you'll see which one needs attention. You'll also be able to compare the data you gave us with how it appears on the platform, so issues are easier to trace. We're redesigning the dashboard so it stays easy to use as the number of datasets grows. We'll also improve our guidance where we know it could be improved - for example, if you encounter an error whilst checking and endpoint or if you publish data from ArcGIS or a Web Feature Service (WFS).</p>
+
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">By March 2027</h3>
+
+      <h4 class="govuk-heading-s">More control over your tasks and endpoints</h4>
       <p class="govuk-body">Some of our checks flag things that might be wrong rather than things that definitely are. You'll be able to tell us when there's a good reason for this and dismiss the task. You'll also be able to retire endpoints that are no longer in use, and you'll see a reminder when your brownfield land register is due for its annual review. The service will also better support authorities that provide data jointly.</p>
 
-      <h3 class="govuk-heading-m">By March 2027: know what's happening with your data</h3>
+      <h4 class="govuk-heading-s">Know what's happening with your data</h4>
       <p class="govuk-body">When you submit new data, your dashboard will show that it's waiting to be processed, so you know we've received it. We'll also email you when something changes. For example, we'll let you know if your URL stops working, or if new checks find problems that need your attention.</p>
 
-      <h3 class="govuk-heading-m">Later: a dashboard built around data quality</h3>
+      <h3 class="govuk-heading-m govuk-!-margin-top-6">From April 2027</h3>
+
+      <h4 class="govuk-heading-s">A dashboard built around data quality</h4>
       <p class="govuk-body">Instead of labelling your data as live, needs improving or error, your dashboard will show where each dataset sits on a data quality scale, from authoritative to usable to trustworthy. You'll see which tasks will move your data up a level, and warnings about data that may need a second look. Your checks will come directly from the national data specification, so they always reflect the latest standards.</p>
 
-      <h3 class="govuk-heading-m">Later: automatic publishing for clean data</h3>
+      <h4 class="govuk-heading-s">Automatic publishing for clean data</h4>
       <p class="govuk-body">If your data passes all our checks and comes from a reliable, authoritative source, it will go onto the platform automatically, without anyone on our team needing to review it first.</p>
 
-      <h2 class="govuk-heading-l govuk-!-margin-top-8">More information</h2>
+      <h2 class="govuk-heading-l govuk-!-margin-top-8" id="more-information">More information</h2>
       <p class="govuk-body">For more information about this work, contact the Planning Data team at <a href="mailto:digitalland@communities.gov.uk" class="govuk-link">digitalland@communities.gov.uk</a>.</p>
 
     </div>
