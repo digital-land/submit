@@ -39,7 +39,7 @@ describe('roadmap route', () => {
 
     const res = await request(app).get('/roadmap').expect(200)
 
-    expect(res.text).toContain('Making it easier for councils to provide planning data')
+    expect(res.text).toContain('Making it easier for Local Planning Authorities to provide planning data')
   })
 })
 
