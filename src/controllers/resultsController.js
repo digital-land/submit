@@ -10,6 +10,7 @@ import { isFeatureEnabled } from '../utils/features.js'
 import { splitByLeading } from '../utils/table.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { orgIdToName } from '../utils/orgIdToName.js'
+import { isStatutoryDataset } from '../utils/redisLoader.js'
 
 const isIssueDetailsPageEnabled = isFeatureEnabled('checkIssueDetailsPage')
 const failedFileRequestTemplate = 'results/failedFileRequest'
@@ -456,7 +457,7 @@ export function getTotalRows (req, res, next) {
  * @param {number} level criteria level
  * @param {Status} status status meta data
  */
-export function getTasksByLevel (req, level, status) {
+export function getTasksByLevel (req, level, status, update = false) {
   const { tasks, totalRows } = req
   const dataset = req.locals.requestData?.getParams?.()?.dataset
 
@@ -473,7 +474,16 @@ export function getTasksByLevel (req, level, status) {
       })
     return makeTaskParam(req, { taskMessage, status, issueType: task.issueType, field: task.field })
   })
-  req.locals[`tasks${level === 2 ? 'Blocking' : 'NonBlocking'}`] = taskParams
+
+  const taskListName = status === taskStatus.mustFix
+    ? 'tasksBlocking'
+    : 'tasksNonBlocking'
+
+  const existingTasks = req.locals[taskListName] ?? []
+
+  req.locals[taskListName] = update
+    ? [...existingTasks, ...taskParams]
+    : taskParams
 }
 
 export const missingColumnTaskMessage = (field) => {
@@ -512,9 +522,12 @@ export function getMissingColumnTasks (req) {
  * @param {Object} res - Response object
  * @param {Function} next - Next middleware function
  */
-export function getBlockingTasks (req, res, next) {
-  getTasksByLevel(req, 2, taskStatus.mustFix)
 
+export async function getBlockingTasks (req, res, next) {
+  getTasksByLevel(req, 2, taskStatus.mustFix)
+  const params = req.locals.requestData?.getParams?.() ?? {}
+  if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })
+  ) { getTasksByLevel(req, 3, taskStatus.mustFix, true) }
   // add tasks for missing columns
   const { tasks: missingColumnTasks, taskMap } = getMissingColumnTasks(req)
   req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
@@ -525,9 +538,14 @@ export function getBlockingTasks (req, res, next) {
   next()
 }
 
-export function getNonBlockingTasks (req, res, next) {
-  getTasksByLevel(req, 3, taskStatus.shouldFix)
-  next()
+export async function getNonBlockingTasks (req, res, next) {
+  const params = req.locals.requestData?.getParams?.() ?? {}
+  if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })) {
+    next()
+  } else {
+    getTasksByLevel(req, 3, taskStatus.shouldFix, true)
+    next()
+  }
 }
 
 export function getPassedChecks (req, res, next) {
