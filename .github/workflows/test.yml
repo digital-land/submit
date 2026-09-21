@@ -12,14 +12,15 @@ on:
     secrets:
       DEPLOY_DOCKER_REPOSITORY:
         required: true
-      DEPLOY_AWS_ACCESS_KEY_ID:
-        required: true
-      DEPLOY_AWS_SECRET_ACCESS_KEY:
+      DEPLOY_AWS_ROLE_ARN:
         required: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     environment: development
     env:
       DOCKER_REPO: ${{ secrets.DEPLOY_DOCKER_REPOSITORY }}
@@ -42,8 +43,7 @@ jobs:
         run: npm run generate:docs
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.DEPLOY_AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.DEPLOY_AWS_ROLE_ARN }}
           aws-region: eu-west-2
       - uses: aws-actions/amazon-ecr-login@v2
 

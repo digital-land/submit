@@ -11,6 +11,9 @@ on:
 
 jobs:  
   run-tests:
+    permissions:
+      id-token: write
+      contents: read
     uses: ./.github/workflows/test.yml
     with:
       environment: '${{ inputs.environment }}'
@@ -34,6 +37,9 @@ jobs:
   
   deploy-changes:
     needs: [run-tests, detect-environments]
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       matrix:
         environment: ['production', 'staging']
