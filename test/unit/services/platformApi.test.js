@@ -177,6 +177,61 @@ describe('platformApi.fetchEntities', () => {
   })
 })
 
+describe('platformApi.fetchDatasets', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('fetches a single dataset and keeps formattedData as an array', async () => {
+    const dataset = { dataset: 'tree', name: 'Tree', typology: 'geography' }
+    axios.get.mockResolvedValueOnce({ data: dataset })
+
+    const result = await platformApi.fetchDatasets({ dataset: 'tree' })
+
+    expect(axios.get).toHaveBeenCalledExactlyOnceWith(
+      'https://www.planning.data.gov.uk/dataset/tree.json',
+      { timeout: 10000, headers: { 'User-Agent': 'test-user-agent' } }
+    )
+    expect(result).toEqual({ data: dataset, formattedData: [dataset] })
+  })
+
+  it('encodes the dataset name as a path segment', async () => {
+    axios.get.mockResolvedValueOnce({ data: { dataset: 'tree/other?name=value' } })
+
+    await platformApi.fetchDatasets({ dataset: 'tree/other?name=value' })
+
+    expect(axios.get).toHaveBeenCalledWith(
+      'https://www.planning.data.gov.uk/dataset/tree%2Fother%3Fname%3Dvalue.json',
+      expect.any(Object)
+    )
+  })
+
+  it.each([{}, undefined])('uses the list endpoint without a dataset (%j)', async (params) => {
+    const data = { datasets: [{ dataset: 'tree' }, { dataset: 'brownfield-land' }] }
+    axios.get.mockResolvedValueOnce({ data })
+
+    const result = await platformApi.fetchDatasets(params)
+
+    expect(axios.get).toHaveBeenCalledWith(
+      'https://www.planning.data.gov.uk/dataset.json', expect.any(Object)
+    )
+    expect(result).toEqual({ data, formattedData: data.datasets })
+  })
+
+  it('handles an empty dataset list', async () => {
+    axios.get.mockResolvedValueOnce({ data: { datasets: [] } })
+
+    expect((await platformApi.fetchDatasets({})).formattedData).toEqual([])
+  })
+
+  it.each([404, 500])('propagates HTTP %i errors to callers', async (status) => {
+    const error = Object.assign(new Error('Dataset request failed'), { response: { status } })
+    axios.get.mockRejectedValueOnce(error)
+
+    await expect(platformApi.fetchDatasets({ dataset: 'missing' })).rejects.toBe(error)
+  })
+})
+
 describe('platformApi.fetchTasks', () => {
   beforeEach(() => {
     vi.clearAllMocks()

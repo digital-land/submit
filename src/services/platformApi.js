@@ -50,14 +50,6 @@ export default {
   },
 
   /**
-   * Fetches datasets from the Platform API /dataset.json endpoint
-   *
-   * @param {Object} params - Query params
-   * @param {string} [params.dataset] - The dataset name
-   * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
-   * @throws {Error} If the query fails or there is an error communicating with the Platform API
-   */
-  /**
    * Fetches all entities from the Platform API /entity.json endpoint, paginating through all results.
    * Accepts the same params as fetchEntities (except limit/offset which are managed internally).
    */
@@ -105,17 +97,23 @@ export default {
     return { data, grouped, flat }
   },
 
-  fetchDatasets: async (params) => {
-    const queryParams = new URLSearchParams()
-
-    if (params.dataset) queryParams.append('dataset', params.dataset)
-
-    const url = `${config.mainWebsiteUrl}/dataset.json?${queryParams.toString()}`
+  /**
+   * Fetches one dataset from /dataset/{dataset}.json, or all from /dataset.json.
+   *
+   * @param {Object} [params] - Query params
+   * @param {string} [params.dataset] - The dataset name
+   * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
+   * @throws {Error} If the query fails or there is an error communicating with the Platform API
+   */
+  fetchDatasets: async (params = {}) => {
+    const url = params.dataset
+      ? `${config.mainWebsiteUrl}/dataset/${encodeURIComponent(params.dataset)}.json`
+      : `${config.mainWebsiteUrl}/dataset.json`
 
     const data = await queryPlatformAPI(url, params)
 
-    // Platform API returns { datasets: [...] }
-    const datasets = data?.datasets || []
+    // Keep formattedData as an array for callers of either endpoint.
+    const datasets = params.dataset ? (data ? [data] : []) : (data?.datasets || [])
 
     return {
       data,

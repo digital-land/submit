@@ -2,15 +2,7 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPath": "/dataset.json",
-    "queryParameters": {
-      "dataset": {
-        "equalTo": "brownfield-land"
-      },
-      "field": {
-        "absent": true
-      }
-    }
+    "urlPath": "/dataset/brownfield-land.json"
   },
   "response": {
     "status": 200,
