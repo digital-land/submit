@@ -373,5 +373,6 @@ export const templateSchema = new Map([
   ['privacy-notice.html', EmptyParams],
   ['landing.html', EmptyParams],
   ['cookies.html', EmptyParams],
-  ['accessibility.html', EmptyParams]
+  ['accessibility.html', EmptyParams],
+  ['roadmap.html', EmptyParams]
 ])
