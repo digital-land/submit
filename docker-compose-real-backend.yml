@@ -91,3 +91,5 @@ services:
       replicas: 2
     volumes:
       - "./request-processor-celery/docker_volume:/opt"
+      # Pending specification rollout: duplicate references must block these checks.
+      - "./test/acceptance/fixtures/specification/issue-type.csv:/specification/issue-type.csv:ro"
