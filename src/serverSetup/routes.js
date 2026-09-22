@@ -10,6 +10,7 @@ import cookies from '../routes/cookies.js'
 import guidance from '../routes/guidance.js'
 import community from '../routes/community.js'
 import extract from '../routes/extract.js'
+import roadmap from '../routes/roadmap.js'
 
 export function setupRoutes (app) {
   app.use('/', manage)
@@ -18,6 +19,7 @@ export function setupRoutes (app) {
   app.use('/guidance', guidance)
   app.use('/community', community)
   app.use('/extract', extract)
+  app.use('/roadmap', roadmap)
   app.use('/api', polling)
 
   app.use('/accessibility', accessibility)

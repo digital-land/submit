@@ -27,6 +27,9 @@ jobs:
   
   deploy-changes:
     needs: [detect-environments]
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       matrix:
         environment: ${{ fromJSON(needs.detect-environments.outputs.environments) }}
