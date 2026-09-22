@@ -507,7 +507,7 @@ describe('aggregateIssues()', () => {
   })
 })
 
-describe('severity-based task lists',  () => {
+describe('severity-based task lists', () => {
   it('blocks critical issues and missing columns, but allows error issues', async () => {
     const req = {
       params: { id: '123' },
@@ -518,7 +518,7 @@ describe('severity-based task lists',  () => {
       ]
     }
     aggregateIssues(req, {}, vi.fn())
-   await getBlockingTasks(req, {}, vi.fn())
+    await getBlockingTasks(req, {}, vi.fn())
     await getNonBlockingTasks(req, {}, vi.fn())
     expect(req.locals.tasksBlocking.map(task => task.title.text)).toEqual(['Invalid geometry', 'reference column is missing'])
     expect(req.locals.tasksBlocking.every(task => task.status.tag.text === 'Must fix')).toBe(true)
