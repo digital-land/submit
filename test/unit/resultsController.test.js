@@ -17,6 +17,12 @@ import ResultsController, {
 } from '../../src/controllers/resultsController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
 import PageController from '../../src/controllers/pageController.js'
+import { isStatutoryDataset } from '../../src/utils/redisLoader.js'
+
+vi.mock('../../src/utils/redisLoader.js', async importOriginal => ({
+  ...await importOriginal(),
+  isStatutoryDataset: vi.fn()
+}))
 
 vi.mock('../../src/services/asyncRequestApi', () => ({
   getRequestData: vi.fn()
@@ -508,6 +514,30 @@ describe('aggregateIssues()', () => {
 })
 
 describe('severity-based task lists', () => {
+  it('blocks critical and error issues once each for statutory datasets', async () => {
+    isStatutoryDataset.mockResolvedValueOnce(true).mockResolvedValueOnce(true)
+    const req = {
+      params: { id: '123' },
+      locals: {
+        requestData: {
+          getParams: () => ({ organisationName: 'local-authority:ABC', dataset: 'brownfield-land' }),
+          getColumnFieldLog: () => []
+        }
+      },
+      issues: [
+        { 'issue-type': 'invalid WKT', field: 'geometry', severity: 'critical', summary: 'Invalid geometry' },
+        { 'issue-type': 'missing value', field: 'name', severity: 'error', summary: 'Missing names' }
+      ]
+    }
+    aggregateIssues(req, {}, vi.fn())
+    await getBlockingTasks(req, {}, vi.fn())
+    await getNonBlockingTasks(req, {}, vi.fn())
+
+    expect(req.locals.tasksBlocking.map(task => task.title.text)).toEqual(['Invalid geometry', 'Missing names'])
+    expect(req.locals.tasksBlocking.every(task => task.status.tag.text === 'Must fix')).toBe(true)
+    expect(req.locals.tasksNonBlocking ?? []).toEqual([])
+  })
+
   it('blocks critical issues and missing columns, but allows error issues', async () => {
     const req = {
       params: { id: '123' },

@@ -483,7 +483,7 @@ export async function getBlockingTasks (req, res, next) {
   getTasksBySeverity(req, 'critical', taskStatus.mustFix)
   const params = req.locals.requestData?.getParams?.() ?? {}
   if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })
-  ) { getTasksBySeverity(req, 'critical', taskStatus.mustFix, true) }
+  ) { getTasksBySeverity(req, 'error', taskStatus.mustFix, true) }
   // add tasks for missing columns
   const { tasks: missingColumnTasks, taskMap } = getMissingColumnTasks(req)
   req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
