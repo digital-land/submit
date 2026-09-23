@@ -1,3 +1,4 @@
+import ipInformation from '../routes/ipInformation.js'
 import checkFormWizard from '../routes/form-wizard/check/index.js'
 import endpointSubmissionFormFormWisard from '../routes/form-wizard/endpoint-submission-form/index.js'
 import accessibility from '../routes/accessibility.js'
@@ -14,6 +15,7 @@ import roadmap from '../routes/roadmap.js'
 
 export function setupRoutes (app) {
   app.use('/', manage)
+  app.use('/check/ip-address-information', ipInformation)
   app.use('/check', checkFormWizard)
   app.use('/organisations', organisations)
   app.use('/guidance', guidance)

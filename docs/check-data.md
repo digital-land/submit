@@ -229,3 +229,20 @@ Internal issues and other severities are excluded from these task lists.
 Merge only after the specification assigns critical severities, including any
 required missing-reference checks. Deploy with the async-service change that
 includes both critical and error tasks.
+
+### IP information after a 403
+
+`routes/ipInformation.js` provides standalone email and confirmation pages, with
+403 context in `session.ipInformation`. GET shows a fresh form; failed POST keeps
+entered values only in the rendered response. Only `gov.uk` emails are accepted.
+
+Set `GOVUK_NOTIFY_API_KEY` for the **Check and Provide** Notify service and
+`email.templates.IpInformationTemplateId` to a template with no required
+personalisation. Keep IP addresses in Notify. Trial mode restricts recipients;
+verify the template and activate the service before release.
+
+Redis provides five-minute recipient deduplication. Notify failures log safe
+diagnostics to the existing Sentry Logs transport. Sentry counters
+`notify.email_send_succeeded` and `notify.email_send_failed` track actual Notify
+API attempts, excluding deduplicated requests. Success means Notify accepted the
+email, not confirmed delivery. Sentry requires `SENTRY_ENABLED=true` and `SENTRY_DSN`.
