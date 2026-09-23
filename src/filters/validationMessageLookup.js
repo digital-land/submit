@@ -39,12 +39,6 @@ const validationMessages = {
   name: {
     required: 'Enter your full name'
   },
-  'ip-information-email': {
-    required: 'Enter an email address',
-    email: 'Enter an email address in the correct format',
-    format: 'Enter a valid gov.uk email address',
-    sendFailed: 'We could not send the information. Try again in a few minutes.'
-  },
   email: {
     required: 'Enter an email address',
     email: 'Enter an email address in the correct format',
