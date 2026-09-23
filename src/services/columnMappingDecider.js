@@ -1,6 +1,4 @@
-import datasette from '../services/datasette.js'
 import { isStatutoryDataset } from '../utils/redisLoader.js'
-import { addQualityCriteriaLevels } from '../controllers/resultsController.js'
 
 /**
  * Decides whether to offer the user the column-mapping step after a check.
@@ -88,9 +86,9 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
 /**
  * True if the request has issues serious enough that column mapping would not help.
  *
- * "Serious" means an externally-owned issue at quality criteria level 2, excluding
+ * "Serious" means an externally-owned issue with critical severity, excluding
  * `missing column` and `missing-field` — those are precisely the issues column mapping
- * exists to fix. Levels come from the `issue_type` table on datasette.
+ * exists to fix. Severity comes from the task log.
  *
  * @param {import('../models/requestData.js').default} requestData
  * @returns {Promise<boolean>}
@@ -99,14 +97,9 @@ export async function hasBlockingNonColumnMappingTasks (requestData) {
   const issueTasks = requestData.getIssueTasks?.() ?? []
   if (issueTasks.length === 0) return false
 
-  const { formattedData: issueTypes } = await datasette.runQuery(`
-    select issue_type, quality_criteria_level
-    from issue_type
-  `)
-
-  return addQualityCriteriaLevels(issueTasks, issueTypes).some(issue =>
+  return issueTasks.some(issue =>
     issue.responsibility !== 'internal' &&
-    issue.quality_criteria_level === 2 &&
+    issue.severity === 'critical' &&
     !['missing column', 'missing-field'].includes(issue['issue-type'])
   )
 }
