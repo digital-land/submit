@@ -98,14 +98,6 @@ export default {
     return { data, grouped, flat }
   },
 
-  /**
-   * Fetches one dataset from /dataset/{dataset}.json, or all from /dataset.json.
-   *
-   * @param {Object} [params] - Query params
-   * @param {string} [params.dataset] - The dataset name
-   * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
-   * @throws {Error} If the query fails or there is an error communicating with the Platform API
-   */
   // Cache dataset metadata for one hour; single-dataset requests omit entity counts.
   fetchDatasets: async (params = {}) => {
     const url = params.dataset
