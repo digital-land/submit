@@ -1,0 +1,17 @@
+{% extends "layouts/main.html" %}
+{% set pageName = 'Check your email' %}
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">{{ pageName }}</h1>
+    <p class="govuk-body">We have sent the Planning Data platform IP addresses to {{ values['ip-information-email'] }}.</p>
+    <p class="govuk-body">Share this information with your IT team so they can allow requests from the Planning Data platform.</p>
+    <p class="govuk-body">If the email does not arrive, check your spam or junk folder.</p>
+    {% if options.orgId and options.lpa %}
+      <p class="govuk-body"><a class="govuk-link" href="/organisations/{{ options.orgId | urlencode }}">Return to {{ options.lpa }} overview</a></p>
+    {% else %}
+      <p class="govuk-body"><a class="govuk-link" href="/">Return to home</a></p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
