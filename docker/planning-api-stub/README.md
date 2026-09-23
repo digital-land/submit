@@ -2,7 +2,7 @@
 
 CI mocks only these requests with real responses captured on 2026-09-15:
 
-- Brownfield land dataset details (`/dataset.json?dataset=brownfield-land`).
+- Brownfield land dataset details (`/dataset/brownfield-land.json?exclude_field=entity-count`).
 - Local planning groups (`/entity.json?prefix=local-planning-group&limit=100&offset=0`).
 - Lambeth’s Brownfield land tasks (`/task.json?organisation=local-authority%3ALBH&dataset=brownfield-land&severity=error&task_source=issue&limit=100`).
 

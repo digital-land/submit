@@ -157,11 +157,10 @@ function escapeSqlString (value) {
   return String(value).replaceAll("'", "''")
 }
 
-async function getCachedJson (key, logPrefix) {
-  const client = await getRedisClient()
-  if (!client) return undefined
-
+export async function getCachedJson (key, logPrefix) {
   try {
+    const client = await getRedisClient()
+    if (!client) return undefined
     const cached = await client.get(cacheKey(key))
     if (cached) return JSON.parse(cached)
   } catch (err) {
@@ -171,11 +170,10 @@ async function getCachedJson (key, logPrefix) {
   return undefined
 }
 
-async function setCachedJson (key, value, logPrefix, ttl = CACHE_TTL) {
-  const client = await getRedisClient()
-  if (!client) return
-
+export async function setCachedJson (key, value, logPrefix, ttl = CACHE_TTL) {
   try {
+    const client = await getRedisClient()
+    if (!client) return
     await client.setEx(cacheKey(key), ttl, JSON.stringify(value))
   } catch (err) {
     logger.warn(`${logPrefix}/redis set error: ${err.message}`)
