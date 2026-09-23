@@ -59,8 +59,7 @@ export const ConfigSchema = v.object({
   }),
   email: v.object({
     templates: v.object({
-      IpInformationTemplateId: v.uuid(),
-      RequestTemplateId: v.uuid(),
+      RequesetTemplateId: v.uuid(),
       AcknowledgementTemplateId: v.uuid()
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())

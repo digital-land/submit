@@ -78,8 +78,3 @@ export const validateGeomType = (values) => {
   // Only validate geometry type if dataset is tree
   return values.dataset === 'tree' ? ['required'] : []
 }
-
-/** Restrict IP information emails without changing the provide journey policy. */
-export const validGovUkEmail = (email) => {
-  return typeof email === 'string' && /^[^@\s]+@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+gov\.uk$/i.test(email.trim())
-}

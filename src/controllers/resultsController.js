@@ -110,9 +110,6 @@ export async function checkForErroredResponse (req, res, next) {
       organisationId,
       organisationName: organisationId ? orgIdToName(organisationId) : undefined
     }
-    if (String(processingError.errCode) === '403') {
-      req.session.ipInformation = { organisationId, organisationName: errorOptions.organisationName }
-    }
     if (errMsg && errMsg.length > 0) {
       Sentry.metrics.count('url_submission.async_processing_failure', 1, { attributes: { error_message: errMsg } })
       // Disable as this is not an error we want to track in Sentry, only need metrics

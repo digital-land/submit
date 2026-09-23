@@ -132,7 +132,6 @@ describe('SubmitUrlController', async () => {
       const req = {
         body: { url: 'http://example.com' },
         sessionModel: {
-          set: vi.fn(),
           get: vi.fn((key) => ({ orgId: 'local-authority:ABC', lpa: 'Example Council' })[key])
         },
         session: { id: '1234' }
