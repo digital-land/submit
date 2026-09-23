@@ -7,7 +7,7 @@
   "response": {
     "status": 200,
     "jsonBody": {
-      "dataset": "generic-dataset",
+      "dataset": "{{regexExtract request.path '/dataset/([^/]+)[.]json' 'datasetPath'}}{{datasetPath.0}}",
       "name": "Generic Dataset",
       "collection": "generic-collection",
       "typology": "geography"
