@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getCachedJson, setCachedJson } from '../utils/redisLoader.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import config from '../../config/index.js'
@@ -105,19 +106,20 @@ export default {
    * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
    * @throws {Error} If the query fails or there is an error communicating with the Platform API
    */
+  // Cache dataset metadata for one hour; single-dataset requests omit entity counts.
   fetchDatasets: async (params = {}) => {
     const url = params.dataset
-      ? `${config.mainWebsiteUrl}/dataset/${encodeURIComponent(params.dataset)}.json`
+      ? `${config.mainWebsiteUrl}/dataset/${encodeURIComponent(params.dataset)}.json?exclude_field=entity-count`
       : `${config.mainWebsiteUrl}/dataset.json`
-
-    const data = await queryPlatformAPI(url, params)
-
-    // Keep formattedData as an array for callers of either endpoint.
-    const datasets = params.dataset ? (data ? [data] : []) : (data?.datasets || [])
-
+    const cacheKey = `platform-datasets:${url}`
+    let data = await getCachedJson(cacheKey, 'fetchDatasets')
+    if (data === undefined) {
+      data = await queryPlatformAPI(url, params)
+      if (data) await setCachedJson(cacheKey, data, 'fetchDatasets', 60 * 60)
+    }
     return {
       data,
-      formattedData: datasets
+      formattedData: params.dataset ? (data ? [data] : []) : (data?.datasets || [])
     }
   },
 

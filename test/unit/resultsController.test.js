@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import config from '../../config/index.js'
+import platformApi from '../../src/services/platformApi.js'
 import ResultsController, {
+  fetchDatasetTypology,
   fetchResponseDetails,
   fieldToColumnMapping,
   getRequestDataMiddleware,
@@ -15,6 +16,8 @@ import ResultsController, {
 } from '../../src/controllers/resultsController.js'
 import { getRequestData } from '../../src/services/asyncRequestApi.js'
 import PageController from '../../src/controllers/pageController.js'
+
+vi.mock('../../src/services/platformApi.js', () => ({ default: { fetchDatasets: vi.fn() } }))
 
 vi.mock('../../src/services/asyncRequestApi', () => ({
   getRequestData: vi.fn()
@@ -396,25 +399,34 @@ describe('fieldToColumnMapping()', () => {
 })
 
 describe('fetchDatasetTypology()', () => {
-  it('datasets should include typology', async () => {
-    const mockDatasets = {
-      datasets: [
-        { dataset: 'd1', typology: 'geography' },
-        { dataset: 'd2', typology: 'document' }
-      ]
-    }
+  beforeEach(() => vi.resetAllMocks())
 
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        json: () => Promise.resolve(mockDatasets)
-      })
-    )
+  it('uses the cached dataset service', async () => {
+    platformApi.fetchDatasets.mockResolvedValue({ formattedData: [{ typology: 'geography' }] })
+    const req = { locals: { requestData: { getParams: () => ({ dataset: 'tree' }) } } }
+    const next = vi.fn()
+    await fetchDatasetTypology(req, {}, next)
+    expect(platformApi.fetchDatasets).toHaveBeenCalledWith({ dataset: 'tree' })
+    expect(req.locals.datasetTypology).toBe('geography')
+    expect(next).toHaveBeenCalledOnce()
+  })
 
-    const response = await fetch(`${config.mainWebsiteUrl}/dataset.json`)
-    const responseJSON = await response.json()
-    const datasets = responseJSON.datasets || []
-    const missingTypology = datasets.filter(d => d.typology == null)
-    expect(missingTypology).toEqual([])
+  it('skips fetching without a dataset', async () => {
+    const req = { locals: {} }
+    const next = vi.fn()
+    await fetchDatasetTypology(req, {}, next)
+    expect(platformApi.fetchDatasets).not.toHaveBeenCalled()
+    expect(req.locals.datasetTypology).toBeNull()
+    expect(next).toHaveBeenCalledOnce()
+  })
+
+  it('continues if the API fails', async () => {
+    platformApi.fetchDatasets.mockRejectedValue(new Error('API unavailable'))
+    const req = { locals: { requestData: { getParams: () => ({ dataset: 'tree' }) } } }
+    const next = vi.fn()
+    await fetchDatasetTypology(req, {}, next)
+    expect(req.locals.datasetTypology).toBeNull()
+    expect(next).toHaveBeenCalledOnce()
   })
 })
 

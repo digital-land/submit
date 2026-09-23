@@ -189,7 +189,7 @@ describe('platformApi.fetchDatasets', () => {
     const result = await platformApi.fetchDatasets({ dataset: 'tree' })
 
     expect(axios.get).toHaveBeenCalledExactlyOnceWith(
-      'https://www.planning.data.gov.uk/dataset/tree.json',
+      'https://www.planning.data.gov.uk/dataset/tree.json?exclude_field=entity-count',
       { timeout: 10000, headers: { 'User-Agent': 'test-user-agent' } }
     )
     expect(result).toEqual({ data: dataset, formattedData: [dataset] })
@@ -201,7 +201,7 @@ describe('platformApi.fetchDatasets', () => {
     await platformApi.fetchDatasets({ dataset: 'tree/other?name=value' })
 
     expect(axios.get).toHaveBeenCalledWith(
-      'https://www.planning.data.gov.uk/dataset/tree%2Fother%3Fname%3Dvalue.json',
+      'https://www.planning.data.gov.uk/dataset/tree%2Fother%3Fname%3Dvalue.json?exclude_field=entity-count',
       expect.any(Object)
     )
   })

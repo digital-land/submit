@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node'
 import * as v from 'valibot'
-import config from '../../config/index.js'
+import platformApi from '../services/platformApi.js'
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { fetchMany } from '../middleware/middleware.builders.js'
@@ -610,20 +610,15 @@ const validateParams = validateQueryParams({
  * @param {*} res - response object
  * @param {*} next - next middleware function
  */
-async function fetchDatasetTypology (req, res, next) {
+export async function fetchDatasetTypology (req, res, next) {
   const datasetName = req.locals.requestData?.getParams?.()?.dataset
   if (!datasetName) {
     req.locals.datasetTypology = null
     return next()
   }
   try {
-    const response = await fetch(`${config.mainWebsiteUrl}/dataset/${datasetName}.json`)
-    if (!response.ok) {
-      req.locals.datasetTypology = null
-      return next()
-    }
-    const data = await response.json()
-    req.locals.datasetTypology = data?.typology || null
+    const { formattedData } = await platformApi.fetchDatasets({ dataset: datasetName })
+    req.locals.datasetTypology = formattedData[0]?.typology || null
     next()
   } catch (error) {
     req.locals.datasetTypology = null
