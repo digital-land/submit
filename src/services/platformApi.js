@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getCachedJson, setCachedJson } from '../utils/redisLoader.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import config from '../../config/index.js'
@@ -50,14 +51,6 @@ export default {
   },
 
   /**
-   * Fetches datasets from the Platform API /dataset.json endpoint
-   *
-   * @param {Object} params - Query params
-   * @param {string} [params.dataset] - The dataset name
-   * @returns {Promise<{data: object, formattedData: object[]}>} - A promise that resolves to formatted dataset data
-   * @throws {Error} If the query fails or there is an error communicating with the Platform API
-   */
-  /**
    * Fetches all entities from the Platform API /entity.json endpoint, paginating through all results.
    * Accepts the same params as fetchEntities (except limit/offset which are managed internally).
    */
@@ -105,21 +98,20 @@ export default {
     return { data, grouped, flat }
   },
 
-  fetchDatasets: async (params) => {
-    const queryParams = new URLSearchParams()
-
-    if (params.dataset) queryParams.append('dataset', params.dataset)
-
-    const url = `${config.mainWebsiteUrl}/dataset.json?${queryParams.toString()}`
-
-    const data = await queryPlatformAPI(url, params)
-
-    // Platform API returns { datasets: [...] }
-    const datasets = data?.datasets || []
-
+  // Cache dataset metadata for one hour; single-dataset requests omit entity counts.
+  fetchDatasets: async (params = {}) => {
+    const url = params.dataset
+      ? `${config.mainWebsiteUrl}/dataset/${encodeURIComponent(params.dataset)}.json?exclude_field=entity-count`
+      : `${config.mainWebsiteUrl}/dataset.json`
+    const cacheKey = `platform-datasets:${url}`
+    let data = await getCachedJson(cacheKey, 'fetchDatasets')
+    if (data === undefined) {
+      data = await queryPlatformAPI(url, params)
+      if (data) await setCachedJson(cacheKey, data, 'fetchDatasets', 60 * 60)
+    }
     return {
       data,
-      formattedData: datasets
+      formattedData: params.dataset ? (data ? [data] : []) : (data?.datasets || [])
     }
   },
 
