@@ -3,7 +3,6 @@ import * as v from 'valibot'
 import config from '../../config/index.js'
 import PageController from './pageController.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
-import { fetchMany } from '../middleware/middleware.builders.js'
 import { validateQueryParams } from '../middleware/common.middleware.js'
 import performanceDbApi from '../services/performanceDbApi.js'
 import { isFeatureEnabled } from '../utils/features.js'
@@ -29,9 +28,7 @@ class ResultsController extends PageController {
     this.use(fetchResponseDetails)
     this.use(checkForErroredResponse)
     this.use(setupTableParams)
-    this.use(getIssueTypesWithQualityCriteriaLevels)
     this.use(extractIssuesFromTaskLog)
-    this.use(addQualityCriteriaLevelsToIssues)
     this.use(aggregateIssues)
     this.use(getTotalRows)
     this.use(getBlockingTasks)
@@ -207,13 +204,13 @@ export async function setupTableParams (req, res, next) {
       const responseDetails = req.locals.responseDetails
       // Optionally filter out all non - error rows from dataset
       let rows = responseDetails.getRowsWithVerboseColumns(false)
-      // remove any issues that aren't of severity error
+      // Show both critical and error issues, excluding internal issues
       rows = rows.map((row) => {
         const { columns, ...rest } = row
 
         const columnsOnlyErrors = Object.fromEntries(Object.entries(columns).map(([key, value]) => {
           let error
-          if (value.error && value.error.severity === 'error' && value.error.responsibility !== 'internal') {
+          if (value.error && ['critical', 'error'].includes(value.error.severity) && value.error.responsibility !== 'internal') {
             error = value.error
           }
           const newValue = {
@@ -298,11 +295,6 @@ export function setupError (req, res, next) {
   }
 }
 
-export const getIssueTypesWithQualityCriteriaLevels = fetchMany({
-  query: ({ req }) => 'select description, issue_type, name, severity, responsibility, quality_dimension, quality_criteria, quality_criteria_level from issue_type',
-  result: 'issueTypes'
-})
-
 export function extractIssuesFromResults (req, res, next) {
   const { responseDetails } = req.locals
 
@@ -325,32 +317,6 @@ export function filterOutInternalIssues (req, res, next) {
   next()
 }
 
-export function addQualityCriteriaLevelsToIssues (req, res, next) {
-  const { issues, issueTypes } = req
-  req.issues = addQualityCriteriaLevels(issues, issueTypes)
-
-  next()
-}
-
-export function addQualityCriteriaLevels (issues = [], issueTypes = []) {
-  const issueTypeMap = new Map(issueTypes.map(it => [it.issue_type, it]))
-
-  return issues.map(issue => {
-    const issueType = issueTypeMap.get(issue['issue-type'])
-    let qualityLevel = issueType ? issueType.quality_criteria_level : null
-
-    // Field-specific override for 'missing value' issues on 'reference' field
-    if (issue['issue-type'] === 'missing value' && issue.field === 'reference') {
-      qualityLevel = 2
-    }
-
-    return {
-      ...issue,
-      quality_criteria_level: qualityLevel
-    }
-  })
-}
-
 /**
  * Aggregate issues by issue_type into tasks
  *
@@ -366,19 +332,20 @@ export function aggregateIssues (req, res, next) {
 
   const taskMap = new Map()
   for (const issue of issues) {
-    if (filterOutTasksByQualityCriterialLevel(issue)) {
+    if (issue.responsibility !== 'internal' && ['critical', 'error'].includes(issue.severity)) {
       const key = `${issue['issue-type']}|${issue.field}`
       const task = taskMap.get(key)
       if (!task) {
         taskMap.set(key, {
           issueType: issue['issue-type'],
           field: issue.field,
-          qualityCriteriaLevel: issue.quality_criteria_level,
+          severity: issue.severity,
           count: issue.count ?? 1,
           summary: issue.summary
         })
       } else {
         task.count += issue.count ?? 1
+        if (issue.severity === 'critical') task.severity = 'critical'
       }
     }
   }
@@ -387,17 +354,6 @@ export function aggregateIssues (req, res, next) {
   req.tasks = Array.from(taskMap.values())
 
   next()
-}
-
-/*
-  Implementation detail:
-  the quality level is used to determine the severity of the issue.
-  Issues labeled as quality_level 2 are considered 'blocking'.
-  Issues labeled as quality_level 3 are considered 'non-blocking'.
-  Issues without a quality_level are excluded from the results, as these either have responsibility set to internal or severity of warning.
-*/
-export function filterOutTasksByQualityCriterialLevel (issue) {
-  return [2, 3].includes(issue.quality_criteria_level)
 }
 
 /**
@@ -454,14 +410,14 @@ export function getTotalRows (req, res, next) {
 
 /**
  * @param {*} req request
- * @param {number} level criteria level
+ * @param {string} severity task severity
  * @param {Status} status status meta data
  */
-export function getTasksByLevel (req, level, status, update = false) {
+export function getTasksBySeverity (req, severity, status, update = false) {
   const { tasks, totalRows } = req
   const dataset = req.locals.requestData?.getParams?.()?.dataset
 
-  const filteredTasks = tasks.filter(task => task.qualityCriteriaLevel === level)
+  const filteredTasks = tasks.filter(task => task.severity === severity)
   const taskParams = filteredTasks.map(task => {
     const taskMessage = (task.summary?.length > 0)
       ? task.summary
@@ -498,7 +454,7 @@ export function getMissingColumnTasks (req) {
       taskMap.set(`missing column|${column.field}`, {
         issueType: 'missing column',
         field: column.field,
-        qualityCriteriaLevel: 2, // = blocking issue
+        severity: 'critical', // Missing mandatory columns remain blocking
         count: 1
       })
       tasks.push(makeTaskParam(req, {
@@ -524,10 +480,10 @@ export function getMissingColumnTasks (req) {
  */
 
 export async function getBlockingTasks (req, res, next) {
-  getTasksByLevel(req, 2, taskStatus.mustFix)
+  getTasksBySeverity(req, 'critical', taskStatus.mustFix)
   const params = req.locals.requestData?.getParams?.() ?? {}
   if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })
-  ) { getTasksByLevel(req, 3, taskStatus.mustFix, true) }
+  ) { getTasksBySeverity(req, 'error', taskStatus.mustFix, true) }
   // add tasks for missing columns
   const { tasks: missingColumnTasks, taskMap } = getMissingColumnTasks(req)
   req.locals.tasksBlocking = req.locals.tasksBlocking.concat(missingColumnTasks)
@@ -543,7 +499,7 @@ export async function getNonBlockingTasks (req, res, next) {
   if (await isStatutoryDataset({ organisation: params.organisationName, dataset: params.dataset })) {
     next()
   } else {
-    getTasksByLevel(req, 3, taskStatus.shouldFix, true)
+    getTasksBySeverity(req, 'error', taskStatus.shouldFix, true)
     next()
   }
 }

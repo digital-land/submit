@@ -207,7 +207,7 @@ describe('StatusController', () => {
       })).resolves.toBe(false)
     })
 
-    it('returns false when there are level 2 external issue tasks', async () => {
+    it('returns false when there are critical external issue tasks', async () => {
       await expect(shouldShowColumnMapping({
         ...makeRequestData({
           columnFieldLog: [
@@ -216,7 +216,7 @@ describe('StatusController', () => {
           ],
           rows: [{ converted_row: { Reference: 'abc', Notes: 'note', Extra: 'extra' } }],
           issueTasks: [{
-            severity: 'error',
+            severity: 'critical',
             responsibility: 'external',
             'issue-type': 'invalid geometry'
           }]
@@ -224,7 +224,7 @@ describe('StatusController', () => {
       })).resolves.toBe(false)
     })
 
-    it('does not block when external issue tasks are level 3', async () => {
+    it('does not block when external issue tasks have error severity', async () => {
       await expect(shouldShowColumnMapping({
         ...makeRequestData({
           columnFieldLog: [
@@ -241,7 +241,7 @@ describe('StatusController', () => {
       })).resolves.toBe(true)
     })
 
-    it('does not block when issue-type is missing-field', async () => {
+    it.each(['missing-field', 'missing column'])('does not block critical %s issues', async issueType => {
       await expect(shouldShowColumnMapping({
         ...makeRequestData({
           columnFieldLog: [
@@ -250,9 +250,9 @@ describe('StatusController', () => {
           ],
           rows: [{ converted_row: { Reference: 'abc', Ref: 'abc' } }],
           issueTasks: [{
-            severity: 'error',
+            severity: 'critical',
             responsibility: 'external',
-            'issue-type': 'missing-field'
+            'issue-type': issueType
           }]
         })
       })).resolves.toBe(true)
@@ -267,7 +267,7 @@ describe('StatusController', () => {
           ],
           rows: [{ converted_row: { Reference: 'abc', Ref: 'abc' } }],
           issueTasks: [{
-            severity: 'error',
+            severity: 'critical',
             responsibility: 'internal',
             'issue-type': 'invalid geometry'
           }]
