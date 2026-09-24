@@ -13,6 +13,8 @@ issue_type,singular_message,plural_message,dataset
 "missing value", 1 row is missing a {column_name}, {num_entries} rows are missing a {column_name},all
 "OSGB out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary,all
 "OSGB out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England,all
+"Mercator out of bounds of custom boundary", 1 entry must be within the specified boundary, {num_entries} entries must be within the specified boundary,all
+"Mercator out of bounds of England", 1 entry must be within England, {num_entries} entries must be within England,all
 "too large", 1 entry must be below the maximum number needed, {num_entries} entries must be below the maximum number needed,all
 "too small", 1 entry must be above the minimum number needed, {num_entries} entries must be above the minimum number needed,all
 "Unexpected geom type", 1 entry must have valid geometry, {num_entries} entries must have valid geometry,all
