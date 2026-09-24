@@ -1,3 +1,4 @@
+{% from 'govuk/components/button/macro.njk' import govukButton %}
 {% from 'govuk/components/back-link/macro.njk' import govukBackLink %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
@@ -48,14 +49,18 @@ Error: Unfortunately, we were unable to fulfill your request - {{ super() }}
     {% elif errorCode == "403" or errorCode == 403 %}
       <h1 class="govuk-heading-xl">We cannot access your endpoint URL</h1>
 
-      <p class="govuk-body">You need to:</p>
+      <p class="govuk-body">We could not access the URL you provided because it returned a 403 response.</p>
+      <p class="govuk-body">This usually happens when access to the URL is restricted.</p>
+      <p class="govuk-body">Your IT team can:</p>
       <ul class="govuk-list govuk-list--bullet">
-        <li>host the URL on a server that does not block access with set permissions</li>
+        <li>host the URL on a server that does not block access due to set permissions</li>
         <li>remove any bot protection that blocks automated downloads</li>
+        <li>allow requests from the Planning Data platform IP addresses</li>
       </ul>
 
-      <p class="govuk-body">If you need help, contact your IT team for support and tell them that you have a ‘HTTP status code 403’ error.</p>
-      <p class="govuk-body">If your IT team needs the Planning Data platform IP addresses, email <a class="govuk-link" href="mailto:digitalland@communities.gov.uk">digitalland@communities.gov.uk</a>.</p>
+      <h2 class="govuk-heading-m">Get information for your IT team</h2>
+      <p class="govuk-body">Your organisation may need the Planning Data platform IP addresses to resolve this issue. We can send them to your work email address.</p>
+      {{ govukButton({ text: "Get information", href: "/check/ip-address-information/email" }) }}
 
       {% if err.organisationId and err.organisationName %}
         <p class="govuk-body"><a class="govuk-link" href="/organisations/{{ err.organisationId | urlencode }}">Return to {{ err.organisationName }} overview</a></p>
