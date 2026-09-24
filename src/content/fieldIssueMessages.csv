@@ -13,6 +13,8 @@ issue_type,singular_message,plural_message,dataset
 "missing value", {column_name} must not contain blank values, {num_issues} entries in the {column_name} field which must not contain blank values,all
 "OSGB out of bounds of custom boundary", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary,all
 "OSGB out of bounds of England", {column_name} must be within England, {num_issues} entries have {column_name} fields that must be within England,all
+"Mercator out of bounds of custom boundary", {column_name} must be within the specified boundary, {num_issues} entries have {column_name} fields that must be within the specified boundary,all
+"Mercator out of bounds of England", {column_name} must be within England, {num_issues} entries have {column_name} fields that must be within England,all
 "too large", {column_name} must be below the maximum number needed, {num_issues} entries have {column_name} fields that must be below the maximum number needed,all
 "too small", "{column_name} must be equal to, or greater than 0", "{num_issues} entries in the {column_name} field which must be equal to, or greater than 0",all
 "Unexpected geom type", "{column_name} must be a point, polygon or multipolygon", "{num_issues} entries in the {column_name} field which must be a point, polygon or multipolygon",all

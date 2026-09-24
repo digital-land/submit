@@ -12,6 +12,8 @@ issue_type,allRows_message,dataset
 "missing value","{column_name} column is missing values",all
 "OSGB out of bounds of custom boundary","{column_name} column must be within the specified boundary",all
 "OSGB out of bounds of England","{column_name} column must be within England",all
+"Mercator out of bounds of custom boundary","{column_name} column must be within the specified boundary",all
+"Mercator out of bounds of England","{column_name} column must be within England",all
 "too large","{column_name} column must be below the maximum number needed",all
 "too small","{column_name} column must be above the minimum number needed",all
 "Unexpected geom type","{column_name} column must have valid geometry",all
