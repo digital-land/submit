@@ -46,3 +46,5 @@ issue_type,singular_message,plural_message,dataset
 "missing associated entity","1 entry with tree-preservation-order field must match the reference field in the tree preservation order dataset","{num_entries} entries with tree-preservation-order field must match the reference field in the tree preservation order dataset",tree-preservation-zone
 "missing associated entity","1 entry with tree-preservation-order field must match the reference field in the tree preservation order","{num_entries} entries with tree-preservation-order field must match the reference field in the tree preservation order",tree
 "missing associated entity","1 ‘{column_name}’ field does not match the ‘reference’ field in the plan dataset","{num_entries} ‘{column_name}’ fields do not match the ‘reference’ field in the plan dataset",plan-timetable
+"far-past-date", 1 entry must be XXX, {num_entries} entries have combined values,all
+"far-future-date", 1 entry must be in the near future, {num_entries} entries must be in the near future,all
