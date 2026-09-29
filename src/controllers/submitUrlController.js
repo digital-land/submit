@@ -22,6 +22,7 @@ class SubmitUrlController extends UploadController {
       if (localValidationErrorType === 'restricted403') {
         const organisationId = req.sessionModel.get('orgId')
         const organisationName = req.sessionModel.get('lpa') ?? orgIdToName(organisationId)
+        req.session.ipInformation = { organisationId, organisationName }
         return next(new MiddlewareError('We cannot access your endpoint URL', 403, {
           template: 'check/error-redirect.html',
           errorDetail: { errCode: '403' },
