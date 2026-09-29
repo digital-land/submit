@@ -1,24 +1,11 @@
 // Generates fake data based on a given schema, with controllable randomness for testing and demo purposes.
 // Takes a schema and an optional seed, and returns fake data based on the schema.
 
-import { toJSONSchema } from '@gcornut/valibot-json-schema'
+import { toJsonSchema } from '@valibot/to-json-schema'
 import { JSONSchemaFaker } from 'json-schema-faker'
-import { date, number, string, object } from 'valibot'
 
 export default (schema, seed) => {
-  const jsonSchema = toJSONSchema({
-    schema,
-    ignoreUnknownValidation: true,
-    customSchemaConversion: {
-      // Treat set type like an array
-      integer: (schema, converter) => converter(number(schema.value)),
-      url: (schema, converter) => converter(string(schema.value)),
-      iso_date_time: (schema, converter) => converter(date(schema.value)),
-      // Convert looseObject to regular object for JSON schema generation
-      loose_object: (schema, converter) => converter(object(schema.entries))
-    },
-    dateStrategy: 'string'
-  })
+  const jsonSchema = toJsonSchema(schema)
 
   resetRandomNumberGenerator()
 

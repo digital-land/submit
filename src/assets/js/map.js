@@ -1,7 +1,12 @@
 import parse from 'wellknown'
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import 'maplibre-gl/dist/maplibre-gl-shared.mjs?url'
 import { capitalize, startCase } from 'lodash'
 import { getApiToken, getFreshApiToken } from './os-api-token.js'
+
+// Serve the module worker and its shared chunk from the built public assets.
+maplibregl.setWorkerUrl(maplibreWorkerUrl)
 
 const lineColor = '#000000'
 const fillColor = '#008'

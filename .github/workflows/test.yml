@@ -27,12 +27,14 @@ jobs:
       TESTCONTAINERS_REUSE_ENABLE: true
     steps:
       - uses: actions/checkout@v4
+      - name: Set Node version for Docker Compose
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
       - name: Install AWS CLI
         uses: ./.github/actions/awscli-setup
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22.22.3'
+          node-version-file: '.nvmrc'
           cache: 'npm'
       - name: Install node dependencies
         run: npm ci

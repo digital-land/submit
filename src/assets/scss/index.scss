@@ -1,7 +1,7 @@
 $govuk-global-styles: true;
 
-@import "node_modules/govuk-frontend/dist/govuk/all";
-@import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
+@import "node_modules/govuk-frontend/dist/govuk/index";
+@import "node_modules/@x-govuk/govuk-prototype-components/src/x-govuk/index";
 @import "node_modules/maplibre-gl/dist/maplibre-gl";
 @import "src/assets/scss/_scrollable-container.scss";
 @import "./overrides";

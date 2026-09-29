@@ -3,6 +3,8 @@ services:
   frontend:
     build:
       context: .
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24.21.0}
     environment:
       NODE_ENV: ci
       AWS_ACCESS_KEY_ID: example

@@ -44,7 +44,7 @@ export function setupNunjucks (opts) {
     'src/views/check',
     'src/views/submit',
     'node_modules/govuk-frontend/dist/',
-    'node_modules/@x-govuk/govuk-prototype-components/'
+    'node_modules/@x-govuk/govuk-prototype-components/src/'
   ], options)
 
   if (app) {

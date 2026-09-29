@@ -105,7 +105,7 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
 
 ## Software
 
-- Nodejs
+- Node.js 24 (use the version pinned in `.nvmrc`)
     - **Description**: JS runtime
     - **Used for**: running the web application
 - Wiremock
@@ -118,6 +118,26 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
     - **Used for**: Making the UI consistent with other government services.
 
 ## Setup
+
+- Select the project's Node.js version (with nvm):
+    ```
+    nvm install
+    nvm use
+    ```
+    CI reads `.nvmrc`. Docker and Compose default to Node.js 24.21.0.
+    When upgrading Node.js, keep `.nvmrc`, the defaults in `dockerfile` and
+    both frontend Compose files, and the `package.json` engine requirement
+    aligned, then regenerate `package-lock.json` with npm.
+
+    To override the Docker default with the version in `.nvmrc`:
+    ```sh
+    docker build --build-arg NODE_VERSION="$(cat .nvmrc)" -t submit .
+    ```
+    To override the Compose default, export the version for the shell session
+    (CI and `npm run docker-security-scan` pass it automatically):
+    ```sh
+    export NODE_VERSION="$(cat .nvmrc)"
+    ```
 
 - Install the node packages
     ```

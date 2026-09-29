@@ -7,7 +7,9 @@ services:
       - "5000:5000"
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24.21.0}
     
     environment:
       - NODE_ENV=local
@@ -21,7 +23,7 @@ services:
       - redis
 
     healthcheck:
-      test: curl -v -i -f http://localhost:5000 
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 5s
       timeout: 5s
       retries: 5

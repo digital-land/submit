@@ -1,31 +1,30 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Map, calculateBoundingBoxFromGeometries, generatePaginatedGeoJsonLinks, generateBoundingBox, createMapFromServerContext } from '../../../src/assets/js/map'
 import parse from 'wellknown'
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
 
 // Extend the mocks
 global.fetch = vi.fn()
 
 vi.mock('maplibre-gl', () => ({
-  default: {
-    Map: vi.fn().mockImplementation(function () {
-      return {
-        addControl: vi.fn(),
-        on: vi.fn((event, callback) => {
-          if (event === 'load') callback()
-        }),
-        addSource: vi.fn(),
-        addLayer: vi.fn(),
-        fitBounds: vi.fn(),
-        flyTo: vi.fn(),
-        getStyle: vi.fn().mockReturnValue({ layers: [{ type: 'symbol', id: 'symbol-layer' }] }),
-        getCanvas: vi.fn().mockReturnValue({ style: { cursor: '' } })
-      }
-    }),
-    ScaleControl: vi.fn(),
-    NavigationControl: vi.fn(),
-    FullscreenControl: vi.fn()
-  }
+  setWorkerUrl: vi.fn(),
+  Map: vi.fn().mockImplementation(function () {
+    return {
+      addControl: vi.fn(),
+      on: vi.fn((event, callback) => {
+        if (event === 'load') callback()
+      }),
+      addSource: vi.fn(),
+      addLayer: vi.fn(),
+      fitBounds: vi.fn(),
+      flyTo: vi.fn(),
+      getStyle: vi.fn().mockReturnValue({ layers: [{ type: 'symbol', id: 'symbol-layer' }] }),
+      getCanvas: vi.fn().mockReturnValue({ style: { cursor: '' } })
+    }
+  }),
+  ScaleControl: vi.fn(),
+  NavigationControl: vi.fn(),
+  FullscreenControl: vi.fn()
 }))
 
 vi.mock('wellknown', () => ({
