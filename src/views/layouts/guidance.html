@@ -60,9 +60,9 @@ https://prototype-kit.service.gov.uk/docs/how-to-use-layouts
 {% block bodyEnd %}
     {{ super()}}
   {% block scripts %}
-    <script type="module" src="/assets/all.js"></script>
     <script type="module">
-      window.GOVUKPrototypeComponents.initAll()
+      import { initAll } from '/assets/govuk-prototype-components.min.js'
+      initAll()
     </script>
     {{ super() }}
     <script src="/public/js/application.bundle.js"></script>
