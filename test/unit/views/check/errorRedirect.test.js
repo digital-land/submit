@@ -25,9 +25,10 @@ describe('check error redirect page', () => {
     })
 
     expect(html).toContain('We cannot access your endpoint URL')
-    expect(html).toContain('host the URL on a server that does not block access with set permissions')
+    expect(html).toContain('host the URL on a server that does not block access due to set permissions')
     expect(html).toContain('remove any bot protection that blocks automated downloads')
-    expect(html).toContain('‘HTTP status code 403’ error')
+    expect(html).toContain('returned a 403 response')
+    expect(html).toContain('href="/check/ip-address-information/email"')
     expect(html).toContain('digitalland@communities.gov.uk')
     expect(html).toContain('href="/organisations/local-authority%3AABC"')
     expect(html).toContain('Return to Example Council overview')
