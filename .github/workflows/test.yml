@@ -47,13 +47,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.DEPLOY_AWS_ROLE_ARN }}
           aws-region: eu-west-2
-      - name: Log in to Amazon ECR Public
-        uses: aws-actions/amazon-ecr-login@v2
-        env:
-          AWS_REGION: us-east-1
-        with:
-          registry-type: public
-          mask-password: 'true'
 
       - id: run-with-docker-compose
         run: docker compose --progress quiet -f docker-compose-real-backend.yml up -d
