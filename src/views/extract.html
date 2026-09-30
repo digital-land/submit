@@ -2,8 +2,8 @@
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% set pageName = 'Extract' %}
 
-{% block main %}
-<div class="govuk-width-container govuk-!-padding-top-6 govuk-!-padding-bottom-6">
+{% block container %}
+<main id="main-content" class="govuk-width-container govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6">
   <h1 class="govuk-heading-xl">Extract your data</h1>
   <p class="govuk-body">Extract is a tool that turns your maps, PDFs and historic planning records into standardised
     planning data.</p>
@@ -21,5 +21,5 @@
     <li>tree preservation orders</li>
   </ul>
   <p class="govuk-body"><a href="https://extract.ai.gov.uk/" class="govuk-link">Find out more about Extract</a></p>
-</div>
+</main>
 {% endblock %}

@@ -2,8 +2,8 @@
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% set pageName = 'Roadmap' %}
 
-{% block main %}
-<div class="govuk-width-container govuk-!-padding-top-6 govuk-!-padding-bottom-6">
+{% block container %}
+<main id="main-content" class="govuk-width-container govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6">
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-one-third" style="position: sticky; top: 20px;">
       <aside role="complementary">
@@ -104,5 +104,5 @@
 
     </div>
   </div>
-</div>
+</main>
 {% endblock %}
