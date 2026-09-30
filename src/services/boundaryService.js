@@ -18,7 +18,7 @@ export const getBoundaryForLpa = async (boundaryId) => {
       }
     }
 
-    const boundaryResponse = await axios.get(`${config.mainWebsiteUrl}/entity.geojson?reference=${entity['local-planning-authority']}`)
+    const boundaryResponse = await axios.get(`${config.mainWebsiteUrl}/entity.geojson?dataset=local-planning-authority&reference=${entity['local-planning-authority']}`)
     return boundaryResponse.data
   } catch (error) {
     return {
