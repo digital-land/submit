@@ -67,10 +67,28 @@
     {% else %}
 
 
-    {{ govukTaskList({
-      idPrefix: "dataset-tasklist",
-      items: taskList
-    }) }}
+    {% if endpointTaskLists is defined %}
+      {% for group in endpointTaskLists %}
+        <section class="govuk-!-margin-bottom-9" aria-labelledby="endpoint-heading-{{ loop.index }}">
+          <h2 id="endpoint-heading-{{ loop.index }}" class="govuk-heading-m govuk-!-margin-bottom-1">
+            Endpoint {{ group.endpointNumber }}
+          </h2>
+          <p class="govuk-body govuk-!-margin-bottom-2">{{ group.taskList.length }} {{ "task" | pluralise(group.taskList.length) }} to complete</p>
+          <p class="govuk-body-s govuk-!-margin-bottom-4"><a class="govuk-link app-task-list__endpoint-url" href="{{ group.endpointUrl }}" title="{{ group.endpointUrl }}">{{ group.endpointUrl }}</a></p>
+          {{ govukTaskList({
+            idPrefix: "endpoint-tasklist-" + loop.index,
+            items: group.taskList
+          }) }}
+        </section>
+      {% endfor %}
+      {% if datasetTasks.length %}
+        <h3 class="govuk-heading-m">Dataset tasks</h3>
+        <p class="govuk-body">These tasks apply to the dataset as a whole.</p>
+        {{ govukTaskList({ idPrefix: "dataset-tasklist", items: datasetTasks }) }}
+      {% endif %}
+    {% else %}
+      {{ govukTaskList({ idPrefix: "dataset-tasklist", items: taskList }) }}
+    {% endif %}
 
     <h3 class="govuk-heading-m">
       How to improve {{ organisation.name }}’s data

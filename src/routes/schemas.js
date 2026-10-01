@@ -230,17 +230,26 @@ export const OrgDataView = v.strictObject({
   planningGroupProvisions: PlanningGroupProvisionsField
 })
 
-export const OrgDatasetTaskList = v.strictObject({
-  taskList: v.array(v.strictObject({
-    title: v.strictObject({ text: NonEmptyString }),
-    href: NonEmptyString,
-    status: v.strictObject({
-      tag: v.strictObject({
-        classes: NonEmptyString,
-        text: NonEmptyString
-      })
+const TaskList = v.array(v.strictObject({
+  title: v.strictObject({ text: NonEmptyString }),
+  href: NonEmptyString,
+  status: v.strictObject({
+    tag: v.strictObject({
+      classes: NonEmptyString,
+      text: NonEmptyString
     })
-  })),
+  })
+}))
+
+export const OrgDatasetTaskList = v.strictObject({
+  taskList: TaskList,
+  endpointTaskLists: v.optional(v.array(v.strictObject({
+    endpoint: NonEmptyString,
+    endpointUrl: NonEmptyString,
+    endpointNumber: v.pipe(Integer, v.minValue(1)),
+    taskList: TaskList
+  }))),
+  datasetTasks: v.optional(TaskList),
   organisation: OrgField,
   authority: v.string(),
   dataset: v.strictObject({
@@ -275,6 +284,7 @@ const MapGeometry = v.union([
 const MapGeometries = v.array(MapGeometry)
 
 export const OrgIssueTable = v.strictObject({
+  endpointUrl: v.optional(v.string()),
   organisation: OrgField,
   dataset: DatasetNameField,
   errorSummary: errorSummaryParams,
@@ -287,6 +297,8 @@ export const OrgIssueTable = v.strictObject({
 })
 
 export const OrgIssueDetails = v.strictObject({
+  endpointUrl: v.optional(v.string()),
+  taskTableUrl: v.optional(v.string()),
   organisation: OrgField,
   dataset: DatasetNameField,
   errorSummary: errorSummaryParams,
