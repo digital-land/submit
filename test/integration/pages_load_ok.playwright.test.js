@@ -22,6 +22,48 @@ const checkSessionExpired = async (page, route) => {
   await expect(page).toHaveURL('/')
 }
 
+for (const width of [1440, 375]) {
+  for (const route of ['/community', '/roadmap', '/extract']) {
+    test(`${route} retains the standard content width at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto('/accessibility')
+      const standardMain = await page.getByRole('main').boundingBox()
+
+      await checkRouteResponse(page, route, 200)
+      const main = page.getByRole('main')
+      await expect(main).toHaveCount(1)
+      await expect(main).toHaveAttribute('id', 'main-content')
+      await expect(main.getByRole('heading', { level: 1 })).toBeVisible()
+      const bounds = await main.boundingBox()
+      expect(bounds.x).toBeCloseTo(standardMain.x, 0)
+      expect(bounds.width).toBeCloseTo(standardMain.width, 0)
+
+      const skipLink = page.getByRole('link', { name: 'Skip to main content' })
+      await skipLink.focus()
+      await skipLink.press('Enter')
+      await expect(page).toHaveURL(new RegExp(`${route}#main-content$`))
+    })
+  }
+
+  test(`landing masthead spans the viewport at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+
+    const main = page.getByRole('main')
+    await expect(main).toHaveCount(1)
+    await expect(main).toHaveAttribute('id', 'main-content')
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('Check and provide planning data')
+
+    const masthead = await main.locator('.app-masthead').boundingBox()
+    expect(masthead.x).toBe(0)
+    expect(masthead.width).toBe(width)
+
+    const content = await main.locator('.app-masthead > .govuk-width-container').boundingBox()
+    expect(content.x).toBeGreaterThan(0)
+    expect(content.width).toBeLessThan(masthead.width)
+  })
+}
+
 test.describe('without a valid session, the user can not access the later form pages', () => {
   // /check/dataset, /check/geometry-type, /check/upload-method have checkJourney: false
   // so they render without a session — no redirect expected
@@ -166,5 +208,12 @@ test.describe('status and results', () => {
 
 // the accessibility page loads ok
 test('/accessibility loads ok', async ({ page }) => {
+  const pageErrors = []
+  page.on('pageerror', error => pageErrors.push(error.message))
+  const componentsResponse = page.waitForResponse(response =>
+    response.url().endsWith('/assets/govuk-prototype-components.min.js')
+  )
   await checkRouteResponse(page, '/accessibility', 200)
+  expect((await componentsResponse).status()).toBe(200)
+  expect(pageErrors).toEqual([])
 })

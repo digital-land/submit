@@ -24,7 +24,7 @@ describe('check-answers View', async () => {
       name: 'mockName',
       email: 'mockEmail@example.com',
       dataset: 'mockDataset',
-      'documentation-url': 'mockDocumentationUrl',
+      'documentation-url': 'https://example.com/mockDocumentationUrl',
       hasLicence: 'true'
     }
   }

@@ -4,6 +4,8 @@ import yaml from 'js-yaml'
 import * as v from 'valibot'
 
 const NonEmptyString = v.pipe(v.string(), v.nonEmpty())
+const Url = v.pipe(v.string(), v.url())
+const Uuid = v.pipe(v.string(), v.uuid())
 
 /**
  * Information to allow us to display sanely worded messages about entities.
@@ -18,10 +20,10 @@ const EntityDisplay = v.object({
 })
 
 export const ConfigSchema = v.object({
-  port: v.pipe(v.integer(), v.minValue(1)),
+  port: v.pipe(v.number(), v.integer(), v.minValue(1)),
   asyncRequestApi: v.object({
-    url: v.url(),
-    port: v.pipe(v.integer(), v.minValue(1)),
+    url: Url,
+    port: v.pipe(v.number(), v.integer(), v.minValue(1)),
     requestsEndpoint: NonEmptyString,
     requestTimeout: v.number()
   }),
@@ -32,7 +34,7 @@ export const ConfigSchema = v.object({
   aws: v.object({
     region: v.string(),
     bucket: v.string(),
-    endpoint: v.optional(v.url()),
+    endpoint: v.optional(Url),
     s3ForcePathStyle: v.boolean()
   }),
   redis: v.optional(
@@ -42,8 +44,8 @@ export const ConfigSchema = v.object({
       port: v.number()
     })
   ),
-  url: v.url(),
-  mainWebsiteUrl: v.url(),
+  url: Url,
+  mainWebsiteUrl: Url,
   serviceName: NonEmptyString,
   serviceNames: v.object({
     check: NonEmptyString,
@@ -54,19 +56,19 @@ export const ConfigSchema = v.object({
     userAgent: NonEmptyString
   }),
   templateContent: v.object({
-    feedbackLink: v.url(),
+    feedbackLink: Url,
     homepageUrl: NonEmptyString // relative link, e.g. '/manage
   }),
   email: v.object({
     templates: v.object({
-      IpInformationTemplateId: v.uuid(),
-      RequestTemplateId: v.uuid(),
-      AcknowledgementTemplateId: v.uuid()
+      IpInformationTemplateId: Uuid,
+      RequestTemplateId: Uuid,
+      AcknowledgementTemplateId: Uuid
     }),
     dataManagementEmail: v.pipe(v.string(), v.email())
   }),
   specificationDiagrams: v.object({
-    baseUrl: v.url()
+    baseUrl: Url
   }),
   datasetsConfig: v.object(
     [

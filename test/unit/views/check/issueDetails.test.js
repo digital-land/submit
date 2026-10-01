@@ -6,7 +6,7 @@ import addFilters from '../../../../src/filters/filters.js'
 const env = nunjucks.configure([
   'src/views',
   'node_modules/govuk-frontend/dist/',
-  'node_modules/@x-govuk/govuk-prototype-components/'
+  'node_modules/@x-govuk/govuk-prototype-components/src/'
 ], { noCache: true })
 addFilters(env, { dataSubjects: {} })
 

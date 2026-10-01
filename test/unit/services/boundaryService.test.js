@@ -27,7 +27,7 @@ describe('getBoundaryForLpa', () => {
 
     expect(result).toEqual(boundaryResponse.data)
     expect(axios.get).toHaveBeenCalledWith(`${config.mainWebsiteUrl}/entity.json?dataset=dataset1&reference=lpa1`)
-    expect(axios.get).toHaveBeenCalledWith(`${config.mainWebsiteUrl}/entity.geojson?reference=lpa1`)
+    expect(axios.get).toHaveBeenCalledWith(`${config.mainWebsiteUrl}/entity.geojson?dataset=local-planning-authority&reference=lpa1`)
   })
 
   it('should return error for invalid boundary ID format', async () => {
@@ -62,6 +62,6 @@ describe('getBoundaryForLpa', () => {
 
     expect(result).toEqual({ error: 'Failed to get boundary data: Error undefined: Service temporarily unavailable' })
     expect(axios.get).toHaveBeenCalledWith(`${config.mainWebsiteUrl}/entity.json?dataset=dataset1&reference=lpa1`)
-    expect(axios.get).toHaveBeenCalledWith(`${config.mainWebsiteUrl}/entity.geojson?reference=lpa1`)
+    expect(axios.get).toHaveBeenCalledWith(`${config.mainWebsiteUrl}/entity.geojson?dataset=local-planning-authority&reference=lpa1`)
   })
 })

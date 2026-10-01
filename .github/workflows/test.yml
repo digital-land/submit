@@ -27,12 +27,14 @@ jobs:
       TESTCONTAINERS_REUSE_ENABLE: true
     steps:
       - uses: actions/checkout@v4
+      - name: Set Node version for Docker Compose
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> "$GITHUB_ENV"
       - name: Install AWS CLI
         uses: ./.github/actions/awscli-setup
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22.22.3'
+          node-version-file: '.nvmrc'
           cache: 'npm'
       - name: Install node dependencies
         run: npm ci
@@ -45,7 +47,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.DEPLOY_AWS_ROLE_ARN }}
           aws-region: eu-west-2
-      - uses: aws-actions/amazon-ecr-login@v2
 
       - id: run-with-docker-compose
         run: docker compose --progress quiet -f docker-compose-real-backend.yml up -d
@@ -61,6 +62,8 @@ jobs:
         run: npm run test:unit
 
       - uses: ./.github/actions/playwright-setup
+      - name: Build frontend assets for integration tests
+        run: npm run build
       - name: Run integration tests
         run: npm run test:integration
       

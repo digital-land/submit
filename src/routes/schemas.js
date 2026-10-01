@@ -6,6 +6,14 @@
 import * as v from 'valibot'
 import { MiddlewareError } from '../utils/errors.js'
 
+const Integer = v.pipe(v.number(), v.integer())
+const Url = v.pipe(v.string(), v.url())
+const DateString = v.union([
+  v.pipe(v.string(), v.isoDate()),
+  v.pipe(v.string(), v.isoDateTime()),
+  v.pipe(v.string(), v.isoTimestamp())
+])
+
 export const EmptyParams = v.object({})
 
 export const ErrorPageParams = v.object({
@@ -115,7 +123,7 @@ const IssueSpecification = v.optional(v.looseObject({
   guidance: v.optional(NonEmptyString)
 }))
 
-const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(v.integer()), dataset: v.optional(v.string()) })
+const OrgField = v.strictObject({ name: NonEmptyString, organisation: NonEmptyString, statistical_geography: v.optional(v.string()), entity: v.optional(Integer), dataset: v.optional(v.string()) })
 const DatasetNameField = v.looseObject({ name: NonEmptyString, dataset: NonEmptyString, collection: v.string() })
 const PlanningGroupProvisionsField = v.optional(v.array(v.strictObject({
   organisation: NonEmptyString,
@@ -148,13 +156,13 @@ export const OrgOverviewPage = v.strictObject({
     prospective: v.optional(v.array(DatasetItem)),
     other: v.optional(v.array(DatasetItem))
   }),
-  totalDatasets: v.integer(),
-  datasetsWithEndpoints: v.integer(),
-  datasetsWithIssues: v.integer(),
-  datasetsWithErrors: v.integer(),
+  totalDatasets: Integer,
+  datasetsWithEndpoints: Integer,
+  datasetsWithIssues: Integer,
+  datasetsWithErrors: Integer,
   isODPMember: v.boolean(),
   parentGroup: v.optional(v.nullable(v.array(v.strictObject({
-    entity: v.integer(),
+    entity: Integer,
     name: NonEmptyString,
     organisation: NonEmptyString
   })))),
@@ -176,32 +184,32 @@ export const OrgGetStarted = v.strictObject({
 })
 
 export const OrgDatasetOverview = v.strictObject({
-  downloadUrl: v.optional(v.url()),
+  downloadUrl: v.optional(Url),
   organisation: OrgField,
   dataset: DatasetNameField,
   showMap: v.boolean(),
   authority: v.string(),
-  taskCount: v.integer(),
+  taskCount: Integer,
   alternateSources: v.optional(v.array(v.strictObject({ name: NonEmptyString }))),
   stats: v.strictObject({
-    numberOfRecords: v.integer(),
+    numberOfRecords: Integer,
     endpoints: v.array(v.strictObject({
       name: v.string(),
-      documentation_url: v.nullable(v.optional(v.string())),
+      documentation_url: v.nullish(v.string()),
       endpoint_url: v.string(),
       endpoint: NonEmptyString,
       lastAccessed: v.string(),
       lastUpdated: v.nullable(v.string()),
       entryDate: v.optional(v.nullable(v.string())),
       error: v.optional(v.strictObject({
-        code: v.integer(),
+        code: Integer,
         exception: v.string()
       }))
     }))
   }),
   planningGroupProvisions: PlanningGroupProvisionsField,
   parentGroup: v.optional(v.nullable(v.array(v.strictObject({
-    entity: v.integer(),
+    entity: Integer,
     name: NonEmptyString,
     organisation: NonEmptyString
   })))),
@@ -209,11 +217,11 @@ export const OrgDatasetOverview = v.strictObject({
 })
 
 export const OrgDataView = v.strictObject({
-  downloadUrl: v.optional(v.url()),
+  downloadUrl: v.optional(Url),
   organisation: OrgField,
   dataset: DatasetNameField,
-  taskCount: v.integer(),
-  endpointCount: v.integer(),
+  taskCount: Integer,
+  endpointCount: Integer,
   authority: v.string(),
   tableParams,
   pagination: PaginationParams,
@@ -225,7 +233,7 @@ export const OrgDataView = v.strictObject({
 export const OrgDatasetTaskList = v.strictObject({
   taskList: v.array(v.strictObject({
     title: v.strictObject({ text: NonEmptyString }),
-    href: v.url(),
+    href: NonEmptyString,
     status: v.strictObject({
       tag: v.strictObject({
         classes: NonEmptyString,
@@ -247,10 +255,10 @@ export const OrgEndpointError = v.strictObject({
   organisation: OrgField,
   dataset: DatasetNameField,
   errorData: v.strictObject({
-    endpoint_url: v.url(),
-    http_status: v.optional(v.integer()),
-    latest_log_entry_date: v.isoDateTime(),
-    latest_200_date: v.optional(v.isoDateTime())
+    endpoint_url: Url,
+    http_status: v.optional(Integer),
+    latest_log_entry_date: DateString,
+    latest_200_date: v.optional(DateString)
   })
 })
 
@@ -309,7 +317,7 @@ export const CheckAnswers = v.strictObject({
     name: NonEmptyString,
     email: v.pipe(v.string(), v.email()),
     dataset: NonEmptyString,
-    'documentation-url': v.url(),
+    'documentation-url': Url,
     hasLicence: NonEmptyString,
     errors: v.optional(v.array(v.strictObject({
       text: NonEmptyString

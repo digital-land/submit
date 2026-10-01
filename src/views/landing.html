@@ -5,7 +5,8 @@
 {% set pageName = '' %}
 {% set mainClasses = 'govuk-!-padding-0' %}
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
-{% block main %}
+{% block container %}
+<main class="govuk-main-wrapper {{ mainClasses }}" id="main-content">
 <div class="app-masthead">
   <div class="govuk-width-container">
     <div class="govuk-grid-row">
@@ -45,5 +46,5 @@
     </div>
   </div>
 </div>
-{{ super() }}
+</main>
 {% endblock %}
