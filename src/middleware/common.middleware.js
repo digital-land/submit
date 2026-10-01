@@ -19,7 +19,7 @@ import { getOrganisationList } from '../utils/redisLoader.js'
 import { withAssociatedEntityDiagram } from '../utils/associatedEntityDiagrams.js'
 import { readFileSync } from 'node:fs'
 import { taskPath } from '../utils/datasetTasks.js'
-import { fetchResourceEntities, fetchResourceIssues, issueMatchesEntry } from './taskResource.middleware.js'
+import { fetchResourceEntities, fetchResourceIssues } from './taskResource.middleware.js'
 
 const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
 const PLAN_FALLBACK_DATASETS_JSON = JSON.stringify(planFallback.datasets)
@@ -674,7 +674,22 @@ export const processEntitiesMiddlewares = [
 export const filterOutEntitiesWithoutIssues = (req, res, next) => {
   const { entities, issues } = req
   if (req.taskSource) {
-    req.issueEntities = entities.filter(entry => issues.some(issue => issueMatchesEntry(issue, entry)))
+    const issueEntries = new Set()
+    const issueEntities = new Set()
+    const issuesWithoutEntryNumber = new Set()
+    for (const issue of issues) {
+      const entity = String(issue.entity)
+      issueEntities.add(entity)
+      if (issue.entry_number == null) issuesWithoutEntryNumber.add(entity)
+      else issueEntries.add(JSON.stringify([entity, String(issue.entry_number)]))
+    }
+    req.issueEntities = entities.filter(entry => {
+      const entity = String(entry.entity)
+      // Missing entry numbers retain the entity-only matching used by issueMatchesEntry.
+      if (entry['entry-number'] === undefined) return issueEntities.has(entity)
+      return issuesWithoutEntryNumber.has(entity) ||
+        issueEntries.has(JSON.stringify([entity, String(entry['entry-number'])]))
+    })
     return next()
   }
 

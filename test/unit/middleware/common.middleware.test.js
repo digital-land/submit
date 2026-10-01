@@ -1293,6 +1293,47 @@ describe('prepareEntityIssueDetailsTemplateParams', () => {
 })
 
 describe('filterOutEntitiesWithoutIssues middleware', () => {
+  it.each([
+    [1, '2', '1', 2, true],
+    [1, 2, 1, 3, false],
+    [1, 2, 2, 2, false],
+    [1, undefined, 1, 2, true],
+    [1, null, 1, 2, true],
+    [1, 2, 1, undefined, true],
+    [1, 2, 1, null, false],
+    [1, 'null', 1, null, true],
+    [1, 0, 1, '0', true],
+    ['a,b', 'c', 'a', 'b,c', false]
+  ])('matches scoped issue (%s, %s) to entry (%s, %s): %s', (issueEntity, issueNumber, entity, entryNumber, matches) => {
+    const entry = { entity, 'entry-number': entryNumber }
+    const req = {
+      taskSource: {},
+      entities: [entry],
+      issues: [{ entity: issueEntity, entry_number: issueNumber }]
+    }
+    const next = vi.fn()
+
+    filterOutEntitiesWithoutIssues(req, {}, next)
+
+    expect(req.issueEntities).toEqual(matches ? [entry] : [])
+    expect(next).toHaveBeenCalledTimes(1)
+  })
+
+  it('preserves scoped entry order and duplicates while excluding entries without issues', () => {
+    const entries = [
+      { entity: 1, 'entry-number': 2 },
+      { entity: 1, 'entry-number': 1 },
+      { entity: 2, 'entry-number': 1 },
+      { entity: 1, 'entry-number': 2 }
+    ]
+    const req = { taskSource: {}, entities: entries, issues: [{ entity: 1, entry_number: 2 }] }
+    filterOutEntitiesWithoutIssues(req, {}, vi.fn())
+    expect(req.issueEntities).toEqual([entries[0], entries[3]])
+    req.issues = []
+    filterOutEntitiesWithoutIssues(req, {}, vi.fn())
+    expect(req.issueEntities).toEqual([])
+  })
+
   it('should filter out entities without issues', () => {
     const entities = [
       { entity: 'entity1' },
