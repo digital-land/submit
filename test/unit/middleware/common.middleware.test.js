@@ -1699,6 +1699,21 @@ describe('preventIndexing middleware', () => {
 })
 
 describe('fetchTasksFromPlatformApi', () => {
+  it('keeps matching issues from separate endpoints and resources', async () => {
+    const details = { issue_type: 'missing value', field: 'name', count: 2 }
+    const tasks = [
+      { dataset: 'tree', endpoint: 'a', resource: 'old', details },
+      { dataset: 'tree', endpoint: 'a', resource: 'new', details },
+      { dataset: 'tree', endpoint: 'b', resource: 'shared', details },
+      { dataset: 'tree', endpoint: 'c', resource: 'shared', details },
+      { dataset: 'tree', endpoint: 'a', resource: 'new', details: { ...details, count: 3 } }
+    ]
+    platformApi.fetchTasks.mockResolvedValueOnce({ formattedData: { tasks, count: 5 } })
+    const req = { orgInfo: { organisation: 'local-authority:TST' }, params: { dataset: 'tree' } }
+    await fetchTasksFromPlatformApi(req, {}, vi.fn())
+    expect(req.tasks.count).toBe(4)
+    expect(req.tasks.tasks.find(task => task.resource === 'new').details.count).toBe(3)
+  })
   const next = vi.fn()
 
   beforeEach(() => {

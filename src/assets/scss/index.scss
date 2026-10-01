@@ -53,6 +53,13 @@ $govuk-global-styles: true;
   padding: 10px;
 }
 
+.app-task-list__endpoint-url {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dataset-summary-grid {
   display: flex;
   flex-wrap: wrap;

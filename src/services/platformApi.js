@@ -127,13 +127,21 @@ export default {
     if (params.responsibility) queryParams.append('responsibility', params.responsibility)
     if (params.task_source) queryParams.append('task_source', params.task_source)
     if (params.limit) queryParams.append('limit', params.limit)
-
-    const url = `${config.mainWebsiteUrl}/task.json?${queryParams.toString()}`
-    const data = await queryPlatformAPI(url, params)
+    // Retrieve every page before grouping tasks or calculating dashboard totals.
+    const tasks = []
+    let data
+    do {
+      if (tasks.length) queryParams.set('offset', tasks.length)
+      const url = `${config.mainWebsiteUrl}/task.json?${queryParams.toString()}`
+      data = await queryPlatformAPI(url, params)
+      const page = data?.tasks ?? []
+      if (!page.length) break
+      tasks.push(...page)
+    } while (tasks.length < data.count)
 
     return {
       data,
-      formattedData: { tasks: data?.tasks ?? [], count: data?.count ?? 0 }
+      formattedData: { tasks, count: data?.count ?? tasks.length }
     }
   }
 

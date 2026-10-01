@@ -13,6 +13,10 @@ router.get('/:lpa/:dataset/expectation/:expectation/entry', OrganisationsControl
 router.get('/:lpa/:dataset/expectation/:expectation/entity/:pageNumber?', OrganisationsController.datasetFailedExpectationIssueMiddleware)
 router.get('/:lpa/:dataset/data/:pageNumber', OrganisationsController.datasetDataviewMiddleware)
 router.get('/:lpa/:dataset/data', OrganisationsController.datasetDataviewMiddleware)
+const endpointTaskPath = '/:lpa/:dataset/endpoint/:endpoint/resource/:resourceId/:issue_type/:issue_field'
+router.get(`${endpointTaskPath}/entity/:pageNumber?`, OrganisationsController.entityIssueDetailsMiddleware)
+router.get(`${endpointTaskPath}/entry/:pageNumber?`, OrganisationsController.entryIssueDetailsMiddleware)
+router.get(`${endpointTaskPath}/:pageNumber?`, OrganisationsController.issueTableMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/entity/:pageNumber', OrganisationsController.entityIssueDetailsMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/entity', OrganisationsController.entityIssueDetailsMiddleware)
 router.get('/:lpa/:dataset/:issue_type/:issue_field/entry/:pageNumber', OrganisationsController.entryIssueDetailsMiddleware)
