@@ -142,6 +142,20 @@ describe('issueDetails.middleware.js', () => {
       expect(req.entry.fields[1].classes).toContain('dl-summary-card-list__row--error')
     })
 
+    it.each(['source value', '', null, 0, '<script>bad</script>'])('displays the Datasette issue value %s instead of the processed value', value => {
+      req.issues[0].value = value
+      prepareEntity(req, res, () => {})
+      const expected = value === '<script>bad</script>' ? '&lt;script&gt;bad&lt;/script&gt;' : String(value ?? '')
+      expect(req.entry.fields[0].value.html).toBe(`<p class="govuk-error-message">Error 1</p>${expected}`)
+    })
+
+    it('retains processed geometry for the map when displaying its original issue value', () => {
+      req.issues = [{ entity: 'entity1', field: 'geometry', message: 'Invalid geometry', value: 'original invalid geometry' }]
+      prepareEntity(req, res, () => {})
+      expect(req.entry.fields[2].value.html).toContain('original invalid geometry')
+      expect(req.entry.geometries[0].geo).toBe(req.issueEntities[0].geometry)
+    })
+
     it('should add new fields for issues without matching specification fields', () => {
       req.issues.push({ entity: 'entity1', field: 'newField', message: 'New Error' })
       prepareEntity(req, res, () => {})

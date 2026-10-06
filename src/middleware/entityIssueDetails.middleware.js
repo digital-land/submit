@@ -22,6 +22,7 @@ import {
 import { onlyIf, renderTemplate } from './middleware.builders.js'
 import { scopeTaskResource, issueMatchesEntry } from './taskResource.middleware.js'
 import * as v from 'valibot'
+import nunjucks from 'nunjucks'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
@@ -118,12 +119,13 @@ export function prepareEntity (req, res, next) {
     const field = specFields.get(issue.field)
     if (field) {
       const message = issue.message || issue.issue_type
-      field.value.html = issueErrorMessageHtml(message, null) + field.value.html
+      const value = issue.value === undefined ? field.value.html : nunjucks.lib.escape(String(issue.value ?? ''))
+      field.value.html = issueErrorMessageHtml(message, null) + value
       field.classes += 'dl-summary-card-list__row--error govuk-form-group--error'
     } else {
       const errorMessage = issue.message || issueType
       // TODO: pull the html out of here and into the template
-      const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
+      const valueHtml = issueErrorMessageHtml(errorMessage, nunjucks.lib.escape(String(issue.value ?? '')))
       const classes = 'dl-summary-card-list__row--error govuk-form-group--error'
       const newField = getIssueField(issue.field, valueHtml, classes)
       newField.value.originalValue = issue.value

@@ -40,6 +40,34 @@ describe('issueTableMiddleware', () => {
   })
 
   describe('prepareTableParams', () => {
+    it.each(['159', '', null, 0])('displays the matching issue value %s instead of the processed date', value => {
+      const req = {
+        issueEntities: [{ entity: 7010005026, 'entry-number': 9, 'entry-date': '2025-03-21' }],
+        issues: [
+          { entity: 7010005026, entry_number: 8, field: 'entry-date', issue_type: 'invalid date', value: 'other row' },
+          { entity: 7010005026, entry_number: 9, field: 'entry-date', issue_type: 'invalid date', value }
+        ],
+        uniqueDatasetFields: ['entry-date'],
+        dataRange: { minRow: 0, maxRow: 10 }
+      }
+      prepareTableParams(req, {}, vi.fn())
+      expect(req.tableParams.rows[0].columns['entry-date']).toEqual({ value, error: { message: 'invalid date' } })
+    })
+
+    it('shows the issue geometry while retaining processed geometry for the map', () => {
+      const req = {
+        issueEntities: [{ entity: 1, point: 'POINT (0 0)' }],
+        issues: [{ entity: 1, field: 'point', issue_type: 'invalid geometry', value: 'invalid point' }],
+        uniqueDatasetFields: ['point'],
+        dataRange: { minRow: 0, maxRow: 10 },
+        params: { issue_type: 'invalid geometry' }
+      }
+      prepareTableParams(req, {}, vi.fn())
+      expect(req.tableParams.rows[0].columns.point.html).toBe('<span>invalid point</span>')
+      prepareTemplateParams(req, {}, vi.fn())
+      expect(req.templateParams.geometries[0].geo).toBe('POINT (0 0)')
+    })
+
     const req = {
       entities: [
         { entity: 'entity1', reference: 'entity1', name: 'Name 1', amount: 100 },

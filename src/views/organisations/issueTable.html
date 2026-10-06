@@ -61,7 +61,7 @@
 </div>
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    <div class="{{ 'govuk-grid-column-full' if geometries and geometries.length else 'govuk-grid-column-two-thirds' }}">
     {% include "includes/_task-endpoint.html" %}
     {{ govukErrorSummary({
       titleText: errorSummary.heading if errorSummary.heading else 'There is a problem',

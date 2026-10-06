@@ -74,7 +74,7 @@
             Endpoint {{ group.endpointNumber }}
           </h2>
           <p class="govuk-body govuk-!-margin-bottom-2">{{ group.taskList.length }} {{ "task" | pluralise(group.taskList.length) }} to complete</p>
-          <p class="govuk-body-s govuk-!-margin-bottom-4"><a class="govuk-link app-task-list__endpoint-url" href="{{ group.endpointUrl }}" title="{{ group.endpointUrl }}">{{ group.endpointUrl }}</a></p>
+          <p class="govuk-body-s govuk-!-margin-bottom-4"><a class="govuk-link" style="overflow-wrap: anywhere; word-break: break-all" href="{{ group.endpointUrl }}">{{ group.endpointUrl }}</a></p>
           {{ govukTaskList({
             idPrefix: "endpoint-tasklist-" + loop.index,
             items: group.taskList

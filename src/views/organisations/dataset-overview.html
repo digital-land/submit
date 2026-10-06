@@ -32,7 +32,7 @@
 {% set pageName %}
     {{organisation.name}} - {{dataset.dataset | datasetSlugToReadableName(true)}} - Dataset overview
 {% endset %}
-{% set urlStyle = 'text-overflow: ellipsis; overflow: hidden; white-space: nowrap; width: 400px; display: block;' %}
+{% set urlStyle = 'overflow-wrap: anywhere; word-break: break-all;' %}
 
 {% extends "layouts/main.html" %}
 

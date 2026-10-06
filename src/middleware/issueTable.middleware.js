@@ -17,6 +17,7 @@ import { entryIssueGroups } from '../utils/utils.js'
 import { splitByLeading } from '../utils/table.js'
 import { scopeTaskResource, issueMatchesEntry } from './taskResource.middleware.js'
 import { taskPath } from '../utils/datasetTasks.js'
+import nunjucks from 'nunjucks'
 
 export const IssueTableQueryParams = v.object({
   lpa: v.string(),
@@ -64,10 +65,13 @@ export const prepareTableParams = (req, res, next) => {
 
   const allRows = issueEntities.map((entity, index) => ({
     columns: Object.fromEntries(orderedFields.map((field) => {
-      const errorMessage = issues.find(issue => issueMatchesEntry(issue, entity) && (issue.field === field || issue.replacement_field === field))?.issue_type
+      const issue = issues.find(issue => issueMatchesEntry(issue, entity) && (issue.field === field || issue.replacement_field === field))
+      const errorMessage = issue?.issue_type
+      const value = issue?.value === undefined ? entity[field] : issue.value
+      const isGeometry = field === 'point' || field === 'geometry'
       if (field === 'reference') {
         return [field, {
-          html: `<a href='${baseSubpath}/entity/${index + 1}'>${entity[field]}</a>`,
+          html: `<a href='${baseSubpath}/entity/${index + 1}'>${nunjucks.lib.escape(String(value ?? ''))}</a>`,
           error: errorMessage
             ? {
                 message: errorMessage
@@ -76,7 +80,9 @@ export const prepareTableParams = (req, res, next) => {
         }]
       } else {
         return [field, {
-          value: entity[field],
+          value: isGeometry ? entity[field] : value,
+          // Keep processed geometry for the map while displaying the reported issue value.
+          ...(isGeometry && issue?.value !== undefined ? { html: `<span>${nunjucks.lib.escape(String(value ?? ''))}</span>` } : {}),
           error: errorMessage
             ? {
                 message: errorMessage

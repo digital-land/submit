@@ -61,6 +61,7 @@ beforeEach(() => {
       const label = params.resource === 'ra' ? 'Endpoint A' : 'Endpoint B'
       rows = Array.from({ length: config.tablePageLength + 1 }, (_, i) => i + 1).flatMap(i => [
         { entity: i, entry_number: i, field: 'reference', value: `${label} reference ${i}` },
+        { entity: i, entry_number: i, field: 'name', value: 'Processed name' },
         { entity: i, entry_number: i, field: 'description', value: `${label} description ${i}` },
         { entity: i, entry_number: i, field: 'point', value: params.resource === 'ra' ? 'POINT (-1 52)' : 'POINT (-2 53)' }
       ])
@@ -106,6 +107,8 @@ describe('endpoint task journey', () => {
     expect(response.text).not.toContain('POINT (-2 53)')
     const document = new JSDOM(response.text).window.document
     const next = document.querySelector('.govuk-pagination__next a').getAttribute('href')
+    expect(document.querySelector('.app-inset-text__value').textContent).toBe('')
+    expect(document.querySelector('table').textContent).not.toContain('Processed name')
     expect(next).toBe(`${scoped}/2`)
     const second = await agent.get(next)
     expect(second.status, second.text).toBe(200)
@@ -115,6 +118,22 @@ describe('endpoint task journey', () => {
     expect(detail.text).toContain('Endpoint A description 2')
     expect(detail.text).toContain(`href="${scoped}"`)
     expect(detail.text).toContain('https://example.com/a.csv')
+  })
+
+  it.each([false, true])('uses full-width issue context only when a map is displayed: %s', async hasMap => {
+    const query = datasette.runQuery.getMockImplementation()
+    datasette.runQuery.mockImplementation(async (...args) => {
+      const result = await query(...args)
+      if (!hasMap) result.formattedData = result.formattedData.filter(row => row.field !== 'point')
+      return result
+    })
+    const response = await request(app()).get(scoped)
+    expect(response.status, response.text).toBe(200)
+    const document = new JSDOM(response.text).window.document
+    const context = document.querySelector('.govuk-error-summary').parentElement
+    expect(context.className).toBe(hasMap ? 'govuk-grid-column-full' : 'govuk-grid-column-two-thirds')
+    expect(context.querySelector('a[href="https://example.com/a.csv"]')).not.toBeNull()
+    expect(!!document.querySelector('#map')).toBe(hasMap)
   })
 
   it('retains endpoint context when redirecting to an entry-level issue', async () => {
