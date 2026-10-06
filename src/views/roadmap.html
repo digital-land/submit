@@ -2,10 +2,24 @@
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% set pageName = 'Roadmap' %}
 
+{% block head %}
+  {{ super() }}
+  <style>
+    {# The contents list only sits alongside the roadmap from tablet width up. Below
+       that the columns stack, so sticky would pin it over the content as it scrolls. #}
+    @media (min-width: 40.0625em) {
+      .app-roadmap-contents {
+        position: sticky;
+        top: 20px;
+      }
+    }
+  </style>
+{% endblock %}
+
 {% block container %}
 <main id="main-content" class="govuk-width-container govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6">
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-third" style="position: sticky; top: 20px;">
+    <div class="govuk-grid-column-one-third app-roadmap-contents">
       <aside role="complementary">
         <h2 class="govuk-heading-s">On this page</h2>
         <ul class="govuk-list">
@@ -29,7 +43,7 @@
       <p class="govuk-body-l">The Ministry of Housing, Communities and Local Government (MHCLG) is improving the Check and provide your planning data service. Local planning authorities (LPAs) use it to check their data against national standards and provide it to planning.data.gov.uk.</p>
       <p class="govuk-body">Since 2024, LPAs have used the service to check their data and track its quality through a dashboard. We're now making it more secure, clearer about what needs fixing, and faster at getting LPA data onto the platform.</p>
       <p class="govuk-body">Our plans can change based on what we learn from our users and from testing. We aim to update this roadmap every 3 months. You can also read the <a href="https://www.planning.data.gov.uk/about/roadmap" class="govuk-link">roadmap for the whole Planning Data Platform</a>.</p>
-      <p class="govuk-body-s">Last updated 18 September 2026. Next update due December 2026.</p>
+      <p class="govuk-body-s">Last updated October 2026. Next update due January 2027.</p>
 
       <h2 class="govuk-heading-l govuk-!-margin-top-8" id="goal">Our goal</h2>
       <p class="govuk-body">Local planning authorities can provide good quality planning data quickly, and always know what to do next to improve it.</p>
@@ -78,10 +92,10 @@
       <h3 class="govuk-heading-m govuk-!-margin-top-6">By December 2026</h3>
 
       <h4 class="govuk-heading-s">Secure authentication for your authority</h4>
-      <p class="govuk-body">You'll authenticate with your LPA email address using a secure link sent to your inbox, so there's no password to remember. Only people from your LPA will be able to provide data for it. For example, to submit Camden's brownfield land register you'll need a `camden.gov.uk` email address.</p>
+      <p class="govuk-body">You'll authenticate with your LPA email address using a secure link sent to your inbox, so there's no password to remember. Only people from your LPA will be able to provide data for it. For example, to submit Camden's brownfield land register you'll need a camden.gov.uk email address.</p>
 
       <h4 class="govuk-heading-s">A clearer view of what needs fixing</h4>
-      <p class="govuk-body">Your dashboard will break tasks down by endpoint. If you have five brownfield land registers, you'll see which one needs attention. You'll also be able to compare the data you gave us with how it appears on the platform, so issues are easier to trace. We're redesigning the dashboard so it stays easy to use as the number of datasets grows. We'll also improve our guidance where we know it could be improved - for example, if you encounter an error whilst checking and endpoint or if you publish data from ArcGIS or a Web Feature Service (WFS).</p>
+      <p class="govuk-body">Your dashboard will break tasks down by endpoint. If you have five brownfield land registers, you'll see which one needs attention. You'll also be able to compare the data you gave us with how it appears on the platform, so issues are easier to trace. We're redesigning the dashboard so it stays easy to use as the number of datasets grows. We'll also improve our guidance where we know it could be better - for example, if you encounter an error whilst checking an endpoint, or if you publish data from ArcGIS or a Web Feature Service (WFS).</p>
 
       <h3 class="govuk-heading-m govuk-!-margin-top-6">By March 2027</h3>
 
