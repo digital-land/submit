@@ -1,4 +1,4 @@
 {% if endpointUrl %}
   <p class="govuk-body" style="overflow-wrap: anywhere">Endpoint URL: <a class="govuk-link" style="word-break: break-all" href="{{ endpointUrl }}">{{ endpointUrl }}</a></p>
-  <p class="govuk-body">These issues relate to the latest data collected from this endpoint.</p>
+  <p class="govuk-body">{% if taskEntryDate %}These issues were present when data was collected from this endpoint on {{ taskEntryDate | govukDateTime }}.{% else %}These issues relate to the latest data collected from this endpoint.{% endif %}</p>
 {% endif %}

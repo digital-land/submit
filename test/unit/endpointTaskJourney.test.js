@@ -38,6 +38,8 @@ beforeEach(() => {
   platformApi.fetchTasks.mockResolvedValue({
     formattedData: {
       tasks: sources.slice(0, 2).map(source => ({
+        organisation: 'local-authority:TST',
+        'entry-date': source.endpoint === 'a' ? '2026-10-07' : '2026-10-01',
         dataset: 'tree',
         endpoint: source.endpoint,
         resource: source.resource,
@@ -102,6 +104,7 @@ describe('endpoint task journey', () => {
     const response = await agent.get(scoped)
     expect(response.status, response.text).toBe(200)
     expect(response.text).toContain('Endpoint A description 1')
+    expect(response.text).toContain('These issues were present when data was collected from this endpoint on 7 October 2026.')
     expect(response.text).not.toContain('Endpoint B')
     expect(response.text).toContain('POINT (-1 52)')
     expect(response.text).not.toContain('POINT (-2 53)')
@@ -116,6 +119,7 @@ describe('endpoint task journey', () => {
     const detail = await agent.get(`${scoped}/entity/2`)
     expect(detail.status, detail.text).toBe(200)
     expect(detail.text).toContain('Endpoint A description 2')
+    expect(detail.text).toContain('on 7 October 2026.')
     expect(detail.text).toContain(`href="${scoped}"`)
     expect(detail.text).toContain('https://example.com/a.csv')
   })

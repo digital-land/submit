@@ -284,6 +284,7 @@ const MapGeometry = v.union([
 const MapGeometries = v.array(MapGeometry)
 
 export const OrgIssueTable = v.strictObject({
+  taskEntryDate: v.optional(v.string()),
   endpointUrl: v.optional(v.string()),
   organisation: OrgField,
   dataset: DatasetNameField,
@@ -297,6 +298,7 @@ export const OrgIssueTable = v.strictObject({
 })
 
 export const OrgIssueDetails = v.strictObject({
+  taskEntryDate: v.optional(v.string()),
   endpointUrl: v.optional(v.string()),
   taskTableUrl: v.optional(v.string()),
   organisation: OrgField,

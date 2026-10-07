@@ -1074,6 +1074,7 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
 
   if (req.taskSource) {
     req.templateParams.endpointUrl = req.taskSource.endpoint_url
+    req.templateParams.taskEntryDate = req.taskEntryDate
     req.templateParams.taskTableUrl = taskPath(req.params)
   }
 

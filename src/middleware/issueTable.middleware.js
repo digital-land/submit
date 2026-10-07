@@ -141,7 +141,10 @@ export const prepareTemplateParams = (req, res, next) => {
     issueSpecification,
     geometries
   }
-  if (req.taskSource) req.templateParams.endpointUrl = req.taskSource.endpoint_url
+  if (req.taskSource) {
+    req.templateParams.endpointUrl = req.taskSource.endpoint_url
+    req.templateParams.taskEntryDate = req.taskEntryDate
+  }
   next()
 }
 

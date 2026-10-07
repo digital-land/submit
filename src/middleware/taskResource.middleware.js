@@ -1,15 +1,33 @@
 import datasette from '../services/datasette.js'
 import { MiddlewareError } from '../utils/errors.js'
+import platformApi from '../services/platformApi.js'
+import logger from '../utils/logger.js'
 
-// Sources have already been restricted to the organisation, dataset and active endpoints.
-// Validate both IDs against that list before using the resource in any data query.
-export function scopeTaskResource (req, res, next) {
+// Validate endpoint/resource ownership before loading the matching task date.
+export async function scopeTaskResource (req, res, next) {
   if (!req.params.endpoint) return next()
   const source = req.sources.find(source => source.endpoint === req.params.endpoint &&
     source.resource && source.resource === req.params.resourceId)
   if (!source) return next(new MiddlewareError('Endpoint resource not found', 404))
   req.taskSource = source
   req.resources = [{ ...req.resources.find(resource => resource.resource === source.resource), ...source }]
+  try {
+    const { formattedData } = await platformApi.fetchTasks({
+      organisation: req.params.lpa,
+      dataset: req.params.dataset,
+      severity: ['error', 'critical'],
+      task_source: 'issue',
+      limit: 100
+    })
+    const task = formattedData.tasks.find(task =>
+      task.organisation === req.params.lpa && task.dataset === req.params.dataset &&
+      task.endpoint === req.params.endpoint && task.resource === req.params.resourceId &&
+      task.details?.issue_type === req.params.issue_type && task.details?.field === req.params.issue_field)
+    const date = task?.['entry-date']
+    if (date && !Number.isNaN(Date.parse(date))) req.taskEntryDate = date.slice(0, 10)
+  } catch (err) {
+    logger.warn('scopeTaskResource: failed to fetch task date', { err })
+  }
   next()
 }
 
