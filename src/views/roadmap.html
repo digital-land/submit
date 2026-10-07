@@ -2,24 +2,10 @@
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% set pageName = 'Roadmap' %}
 
-{% block head %}
-  {{ super() }}
-  <style>
-    {# The contents list only sits alongside the roadmap from tablet width up. Below
-       that the columns stack, so sticky would pin it over the content as it scrolls. #}
-    @media (min-width: 40.0625em) {
-      .app-roadmap-contents {
-        position: sticky;
-        top: 20px;
-      }
-    }
-  </style>
-{% endblock %}
-
 {% block container %}
 <main id="main-content" class="govuk-width-container govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6">
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-third app-roadmap-contents">
+    <div class="govuk-grid-column-one-third sticky-nav">
       <aside role="complementary">
         <h2 class="govuk-heading-s">On this page</h2>
         <ul class="govuk-list">
