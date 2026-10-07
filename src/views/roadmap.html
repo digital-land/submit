@@ -4,22 +4,23 @@
 
 {% block container %}
 <main id="main-content" class="govuk-width-container govuk-main-wrapper govuk-!-padding-top-6 govuk-!-padding-bottom-6">
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-one-third sticky-nav">
-      <aside role="complementary">
-        <h2 class="govuk-heading-s">On this page</h2>
-        <ul class="govuk-list">
-          <li><a class="govuk-link" href="#goal">Our goal</a></li>
-          <li><a class="govuk-link" href="#what-this-means">What this means for you</a></li>
-          <li><a class="govuk-link" href="#progress">Our progress so far</a></li>
-          <li><a class="govuk-link" href="#next">What we're planning to do next</a></li>
-          <li><a class="govuk-link" href="#more-information">More information</a></li>
+  <div class="govuk-grid-row app-grid-row--flex">
+    <div class="govuk-grid-column-one-third">
+      <nav class="app-subnav" aria-labelledby="app-subnav-label">
+        <p id="app-subnav-label" class="govuk-visually-hidden">Contents</p>
+        <h2 class="app-subnav__theme">On this page</h2>
+        <ul class="app-subnav__section">
+          <li class="app-subnav__section-item"><a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="#goal">Our goal</a></li>
+          <li class="app-subnav__section-item"><a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="#what-this-means">What this means for you</a></li>
+          <li class="app-subnav__section-item"><a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="#progress">Our progress so far</a></li>
+          <li class="app-subnav__section-item"><a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="#next">What we're planning to do next</a></li>
+          <li class="app-subnav__section-item"><a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="#more-information">More information</a></li>
         </ul>
-        <h2 class="govuk-heading-s govuk-!-margin-top-6">Related</h2>
-        <ul class="govuk-list">
-          <li><a class="govuk-link" href="https://www.planning.data.gov.uk/about/roadmap">Planning Data Platform roadmap</a></li>
+        <h2 class="app-subnav__theme">Related</h2>
+        <ul class="app-subnav__section">
+          <li class="app-subnav__section-item"><a class="app-subnav__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="https://www.planning.data.gov.uk/about/roadmap">Planning Data Platform roadmap</a></li>
         </ul>
-      </aside>
+      </nav>
     </div>
 
     <div class="govuk-grid-column-two-thirds">

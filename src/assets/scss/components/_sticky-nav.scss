@@ -1,9 +1,0 @@
-// Matches the guidance navigation on planning.data.gov.uk.
-// Only sticky from desktop up: below that the grid columns stack, so a sticky
-// column would pin itself over the content as the page scrolls.
-@include govuk-media-query($from: desktop) {
-  .sticky-nav {
-    position: sticky;
-    top: 0;
-  }
-}
