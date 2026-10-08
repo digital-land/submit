@@ -3,7 +3,7 @@
 );
 @use "node_modules/@ministryofjustice/frontend/moj/components/filter/filter";
 
-@import "node_modules/govuk-frontend/dist/govuk/index";
+@use "node_modules/govuk-frontend/dist/govuk/index" as *;
 @import "node_modules/@x-govuk/govuk-prototype-components/src/x-govuk/index";
 @import "node_modules/maplibre-gl/dist/maplibre-gl";
 @import "src/assets/scss/_scrollable-container.scss";
