@@ -1,0 +1,59 @@
+.app-dashboard-filters .moj-filter__options > .govuk-button {
+  width: 100%;
+}
+
+.app-dashboard-filters--enhanced .moj-filter__options > .govuk-button {
+  margin-top: govuk-spacing(4);
+  margin-bottom: 0;
+}
+
+.app-dashboard-filters .moj-filter__header {
+  background-color: govuk-colour("blue");
+
+  .govuk-heading-m {
+    color: govuk-colour("white");
+  }
+}
+
+.app-dashboard-filters--enhanced {
+  .moj-filter__header { padding: 0; }
+  .moj-filter__header-title { width: 100%; }
+
+  .app-dashboard-filters__toggle {
+    @include govuk-font(24, $weight: bold);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: govuk-spacing(2) govuk-spacing(4);
+    border: 0;
+    background: transparent;
+    color: govuk-colour("white");
+    text-align: left;
+
+    &::after {
+      content: "";
+      display: inline-block;
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      margin: 0 0 3px govuk-spacing(3);
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    &[aria-expanded="true"]::after {
+      transform: rotate(225deg);
+      margin-bottom: -1px;
+    }
+
+    &:focus-visible {
+      outline: 3px solid $govuk-focus-colour;
+      background: $govuk-focus-colour;
+      color: $govuk-focus-text-colour;
+    }
+  }
+
+}

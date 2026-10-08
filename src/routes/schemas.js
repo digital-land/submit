@@ -148,14 +148,24 @@ const DatasetItem = v.strictObject({
   endpointErrorCount: v.optional(v.number())
 })
 
+const OverviewDatasets = v.object({
+  statutory: v.optional(v.array(DatasetItem)),
+  expected: v.optional(v.array(DatasetItem)),
+  prospective: v.optional(v.array(DatasetItem)),
+  other: v.optional(v.array(DatasetItem))
+})
+
 export const OrgOverviewPage = v.strictObject({
+  collections: v.optional(v.array(v.strictObject({ value: NonEmptyString, text: NonEmptyString }))),
+  filters: v.optional(v.strictObject({
+    status: v.array(v.string()),
+    collection: v.array(v.string()),
+    requirement: v.array(v.string())
+  })),
+  filteredDatasets: v.optional(OverviewDatasets),
+  resultTotal: v.optional(Integer),
   organisation: OrgField,
-  datasets: v.object({
-    statutory: v.optional(v.array(DatasetItem)),
-    expected: v.optional(v.array(DatasetItem)),
-    prospective: v.optional(v.array(DatasetItem)),
-    other: v.optional(v.array(DatasetItem))
-  }),
+  datasets: OverviewDatasets,
   totalDatasets: Integer,
   datasetsWithEndpoints: Integer,
   datasetsWithIssues: Integer,

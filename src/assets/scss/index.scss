@@ -1,4 +1,7 @@
-$govuk-global-styles: true;
+@use "node_modules/@ministryofjustice/frontend/moj/vendor/govuk-frontend" with (
+  $govuk-global-styles: true
+);
+@use "node_modules/@ministryofjustice/frontend/moj/components/filter/filter";
 
 @import "node_modules/govuk-frontend/dist/govuk/index";
 @import "node_modules/@x-govuk/govuk-prototype-components/src/x-govuk/index";
@@ -9,6 +12,7 @@ $govuk-global-styles: true;
 @import "./components/download-button";
 @import "./components/sub-navigation";
 @import "./components/map";
+@import "./components/dashboard-filters";
 
 .app-inset-text---error {
   border-left: 5px solid govuk-colour('red');
@@ -76,8 +80,14 @@ $govuk-global-styles: true;
 .dataset-status {
   margin-bottom: govuk-spacing(6);
 
-  display: flex;
-  column-gap: govuk-spacing(6);
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: govuk-spacing(6);
+
+  @include govuk-media-query($from: tablet) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
 }
 
 .dataset-status--item {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { setupNunjucks } from '../../../../src/serverSetup/nunjucks.js'
 import { runGenericPageTests } from '../../generic-page.js'
 import jsdom from 'jsdom'
@@ -6,6 +6,7 @@ import { makeDatasetSlugToReadableNameFilter } from '../../../../src/filters/mak
 import mocker from '../../../utils/mocker.js'
 import { datasetStatusEnum, OrgOverviewPage } from '../../../../src/routes/schemas.js'
 import { datasetSlugToReadableName } from '../../../../src/utils/datasetSlugToReadableName.js'
+import initDashboardFilters from '../../../../src/assets/js/components/dashboard-filters.js'
 
 const datasetNameMapping = new Map()
 const nunjucks = setupNunjucks({ datasetNameMapping })
@@ -38,12 +39,89 @@ const datasetGroup = ({ expect }, key, datasets, document) => {
 
 describe(`LPA Overview Page (seed: ${seed})`, () => {
   const params = mocker(OrgOverviewPage, seed)
+  delete params.filters
+  delete params.filteredDatasets
+  delete params.resultTotal
   console.debug(`mocked datasets: statutory = ${params.datasets.statutory?.length ?? 'none'}, expected = ${params.datasets.expected?.length ?? 'none'}, prospective = ${params.datasets.prospective?.length ?? 'none'}`)
 
   const html = nunjucks.render('organisations/overview.html', params)
 
   const dom = new jsdom.JSDOM(html)
   const document = dom.window.document
+
+  it('renders selected filters, filtered results and the unfiltered total', () => {
+    const html = nunjucks.render('organisations/overview.html', {
+      ...params,
+      collections: [{ value: 'trees', text: 'Trees' }],
+      filters: { status: ['live'], collection: ['trees'], requirement: ['statutory'] },
+      filteredDatasets: { statutory: [{ dataset: 'tree', status: 'Live' }] },
+      resultTotal: 4
+    })
+    const document = new jsdom.JSDOM(html).window.document
+    expect(document.querySelector('form[data-dashboard-filters]').method).toBe('get')
+    expect([...document.querySelectorAll('input:checked')].map(input => input.value)).toEqual(['live', 'trees', 'statutory'])
+    expect(document.querySelectorAll('[data-dataset]')).toHaveLength(1)
+    expect(document.querySelector('[data-testid="dataset-results-count"]').textContent).toBe('Showing 1 of 4 datasets')
+    initDashboardFilters(document)
+    expect(document.querySelector('.moj-filter__content').hidden).toBe(false)
+    expect(document.querySelector('.app-dashboard-filters__toggle').getAttribute('aria-expanded')).toBe('true')
+    expect(document.querySelector('.moj-filter__options').lastElementChild.textContent.trim()).toBe('Apply filters')
+  })
+
+  it.each([true, false])('sets the initial filter state for mobile: %s', mobile => {
+    const { window } = new jsdom.JSDOM(html)
+    window.matchMedia = vi.fn().mockReturnValue({ matches: mobile })
+    const document = window.document
+    const checkbox = document.querySelector('input[type="checkbox"]')
+    checkbox.checked = true
+    initDashboardFilters(document)
+    expect(window.matchMedia).toHaveBeenCalledWith('(max-width: 40.0525em)')
+    const content = document.querySelector('.moj-filter__content')
+    const button = document.querySelector('.app-dashboard-filters__toggle')
+    expect(content.hidden).toBe(mobile)
+    expect(button.getAttribute('aria-expanded')).toBe(String(!mobile))
+    button.click()
+    expect(content.hidden).toBe(!mobile)
+    expect(checkbox.checked).toBe(true)
+  })
+
+  it('explains when no datasets match', () => {
+    const html = nunjucks.render('organisations/overview.html', {
+      ...params,
+      filteredDatasets: { statutory: [], expected: [], prospective: [] },
+      resultTotal: 4
+    })
+    const document = new jsdom.JSDOM(html).window.document
+    expect(document.querySelector('[data-testid="dataset-results-count"]').textContent).toBe('Showing 0 of 4 datasets')
+    expect(document.querySelectorAll('[data-dataset]')).toHaveLength(0)
+    expect(document.body.textContent).toContain('No datasets match your filters.')
+  })
+
+  it('Uses the filter header to collapse all options while preserving selections', () => {
+    const document = new jsdom.JSDOM(html).window.document
+    const content = document.querySelector('.moj-filter__content')
+    expect(content.hidden).toBe(false)
+
+    initDashboardFilters(document)
+    initDashboardFilters(document)
+    const buttons = document.querySelectorAll('.app-dashboard-filters__toggle')
+    expect(buttons).toHaveLength(1)
+    const button = buttons[0]
+    expect(button.closest('.moj-filter__header')).not.toBeNull()
+    expect(button.getAttribute('aria-controls')).toBe(content.id)
+    expect(button.getAttribute('aria-expanded')).toBe('true')
+    expect(content.hidden).toBe(false)
+    const checkbox = content.querySelector('input[type="checkbox"]')
+    checkbox.checked = true
+    button.click()
+    expect(content.hidden).toBe(true)
+    expect(button.getAttribute('aria-expanded')).toBe('false')
+    button.click()
+    expect(content.hidden).toBe(false)
+    expect(button.getAttribute('aria-expanded')).toBe('true')
+    expect(checkbox.checked).toBe(true)
+    expect(content.querySelector('details')).toBeNull()
+  })
 
   runGenericPageTests(html, {
     pageTitle: `${params.organisation.name} overview - Check and provide planning data`,
