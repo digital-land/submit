@@ -53,7 +53,7 @@
 
   <div class="govuk-task-list__status">
     {{govukTag({
-    text: dataset.status,
+    text: "Not provided" if dataset.status == "Not submitted" else dataset.status,
     classes: dataset.status | statusToTagClass
     })}}
   </div>
@@ -141,37 +141,6 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-one-third">
-    {% if planningGroupMembers %}
-    <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-members-title"
-      data-module="govuk-notification-banner">
-      <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="planning-group-members-title">Membership</h2>
-      </div>
-      <div class="govuk-notification-banner__content">
-        <ul class="govuk-list govuk-list--bullet">
-          {% for member in planningGroupMembers %}
-          <li><a class="govuk-link" href="/organisations/{{ member.organisation }}">{{ member.name }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-    {% endif %}
-    {% if parentGroup %}
-    <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-notice-title"
-      data-module="govuk-notification-banner">
-      <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="planning-group-notice-title">Group {{ "Membership" |
-          pluralise(parentGroup | length) }}</h2>
-      </div>
-      <div class="govuk-notification-banner__content">
-        <ul class="govuk-list govuk-list--bullet">
-          {% for group in parentGroup %}
-          <li><a class="govuk-link" href="/organisations/{{ group.organisation }}">{{ group.name }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-    {% endif %}
     <form method="get" class="app-dashboard-filters govuk-!-margin-bottom-6" data-dashboard-filters>
       {% set filterOptionsHtml %}
       <div class="app-dashboard-filters__content">
@@ -245,6 +214,7 @@
         { value: "prospective", text: "Can provide", checked: "prospective" in (filters.requirement or []) }
         ]
         }) }}
+        <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-0 govuk-!-text-align-centre"><a class="govuk-link" href="?" data-clear-filters>Clear filters</a></p>
       </div>
       {% endset %}
       {{ mojFilter({
@@ -255,6 +225,23 @@
       }
       }) }}
     </form>
+    {% for membership in [
+      { title: "Membership", organisations: planningGroupMembers },
+      { title: "Group membership", organisations: parentGroup }
+    ] %}
+      {% if membership.organisations | length %}
+      <details class="app-dashboard-membership govuk-!-margin-bottom-6">
+        <summary class="app-dashboard-filters__toggle">{{ membership.title }}</summary>
+        <div class="govuk-!-padding-4">
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+            {% for member in membership.organisations %}
+              <li><a class="govuk-link" href="/organisations/{{ member.organisation }}">{{ member.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </details>
+      {% endif %}
+    {% endfor %}
   </div>
   <div class="govuk-grid-column-two-thirds">
     {% set results = filteredDatasets or datasets %}
@@ -262,8 +249,22 @@
     {% if isODPMember %}
     {% set shownDatasets = shownDatasets + (results.expected | length) %}
     {% endif %}
-    <p class="govuk-body" data-testid="dataset-results-count">Showing <strong>{{ shownDatasets }}</strong> of {{
+    <p class="govuk-body" data-testid="dataset-results-count">Showing {{ shownDatasets }} of {{
       resultTotal if resultTotal is defined else shownDatasets }} datasets</p>
+    {% if selectedFilters | length %}
+    <div class="app-selected-filters" role="region" aria-label="Selected filters">
+      {% for group, items in selectedFilters | groupby("group") %}
+      <div class="app-selected-filters__group">
+        <strong class="app-selected-filters__label">{{ group }}</strong>
+        <ul class="govuk-list govuk-!-margin-bottom-0" aria-label="{{ group }} filters">
+          {% for filter in items %}
+          <li><a class="govuk-link govuk-link--no-visited-state" href="{{ filter.href }}"><span><span class="govuk-visually-hidden">Remove filter: </span>{{ filter.text }}</span><span class="app-selected-filters__remove" aria-hidden="true">×</span></a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
     {% if shownDatasets == 0 %}
     <p class="govuk-body">No datasets match your filters.</p>
     {% endif %}

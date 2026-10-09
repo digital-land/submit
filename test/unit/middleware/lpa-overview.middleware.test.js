@@ -26,6 +26,28 @@ it.each([false, true])('lists distinct collections for visible datasets (ODP mem
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
 
 describe('dashboard query filters', () => {
+  it('removes only the selected value from filter links and clears the last selection', async () => {
+    getDataSubjectMap.mockResolvedValue({})
+    const req = {
+      query: { status: ['live', 'error-accessing'], requirement: 'statutory' },
+      templateParams: { datasets: {}, isODPMember: false }
+    }
+    const next = vi.fn()
+    await prepareCollectionFilters(req, {}, next)
+    expect(next).toHaveBeenCalledWith()
+    expect(req.templateParams.selectedFilters).toEqual([
+      { group: 'Status', text: 'Live', href: '?status=error-accessing&requirement=statutory' },
+      { group: 'Status', text: 'Error accessing URL', href: '?status=live&requirement=statutory' },
+      { group: 'Requirement', text: 'Must provide', href: '?status=live&status=error-accessing' }
+    ])
+    req.query = { status: 'live' }
+    await prepareCollectionFilters(req, {}, next)
+    expect(req.templateParams.selectedFilters).toEqual([{ group: 'Status', text: 'Live', href: '?' }])
+    req.query = {}
+    await prepareCollectionFilters(req, {}, next)
+    expect(req.templateParams.selectedFilters).toEqual([])
+  })
+
   const datasets = {
     statutory: [{ dataset: 'tree', status: 'Live' }, { dataset: 'brownfield-land', status: 'Needs improving' }],
     expected: [{ dataset: 'local-plan', status: 'Not submitted' }],

@@ -5,6 +5,7 @@ export default function initDashboardFilters (root = document) {
     const content = panel.querySelector('.moj-filter__content')
     const options = content.querySelector('.moj-filter__options')
     options.append(options.querySelector('.govuk-button'))
+    options.append(options.querySelector('[data-clear-filters]').parentElement)
     const button = root.createElement('button')
     button.type = 'button'
     button.className = 'app-dashboard-filters__toggle'

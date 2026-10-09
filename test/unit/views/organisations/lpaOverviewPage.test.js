@@ -42,6 +42,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   delete params.filters
   delete params.filteredDatasets
   delete params.resultTotal
+  delete params.selectedFilters
   console.debug(`mocked datasets: statutory = ${params.datasets.statutory?.length ?? 'none'}, expected = ${params.datasets.expected?.length ?? 'none'}, prospective = ${params.datasets.prospective?.length ?? 'none'}`)
 
   const html = nunjucks.render('organisations/overview.html', params)
@@ -65,7 +66,9 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
     initDashboardFilters(document)
     expect(document.querySelector('.moj-filter__content').hidden).toBe(false)
     expect(document.querySelector('.app-dashboard-filters__toggle').getAttribute('aria-expanded')).toBe('true')
-    expect(document.querySelector('.moj-filter__options').lastElementChild.textContent.trim()).toBe('Apply filters')
+    const clearFilters = document.querySelector('.moj-filter__options').lastElementChild
+    expect(clearFilters.textContent.trim()).toBe('Clear filters')
+    expect(clearFilters.previousElementSibling.textContent.trim()).toBe('Apply filters')
   })
 
   it.each([true, false])('sets the initial filter state for mobile: %s', mobile => {
@@ -104,7 +107,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
 
     initDashboardFilters(document)
     initDashboardFilters(document)
-    const buttons = document.querySelectorAll('.app-dashboard-filters__toggle')
+    const buttons = document.querySelectorAll('button.app-dashboard-filters__toggle')
     expect(buttons).toHaveLength(1)
     const button = buttons[0]
     expect(button.closest('.moj-filter__header')).not.toBeNull()
@@ -129,6 +132,25 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
   })
 
   const statsBoxes = document.querySelector('.dataset-status').children
+  it('shows removable selections and collapsed membership beneath the filters', () => {
+    const document = new jsdom.JSDOM(nunjucks.render('organisations/overview.html', {
+      ...params,
+      selectedFilters: [{ group: 'Status', text: 'Live', href: '?requirement=statutory' }],
+      parentGroup: [{ name: 'Planning group', organisation: 'group:test', entity: 1 }],
+      planningGroupMembers: []
+    })).window.document
+    const form = document.querySelector('[data-dashboard-filters]')
+    expect(form.querySelector('[data-clear-filters]').getAttribute('href')).toBe('?')
+    const membership = form.nextElementSibling
+    expect(membership.tagName).toBe('DETAILS')
+    expect(membership.open).toBe(false)
+    expect(membership.textContent).toContain('Planning group')
+    const count = document.querySelector('[data-testid="dataset-results-count"]')
+    expect(count.querySelector('strong')).toBeNull()
+    const selected = count.nextElementSibling.querySelector('a')
+    expect(selected.textContent).toContain('Remove filter: Live')
+    expect(selected.getAttribute('href')).toBe('?requirement=statutory')
+  })
   it('Datasets provided gives the correct value', () => {
     expect(statsBoxes[0].textContent).toContain(`${params.datasetsWithEndpoints}/${params.totalDatasets}`)
     expect(statsBoxes[0].textContent).toContain('authoritative dataset')
@@ -221,7 +243,7 @@ describe(`LPA Overview Page (seed: ${seed})`, () => {
         throw new Error(`Unknown dataset status: ${dataset.status}`)
       }
 
-      const expectedStatus = datasetStatusEnum[dataset.status]
+      const expectedStatus = dataset.status === 'Not submitted' ? 'Not provided' : datasetStatusEnum[dataset.status]
 
       const statusIndicator = datasetCard.querySelector('.govuk-task-list__status')
       expect(statusIndicator.textContent.trim()).toContain(expectedStatus)

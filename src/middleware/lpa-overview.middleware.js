@@ -473,6 +473,17 @@ export async function prepareCollectionFilters (req, res, next) {
     }
     const collectionDatasets = new Set(filters.collection.flatMap(value => subjects[value].dataSets.map(dataset => dataset.value)))
     req.templateParams.filters = filters
+    const labels = {
+      status: { live: 'Live', 'needs-improving': 'Needs improving', 'error-accessing': 'Error accessing URL', 'not-provided': 'Not provided' },
+      collection: Object.fromEntries(req.templateParams.collections.map(item => [item.value, item.text])),
+      requirement: { statutory: 'Must provide', expected: 'Expected to provide', prospective: 'Can provide' }
+    }
+    const selections = Object.entries(filters).flatMap(([name, values]) => values.map(value => [name, value]))
+    req.templateParams.selectedFilters = selections.map(([name, value]) => ({
+      group: _.upperFirst(name),
+      text: labels[name][value],
+      href: `?${new URLSearchParams(selections.filter(([key, item]) => key !== name || item !== value))}`
+    }))
     req.templateParams.resultTotal = visibleDatasets.size
     req.templateParams.filteredDatasets = Object.fromEntries(['statutory', 'expected', 'prospective'].map(reason => [reason,
       (datasets[reason] ?? []).filter(dataset =>

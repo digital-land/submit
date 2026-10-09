@@ -164,6 +164,7 @@ export const OrgOverviewPage = v.strictObject({
   })),
   filteredDatasets: v.optional(OverviewDatasets),
   resultTotal: v.optional(Integer),
+  selectedFilters: v.optional(v.array(v.strictObject({ group: NonEmptyString, text: NonEmptyString, href: NonEmptyString }))),
   organisation: OrgField,
   datasets: OverviewDatasets,
   totalDatasets: Integer,
