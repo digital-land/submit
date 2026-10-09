@@ -1,0 +1,137 @@
+.app-dashboard-filters .moj-filter__options > .govuk-button {
+  width: 100%;
+}
+
+.app-dashboard-filters--enhanced .moj-filter__options > .govuk-button {
+  margin-top: govuk-spacing(4);
+  margin-bottom: 0;
+}
+
+.app-dashboard-filters .moj-filter__header {
+  background-color: govuk-colour("blue");
+
+  .govuk-heading-m {
+    color: govuk-colour("white");
+  }
+}
+
+.app-dashboard-membership {
+  border: 1px solid $govuk-border-colour;
+
+  > summary {
+    list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+  }
+}
+
+.app-selected-filters {
+  margin-bottom: govuk-spacing(6);
+  padding-bottom: govuk-spacing(4);
+  border-bottom: 1px solid $govuk-border-colour;
+
+  &__group {
+    display: grid;
+    gap: govuk-spacing(2);
+
+    @include govuk-media-query($from: tablet) {
+      grid-template-columns: 7rem minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  &__label {
+    @include govuk-font(16, $weight: bold);
+    padding-top: govuk-spacing(1);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 0;
+    gap: govuk-spacing(1);
+  }
+
+  &__group + &__group {
+    margin-top: govuk-spacing(3);
+  }
+
+  li { margin-bottom: 0; }
+
+  a {
+    @include govuk-font(16);
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: govuk-spacing(1);
+    padding: govuk-spacing(1) govuk-spacing(2);
+    border: 1px solid $govuk-border-colour;
+    border-radius: 4px;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      border-color: $govuk-link-colour;
+
+      > span:first-child {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__remove {
+    color: govuk-colour("red");
+    font: inherit;
+    flex-shrink: 0;
+  }
+}
+
+.app-dashboard-filters--enhanced,
+.app-dashboard-membership {
+  .moj-filter__header { padding: 0; }
+  .moj-filter__header-title { width: 100%; }
+
+  .app-dashboard-filters__toggle {
+    @include govuk-font(24, $weight: bold);
+    cursor: pointer;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: govuk-spacing(2) govuk-spacing(4);
+    border: 0;
+    background: govuk-colour("blue");
+    color: govuk-colour("white");
+    text-align: left;
+
+    &::after {
+      content: "";
+      display: inline-block;
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      margin: 0 0 3px govuk-spacing(3);
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    &[aria-expanded="true"]::after {
+      transform: rotate(225deg);
+      margin-bottom: -1px;
+    }
+
+    &:focus-visible {
+      outline: 3px solid $govuk-focus-colour;
+      background: $govuk-focus-colour;
+      color: $govuk-focus-text-colour;
+    }
+  }
+
+}
+
+.app-dashboard-membership[open] > summary::after {
+  transform: rotate(225deg);
+  margin-bottom: -1px;
+}

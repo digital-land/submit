@@ -3,6 +3,9 @@
 {% from "components/deadlineNotice.html" import deadlineNotice %}
 {% from "components/deadlineNoticeContent.html" import noticeHeading, noticeCardHint %}
 
+{%- from "moj/components/filter/macro.njk" import mojFilter -%}
+{%- from "govuk/components/checkboxes/macro.njk" import govukCheckboxes -%}
+
 {% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
 {% set pageName = organisation.name + " overview" %}
 {% set serviceType = 'Manage' %}
@@ -50,7 +53,7 @@
 
   <div class="govuk-task-list__status">
     {{govukTag({
-    text: dataset.status,
+    text: "Not provided" if dataset.status == "Not submitted" else dataset.status,
     classes: dataset.status | statusToTagClass
     })}}
   </div>
@@ -137,75 +140,171 @@
 </div>
 
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+  <div class="govuk-grid-column-one-third">
+    <form method="get" class="app-dashboard-filters govuk-!-margin-bottom-6" data-dashboard-filters>
+      {% set filterOptionsHtml %}
+      <div class="app-dashboard-filters__content">
 
-  {% if datasets.statutory.length > 0 %}
+        {{ govukCheckboxes({
+        idPrefix: "status",
+        name: "status",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+        legend: {
+        text: "Status",
+        classes: "govuk-fieldset__legend--m"
+        }
+        },
+        items: [
+        {
+        value: "live",
+        text: "Live",
+        checked: "live" in (filters.status or [])
+        },
+        {
+        value: "needs-improving",
+        text: "Needs improving",
+        checked: "needs-improving" in (filters.status or [])
+        },
+        {
+        value: "error-accessing",
+        text: "Error accessing URL",
+        checked: "error-accessing" in (filters.status or [])
+        },
+        {
+        value: "not-provided",
+        text: "Not provided",
+        checked: "not-provided" in (filters.status or [])
+        }
+        ]
+        }) }}
+        {% set collectionItems = [] %}
+        {% for collection in collections %}
+        {% set collectionItems = (collectionItems.push({
+        value: collection.value,
+        text: collection.text,
+        checked: collection.value in (filters.collection or [])
+        }), collectionItems) %}
+        {% endfor %}
+        {{ govukCheckboxes({
+        idPrefix: "collection",
+        name: "collection",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+        legend: {
+        text: "Collection",
+        classes: "govuk-fieldset__legend--m"
+        }
+        },
+        items: collectionItems
+        }) }}
+        {{ govukCheckboxes({
+        idPrefix: "requirement",
+        name: "requirement",
+        classes: "govuk-checkboxes--small",
+        fieldset: {
+        legend: {
+        text: "Requirement",
+        classes: "govuk-fieldset__legend--m"
+        }
+        },
+        items: [
+        { value: "statutory", text: "Must provide", checked: "statutory" in (filters.requirement or []) },
+        { value: "expected", text: "Expected to provide", checked: "expected" in (filters.requirement or []) },
+        { value: "prospective", text: "Can provide", checked: "prospective" in (filters.requirement or []) }
+        ]
+        }) }}
+        <p class="govuk-body govuk-!-margin-top-3 govuk-!-margin-bottom-0 govuk-!-text-align-centre"><a class="govuk-link" href="?" data-clear-filters>Clear filters</a></p>
+      </div>
+      {% endset %}
+      {{ mojFilter({
+      heading: { text: "Filter" },
+      optionsHtml: filterOptionsHtml,
+      submit: {
+      attributes: { "data-test-id": "submit-button" }
+      }
+      }) }}
+    </form>
+    {% for membership in [
+      { title: "Membership", organisations: planningGroupMembers },
+      { title: "Group membership", organisations: parentGroup }
+    ] %}
+      {% if membership.organisations | length %}
+      <details class="app-dashboard-membership govuk-!-margin-bottom-6">
+        <summary class="app-dashboard-filters__toggle">{{ membership.title }}</summary>
+        <div class="govuk-!-padding-4">
+          <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-0">
+            {% for member in membership.organisations %}
+              <li><a class="govuk-link" href="/organisations/{{ member.organisation }}">{{ member.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </details>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="govuk-grid-column-two-thirds">
+    {% set results = filteredDatasets or datasets %}
+    {% set shownDatasets = (results.statutory | length) + (results.prospective | length) %}
+    {% if isODPMember %}
+    {% set shownDatasets = shownDatasets + (results.expected | length) %}
+    {% endif %}
+    <p class="govuk-body" data-testid="dataset-results-count">Showing {{ shownDatasets }} of {{
+      resultTotal if resultTotal is defined else shownDatasets }} datasets</p>
+    {% if selectedFilters | length %}
+    <div class="app-selected-filters" role="region" aria-label="Selected filters">
+      {% for group, items in selectedFilters | groupby("group") %}
+      <div class="app-selected-filters__group">
+        <strong class="app-selected-filters__label">{{ group }}</strong>
+        <ul class="govuk-list govuk-!-margin-bottom-0" aria-label="{{ group }} filters">
+          {% for filter in items %}
+          <li><a class="govuk-link govuk-link--no-visited-state" href="{{ filter.href }}"><span><span class="govuk-visually-hidden">Remove filter: </span>{{ filter.text }}</span><span class="app-selected-filters__remove" aria-hidden="true">×</span></a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if shownDatasets == 0 %}
+    <p class="govuk-body">No datasets match your filters.</p>
+    {% endif %}
+
+  {% if results.statutory.length > 0 %}
     <div data-testid="datasetsMandatory">
       <h2 class="govuk-heading-m">Datasets {{ organisation.name }} must provide</h2>
       <p class="org-membership-info">You are required to make these datasets available under legislation. Using the Planning Data Platform to do this can help you to create and maintain authoritative, trustworthy data.</p>
       <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="statutory">
-        {% for dataset in datasets.statutory %}
+        {% for dataset in results.statutory %}
           {{ datasetItem(dataset) }}
         {% endfor %}
       </ul>
     </div>
   {% endif %}
 
-  {% if datasets.expected.length > 0 and isODPMember %}
+  {% if results.expected.length > 0 and isODPMember %}
     <div data-testid="datasetsExpected">
       <h2 class="govuk-heading-m">Datasets {{ organisation.name}} are expected to provide</h2>
       <p class="org-membership-info">We expect you to provide these datasets as a condition of your funding with the Open Digital Planning community.</p>
       <ul class="govuk-task-list govuk-!-margin-bottom-8" data-reason="expected">
-        {% for dataset in datasets.expected %}
+        {% for dataset in results.expected %}
           {{ datasetItem(dataset) }}
         {% endfor %}
       </ul>
     </div>
   {% endif %}
 
-  {% if datasets.prospective.length > 0 %}
+  {% if results.prospective.length > 0 %}
     <div data-testid="datasetsProspective">
       <h2 class="govuk-heading-m">Datasets {{ organisation.name}} can provide</h2>
       <p class="org-membership-info">Your organisation is the authoritative source of this data. Providing this data to the platform helps ensure it is accurate and up to date.</p>
       <ul class="govuk-task-list" data-reason="prospective">
-        {% for dataset in datasets.prospective %}
+        {% for dataset in results.prospective %}
           {{ datasetItem(dataset) }}
         {% endfor %}
       </ul>
     </div>
   {% endif %}
 
-  </div>
-
-  <div class="govuk-grid-column-one-third">
-    {% if planningGroupMembers %}
-    <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-members-title" data-module="govuk-notification-banner">
-      <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="planning-group-members-title">Membership</h2>
-      </div>
-      <div class="govuk-notification-banner__content">
-        <ul class="govuk-list govuk-list--bullet">
-          {% for member in planningGroupMembers %}
-            <li><a class="govuk-link" href="/organisations/{{ member.organisation }}">{{ member.name }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-    {% endif %}
-    {% if parentGroup %}
-    <div class="govuk-notification-banner" role="region" aria-labelledby="planning-group-notice-title" data-module="govuk-notification-banner">
-      <div class="govuk-notification-banner__header">
-        <h2 class="govuk-notification-banner__title" id="planning-group-notice-title">Group {{ "Membership" | pluralise(parentGroup | length) }}</h2>
-      </div>
-      <div class="govuk-notification-banner__content">
-        <ul class="govuk-list govuk-list--bullet">
-          {% for group in parentGroup %}
-            <li><a class="govuk-link" href="/organisations/{{ group.organisation }}">{{ group.name }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-    {% endif %}
   </div>
 </div>
 

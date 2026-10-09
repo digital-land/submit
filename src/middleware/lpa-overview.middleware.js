@@ -6,7 +6,7 @@
 
 import { expectationFetcher, expectations, fetchEndpointSummary, fetchOrgInfo, logPageError, noop, setAvailableDatasets, fetchTasksFromPlatformApi, fetchLocalPlanningGroups } from './common.middleware.js'
 import { fetchMany, renderTemplate, parallel } from './middleware.builders.js'
-import { getDeadlineHistory, requiredDatasets } from '../utils/utils.js'
+import { getDeadlineHistory, requiredDatasets, getDataSubjects } from '../utils/utils.js'
 import _ from 'lodash'
 import logger from '../utils/logger.js'
 import { isFeatureEnabled } from '../utils/features.js'
@@ -449,6 +449,55 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
   expectation: expectations.entitiesOutOfBounds,
   result: 'expectationOutOfBounds'
 })
+
+export async function prepareCollectionFilters (req, res, next) {
+  try {
+    const subjects = await getDataSubjects()
+    const { datasets, isODPMember } = req.templateParams
+    const visibleDatasets = new Set([
+      ...(datasets.statutory ?? []),
+      ...(isODPMember ? datasets.expected ?? [] : []),
+      ...(datasets.prospective ?? [])
+    ].map(dataset => dataset.dataset))
+    req.templateParams.collections = Object.entries(subjects)
+      .filter(([, subject]) => subject.dataSets.some(dataset => visibleDatasets.has(dataset.value)))
+      .map(([value]) => ({ value, text: _.upperFirst(value.replace(/-/g, ' ')) }))
+      .sort((a, b) => a.text.localeCompare(b.text))
+    const statuses = { live: 'Live', 'needs-improving': 'Needs improving', 'error-accessing': 'Error', 'not-provided': 'Not submitted' }
+    const selected = (name, allowed) => [...new Set([].concat(req.query?.[name] ?? []))]
+      .filter(value => typeof value === 'string' && allowed.includes(value))
+    const filters = {
+      status: selected('status', Object.keys(statuses)),
+      collection: selected('collection', req.templateParams.collections.map(item => item.value)),
+      requirement: selected('requirement', ['statutory', 'expected', 'prospective'])
+    }
+    const collectionDatasets = new Set(filters.collection.flatMap(value => subjects[value].dataSets.map(dataset => dataset.value)))
+    req.templateParams.filters = filters
+    const labels = {
+      status: { live: 'Live', 'needs-improving': 'Needs improving', 'error-accessing': 'Error accessing URL', 'not-provided': 'Not provided' },
+      collection: Object.fromEntries(req.templateParams.collections.map(item => [item.value, item.text])),
+      requirement: { statutory: 'Must provide', expected: 'Expected to provide', prospective: 'Can provide' }
+    }
+    const selections = Object.entries(filters).flatMap(([name, values]) => values.map(value => [name, value]))
+    req.templateParams.selectedFilters = selections.map(([name, value]) => ({
+      group: _.upperFirst(name),
+      text: labels[name][value],
+      href: `?${new URLSearchParams(selections.filter(([key, item]) => key !== name || item !== value))}`
+    }))
+    req.templateParams.resultTotal = visibleDatasets.size
+    req.templateParams.filteredDatasets = Object.fromEntries(['statutory', 'expected', 'prospective'].map(reason => [reason,
+      (datasets[reason] ?? []).filter(dataset =>
+        (reason !== 'expected' || isODPMember) &&
+        (!filters.requirement.length || filters.requirement.includes(reason)) &&
+        (!filters.status.length || filters.status.some(status => statuses[status] === dataset.status)) &&
+        (!filters.collection.length || collectionDatasets.has(dataset.dataset))
+      )
+    ]))
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
 /**
  * Organisation (LPA) overview page middleware chain.
  */
@@ -472,6 +521,7 @@ export default [
   // datasetSubmissionDeadlineCheck,  // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   // addNoticesToDatasets,            // commented out as the logic is currently incorrect (https://github.com/digital-land/submit/issues/824)
   prepareOverviewTemplateParams,
+  prepareCollectionFilters,
   getOverview,
   logPageError
 ]
