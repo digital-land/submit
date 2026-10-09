@@ -11,6 +11,7 @@ import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { isFeatureEnabled } from '../utils/features.js'
 import config from '../../config/index.js'
+import { datasetTaskCount, hasEndpointError } from '../utils/datasetTasks.js'
 
 const fetchColumnSummary = fetchMany({
   query: ({ params }) => `
@@ -186,20 +187,18 @@ export const fetchEntityCount = fetchOne({
  * @param {Function} next - Express next middleware function
  */
 export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
-  const { orgInfo, entityCount, sources, dataset, tasks, notice, authority, alternateSources, uniqueDatasetFields, expectationOutOfBounds = [], provisions = [], parentGroup } = req
+  const { orgInfo, entityCount, sources, dataset, notice, authority, alternateSources, uniqueDatasetFields, provisions = [], parentGroup } = req
 
-  let endpointErrorIssues = 0
   const endpoints = sources
     .sort((a, b) => new Date(b.endpoint_entry_date) - new Date(a.endpoint_entry_date))
     .map((source, index) => {
       let error
 
-      if (!source.status || source.status < 200 || source.status >= 300) {
+      if (hasEndpointError(source)) {
         error = {
           code: source.status,
           exception: source.exception
         }
-        endpointErrorIssues += 1
       }
 
       return {
@@ -214,15 +213,7 @@ export const prepareDatasetOverviewTemplateParams = (req, res, next) => {
       }
     })
 
-  // Hard code task count for 'some' authority
-  let taskCount = 0
-  if (authority === 'some') {
-    taskCount = 1
-  } else {
-    taskCount = (tasks?.count ?? 0) +
-    endpointErrorIssues +
-    (expectationOutOfBounds.length > 0 ? 1 : 0)
-  }
+  const taskCount = datasetTaskCount(req)
 
   const showMap = !!((dataset.typology && dataset.typology.toLowerCase() === 'geography'))
   // Build the fields query parameter and download url

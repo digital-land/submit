@@ -8,6 +8,7 @@ import {
   createPaginationTemplateParams,
   show404IfPageNumberNotInRange,
   fetchResources,
+  fetchSources,
   processRelevantIssuesMiddlewares,
   processEntitiesMiddlewares,
   processSpecificationMiddlewares,
@@ -18,8 +19,10 @@ import {
   filterOutEntitiesWithoutIssues,
   getIssueSpecification
 } from './common.middleware.js'
-import { renderTemplate } from './middleware.builders.js'
+import { onlyIf, renderTemplate } from './middleware.builders.js'
+import { scopeTaskResource, issueMatchesEntry } from './taskResource.middleware.js'
 import * as v from 'valibot'
+import nunjucks from 'nunjucks'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
@@ -103,7 +106,7 @@ export function prepareEntity (req, res, next) {
   }
 
   const entityData = issueEntities[pageNumber - 1]
-  const entityIssues = issues.filter(issue => issue.entity === entityData.entity)
+  const entityIssues = issues.filter(issue => issueMatchesEntry(issue, entityData))
 
   /** @type {Map<string, SummaryItem>} */
   const specFields = new Map()
@@ -115,13 +118,14 @@ export function prepareEntity (req, res, next) {
   entityIssues.forEach(issue => {
     const field = specFields.get(issue.field)
     if (field) {
-      const message = issue.message || issue.type
-      field.value.html = issueErrorMessageHtml(message, null) + field.value.html
+      const message = issue.message || issue.issue_type
+      const value = issue.value === undefined ? field.value.html : nunjucks.lib.escape(String(issue.value ?? ''))
+      field.value.html = issueErrorMessageHtml(message, null) + value
       field.classes += 'dl-summary-card-list__row--error govuk-form-group--error'
     } else {
       const errorMessage = issue.message || issueType
       // TODO: pull the html out of here and into the template
-      const valueHtml = issueErrorMessageHtml(errorMessage, issue.value)
+      const valueHtml = issueErrorMessageHtml(errorMessage, nunjucks.lib.escape(String(issue.value ?? '')))
       const classes = 'dl-summary-card-list__row--error govuk-form-group--error'
       const newField = getIssueField(issue.field, valueHtml, classes)
       newField.value.originalValue = issue.value
@@ -186,6 +190,8 @@ export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchResources,
+  onlyIf(req => !!req.params.endpoint, fetchSources),
+  scopeTaskResource,
   ...processEntitiesMiddlewares,
   ...processRelevantIssuesMiddlewares,
   ...processSpecificationMiddlewares,
