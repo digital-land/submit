@@ -1,8 +1,9 @@
 import * as v from 'valibot'
-import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
+import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, fetchSources, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
-import { fetchMany, fetchOne, FetchOptions, renderTemplate } from './middleware.builders.js'
-import { issueErrorMessageHtml } from '../utils/utils.js'
+import { fetchMany, fetchOne, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
+import { scopeTaskResource } from './taskResource.middleware.js'
+import { entryIssueGroups, issueErrorMessageHtml } from '../utils/utils.js'
 
 export const IssueDetailsQueryParams = v.object({
   lpa: v.string(),
@@ -53,6 +54,8 @@ const fetchIssueCount = fetchOne({
       WHERE resource = '${req.resources[0].resource}'
       AND i.issue_type = '${params.issue_type}'
       AND field = '${params.issue_field}'
+      AND i.dataset = '${params.dataset}'
+      AND (entity = '' OR entity IS NULL OR i.issue_type IN ('${entryIssueGroups.map(issue => issue.type).join("', '")}'))
     `
   },
   result: 'issueCount'
@@ -141,6 +144,8 @@ export default [
   fetchOrgInfo,
   fetchDatasetInfo,
   fetchResources,
+  onlyIf(req => !!req.params.endpoint, fetchSources),
+  scopeTaskResource,
   fetchResourceMetaData,
   ...processSpecificationMiddlewares,
   getIssueSpecification,

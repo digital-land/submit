@@ -39,6 +39,32 @@ describe('datasetTaskList.middleware.js', () => {
   })
 
   describe('prepareTasks', () => {
+    it('groups matching issues by endpoint, newest first, with only affected endpoints shown', () => {
+      const req = {
+        parsedParams: { lpa: 'local-authority:TST', dataset: 'tree' },
+        sources: [
+          { endpoint: 'older', endpoint_url: 'https://example.com/older.csv', resource: 'r1', status: 200, endpoint_entry_date: '2025-01-01' },
+          { endpoint: 'healthy', endpoint_url: 'https://example.com/healthy.csv', resource: 'r2', status: 200, endpoint_entry_date: '2026-01-01' },
+          { endpoint: 'newer', endpoint_url: 'https://example.com/newer.csv', resource: 'r3', status: 200, endpoint_entry_date: '2026-02-01' },
+          { endpoint: 'broken', endpoint_url: 'https://example.com/broken.csv', status: 403, endpoint_entry_date: '2026-03-01' }
+        ],
+        resources: [{ resource: 'r1', entry_count: 10 }, { resource: 'r3', entry_count: 20 }],
+        tasks: {
+          tasks: [
+            { endpoint: 'older', resource: 'r1', details: { issue_type: 'missing value', field: 'name', count: 1 } },
+            { endpoint: 'newer', resource: 'r3', details: { issue_type: 'missing value', field: 'name', count: 2 } },
+            { endpoint: 'older', resource: 'superseded', details: { issue_type: 'missing value', field: 'name', count: 100 } }
+          ]
+        }
+      }
+      prepareTasks(req, {}, vi.fn())
+      expect(req.taskList).toHaveLength(3)
+      expect(req.endpointTaskLists.map(group => group.endpoint)).toEqual(['broken', 'newer', 'older'])
+      expect(req.endpointTaskLists.map(group => group.endpointNumber)).toEqual([4, 3, 1])
+      expect(req.endpointTaskLists[1].taskList[0].href).toContain('/endpoint/newer/resource/r3/missing%20value/name')
+      expect(req.endpointTaskLists[0].taskList[0].href).toContain('/endpoint-error/broken')
+      expect(performanceDbApi.getTaskMessage).toHaveBeenCalledWith(expect.objectContaining({ rowCount: 20, num_issues: 2 }))
+    })
     it.each(['error', 'critical'])('prepares the task list with %s issues', async (severity) => {
       const req = {
         parsedParams: {

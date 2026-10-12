@@ -85,3 +85,13 @@ implicit dependencies — `processRelevantIssuesMiddlewares` expects entities to
 already — so keep their relative order when composing a new chain. The chains in
 [Review data quality](https://digital-land.github.io/submit/tutorial-review-data-quality.html) are
 the worked examples.
+
+## Endpoint task views
+
+`datasetTasks.js` shares task selection and totals across dataset tabs. Assign
+endpoint numbers before hiding healthy endpoints to retain gaps in the numbering.
+`taskResource.middleware.js` validates endpoint/resource ownership against active
+sources (stale links return 404) and reads processed resource facts rather than
+combined entities. Preserve both IDs through navigation and entry numbers when
+matching issues. `test/unit/endpointTaskJourney.test.js` covers the real routes
+and templates with stubbed external services.

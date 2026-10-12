@@ -18,6 +18,8 @@ import config from '../../config/index.js'
 import { getOrganisationList } from '../utils/redisLoader.js'
 import { withAssociatedEntityDiagram } from '../utils/associatedEntityDiagrams.js'
 import { readFileSync } from 'node:fs'
+import { taskPath } from '../utils/datasetTasks.js'
+import { fetchResourceEntities, fetchResourceIssues } from './taskResource.middleware.js'
 
 const planFallback = JSON.parse(readFileSync(new URL('../../config/plan-fallback.json', import.meta.url), 'utf8'))
 const PLAN_FALLBACK_DATASETS_JSON = JSON.stringify(planFallback.datasets)
@@ -565,6 +567,7 @@ export const processAuthoritativeMiddlewares = [
 // Entities
 
 export const fetchEntities = async (req, res, next) => {
+  if (req.taskSource) return fetchResourceEntities(req, res, next)
   try {
     let entities = []
     const limit = 1000
@@ -670,6 +673,25 @@ export const processEntitiesMiddlewares = [
 
 export const filterOutEntitiesWithoutIssues = (req, res, next) => {
   const { entities, issues } = req
+  if (req.taskSource) {
+    const issueEntries = new Set()
+    const issueEntities = new Set()
+    const issuesWithoutEntryNumber = new Set()
+    for (const issue of issues) {
+      const entity = String(issue.entity)
+      issueEntities.add(entity)
+      if (issue.entry_number == null) issuesWithoutEntryNumber.add(entity)
+      else issueEntries.add(JSON.stringify([entity, String(issue.entry_number)]))
+    }
+    req.issueEntities = entities.filter(entry => {
+      const entity = String(entry.entity)
+      // Missing entry numbers retain the entity-only matching used by issueMatchesEntry.
+      if (entry['entry-number'] === undefined) return issueEntities.has(entity)
+      return issuesWithoutEntryNumber.has(entity) ||
+        issueEntries.has(JSON.stringify([entity, String(entry['entry-number'])]))
+    })
+    return next()
+  }
 
   const entitiesWithIssues = new Set()
   for (const issue of issues) {
@@ -843,7 +865,7 @@ export const fetchEntryIssues = fetchMany({
     const issueTypeClause = params.issue_type ? `AND i.issue_type = '${params.issue_type}'` : ''
     const issueFieldClause = params.issue_field ? `AND field = '${params.issue_field}'` : ''
     return `
-      select i.issue_type, field, entity, message, value, line_number
+      select i.issue_type, field, entity, message, value, line_number, entry_number
       from issue i
       WHERE resource = '${req.resources[0].resource}'
       ${issueTypeClause}
@@ -925,7 +947,7 @@ export const fetchEntryIssueCounts = fetchMany({
  */
 export const processRelevantIssuesMiddlewares =
 [
-  fetchEntityIssuesForFieldAndType,
+  (req, res, next) => req.taskSource ? fetchResourceIssues(req, res, next) : fetchEntityIssuesForFieldAndType(req, res, next),
   // arguably removeIssuesThatHaveBeenFixed should be s step however we have only currently found one organisation,
   // however this step is very time consuming, so in order to progress im commenting it out for now
   // removeIssuesThatHaveBeenFixed,
@@ -949,6 +971,10 @@ export const setDefaultParams = (req, res, next) => {
 }
 
 export const getSetBaseSubPath = (additionalParts = []) => (req, res, next) => {
+  if (req.params.endpoint && req.params.resourceId) {
+    req.baseSubpath = taskPath(req.params) + additionalParts.map(part => `/${encodeURIComponent(part)}`).join('')
+    return next()
+  }
   const params = [
     req.params.lpa,
     req.params.dataset,
@@ -1044,6 +1070,12 @@ export const prepareIssueDetailsTemplateParams = (req, res, next) => {
     pageNumber,
     dataRange,
     issueSpecification
+  }
+
+  if (req.taskSource) {
+    req.templateParams.endpointUrl = req.taskSource.endpoint_url
+    req.templateParams.taskEntryDate = req.taskEntryDate
+    req.templateParams.taskTableUrl = taskPath(req.params)
   }
 
   next()
@@ -1267,7 +1299,7 @@ export const fetchEntityIssueCountsPerformanceDb = fetchMany({
 
 /**
  * Fetches error and critical severity issue tasks from the platform API for the current organisation,
- * then deduplicates by (dataset, issue_type, field) keeping the highest count per group.
+ * then deduplicates within each endpoint and resource, keeping the highest count per group.
  * When `req.params.dataset` is set (e.g. dataset task list page), filters to that
  * dataset and uses a limit of 100. Without a dataset (e.g. LPA overview page),
  * fetches across all datasets with a limit of 500.
@@ -1285,7 +1317,7 @@ export const fetchTasksFromPlatformApi = async (req, res, next) => {
     })
     const deduplicated = Object.values(
       (formattedData.tasks ?? []).reduce((acc, task) => {
-        const key = `${task.dataset}::${task.details?.issue_type}::${task.details?.field}`
+        const key = JSON.stringify([task.dataset, task.endpoint, task.resource, task.details?.issue_type, task.details?.field])
         if (!acc[key] || task.details?.count > acc[key].details?.count) acc[key] = task
         return acc
       }, {})
