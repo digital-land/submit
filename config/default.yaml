@@ -171,7 +171,7 @@ features:
     # this feature includes violated 'out of bounds' expectations
     # as 'tasks' on LPA overview pages etc.
     # https://github.com/digital-land/submit/issues/921
-    enabled: true
+    enabled: false
   provisionBasedDatasets:
     # This feature will load datasets based on provisionReasons
     enabled: true

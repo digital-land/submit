@@ -223,7 +223,7 @@ An unknown flag returns `false`.
 | Flag | Gates | Default |
 |---|---|---|
 | `checkIssueDetailsPage` | per-issue links on check results | on |
-| `expectationOutOfBoundsTask` | out-of-bounds expectations as dashboard tasks | on |
+| `expectationOutOfBoundsTask` | out-of-bounds expectations as dashboard tasks | off |
 | `provisionBasedDatasets` | loading datasets from provision reasons | on |
 | `nonAuthPages` | showing non-authoritative datasets | on |
 

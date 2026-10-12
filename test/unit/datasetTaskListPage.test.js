@@ -10,7 +10,9 @@ const nunjucks = setupNunjucks({})
 const seed = new Date().getTime()
 
 describe(`Dataset Task List Page (seed: ${seed})`, () => {
-  const params = mocker(OrgDatasetTaskList, seed)
+  // This suite exercises the ungrouped dataset tasks. The endpoint journey suite
+  // supplies consistent grouped fixtures instead of independently generated lists.
+  const params = { ...mocker(OrgDatasetTaskList, seed), endpointTaskLists: undefined, datasetTasks: undefined }
   const html = nunjucks.render('organisations/datasetTaskList.html', params)
 
   const dom = new jsdom.JSDOM(html)

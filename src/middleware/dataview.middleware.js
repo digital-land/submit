@@ -1,4 +1,5 @@
 import config from '../../config/index.js'
+import { datasetTaskCount } from '../utils/datasetTasks.js'
 import {
   createPaginationTemplateParams,
   expectationFetcher,
@@ -93,14 +94,13 @@ const fetchOutOfBoundsExpectations = expectationFetcher({
 })
 
 export const prepareTemplateParams = (req, res, next) => {
-  const { orgInfo, dataset, tableParams, pagination, dataRange, tasks, authority, alternateSources, uniqueDatasetFields, provisions, expectationOutOfBounds, sources } = req
+  const { orgInfo, dataset, tableParams, pagination, dataRange, authority, alternateSources, uniqueDatasetFields, provisions, sources } = req
 
   // Match the overview page: 'some' authority uses alternative/pre-populated
   // sources, not the LPA's own endpoints, so it reports no endpoints.
   const endpointCount = authority === 'some' ? 0 : (sources?.length ?? 0)
 
-  const outOfBoundsCount = (expectationOutOfBounds?.length ?? 0) > 0 ? 1 : 0
-  const taskCount = authority !== 'some' ? (tasks?.count ?? 0) + outOfBoundsCount : 1
+  const taskCount = datasetTaskCount(req)
   // Build the fields query parameter and download url
   const fieldsParams = uniqueDatasetFields && uniqueDatasetFields.length > 0
     ? uniqueDatasetFields.map(field => `field=${encodeURIComponent(field)}`).join('&')

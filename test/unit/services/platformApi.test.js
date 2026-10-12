@@ -269,6 +269,25 @@ describe('platformApi.fetchTasks', () => {
     vi.clearAllMocks()
   })
 
+  it('fetches every page while retaining the task filters', async () => {
+    axios.get.mockResolvedValueOnce({ data: { tasks: [{ reference: 'a' }, { reference: 'b' }], count: 3 } })
+    axios.get.mockResolvedValueOnce({ data: { tasks: [{ reference: 'c' }], count: 3 } })
+    const result = await platformApi.fetchTasks({ dataset: 'tree', severity: ['error', 'critical'], limit: 2 })
+    expect(result.formattedData.tasks.map(task => task.reference)).toEqual(['a', 'b', 'c'])
+    const secondPage = new URL(axios.get.mock.calls[1][0])
+    expect(secondPage.searchParams.get('offset')).toBe('2')
+    expect(secondPage.searchParams.get('dataset')).toBe('tree')
+    expect(secondPage.searchParams.getAll('severity')).toEqual(['error', 'critical'])
+  })
+
+  it('stops if a later page is empty even when the API total has changed', async () => {
+    axios.get.mockResolvedValueOnce({ data: { tasks: [{ reference: 'a' }], count: 2 } })
+    axios.get.mockResolvedValueOnce({ data: { tasks: [], count: 2 } })
+    const result = await platformApi.fetchTasks({ limit: 1 })
+    expect(result.formattedData.tasks).toHaveLength(1)
+    expect(axios.get).toHaveBeenCalledTimes(2)
+  })
+
   it('builds the correct URL with dataset filter', async () => {
     axios.get.mockResolvedValueOnce({ data: { tasks: [], count: 0 } })
 
