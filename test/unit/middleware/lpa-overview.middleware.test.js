@@ -1,10 +1,84 @@
 import { describe, it, vi, expect, beforeEach, afterEach } from 'vitest'
-import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareDatasetObjects, prepareOverviewTemplateParams, prepareAuthorityBatch, groupIssuesCountsByDataset } from '../../../src/middleware/lpa-overview.middleware.js'
+import { addNoticesToDatasets, datasetSubmissionDeadlineCheck, getOverview, prepareDatasetObjects, prepareOverviewTemplateParams, prepareAuthorityBatch, groupIssuesCountsByDataset, prepareCollectionFilters } from '../../../src/middleware/lpa-overview.middleware.js'
 import { setupNunjucks } from '../../../src/serverSetup/nunjucks.js'
 import jsdom from 'jsdom'
 import platformApi from '../../../src/services/platformApi.js'
+import { getDataSubjectMap } from '../../../src/utils/datasetSubjectLoader.js'
+
+vi.mock('../../../src/utils/datasetSubjectLoader.js', () => ({ getDataSubjectMap: vi.fn().mockResolvedValue({}) }))
+
+it.each([false, true])('lists distinct collections for visible datasets (ODP member: %s)', async isODPMember => {
+  getDataSubjectMap.mockResolvedValue({
+    'tree-preservation-order': { dataSets: [{ value: 'tree' }, { value: 'tree-preservation-zone' }] },
+    'brownfield-land': { dataSets: [{ value: 'brownfield-land' }] },
+    'local-plan': { dataSets: [{ value: 'local-plan' }] }
+  })
+  const req = { templateParams: { isODPMember, datasets: { statutory: [{ dataset: 'tree' }, { dataset: 'tree-preservation-zone' }], expected: [{ dataset: 'brownfield-land' }] } } }
+  const next = vi.fn()
+  await prepareCollectionFilters(req, {}, next)
+  expect(req.templateParams.collections).toEqual([
+    ...(isODPMember ? [{ value: 'brownfield-land', text: 'Brownfield land' }] : []),
+    { value: 'tree-preservation-order', text: 'Tree preservation order' }
+  ])
+  expect(next).toHaveBeenCalledWith()
+})
 
 const nunjucks = setupNunjucks({ datasetNameMapping: new Map() })
+
+describe('dashboard query filters', () => {
+  it('removes only the selected value from filter links and clears the last selection', async () => {
+    getDataSubjectMap.mockResolvedValue({})
+    const req = {
+      query: { status: ['live', 'error-accessing'], requirement: 'statutory' },
+      templateParams: { datasets: {}, isODPMember: false }
+    }
+    const next = vi.fn()
+    await prepareCollectionFilters(req, {}, next)
+    expect(next).toHaveBeenCalledWith()
+    expect(req.templateParams.selectedFilters).toEqual([
+      { group: 'Status', text: 'Live', href: '?status=error-accessing&requirement=statutory' },
+      { group: 'Status', text: 'Error accessing URL', href: '?status=live&requirement=statutory' },
+      { group: 'Requirement', text: 'Must provide', href: '?status=live&status=error-accessing' }
+    ])
+    req.query = { status: 'live' }
+    await prepareCollectionFilters(req, {}, next)
+    expect(req.templateParams.selectedFilters).toEqual([{ group: 'Status', text: 'Live', href: '?' }])
+    req.query = {}
+    await prepareCollectionFilters(req, {}, next)
+    expect(req.templateParams.selectedFilters).toEqual([])
+  })
+
+  const datasets = {
+    statutory: [{ dataset: 'tree', status: 'Live' }, { dataset: 'brownfield-land', status: 'Needs improving' }],
+    expected: [{ dataset: 'local-plan', status: 'Not submitted' }],
+    prospective: [{ dataset: 'tree-preservation-zone', status: 'Error' }]
+  }
+
+  it.each([
+    [{}, true, ['tree', 'brownfield-land', 'local-plan', 'tree-preservation-zone']],
+    [{ status: 'live' }, true, ['tree']],
+    [{ status: ['live', 'error-accessing'] }, true, ['tree', 'tree-preservation-zone']],
+    [{ collection: 'trees' }, true, ['tree', 'tree-preservation-zone']],
+    [{ collection: ['trees', 'plans'], requirement: ['statutory', 'expected'] }, true, ['tree', 'local-plan']],
+    [{ status: 'needs-improving', collection: 'trees' }, true, []],
+    [{ requirement: 'expected' }, false, []],
+    [{ status: 'not-provided' }, true, ['local-plan']],
+    [{ status: ['invalid', { value: 'live' }], requirement: 'unknown', collection: 'unknown' }, false, ['tree', 'brownfield-land', 'tree-preservation-zone']]
+  ])('filters %j (ODP member: %s)', async (query, isODPMember, expected) => {
+    getDataSubjectMap.mockResolvedValue({
+      trees: { dataSets: [{ value: 'tree' }, { value: 'tree-preservation-zone' }] },
+      plans: { dataSets: [{ value: 'local-plan' }] }
+    })
+    const req = { query, templateParams: { datasets, isODPMember } }
+    const next = vi.fn()
+    await prepareCollectionFilters(req, {}, next)
+    expect(next).toHaveBeenCalledWith()
+    expect(Object.values(req.templateParams.filteredDatasets).flat().map(item => item.dataset)).toEqual(expected)
+    expect(req.templateParams.resultTotal).toBe(isODPMember ? 4 : 3)
+    expect(req.templateParams.datasets).toBe(datasets)
+    expect(req.templateParams.collections.map(item => item.value)).toEqual(isODPMember ? ['plans', 'trees'] : ['trees'])
+  })
+})
 
 vi.mock('../../../src/services/platformApi.js', () => ({
   default: {

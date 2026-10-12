@@ -5,6 +5,7 @@
 
 import DownloadButton from './components/download-button.js'
 import initiateJsHiddenChecks from './js-hidden.js'
+import initDashboardFilters from './components/dashboard-filters.js'
 
 const initDownloadButton = () => {
   return new DownloadButton(window.document)
@@ -13,4 +14,5 @@ const initDownloadButton = () => {
 window.addEventListener('load', () => {
   initiateJsHiddenChecks()
   initDownloadButton()
+  initDashboardFilters()
 })

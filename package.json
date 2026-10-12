@@ -74,6 +74,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.537.0",
+    "@ministryofjustice/frontend": "^11.1.0",
     "@sentry/node": "^10.47.0",
     "@sentry/profiling-node": "^10.47.0",
     "@x-govuk/govuk-prototype-components": "^6.0.0",

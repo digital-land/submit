@@ -27,7 +27,7 @@ test.describe('Planning group', () => {
     await resetWiremock()
   })
 
-  test('An LPA that is a member of a planning group shows the group membership banner on the overview page', async ({ page }) => {
+  test('An LPA shows its planning group when the membership panel is expanded', async ({ page }) => {
     // Stub the local-planning-group entity endpoint to return a group containing local-authority:SLF
     await addWiremockStub({
       priority: 1,
@@ -57,10 +57,12 @@ test.describe('Planning group', () => {
     // Navigate to the LPA overview for SLF
     await page.goto('/organisations/local-authority:SLF')
 
-    // The Group Membership banner should be visible
-    await expect(page.getByText('Group Membership')).toBeVisible()
-
-    // The planning group name should appear as a link
-    await expect(page.getByRole('link', { name: 'South London Joint Planning Group' })).toBeVisible()
+    const membership = page.locator('details').filter({ has: page.locator('summary', { hasText: 'Group membership' }) })
+    const groupLink = membership.getByRole('link', { name: 'South London Joint Planning Group', includeHidden: true })
+    await expect(membership.locator('summary')).toBeVisible()
+    await expect(groupLink).toBeHidden()
+    await membership.locator('summary').click()
+    await expect(groupLink).toBeVisible()
+    await expect(groupLink).toHaveAttribute('href', '/organisations/local-planning-group:south-london-joint')
   })
 })
