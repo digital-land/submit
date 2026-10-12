@@ -3,8 +3,8 @@
 );
 @use "node_modules/@ministryofjustice/frontend/moj/components/filter/filter";
 
-// @use "node_modules/govuk-frontend/dist/govuk/settings/typography-font" as typography;
-// typography.$govuk-include-default-font-face: true;
+@use "node_modules/govuk-frontend/dist/govuk/settings/typography-font" as typography;
+typography.$govuk-include-default-font-face: true;
 
 @use "node_modules/govuk-frontend/dist/govuk/index" as *;
 @import "node_modules/@x-govuk/govuk-prototype-components/src/x-govuk/index";
