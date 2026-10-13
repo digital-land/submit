@@ -241,7 +241,7 @@ describe('StatusController', () => {
       })).resolves.toBe(true)
     })
 
-    it.each(['missing-field', 'missing column'])('does not block critical %s issues', async issueType => {
+    it.each(['missing-field', 'missing column', 'missing reference'])('does not block critical %s issues', async issueType => {
       await expect(shouldShowColumnMapping({
         ...makeRequestData({
           columnFieldLog: [
@@ -256,6 +256,30 @@ describe('StatusController', () => {
           }]
         })
       })).resolves.toBe(true)
+    })
+
+    it.each([
+      { spareColumn: true, otherCriticalIssue: false, expected: true },
+      { spareColumn: false, otherCriticalIssue: false, expected: false },
+      { spareColumn: true, otherCriticalIssue: true, expected: false }
+    ])('checks mapping eligibility for missing references: %j', async ({ spareColumn, otherCriticalIssue, expected }) => {
+      const issueTasks = [{
+        severity: 'critical',
+        responsibility: 'external',
+        'issue-type': 'missing reference'
+      }]
+      if (otherCriticalIssue) {
+        issueTasks.push({ severity: 'critical', responsibility: 'external', 'issue-type': 'invalid geometry' })
+      }
+
+      await expect(shouldShowColumnMapping(makeRequestData({
+        columnFieldLog: [
+          { field: 'reference', column: null, missing: true, mandatory: true },
+          { field: 'name', column: 'Name', missing: false, mandatory: false }
+        ],
+        rows: [{ converted_row: spareColumn ? { Name: 'Name', Ref: 'abc' } : { Name: 'Name' } }],
+        issueTasks
+      }))).resolves.toBe(expected)
     })
 
     it('does not block when issues are internal', async () => {
