@@ -87,8 +87,8 @@ export async function shouldShowColumnMapping (requestData, uniqueDatasetFields 
  * True if the request has issues serious enough that column mapping would not help.
  *
  * "Serious" means an externally-owned issue with critical severity, excluding
- * `missing column` and `missing-field` — those are precisely the issues column mapping
- * exists to fix. Severity comes from the task log.
+ * `missing column`, `missing-field` and `missing reference` — these can be fixed
+ * through column mapping. Severity comes from the task log.
  *
  * @param {import('../models/requestData.js').default} requestData
  * @returns {Promise<boolean>}
@@ -100,7 +100,7 @@ export async function hasBlockingNonColumnMappingTasks (requestData) {
   return issueTasks.some(issue =>
     issue.responsibility !== 'internal' &&
     issue.severity === 'critical' &&
-    !['missing column', 'missing-field'].includes(issue['issue-type'])
+    !['missing column', 'missing-field', 'missing reference'].includes(issue['issue-type'])
   )
 }
 
