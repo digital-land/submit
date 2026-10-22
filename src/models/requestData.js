@@ -3,6 +3,7 @@ import logger from '../utils/logger.js'
 import axios from 'axios'
 import config from '../../config/index.js'
 import ResponseDetails from './responseDetails.js'
+import { finishedProcessingStatuses } from '../utils/requestStatus.js'
 
 const ResponseDetailsOptions = v.optional(v.object({
   severity: v.optional(v.pipe(v.string(), v.minLength(2))),
@@ -92,7 +93,6 @@ export default class ResultData {
   }
 
   isComplete () {
-    const finishedProcessingStatuses = ['COMPLETE', 'FAILED']
     return finishedProcessingStatuses.includes(this.status)
   }
 

@@ -81,10 +81,7 @@ export function availableDatasets (dataSubjects) {
   return availableDatasets
 }
 
-export const finishedProcessingStatuses = [
-  'COMPLETE',
-  'FAILED'
-]
+export { finishedProcessingStatuses } from './requestStatus.js'
 
 export const allowedFileTypes = {
   csv: ['text/csv', 'text/plain', 'application/octet-stream', 'binary/octet-stream'],
