@@ -1,5 +1,5 @@
 # Shared runtime for build and production
-ARG NODE_VERSION=24.21.0
+ARG NODE_VERSION=24.22.1
 FROM node:${NODE_VERSION}-trixie-slim AS base
 
 RUN apt-get update \

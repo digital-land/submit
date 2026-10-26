@@ -124,7 +124,8 @@ Below is a list of dependencies needed to develop, run and deploy the applicatio
     nvm install
     nvm use
     ```
-    CI reads `.nvmrc`. Docker and Compose default to Node.js 24.21.0.
+    CI and deployment builds read `.nvmrc`. Standalone Docker and Compose
+    builds default to Node.js 24.22.1.
     When upgrading Node.js, keep `.nvmrc`, the defaults in `dockerfile` and
     both frontend Compose files, and the `package.json` engine requirement
     aligned, then regenerate `package-lock.json` with npm.

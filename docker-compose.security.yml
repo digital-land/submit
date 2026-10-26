@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: dockerfile
       args:
-        NODE_VERSION: ${NODE_VERSION:-24.21.0}
+        NODE_VERSION: ${NODE_VERSION:-24.22.1}
     
     environment:
       - NODE_ENV=local
