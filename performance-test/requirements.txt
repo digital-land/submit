@@ -8,8 +8,10 @@ annotated-types==0.6.0
     # via pydantic
 blinker==1.7.0
     # via flask
-brotli==1.1.0
-    # via geventhttpclient
+brotli==1.2.1
+    # via
+    #   -r requirements.in
+    #   geventhttpclient
 build==1.2.1
     # via pip-tools
 certifi==2024.2.2
