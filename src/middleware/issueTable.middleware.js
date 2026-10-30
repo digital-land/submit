@@ -63,6 +63,14 @@ export const prepareTableParams = (req, res, next) => {
   const { leading, trailing } = splitByLeading({ fields: uniqueDatasetFields })
   const orderedFields = leading.concat(trailing)
 
+  // An issue can be on a field that isn't displayed in the table, e.g. 'organisation', which is filtered out of
+  // the specification as a system field. Without a column for it no cell gets flagged and the row is filtered out
+  // below, leaving an empty table. Add such fields as extra columns so the row is shown with the invalid value.
+  for (const issue of issues) {
+    const isDisplayed = orderedFields.includes(issue.field) || orderedFields.includes(issue.replacement_field)
+    if (issue.field && !isDisplayed) orderedFields.push(issue.field)
+  }
+
   const allRows = issueEntities.map((entity, index) => ({
     columns: Object.fromEntries(orderedFields.map((field) => {
       const issue = issues.find(issue => issueMatchesEntry(issue, entity) && (issue.field === field || issue.replacement_field === field))
