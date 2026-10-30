@@ -68,6 +68,23 @@ describe('issueTableMiddleware', () => {
       expect(req.templateParams.geometries[0].geo).toBe('POINT (0 0)')
     })
 
+    it('adds a column for an issue on a field that is not displayed, so the row is still shown', () => {
+      const value = 'http://opendatacommunities.org/id/geography/administration/nmd/E07000100'
+      const req = {
+        issueEntities: [{ entity: 1742531, 'entry-number': 68, reference: 'BDB/63103' }],
+        issues: [{ entity: 1742531, entry_number: 68, field: 'organisation', issue_type: 'invalid organisation', value }],
+        uniqueDatasetFields: ['reference'],
+        dataRange: { minRow: 0, maxRow: 10 },
+        baseSubpath: '/organisations/local-authority:BAN/brownfield-land'
+      }
+      prepareTableParams(req, {}, vi.fn())
+      expect(req.tableParams.columns).toEqual(['reference', 'organisation'])
+      expect(req.tableParams.rows).toHaveLength(1)
+      expect(req.tableParams.rows[0].columns.organisation).toEqual({ value, error: { message: 'invalid organisation' } })
+      // the shared field list must not be mutated
+      expect(req.uniqueDatasetFields).toEqual(['reference'])
+    })
+
     const req = {
       entities: [
         { entity: 'entity1', reference: 'entity1', name: 'Name 1', amount: 100 },
