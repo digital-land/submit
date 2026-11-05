@@ -22,7 +22,7 @@ jobs:
       alerts_high: ${{ steps.report.outputs.alerts_high }}
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         
       - name: Setup dependencies
         run: |
@@ -37,7 +37,7 @@ jobs:
           cat zap-working-dir/zap-report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload ZAP logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: zap.log
@@ -62,7 +62,7 @@ jobs:
       alerts_critical: ${{ steps.report.outputs.alerts_critical }}
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Setup dependencies
       run: |
@@ -74,7 +74,7 @@ jobs:
         cat npm-audit-report.md >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload npm audit report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: npm-audit-report
