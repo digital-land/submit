@@ -5,8 +5,10 @@ import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
-import { getRequestData } from '../services/asyncRequestApi.js'
+import { getRequestData, postAddDataSubmission, checkAddDataSubmissionDuplicate } from '../services/asyncRequestApi.js'
 import { reserveEndpointSubmission, renewEndpointSubmission, releaseEndpointSubmission, reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
+
+class SubmissionConflictError extends Error {}
 
 class CheckAnswersController extends PageController {
   async locals (req, res, next) {
@@ -80,12 +82,16 @@ class CheckAnswersController extends PageController {
       req.sessionModel.set('errors', [])
       req.sessionModel.set('processing', true)
     } catch (error) {
-      logger.error('CheckAnswersController.post(): Failed to create Jira issue', {
+      logger.error('CheckAnswersController.post(): Failed to complete submission', {
         errorMessage: error.message,
         errorStack: error,
         type: types.External
       })
-      req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
+      req.sessionModel.set('errors', [{
+        text: error instanceof SubmissionConflictError
+          ? error.message
+          : 'An unexpected error occurred while processing your request.'
+      }])
       return res.redirect('/submit/check-answers')
     } finally {
       clearInterval(renewal)
@@ -105,7 +111,9 @@ class CheckAnswersController extends PageController {
     const submissionKey = JSON.stringify([requestId, req.sessionModel.get('endpoint-url'), req.sessionModel.get('orgId'), selectedDataset])
     const previous = req.sessionModel.get('jiraRequests')
     const completed = previous?.submissionKey === submissionKey ? { ...previous.completed } : {}
+    const submissions = previous?.submissionKey === submissionKey ? { ...previous.submissions } : {}
     const issueKeys = []
+    let duplicateFound = false
 
     for (const dataset of datasets) {
       if (!completed[dataset]) {
@@ -123,11 +131,19 @@ class CheckAnswersController extends PageController {
           if (!renewed) logger.warn('Failed to renew endpoint reservation', { submission, type: types.External })
         }, 60 * 1000)
         try {
+          if (await checkAddDataSubmissionDuplicate({
+            endpoint_url: submission.endpointUrl,
+            organisation: submission.organisation,
+            dataset
+          })) {
+            duplicateFound = true
+            continue
+          }
           const issue = await this.createJiraServiceRequest(req, res, next, dataset)
           if (issue?.localJiraFallback) return issue
           if (!issue?.issueKey) throw new Error(`Failed to create Jira request for ${dataset}`)
           completed[dataset] = issue.issueKey
-          req.sessionModel.set('jiraRequests', { submissionKey, completed: { ...completed } })
+          req.sessionModel.set('jiraRequests', { submissionKey, completed: { ...completed }, submissions: { ...submissions } })
           await settleSubmittedEndpoint(submission, reservationToken, 24 * 60 * 60)
           isSubmitted = true
         } finally {
@@ -135,7 +151,31 @@ class CheckAnswersController extends PageController {
           if (!isSubmitted) await settleSubmittedEndpoint(submission, reservationToken, 0)
         }
       }
+      // Keep Jira success even if async fails: a retry must reuse the Jira key.
+      // The API makes retries of the same check request and dataset idempotent.
+      if (!submissions[dataset]) {
+        try {
+          submissions[dataset] = await postAddDataSubmission({
+            check_request_id: requestId,
+            dataset,
+            documentation_url: req.sessionModel.get('documentation-url'),
+            source: 'check_tool',
+            jira_issue_key: completed[dataset],
+            contact_name: null,
+            contact_email: null
+          })
+        } catch (error) {
+          if (error.response?.status === 409) {
+            throw new SubmissionConflictError(`This endpoint already has a submission awaiting processing. Your Jira reference is ${completed[dataset]}. Contact the Planning Data team and quote this reference.`, { cause: error })
+          }
+          throw error
+        }
+        req.sessionModel.set('jiraRequests', { submissionKey, completed: { ...completed }, submissions: { ...submissions } })
+      }
       issueKeys.push(completed[dataset])
+    }
+    if (!issueKeys.length && duplicateFound) {
+      throw new SubmissionConflictError('This endpoint already has a submission for this dataset.')
     }
     return { issueKeys }
   }
