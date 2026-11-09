@@ -1,12 +1,15 @@
 import PageController from './pageController.js'
+import * as Sentry from '@sentry/node'
 import { endpointAlreadyCollectedForDataset } from '../utils/datasetteQueries/endpointAlreadyCollected.js'
 import config from '../../config/index.js'
 import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { stringify } from 'csv-stringify/sync'
-import { getRequestData } from '../services/asyncRequestApi.js'
+import { getRequestData, postAddDataSubmission, checkAddDataSubmissionDuplicate } from '../services/asyncRequestApi.js'
 import { reserveEndpointSubmission, renewEndpointSubmission, releaseEndpointSubmission, reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../utils/redisLoader.js'
+
+class SubmissionConflictError extends Error {}
 
 class CheckAnswersController extends PageController {
   async locals (req, res, next) {
@@ -80,12 +83,16 @@ class CheckAnswersController extends PageController {
       req.sessionModel.set('errors', [])
       req.sessionModel.set('processing', true)
     } catch (error) {
-      logger.error('CheckAnswersController.post(): Failed to create Jira issue', {
+      logger.error('CheckAnswersController.post(): Failed to complete submission', {
         errorMessage: error.message,
         errorStack: error,
         type: types.External
       })
-      req.sessionModel.set('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
+      req.sessionModel.set('errors', [{
+        text: error instanceof SubmissionConflictError
+          ? error.message
+          : 'An unexpected error occurred while processing your request.'
+      }])
       return res.redirect('/submit/check-answers')
     } finally {
       clearInterval(renewal)
@@ -106,6 +113,7 @@ class CheckAnswersController extends PageController {
     const previous = req.sessionModel.get('jiraRequests')
     const completed = previous?.submissionKey === submissionKey ? { ...previous.completed } : {}
     const issueKeys = []
+    let duplicateFound = false
 
     for (const dataset of datasets) {
       if (!completed[dataset]) {
@@ -123,6 +131,14 @@ class CheckAnswersController extends PageController {
           if (!renewed) logger.warn('Failed to renew endpoint reservation', { submission, type: types.External })
         }, 60 * 1000)
         try {
+          if (await checkAddDataSubmissionDuplicate({
+            endpoint_url: submission.endpointUrl,
+            organisation: submission.organisation,
+            dataset
+          })) {
+            duplicateFound = true
+            continue
+          }
           const issue = await this.createJiraServiceRequest(req, res, next, dataset)
           if (issue?.localJiraFallback) return issue
           if (!issue?.issueKey) throw new Error(`Failed to create Jira request for ${dataset}`)
@@ -134,8 +150,34 @@ class CheckAnswersController extends PageController {
           clearInterval(renewalInterval)
           if (!isSubmitted) await settleSubmittedEndpoint(submission, reservationToken, 0)
         }
+        // Jira has accepted the submission. Async failures must not undo confirmation.
+        try {
+          await postAddDataSubmission({
+            check_request_id: requestId,
+            dataset,
+            documentation_url: req.sessionModel.get('documentation-url'),
+            source: 'check_tool',
+            jira_issue_key: completed[dataset],
+            contact_name: null,
+            contact_email: null
+          })
+        } catch (error) {
+          const context = {
+            requestId,
+            dataset,
+            jiraIssueKey: completed[dataset],
+            status: error.response?.status
+          }
+          const message = 'Failed to create Async submission after Jira success'
+          logger.error(message, { ...context, type: types.External })
+          // Do not capture the Axios error, which can contain request headers and bodies.
+          Sentry.captureException(new Error(message), { extra: context })
+        }
       }
       issueKeys.push(completed[dataset])
+    }
+    if (!issueKeys.length && duplicateFound) {
+      throw new SubmissionConflictError('This endpoint already has a submission for this dataset.')
     }
     return { issueKeys }
   }

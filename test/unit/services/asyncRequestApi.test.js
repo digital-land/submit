@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
-import { postFileRequest, postUrlRequest, getRequestData } from '../../../src/services/asyncRequestApi.js'
+import { postFileRequest, postUrlRequest, getRequestData, postAddDataSubmission, checkAddDataSubmissionDuplicate } from '../../../src/services/asyncRequestApi.js'
 import ResultData from '../../../src/models/requestData.js'
 import logger from '../../../src/utils/logger.js'
 
@@ -24,6 +24,49 @@ vi.mock('../../../src/models/requestData.js')
 describe('asyncRequestApi', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    axios.post.mockReset()
+  })
+
+  describe('checkAddDataSubmissionDuplicate', () => {
+    it.each([true, false])('returns the duplicate boolean: %s', async (duplicate) => {
+      axios.post.mockResolvedValueOnce({ data: { duplicate } })
+      const body = { endpoint_url: 'https://example.org/trees.csv', organisation: 'local-authority:ABC', dataset: 'tree' }
+      expect(await checkAddDataSubmissionDuplicate(body)).toBe(duplicate)
+      expect(axios.post).toHaveBeenCalledWith('http://localhost:8080/add-data-submissions/duplicate-check', body, { timeout: 15000 })
+    })
+
+    it.each([undefined, {}, { duplicate: 'false' }, { duplicate: null }])('fails closed for malformed responses: %j', async (data) => {
+      axios.post.mockResolvedValueOnce({ data })
+      await expect(checkAddDataSubmissionDuplicate({ endpoint_url: 'https://example.org/trees.csv', organisation: 'local-authority:ABC', dataset: 'tree' })).rejects.toThrow()
+    })
+  })
+
+  describe('postAddDataSubmission', () => {
+    const body = {
+      check_request_id: 'check-123',
+      dataset: 'tree',
+      documentation_url: 'https://example.org/docs',
+      source: 'check_tool',
+      jira_issue_key: 'DATA-215',
+      contact_name: null,
+      contact_email: null
+    }
+
+    it('posts the submission envelope and returns its ID, not its async reference', async () => {
+      axios.post.mockResolvedValueOnce({ data: { id: 'submission-123', reference: 'PDP-ABC123' } })
+      expect(await postAddDataSubmission(body)).toBe('submission-123')
+      expect(axios.post).toHaveBeenCalledWith('http://localhost:8080/add-data-submissions', body, { timeout: 15000 })
+    })
+
+    it.each([undefined, {}, { reference: 'PDP-ABC123' }, { id: '' }])('rejects an invalid receipt: %j', async (data) => {
+      axios.post.mockResolvedValueOnce({ data })
+      await expect(postAddDataSubmission(body)).rejects.toThrow()
+    })
+
+    it('propagates failures so the controller can retry without repeating Jira', async () => {
+      axios.post.mockRejectedValueOnce(new Error('Async unavailable'))
+      await expect(postAddDataSubmission(body)).rejects.toThrow('Async unavailable')
+    })
   })
 
   describe('postFileRequest', () => {

@@ -4,11 +4,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { addInternalNoteToIssue, createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
-import { getRequestData } from '../../src/services/asyncRequestApi.js'
+import logger from '../../src/utils/logger.js'
+import * as Sentry from '@sentry/node'
+import { getRequestData, postAddDataSubmission, checkAddDataSubmissionDuplicate } from '../../src/services/asyncRequestApi.js'
 import { reserveEndpointSubmission, renewEndpointSubmission, releaseEndpointSubmission, reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../../src/utils/redisLoader.js'
 
 vi.mock('../../src/services/jiraService.js')
-vi.mock('../../src/services/asyncRequestApi.js')
+vi.mock('@sentry/node', () => ({
+  captureException: vi.fn(),
+  logger: { warn: vi.fn(), error: vi.fn() }
+}))
+vi.mock('../../src/services/asyncRequestApi.js', () => ({
+  getRequestData: vi.fn(),
+  postAddDataSubmission: vi.fn(),
+  checkAddDataSubmissionDuplicate: vi.fn()
+}))
 vi.mock('../../src/utils/redisLoader.js')
 vi.mock('../../src/utils/datasetteQueries/endpointAlreadyCollected.js')
 
@@ -49,6 +59,8 @@ describe('CheckAnswersController', () => {
     settleSubmittedEndpoint.mockResolvedValue()
     addInternalNoteToIssue.mockResolvedValue({ data: {} })
     getRequestData.mockResolvedValue({ getDatasetsInResource: () => [], getPlugin: () => 'wfs', isComplete: () => true })
+    postAddDataSubmission.mockResolvedValue('async-submission-id')
+    checkAddDataSubmissionDuplicate.mockResolvedValue(false)
   })
 
   describe('locals', () => {
@@ -78,6 +90,7 @@ describe('CheckAnswersController', () => {
         await controller.post(req, res, next)
 
         expect(createCustomerRequest).not.toHaveBeenCalled()
+        expect(postAddDataSubmission).not.toHaveBeenCalled()
         expect(settleSubmittedEndpoint).toHaveBeenCalledWith({
           endpointUrl: sessionData['endpoint-url'],
           dataset: sessionData.dataset,
@@ -140,6 +153,7 @@ describe('CheckAnswersController', () => {
 
       await controller.post(req, res, next)
 
+      expect(postAddDataSubmission).not.toHaveBeenCalled()
       expect(req.sessionModel.set).toHaveBeenCalledWith('errors', [{ text: 'An unexpected error occurred while processing your request.' }])
       expect(settleSubmittedEndpoint).toHaveBeenCalledWith({
         endpointUrl: sessionData['endpoint-url'],
@@ -305,6 +319,116 @@ describe('CheckAnswersController', () => {
       expect(saved.reference).toBe('PLAN-1, PLAN-2, PLAN-3')
       expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
       expect(next).toHaveBeenCalled()
+      expect(checkAddDataSubmissionDuplicate).toHaveBeenCalledWith({ endpoint_url: 'http://example.com/endpoint', organisation: 'test-org', dataset: 'local-plan' })
+      expect(checkAddDataSubmissionDuplicate.mock.invocationCallOrder[0]).toBeLessThan(create.mock.invocationCallOrder[0])
+      expect(postAddDataSubmission.mock.calls.map(([body]) => body)).toEqual([
+        { check_request_id: 'existing-request-id', dataset: 'local-plan', documentation_url: 'http://example.com/doc', source: 'check_tool', jira_issue_key: 'PLAN-1', contact_name: null, contact_email: null },
+        { check_request_id: 'existing-request-id', dataset: 'minerals-plan', documentation_url: 'http://example.com/doc', source: 'check_tool', jira_issue_key: 'PLAN-2', contact_name: null, contact_email: null },
+        { check_request_id: 'existing-request-id', dataset: 'waste-plan', documentation_url: 'http://example.com/doc', source: 'check_tool', jira_issue_key: 'PLAN-3', contact_name: null, contact_email: null }
+      ])
+      expect(create.mock.invocationCallOrder[0]).toBeLessThan(postAddDataSubmission.mock.invocationCallOrder[0])
+    })
+
+    it('confirms all Jira tickets despite an async failure and reuses them on a repeated post', async () => {
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+        .mockResolvedValueOnce({ issueKey: 'PLAN-1' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-2' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-3' })
+      postAddDataSubmission
+        .mockResolvedValueOnce('async-1')
+        .mockRejectedValueOnce(new Error('Async unavailable'))
+
+      await controller.post(req, res, next)
+
+      expect(saved.jiraRequests.completed).toEqual({ 'local-plan': 'PLAN-1', 'minerals-plan': 'PLAN-2', 'waste-plan': 'PLAN-3' })
+      expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
+      expect(saved.processing).toBe(true)
+      expect(saved.jiraRequests).not.toHaveProperty('submissions')
+      expect(saved.errors).toEqual([])
+      expect(res.redirect).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalled()
+
+      await controller.post(req, res, next)
+
+      expect(create.mock.calls.map(call => call[3])).toEqual(['local-plan', 'minerals-plan', 'waste-plan'])
+      expect(postAddDataSubmission.mock.calls.map(([body]) => [body.dataset, body.jira_issue_key])).toEqual([
+        ['local-plan', 'PLAN-1'], ['minerals-plan', 'PLAN-2'], ['waste-plan', 'PLAN-3']
+      ])
+      expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('does not create Jira or async records for an existing async duplicate', async () => {
+      checkAddDataSubmissionDuplicate.mockResolvedValue(true)
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+      await controller.post(req, res, next)
+      expect(create).not.toHaveBeenCalled()
+      expect(postAddDataSubmission).not.toHaveBeenCalled()
+      expect(saved.errors).toEqual([{ text: 'This endpoint already has a submission for this dataset.' }])
+      expect(saved.processing).toBeUndefined()
+      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+      expect(settleSubmittedEndpoint).toHaveBeenCalledWith(expect.any(Object), 'reservation-token', 0)
+    })
+
+    it('does not create Jira when the async duplicate check fails', async () => {
+      checkAddDataSubmissionDuplicate.mockRejectedValue(new Error('Async unavailable'))
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+      await controller.post(req, res, next)
+      expect(create).not.toHaveBeenCalled()
+      expect(postAddDataSubmission).not.toHaveBeenCalled()
+      expect(saved.processing).toBeUndefined()
+    })
+
+    it('skips async duplicates while submitting the remaining datasets', async () => {
+      checkAddDataSubmissionDuplicate.mockResolvedValueOnce(true)
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+        .mockResolvedValueOnce({ issueKey: 'PLAN-2' })
+        .mockResolvedValueOnce({ issueKey: 'PLAN-3' })
+      await controller.post(req, res, next)
+      expect(create.mock.calls.map(call => call[3])).toEqual(['minerals-plan', 'waste-plan'])
+      expect(postAddDataSubmission.mock.calls.map(([body]) => body.dataset)).toEqual(['minerals-plan', 'waste-plan'])
+      expect(saved.references).toEqual(['PLAN-2', 'PLAN-3'])
+      expect(saved.errors).toEqual([])
+      expect(next).toHaveBeenCalled()
+    })
+
+    it.each([409, 500, undefined])('confirms Jira and logs an async failure with status %s', async (status) => {
+      getRequestData.mockResolvedValue({ getDatasetsInResource: () => [] })
+      const log = vi.spyOn(logger, 'error')
+      const create = vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issueKey: 'PLAN-1' })
+      postAddDataSubmission.mockRejectedValue(Object.assign(new Error('Conflict'), {
+        response: { status, data: { detail: { reference: 'PDP-ABC123' } } }
+      }))
+      await controller.post(req, res, next)
+      expect(saved.references).toEqual(['PLAN-1'])
+      expect(saved.errors).toEqual([])
+      expect(saved.processing).toBe(true)
+      expect(next).toHaveBeenCalled()
+      expect(res.redirect).not.toHaveBeenCalled()
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('Failed to create Async submission'), expect.objectContaining({
+        requestId: 'existing-request-id', dataset: 'local-plan', jiraIssueKey: 'PLAN-1', status
+      }))
+      expect(Sentry.captureException).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Failed to create Async submission after Jira success' }),
+        expect.objectContaining({ extra: { requestId: 'existing-request-id', dataset: 'local-plan', jiraIssueKey: 'PLAN-1', status } })
+      )
+      await controller.post(req, res, next)
+      expect(create).toHaveBeenCalledTimes(1)
+      expect(postAddDataSubmission).toHaveBeenCalledTimes(1)
+    })
+
+    it('confirms a previously saved Jira key without another async handoff', async () => {
+      getRequestData.mockResolvedValue({ getDatasetsInResource: () => [] })
+      saved.jiraRequests = {
+        submissionKey: JSON.stringify(['existing-request-id', 'http://example.com/endpoint', 'test-org', 'local-plan']),
+        completed: { 'local-plan': 'PLAN-1' }
+      }
+      const create = vi.spyOn(controller, 'createJiraServiceRequest')
+      await controller.post(req, res, next)
+      expect(create).not.toHaveBeenCalled()
+      expect(postAddDataSubmission).not.toHaveBeenCalled()
+      expect(checkAddDataSubmissionDuplicate).not.toHaveBeenCalled()
+      expect(saved.references).toEqual(['PLAN-1'])
     })
 
     it('skips reserved datasets and submits the remaining datasets', async () => {

@@ -6,6 +6,24 @@ import { types } from '../utils/logging.js'
 
 const requestsEndpoint = `${config.asyncRequestApi.url}/${config.asyncRequestApi.requestsEndpoint}`
 
+/** Check for duplicates without reading private submission details. Fail closed. */
+export const checkAddDataSubmissionDuplicate = async (check) => {
+  const response = await axios.post(`${config.asyncRequestApi.url}/add-data-submissions/duplicate-check`, check, { timeout: 15000 })
+  if (typeof response.data?.duplicate !== 'boolean') {
+    throw new Error('Async API returned an invalid duplicate check result')
+  }
+  return response.data.duplicate
+}
+
+/** Create an Add Data Submission; its reference is not the customer-facing Jira key. */
+export const postAddDataSubmission = async (submission) => {
+  const response = await axios.post(`${config.asyncRequestApi.url}/add-data-submissions`, submission, { timeout: 15000 })
+  if (typeof response.data?.id !== 'string' || !response.data.id.trim()) {
+    throw new Error('Async API returned an invalid submission receipt')
+  }
+  return response.data.id
+}
+
 /**
  * Creates a `check_file` request for a file already uploaded to S3.
  *
