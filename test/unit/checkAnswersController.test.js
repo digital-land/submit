@@ -4,10 +4,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { addInternalNoteToIssue, createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
+import logger from '../../src/utils/logger.js'
+import * as Sentry from '@sentry/node'
 import { getRequestData, postAddDataSubmission, checkAddDataSubmissionDuplicate } from '../../src/services/asyncRequestApi.js'
 import { reserveEndpointSubmission, renewEndpointSubmission, releaseEndpointSubmission, reserveSubmittedEndpoint, renewSubmittedEndpoint, settleSubmittedEndpoint } from '../../src/utils/redisLoader.js'
 
 vi.mock('../../src/services/jiraService.js')
+vi.mock('@sentry/node', () => ({
+  captureException: vi.fn(),
+  logger: { warn: vi.fn(), error: vi.fn() }
+}))
 vi.mock('../../src/services/asyncRequestApi.js', () => ({
   getRequestData: vi.fn(),
   postAddDataSubmission: vi.fn(),
@@ -323,7 +329,7 @@ describe('CheckAnswersController', () => {
       expect(create.mock.invocationCallOrder[0]).toBeLessThan(postAddDataSubmission.mock.invocationCallOrder[0])
     })
 
-    it('retries an async failure using the saved Jira key without repeating completed datasets', async () => {
+    it('confirms all Jira tickets despite an async failure and reuses them on a repeated post', async () => {
       const create = vi.spyOn(controller, 'createJiraServiceRequest')
         .mockResolvedValueOnce({ issueKey: 'PLAN-1' })
         .mockResolvedValueOnce({ issueKey: 'PLAN-2' })
@@ -334,16 +340,19 @@ describe('CheckAnswersController', () => {
 
       await controller.post(req, res, next)
 
-      expect(saved.jiraRequests.completed).toEqual({ 'local-plan': 'PLAN-1', 'minerals-plan': 'PLAN-2' })
-      expect(saved.processing).toBeUndefined()
-      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
-      expect(next).not.toHaveBeenCalled()
+      expect(saved.jiraRequests.completed).toEqual({ 'local-plan': 'PLAN-1', 'minerals-plan': 'PLAN-2', 'waste-plan': 'PLAN-3' })
+      expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
+      expect(saved.processing).toBe(true)
+      expect(saved.jiraRequests).not.toHaveProperty('submissions')
+      expect(saved.errors).toEqual([])
+      expect(res.redirect).not.toHaveBeenCalled()
+      expect(next).toHaveBeenCalled()
 
       await controller.post(req, res, next)
 
       expect(create.mock.calls.map(call => call[3])).toEqual(['local-plan', 'minerals-plan', 'waste-plan'])
       expect(postAddDataSubmission.mock.calls.map(([body]) => [body.dataset, body.jira_issue_key])).toEqual([
-        ['local-plan', 'PLAN-1'], ['minerals-plan', 'PLAN-2'], ['minerals-plan', 'PLAN-2'], ['waste-plan', 'PLAN-3']
+        ['local-plan', 'PLAN-1'], ['minerals-plan', 'PLAN-2'], ['waste-plan', 'PLAN-3']
       ])
       expect(saved.references).toEqual(['PLAN-1', 'PLAN-2', 'PLAN-3'])
       expect(next).toHaveBeenCalled()
@@ -383,24 +392,32 @@ describe('CheckAnswersController', () => {
       expect(next).toHaveBeenCalled()
     })
 
-    it('explains an active async duplicate using the saved Jira reference', async () => {
+    it.each([409, 500, undefined])('confirms Jira and logs an async failure with status %s', async (status) => {
       getRequestData.mockResolvedValue({ getDatasetsInResource: () => [] })
+      const log = vi.spyOn(logger, 'error')
       const create = vi.spyOn(controller, 'createJiraServiceRequest').mockResolvedValue({ issueKey: 'PLAN-1' })
       postAddDataSubmission.mockRejectedValue(Object.assign(new Error('Conflict'), {
-        response: { status: 409, data: { detail: { reference: 'PDP-ABC123' } } }
+        response: { status, data: { detail: { reference: 'PDP-ABC123' } } }
       }))
       await controller.post(req, res, next)
-      expect(saved.errors[0].text).toContain('already has a submission awaiting processing')
-      expect(saved.errors[0].text).toContain('PLAN-1')
-      expect(saved.errors[0].text).not.toContain('PDP-ABC123')
-      expect(saved.processing).toBeUndefined()
-      expect(next).not.toHaveBeenCalled()
-      expect(res.redirect).toHaveBeenCalledWith('/submit/check-answers')
+      expect(saved.references).toEqual(['PLAN-1'])
+      expect(saved.errors).toEqual([])
+      expect(saved.processing).toBe(true)
+      expect(next).toHaveBeenCalled()
+      expect(res.redirect).not.toHaveBeenCalled()
+      expect(log).toHaveBeenCalledWith(expect.stringContaining('Failed to create Async submission'), expect.objectContaining({
+        requestId: 'existing-request-id', dataset: 'local-plan', jiraIssueKey: 'PLAN-1', status
+      }))
+      expect(Sentry.captureException).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Failed to create Async submission after Jira success' }),
+        expect.objectContaining({ extra: { requestId: 'existing-request-id', dataset: 'local-plan', jiraIssueKey: 'PLAN-1', status } })
+      )
       await controller.post(req, res, next)
       expect(create).toHaveBeenCalledTimes(1)
+      expect(postAddDataSubmission).toHaveBeenCalledTimes(1)
     })
 
-    it('creates the async record for a previously saved Jira key', async () => {
+    it('confirms a previously saved Jira key without another async handoff', async () => {
       getRequestData.mockResolvedValue({ getDatasetsInResource: () => [] })
       saved.jiraRequests = {
         submissionKey: JSON.stringify(['existing-request-id', 'http://example.com/endpoint', 'test-org', 'local-plan']),
@@ -409,7 +426,7 @@ describe('CheckAnswersController', () => {
       const create = vi.spyOn(controller, 'createJiraServiceRequest')
       await controller.post(req, res, next)
       expect(create).not.toHaveBeenCalled()
-      expect(postAddDataSubmission).toHaveBeenCalledWith(expect.objectContaining({ jira_issue_key: 'PLAN-1' }))
+      expect(postAddDataSubmission).not.toHaveBeenCalled()
       expect(checkAddDataSubmissionDuplicate).not.toHaveBeenCalled()
       expect(saved.references).toEqual(['PLAN-1'])
     })

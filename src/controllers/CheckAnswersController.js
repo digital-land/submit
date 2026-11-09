@@ -1,4 +1,5 @@
 import PageController from './pageController.js'
+import * as Sentry from '@sentry/node'
 import { endpointAlreadyCollectedForDataset } from '../utils/datasetteQueries/endpointAlreadyCollected.js'
 import config from '../../config/index.js'
 import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
@@ -111,7 +112,6 @@ class CheckAnswersController extends PageController {
     const submissionKey = JSON.stringify([requestId, req.sessionModel.get('endpoint-url'), req.sessionModel.get('orgId'), selectedDataset])
     const previous = req.sessionModel.get('jiraRequests')
     const completed = previous?.submissionKey === submissionKey ? { ...previous.completed } : {}
-    const submissions = previous?.submissionKey === submissionKey ? { ...previous.submissions } : {}
     const issueKeys = []
     let duplicateFound = false
 
@@ -143,19 +143,16 @@ class CheckAnswersController extends PageController {
           if (issue?.localJiraFallback) return issue
           if (!issue?.issueKey) throw new Error(`Failed to create Jira request for ${dataset}`)
           completed[dataset] = issue.issueKey
-          req.sessionModel.set('jiraRequests', { submissionKey, completed: { ...completed }, submissions: { ...submissions } })
+          req.sessionModel.set('jiraRequests', { submissionKey, completed: { ...completed } })
           await settleSubmittedEndpoint(submission, reservationToken, 24 * 60 * 60)
           isSubmitted = true
         } finally {
           clearInterval(renewalInterval)
           if (!isSubmitted) await settleSubmittedEndpoint(submission, reservationToken, 0)
         }
-      }
-      // Keep Jira success even if async fails: a retry must reuse the Jira key.
-      // The API makes retries of the same check request and dataset idempotent.
-      if (!submissions[dataset]) {
+        // Jira has accepted the submission. Async failures must not undo confirmation.
         try {
-          submissions[dataset] = await postAddDataSubmission({
+          await postAddDataSubmission({
             check_request_id: requestId,
             dataset,
             documentation_url: req.sessionModel.get('documentation-url'),
@@ -165,12 +162,17 @@ class CheckAnswersController extends PageController {
             contact_email: null
           })
         } catch (error) {
-          if (error.response?.status === 409) {
-            throw new SubmissionConflictError(`This endpoint already has a submission awaiting processing. Your Jira reference is ${completed[dataset]}. Contact the Planning Data team and quote this reference.`, { cause: error })
+          const context = {
+            requestId,
+            dataset,
+            jiraIssueKey: completed[dataset],
+            status: error.response?.status
           }
-          throw error
+          const message = 'Failed to create Async submission after Jira success'
+          logger.error(message, { ...context, type: types.External })
+          // Do not capture the Axios error, which can contain request headers and bodies.
+          Sentry.captureException(new Error(message), { extra: context })
         }
-        req.sessionModel.set('jiraRequests', { submissionKey, completed: { ...completed }, submissions: { ...submissions } })
       }
       issueKeys.push(completed[dataset])
     }
