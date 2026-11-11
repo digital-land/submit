@@ -112,7 +112,9 @@ export function prepareEntity (req, res, next) {
   const specFields = new Map()
   for (const { field, datasetField } of specification.fields) {
     const value = entityData[field] || entityData[datasetField]
-    specFields.set(field, getIssueField(field, value))
+    const issueField = getIssueField(field, value ? nunjucks.lib.escape(String(value)) : value)
+    issueField.value.originalValue = value != null ? value.toString() : undefined
+    specFields.set(field, issueField)
   }
 
   entityIssues.forEach(issue => {

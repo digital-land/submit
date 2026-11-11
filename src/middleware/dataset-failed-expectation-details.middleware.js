@@ -19,6 +19,7 @@ import { fetchOne, FetchOptions } from './middleware.builders.js'
 import { createPaginationTemplateParamsObject } from '../utils/pagination.js'
 import { deserialiseEntityIds, validateExpectationParams, validateExpectationsFailed } from './dataset-failed-expectation-entry.middleware.js'
 import { prepareEntityForTable } from '../utils/entities.js'
+import nunjucks from 'nunjucks'
 
 const fetchOutOfBoundsExpectations = expectationFetcher({
   expectation: expectations.entitiesOutOfBounds,
@@ -95,7 +96,7 @@ const prepareTemplateParams = (req, res, next) => {
       fields: Object.entries(entityAugmented).map(([k, v]) => {
         return {
           key: { text: k },
-          value: { html: `${v}` },
+          value: { html: nunjucks.lib.escape(`${v}`) },
           classes: ''
         }
       })

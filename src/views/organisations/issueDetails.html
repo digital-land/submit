@@ -125,7 +125,7 @@
     <script>
       window.serverContext = {
         containerId: 'map',
-        geometries: {{ entry.geometries | dump | safe }},
+        geometries: {{ entry.geometries | jsonForScript }},
         mapType: "interactive"
       }
     </script>
