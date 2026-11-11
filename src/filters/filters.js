@@ -14,6 +14,7 @@ import { endpointSubmissionFormToolDeepLink } from './endpointSubmissionFormDeep
 import { isFeatureEnabled } from '../utils/features.js'
 import { getNavigationLinks } from './getNavigationLinks.js'
 import { aOrAn } from './aOrAn.js'
+import { jsonForScript } from './jsonForScript.js'
 /** maps dataset status (as returned by `fetchLpaOverview` middleware to a
  * CSS class used by the govuk-tag component
  */
@@ -42,6 +43,7 @@ const addFilters = (nunjucksEnv) => {
   nunjucksEnv.addFilter('govukDateTime', govukDateTime)
   nunjucksEnv.addFilter('getkeys', getkeys)
   nunjucksEnv.addFilter('getContext', getContext)
+  nunjucksEnv.addFilter('jsonForScript', jsonForScript)
   nunjucksEnv.addFilter('validationMessageLookup', validationMessageLookup)
   nunjucksEnv.addFilter('toErrorList', toErrorList)
   nunjucksEnv.addFilter('prettifyColumnName', prettifyColumnName)
