@@ -4,7 +4,7 @@ import {
   getDatasetTaskListError,
   validateOrgAndDatasetQueryParams, validateQueryParams
 } from './common.middleware.js'
-import { fetchOne } from './middleware.builders.js'
+import { fetchOne, renderTemplate } from './middleware.builders.js'
 import '../types/datasette.js'
 
 const fetchOrgInfoWithStatGeo = fetchOne({
@@ -75,6 +75,31 @@ const validateEndpointQueryParam = validateQueryParams({
   })
 })
 
+const getDatasetTaskList403Error = renderTemplate({
+  templateParams: (req) => ({
+    err: {
+      message: 'We cannot access your endpoint URL',
+      errorDetail: { errCode: '403' },
+      organisationId: req.orgInfo.organisation,
+      organisationName: req.orgInfo.name
+    }
+  }),
+  template: 'check/error-redirect.html',
+  handlerName: 'getDatasetTaskList403Error'
+})
+
+export const renderDatasetEndpointIssueError = (req, res, next) => {
+  if (String(req.source.status) === '403') {
+    req.session.ipInformation = {
+      organisationId: req.orgInfo.organisation,
+      organisationName: req.orgInfo.name
+    }
+    return getDatasetTaskList403Error(req, res, next)
+  }
+
+  return getDatasetTaskListError(req, res, next)
+}
+
 export default [
   validateOrgAndDatasetQueryParams,
   validateEndpointQueryParam,
@@ -82,5 +107,5 @@ export default [
   fetchDatasetInfo,
   fetchSourceByEndpoint,
   prepareDatasetEndpointIssueTemplateParams,
-  getDatasetTaskListError
+  renderDatasetEndpointIssueError
 ]
