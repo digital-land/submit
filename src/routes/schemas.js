@@ -116,13 +116,13 @@ export const DeadlineNoticeField = v.strictObject({
 })
 
 export const IntegerOrStringToInteger = v.pipe(
-  v.union([
-    v.pipe(v.string(), v.nonEmpty()),
-    v.number()
-  ]),
-  v.transform(Number),
-  v.number(),
-  v.integer()
+  v.union([
+    v.pipe(v.string(), v.nonEmpty()),
+    v.number()
+  ]),
+  v.transform(Number),
+  v.number(),
+  v.integer()
 )
 
 const IssueSpecification = v.optional(v.looseObject({
