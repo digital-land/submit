@@ -1,5 +1,5 @@
-import { describe, it } from 'vitest'
-import { prepareDatasetEndpointIssueTemplateParams } from '../../../src/middleware/datasetEndpointIssue.middleware.js'
+import { describe, it, vi } from 'vitest'
+import { prepareDatasetEndpointIssueTemplateParams, renderDatasetEndpointIssueError } from '../../../src/middleware/datasetEndpointIssue.middleware.js'
 import '../../../src/types/datasette.js'
 
 /** @type {{orgInfo: Types.OrgInfo, dataset: Types.DatasetInfo, source: Types.Source}} */
@@ -19,6 +19,32 @@ const reqTemplate = {
 }
 
 describe('The middleware', () => {
+  it('renders the dedicated 403 page for tasklist endpoint errors', ({ expect }) => {
+    const req = {
+      ...structuredClone(reqTemplate),
+      source: { ...reqTemplate.source, status: 403 },
+      session: {}
+    }
+    const res = { render: vi.fn() }
+    const next = vi.fn()
+
+    renderDatasetEndpointIssueError(req, res, next)
+
+    expect(res.render).toHaveBeenCalledWith('check/error-redirect.html', {
+      err: {
+        message: 'We cannot access your endpoint URL',
+        errorDetail: { errCode: '403' },
+        organisationId: 'ORG',
+        organisationName: 'Example Organisation'
+      }
+    })
+    expect(req.session.ipInformation).toEqual({
+      organisationId: 'ORG',
+      organisationName: 'Example Organisation'
+    })
+    expect(next).not.toHaveBeenCalled()
+  })
+
   it('prepares template params', ({ expect }) => {
     const req = structuredClone(reqTemplate)
     req.now = new Date('2024-12-12')

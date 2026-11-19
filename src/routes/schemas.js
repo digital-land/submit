@@ -115,6 +115,16 @@ export const DeadlineNoticeField = v.strictObject({
   deadline: v.string()
 })
 
+export const IntegerOrStringToInteger = v.pipe(
+  v.union([
+    v.pipe(v.string(), v.nonEmpty()),
+    v.number()
+  ]),
+  v.transform(Number),
+  v.number(),
+  v.integer()
+)
+
 const IssueSpecification = v.optional(v.looseObject({
   datasetField: NonEmptyString,
   field: NonEmptyString,
@@ -276,7 +286,7 @@ export const OrgEndpointError = v.strictObject({
   dataset: DatasetNameField,
   errorData: v.strictObject({
     endpoint_url: Url,
-    http_status: v.optional(Integer),
+    http_status: v.optional(IntegerOrStringToInteger),
     latest_log_entry_date: DateString,
     latest_200_date: v.optional(DateString)
   })
