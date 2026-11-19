@@ -5,8 +5,10 @@ import { toJsonSchema } from '@valibot/to-json-schema'
 import { JSONSchemaFaker } from 'json-schema-faker'
 
 export default (schema, seed) => {
-  const jsonSchema = toJsonSchema(schema)
-
+  const jsonSchema = toJsonSchema(schema, {
+    mode: 'input',
+    errorMode: 'ignore'
+  })
   resetRandomNumberGenerator()
 
   // this runs each and every time jsonSchemaFaker generates a random value, therefore to avoid all values being the same, we need it to change each time
