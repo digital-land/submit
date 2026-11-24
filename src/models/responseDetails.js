@@ -2,7 +2,7 @@ import { getVerboseColumns } from '../utils/getVerboseColumns.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
 import { pagination } from '../utils/pagination.js'
-import axios from 'axios'
+import axios from '../services/asyncHttp.js'
 import config from '../../config/index.js'
 
 /**

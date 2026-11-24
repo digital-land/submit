@@ -3,6 +3,15 @@
 // @ts-check
 import { defineConfig, devices } from '@playwright/test'
 import config from '../../config/index.js'
+import { createAuthEnvironment } from '../authEnvironment.js'
+
+function webServerAuthEnvironment () {
+  if (process.env.AUTH_JWT_PRIVATE_KEY) return {} // Playwright inherits the signing key and audience.
+  if (process.env.SUBMIT_JWT_PUBLIC_KEY) {
+    throw new Error('Set AUTH_JWT_PRIVATE_KEY to match the configured SUBMIT_JWT_PUBLIC_KEY')
+  }
+  return { AUTH_JWT_PRIVATE_KEY: createAuthEnvironment().AUTH_JWT_PRIVATE_KEY }
+}
 
 /**
  * Read environment variables from file.
@@ -86,6 +95,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'NODE_ENV=test npm run start',
+    env: webServerAuthEnvironment(),
     url: `http://127.0.0.1:${config.port}`,
     reuseExistingServer: !process.env.CI
   }

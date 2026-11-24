@@ -33,6 +33,10 @@ services:
       AWS_SECRET_ACCESS_KEY: example
       SQS_QUEUE_NAME: request-queue
       DATABASE_URL: postgresql://postgres:password@request-db/request_database
+      AUTHENTICATION_ON: ${AUTHENTICATION_ON:-true}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-async}
+      MANAGE_JWT_PUBLIC_KEY: ${MANAGE_JWT_PUBLIC_KEY:-}
+      SUBMIT_JWT_PUBLIC_KEY: ${SUBMIT_JWT_PUBLIC_KEY:-}
     restart: on-failure
     ports:
       - "8000:8000"
