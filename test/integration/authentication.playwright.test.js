@@ -38,3 +38,13 @@ test('rejects direct unauthenticated writes and polling', async ({ request }) =>
   expect((await request.post('/check/url', { form: { url: 'https://example.org' } })).status()).toBe(401)
   expect((await request.get('/api/status/test')).status()).toBe(401)
 })
+
+test('mock provider rejects malformed redirects and stays available', async ({ request }) => {
+  const provider = 'http://127.0.0.1:9456'
+  for (const redirect of ['', 'not-a-url', 'https://example.org/auth/callback']) {
+    const response = await request.get(`${provider}/authorize?redirect_uri=${encodeURIComponent(redirect)}`)
+    expect(response.status()).toBe(400)
+    expect(await response.json()).toEqual({ error: 'invalid_redirect_uri' })
+  }
+  expect((await request.get(`${provider}/.well-known/openid-configuration`)).status()).toBe(200)
+})

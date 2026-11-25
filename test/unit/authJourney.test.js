@@ -1,6 +1,13 @@
 import express from 'express'
 import session from 'express-session'
 import cookieParser from 'cookie-parser'
+import multer from 'multer'
+import { generateKeyPairSync } from 'node:crypto'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { jwtVerify } from 'jose'
+import { configureAuth, getAuthHeaders } from '../../src/services/asyncAuth.js'
 import request from 'supertest'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createAuthRouter } from '../../src/routes/auth.js'
@@ -49,10 +56,31 @@ beforeEach(() => {
     res.json({ id: req.sessionID })
   })
   app.use('/auth', createAuthRouter({ oidc }))
-  app.use('/check', createRequireUser(oidc), requireSameOrigin('https://submit.example'))
+  app.use(['/check', '/submit'], createRequireUser(oidc), requireSameOrigin('https://submit.example'))
   app.get('/check/dataset', (req, res) => res.json({ id: req.sessionID, user: req.session.user, requestUser: currentUser(), wizard: req.session['hmpo-wizard-check-wizard'], unrelated: req.session.unrelated }))
   app.post('/check/upload', (req, res) => res.sendStatus(204))
   agent = request.agent(app)
+})
+
+it.each(['/check/form', '/check/file', '/submit/file'])('preserves verified JWT identity through body parsing at %s', async path => {
+  const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
+  vi.stubEnv('AUTH_JWT_PRIVATE_KEY', Buffer.from(privateKey.export({ format: 'pem', type: 'pkcs8' })).toString('base64'))
+  vi.stubEnv('AUTHENTICATION_ON', 'true')
+  configureAuth()
+  const directory = await mkdtemp(join(tmpdir(), 'submit-auth-upload-'))
+  app.post(path, multer({ dest: directory }).single('datafile'), async (req, res, next) => {
+    try { res.json(await getAuthHeaders()) } catch (error) { next(error) }
+  })
+  try {
+    await agent.get('/auth/login')
+    await agent.get('/auth/callback?code=code&state=state')
+    let pending = agent.post(path).set('Origin', 'https://submit.example')
+    pending = path.endsWith('/form') ? pending.type('form').send({ email: 'untrusted@example.com' }) : pending.attach('datafile', Buffer.from('name\nTest'), 'data.csv')
+    const response = await pending
+    expect(response.status).toBe(200)
+    const { payload } = await jwtVerify(response.body.Authorization.slice(7), publicKey)
+    expect(payload).toMatchObject({ sub: claims.sub, email: claims.email, email_verified: true })
+  } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
 it('introduces authentication with the organisation and resumes after rotating the session', async () => {

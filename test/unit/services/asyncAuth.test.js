@@ -23,11 +23,14 @@ describe('Submit signing', () => {
     expect(await getAuthHeaders()).toEqual({})
   })
 
-  it.each(['production', 'staging', 'development', 'test', 'ci'])('rejects disabling authentication in %s', async environment => {
+  it.each(['production', 'staging', 'development', 'test', 'ci', undefined])('keeps authentication enabled in %s', async environment => {
     vi.stubEnv('NODE_ENV', environment)
+    vi.stubEnv('ENVIRONMENT', 'local')
     vi.stubEnv('AUTHENTICATION_ON', 'false')
-    const { configureAuth } = await import('../../../src/services/asyncAuth.js')
-    expect(() => configureAuth()).toThrow(/only.*local/)
+    const { authenticationDisabled } = await import('../../../src/services/userIdentity.js')
+    const { getAuthHeaders } = await import('../../../src/services/asyncAuth.js')
+    expect(authenticationDisabled()).toBe(false)
+    expect((await getAuthHeaders()).Authorization).toMatch(/^Bearer /)
   })
 
   it('signs the session user subject with submit permissions and bounded expiry', async () => {

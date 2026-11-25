@@ -7,11 +7,7 @@ export const tokenFingerprint = token => createHash('sha256').update(token).dige
 export const tokenCookieOptions = secure => ({ httpOnly: true, secure, sameSite: 'lax', path: '/' })
 
 export function authenticationDisabled () {
-  if (process.env.AUTHENTICATION_ON?.toLowerCase() !== 'false') return false
-  if ((process.env.NODE_ENV || process.env.ENVIRONMENT) !== 'local') {
-    throw new Error('Authentication can only be disabled in local mode')
-  }
-  return true
+  return process.env.NODE_ENV === 'local' && process.env.AUTHENTICATION_ON?.toLowerCase() === 'false'
 }
 
 export function identityFromClaims (claims, now = Date.now()) {

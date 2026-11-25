@@ -3,12 +3,20 @@ env:
     - name: submit
       urls:
         - http://web:5000/
+        - http://web:5000/check/upload-method
+      excludePaths:
+        - http://web:5000/auth.*
 
 jobs:
   - type: passiveScan-config
     parameters:
       maxAlertsPerRule: 10
       scanOnlyInScope: true
+
+  - type: requestor
+    requests:
+      - url: http://web:5000/check/upload-method
+        responseCode: 200
 
   - type: spider
     parameters:

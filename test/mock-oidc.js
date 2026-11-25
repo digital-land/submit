@@ -5,6 +5,7 @@ import { createHash, generateKeyPairSync, randomUUID, sign } from 'node:crypto'
 const port = Number(process.env.MOCK_INTERNAL_ACCESS_PORT || 9456)
 const issuer = process.env.MOCK_INTERNAL_ACCESS_ISSUER || `http://127.0.0.1:${port}`
 const browserUrl = process.env.MOCK_INTERNAL_ACCESS_BROWSER_URL || issuer
+const tokenLifetime = Number(process.env.MOCK_INTERNAL_ACCESS_TOKEN_LIFETIME || 300)
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
 const codes = new Map()
 const accessTokens = new Map()
@@ -38,7 +39,10 @@ createServer(async (req, res) => {
     return json({ sub: 'test-user', email: 'test@council.gov.uk', email_verified: true })
   }
   if (url.pathname === '/authorize') {
-    const redirect = new URL(url.searchParams.get('redirect_uri'))
+    let redirect
+    try { redirect = new URL(url.searchParams.get('redirect_uri')) } catch {
+      return json({ error: 'invalid_redirect_uri' }, 400)
+    }
     if (!['localhost', '127.0.0.1'].includes(redirect.hostname) || redirect.pathname !== '/auth/callback') return json({ error: 'invalid_redirect_uri' }, 400)
     const code = randomUUID()
     for (const [key, value] of codes) if (value.expiresAt < Date.now()) codes.delete(key)
@@ -65,8 +69,8 @@ createServer(async (req, res) => {
     const token = input + '.' + sign('RSA-SHA256', Buffer.from(input), privateKey).toString('base64url')
     for (const [key, expiry] of accessTokens) if (expiry < Date.now()) accessTokens.delete(key)
     const accessToken = randomUUID()
-    accessTokens.set(accessToken, Date.now() + 300000)
-    return json({ token_type: 'Bearer', access_token: accessToken, expires_in: 300, id_token: token })
+    accessTokens.set(accessToken, Date.now() + tokenLifetime * 1000)
+    return json({ token_type: 'Bearer', access_token: accessToken, expires_in: tokenLifetime, id_token: token })
   }
   json({ error: 'not_found' }, 404)
 }).listen(port, '0.0.0.0')
