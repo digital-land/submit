@@ -186,6 +186,11 @@ of [package.json](package.json)) for more examples.
     npm run dev
     ```
 
+`npm run dev` prepares local authentication settings in `.env` and starts the
+backend services and application. Rerun it after changing those settings.
+`start:local` and `start:local:live` prepare the same settings but require the
+backend services to be running already. Keep `.env` out of version control.
+
 ### Mac users only
 
 If you are a Mac user, please note that port 5000 is used by AirPlay Receiver. In order to use the application, you will need to switch off AirPlay Receiver
