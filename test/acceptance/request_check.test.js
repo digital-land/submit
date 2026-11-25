@@ -21,7 +21,7 @@ const navigateToCheck = async (page) => {
 
 const okFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-ok.csv'
 const errorFile = 'https://raw.githubusercontent.com/digital-land/PublishExamples/refs/heads/main/Article4Direction/Files/Article4DirectionArea/article4directionareas-errors.csv'
-const serverErrorFile = 'http://expired.badssl.com'
+const serverErrorFile = 'https://expired.badssl.com'
 const htmlFile = 'https://en.wikipedia.org/wiki/John_Doe'
 
 let lastTimestamp = 0

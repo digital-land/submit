@@ -42,7 +42,7 @@ describe('asyncRequestApi', () => {
 
       const result = await postFileRequest(formData)
 
-      expect(axios.post).toHaveBeenCalledWith(expect.any(String), { params: expectedFormData })
+      expect(axios.post).toHaveBeenCalledWith(expect.any(String), { params: expectedFormData }, expect.objectContaining({ headers: { Authorization: expect.stringMatching(/^Bearer /) }, maxRedirects: 0 }))
       expect(result).toBe('123')
     })
 
@@ -64,7 +64,7 @@ describe('asyncRequestApi', () => {
 
       await expect(postFileRequest(formData)).rejects.toMatchObject({
         message: 'Post request failed with status 500 and message: Network error',
-        cause: mockError,
+        cause: expect.objectContaining({ message: mockError.message }),
         code: 'ECONNREFUSED',
         response: mockError.response
       })
@@ -88,7 +88,7 @@ describe('asyncRequestApi', () => {
             errorCode: 'ECONNREFUSED',
             errorMessage: 'Network error',
             errorCause: undefined,
-            url: 'http://localhost:8080/requests'
+            url: undefined
           })
         })
       )
@@ -117,7 +117,7 @@ describe('asyncRequestApi', () => {
 
       const result = await postUrlRequest(formData)
 
-      expect(axios.post).toHaveBeenCalledWith(expect.any(String), { params: expectedFormData })
+      expect(axios.post).toHaveBeenCalledWith(expect.any(String), { params: expectedFormData }, expect.objectContaining({ headers: { Authorization: expect.stringMatching(/^Bearer /) }, maxRedirects: 0 }))
       expect(result).toBe('123')
     })
 
@@ -138,7 +138,7 @@ describe('asyncRequestApi', () => {
 
       await expect(postUrlRequest(formData)).rejects.toMatchObject({
         message: 'Post request failed with status 500 and message: Request failed',
-        cause: mockError,
+        cause: expect.objectContaining({ message: mockError.message }),
         code: 'ERR_BAD_REQUEST',
         response: mockError.response
       })
@@ -161,7 +161,7 @@ describe('asyncRequestApi', () => {
             errorCode: 'ERR_BAD_REQUEST',
             errorMessage: 'Request failed',
             errorCause: undefined,
-            url: 'http://localhost:8080/requests'
+            url: undefined
           })
         })
       )
@@ -178,7 +178,7 @@ describe('asyncRequestApi', () => {
 
       const result = await getRequestData(resultId)
 
-      expect(axios.get).toHaveBeenCalledWith(new URL(expectedUrl), { timeout: 15000 })
+      expect(axios.get).toHaveBeenCalledWith(expectedUrl, expect.objectContaining({ timeout: 15000, headers: { Authorization: expect.stringMatching(/^Bearer /) } }))
       expect(result).toBeInstanceOf(RequestData)
     })
 
@@ -189,7 +189,7 @@ describe('asyncRequestApi', () => {
       mockError.response = { status: 404, message: 'Failed to do the thing' }
       axios.get.mockRejectedValueOnce(mockError)
 
-      await expect(getRequestData(resultId)).rejects.toBe(mockError)
+      await expect(getRequestData(resultId)).rejects.toMatchObject({ message: mockError.message, response: { status: 404 } })
     })
 
     it('should throw an error if the GET request fails with status 500', async () => {

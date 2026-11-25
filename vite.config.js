@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from 'url'
 
 import { defineConfig } from 'vite'
+import { createAuthEnvironment } from './test/authEnvironment.js'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,6 +11,7 @@ export default defineConfig({
     }
   },
   test: {
+    env: createAuthEnvironment(),
     coverage: {
       // you can include other reporters, but 'json-summary' is required, json is recommended
       reporter: ['text', 'json-summary', 'json'],

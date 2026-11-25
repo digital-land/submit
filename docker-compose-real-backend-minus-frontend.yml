@@ -33,6 +33,10 @@ services:
       AWS_SECRET_ACCESS_KEY: example
       SQS_QUEUE_NAME: request-queue
       DATABASE_URL: postgresql://postgres:password@request-db/request_database
+      AUTHENTICATION_ON: ${AUTHENTICATION_ON:-true}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-async}
+      MANAGE_JWT_PUBLIC_KEY: ${MANAGE_JWT_PUBLIC_KEY:-}
+      SUBMIT_JWT_PUBLIC_KEY: ${SUBMIT_JWT_PUBLIC_KEY:-}
     restart: on-failure
     ports:
       - "8000:8000"
@@ -46,7 +50,7 @@ services:
 
   request-processor:
     image: public.ecr.aws/l6z6v3j6/development-pub-async-request-processor:main
-    # image: request-processor:latest # Uncomment when working locally with this file
+    # image: request-processor:latest # Uncomment when working locally in this file
     environment:
       PYTHONUNBUFFERED: 1
       AWS_ENDPOINT_URL: http://localstack:4566

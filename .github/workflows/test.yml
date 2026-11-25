@@ -55,6 +55,9 @@ jobs:
         with:
           registry-type: public
 
+      - id: test-authentication
+        name: Generate disposable test keys
+        run: node test/authEnvironment.js
       - id: run-with-docker-compose
         run: docker compose --progress quiet -f docker-compose-real-backend.yml up -d
 

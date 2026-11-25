@@ -73,8 +73,8 @@ describe('RequestData', () => {
       expect(responseDetails.pagination.limit).toBe('50')
       expect(responseDetails.response).toStrictEqual([{ 'error-summary': ['error1', 'error2'] }])
 
-      const url = new URL('http://localhost:8001/requests/1/response-details?offset=0&limit=50')
-      expect(axios.get).toHaveBeenCalledWith(url, { timeout: 30000 })
+      const url = 'http://localhost:8001/requests/1/response-details?offset=0&limit=50'
+      expect(axios.get).toHaveBeenCalledWith(url, expect.objectContaining({ timeout: 30000, headers: { Authorization: expect.stringMatching(/^Bearer /) } }))
     })
 
     it('correctly sets the jsonpath if severity is provided', async () => {
@@ -94,9 +94,9 @@ describe('RequestData', () => {
       const requestData = new RequestData(response)
 
       await requestData.fetchResponseDetails(0, 50, { severity: 'error' })
-      const url = new URL(`http://localhost:8001/requests/1/response-details?offset=0&limit=50&jsonpath=${encodeURIComponent('$.issue_logs[*].severity=="error"')}`)
+      const url = `http://localhost:8001/requests/1/response-details?offset=0&limit=50&jsonpath=${encodeURIComponent('$.issue_logs[*].severity=="error"')}`
 
-      expect(axios.get).toHaveBeenCalledWith(url, { timeout: 30000 })
+      expect(axios.get).toHaveBeenCalledWith(url, expect.objectContaining({ timeout: 30000, headers: { Authorization: expect.stringMatching(/^Bearer /) } }))
     })
   })
 

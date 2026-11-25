@@ -7,6 +7,8 @@ services:
         NODE_VERSION: ${NODE_VERSION:-24.22.1}
     environment:
       NODE_ENV: ci
+      AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY:-}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-async}
       AWS_ACCESS_KEY_ID: example
       AWS_SECRET_ACCESS_KEY: example
       AWS_DEFAULT_REGION: eu-west-2
@@ -62,6 +64,10 @@ services:
       AWS_SECRET_ACCESS_KEY: example
       SQS_QUEUE_NAME: request-queue
       DATABASE_URL: postgresql://postgres:password@request-db/request_database
+      AUTHENTICATION_ON: ${AUTHENTICATION_ON:-true}
+      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-async}
+      MANAGE_JWT_PUBLIC_KEY: ${MANAGE_JWT_PUBLIC_KEY:-}
+      SUBMIT_JWT_PUBLIC_KEY: ${SUBMIT_JWT_PUBLIC_KEY:-}
     restart: on-failure
     ports:
       - "8000:8000"
