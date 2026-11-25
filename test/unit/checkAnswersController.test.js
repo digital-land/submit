@@ -1,6 +1,8 @@
 import { EventEmitter } from 'node:events'
+import { userContext, tokenFingerprint } from '../../src/services/userIdentity.js'
+import { createRequireUser } from '../../src/middleware/auth.middleware.js'
 import { endpointAlreadyCollectedForDataset } from '../../src/utils/datasetteQueries/endpointAlreadyCollected.js'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { addInternalNoteToIssue, createCustomerRequest, attachFileToIssue } from '../../src/services/jiraService.js'
 import config from '../../config/index.js'
 import CheckAnswersController from '../../src/controllers/CheckAnswersController.js'
@@ -14,6 +16,7 @@ vi.mock('../../src/utils/datasetteQueries/endpointAlreadyCollected.js')
 
 describe('CheckAnswersController', () => {
   let req, res, next, controller
+  afterEach(() => vi.unstubAllEnvs())
 
   const sessionData = {
     name: 'John Doe',
@@ -27,6 +30,8 @@ describe('CheckAnswersController', () => {
   }
 
   beforeEach(() => {
+    vi.stubEnv('NODE_ENV', 'local')
+    vi.stubEnv('AUTHENTICATION_ON', 'false')
     req = {
       params: {},
       sessionModel: {
@@ -66,6 +71,54 @@ describe('CheckAnswersController', () => {
   })
 
   describe('POST to CheckAnswersController', () => {
+    it('rejects a retained contact email when authenticated request context is missing', async () => {
+      vi.stubEnv('AUTHENTICATION_ON', 'true')
+      req.sessionModel.get.mockImplementation(key => sessionData[key])
+      await expect(controller.createJiraServiceRequest(req, res, next)).rejects.toThrow(/Sign in again/)
+      expect(createCustomerRequest).not.toHaveBeenCalled()
+    })
+
+    it('preserves each authenticated requester through concurrent downstream awaits', async () => {
+      vi.stubEnv('AUTHENTICATION_ON', 'true')
+      req.sessionModel.get.mockImplementation(key => sessionData[key])
+      const original = config.environment
+      config.environment = 'test'
+      createCustomerRequest.mockResolvedValue({ data: { issueKey: 'TEST-123' } })
+      vi.spyOn(controller, 'attachFileToIssue').mockResolvedValue()
+      const guard = createRequireUser({ validate: async (token, sub) => ({ sub, email: `${sub}@council.gov.uk` }) })
+      try {
+        await Promise.all(['first', 'second'].map(sub => {
+          const request = { ...req, session: { auth: { sub, tokenHash: tokenFingerprint(sub), expiresAt: Date.now() + 60000 } }, cookies: { submit_access_token: sub } }
+          const response = { set: vi.fn(), locals: {} }
+          return new Promise((resolve, reject) => {
+            guard(request, response, error => {
+              if (error) return reject(error)
+              controller.createJiraServiceRequests(request, response, next).then(resolve, reject)
+            })
+          })
+        }))
+        expect(createCustomerRequest.mock.calls.map(([data]) => data.raiseOnBehalfOf).sort()).toEqual(['first@council.gov.uk', 'second@council.gov.uk'])
+      } finally { config.environment = original }
+    })
+
+    it('submits the verified email even if the wizard email was changed', async () => {
+      vi.stubEnv('AUTHENTICATION_ON', 'true')
+      req.sessionModel.get.mockImplementation(key => sessionData[key])
+      createCustomerRequest.mockResolvedValue({ data: { issueKey: 'TEST-123' } })
+      vi.spyOn(controller, 'attachFileToIssue').mockResolvedValue()
+      const environment = config.environment
+      config.environment = 'test'
+      try {
+        await userContext.run({ user: { sub: 'user', email: 'verified@council.gov.uk', expiresAt: Date.now() + 60000 } }, () => controller.createJiraServiceRequest(req, res, next))
+        expect(createCustomerRequest).toHaveBeenCalledWith(expect.objectContaining({
+          raiseOnBehalfOf: 'verified@council.gov.uk',
+          description: expect.stringContaining('- Email: verified@council.gov.uk')
+        }), config.jira.requestTypeId)
+      } finally {
+        config.environment = environment
+      }
+    })
+
     it('should return the Manage Service link as JSON locally when Jira is not configured', async () => {
       const originalEnvironment = config.environment
       config.environment = 'local'

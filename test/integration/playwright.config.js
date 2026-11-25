@@ -93,10 +93,20 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  webServer: [{
+    command: 'node ../mock-oidc.js',
+    url: 'http://127.0.0.1:9456/.well-known/openid-configuration',
+    reuseExistingServer: false
+  }, {
     command: 'NODE_ENV=test npm run start',
-    env: webServerAuthEnvironment(),
+    env: {
+      ...webServerAuthEnvironment(),
+      INTERNAL_ACCESS_ISSUER: 'http://127.0.0.1:9456',
+      INTERNAL_ACCESS_CLIENT_ID: 'test-client',
+      INTERNAL_ACCESS_CLIENT_SECRET: 'test-secret',
+      INTERNAL_ACCESS_CALLBACK_URL: `http://127.0.0.1:${config.port}/auth/callback`
+    },
     url: `http://127.0.0.1:${config.port}`,
     reuseExistingServer: !process.env.CI
-  }
+  }]
 })

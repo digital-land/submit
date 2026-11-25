@@ -12,8 +12,13 @@ import guidance from '../routes/guidance.js'
 import community from '../routes/community.js'
 import extract from '../routes/extract.js'
 import roadmap from '../routes/roadmap.js'
+import config from '../../config/index.js'
+import { createAuthRouter } from '../routes/auth.js'
+import { requireUser, requireSameOrigin } from '../middleware/auth.middleware.js'
 
 export function setupRoutes (app) {
+  app.use('/auth', createAuthRouter())
+  app.use(['/check', '/submit', '/api/status'], requireUser, requireSameOrigin(process.env.INTERNAL_ACCESS_CALLBACK_URL || config.url))
   app.use('/', manage)
   app.use('/check/ip-address-information', ipInformation)
   app.use('/check', checkFormWizard)

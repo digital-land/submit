@@ -13,7 +13,7 @@ export function setupMiddlewares (app) {
     const obj = {
       type: types.Request,
       method: req.method,
-      endpoint: req.originalUrl,
+      endpoint: req.path.startsWith('/auth') ? req.path : req.originalUrl,
       message: '◦' // we need to put something here or watson will use an obj as the message
     }
     if (req.sessionID) {

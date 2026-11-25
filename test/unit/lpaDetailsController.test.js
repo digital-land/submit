@@ -2,6 +2,7 @@
 /* eslint-disable new-cap */
 
 import PageController from '../../src/controllers/pageController.js'
+import { userContext } from '../../src/services/userIdentity.js'
 import { vi, it, describe, expect, beforeEach, afterEach } from 'vitest'
 import { initDatasetSlugToReadableNameFilter } from '../../src/utils/datasetSlugToReadableName.js'
 
@@ -26,6 +27,20 @@ describe('lpaDetailsController', async () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+  })
+
+  it('uses the verified identity instead of a posted contact email', () => {
+    const req = { form: { values: { name: 'Test User', email: 'changed@example.com' } } }
+    const next = vi.fn()
+    userContext.run({ user: { sub: 'user', email: 'verified@council.gov.uk', expiresAt: Date.now() + 60000 } }, () => controller.process(req, {}, next))
+    expect(req.form.values.email).toBe('verified@council.gov.uk')
+    expect(next).toHaveBeenCalled()
+  })
+
+  it('keeps the entered contact email without a signed-in identity for local development', () => {
+    const req = { form: { values: { email: 'local@example.gov.uk' } } }
+    controller.process(req, {}, vi.fn())
+    expect(req.form.values.email).toBe('local@example.gov.uk')
   })
 
   describe('locals', () => {

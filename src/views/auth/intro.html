@@ -1,0 +1,15 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% set pageName = "Confirm your email address" %}
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-xl">Confirm your email address</h1>
+    <p class="govuk-body-l govuk-!-margin-bottom-9">
+      To check and provide your data on behalf of {{ organisationName }},<br class="govuk-!-display-none-print">
+      you need to confirm your gov.uk email address
+    </p>
+    {{ govukButton({ text: "Continue", href: "/auth/login" }) }}
+  </div>
+</div>
+{% endblock %}

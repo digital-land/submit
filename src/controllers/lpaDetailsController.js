@@ -2,8 +2,15 @@ import PageController from './pageController.js'
 import { fetchLocalAuthorities } from '../utils/datasetteQueries/fetchLocalAuthorities.js'
 import { getRequestData } from '../services/asyncRequestApi.js'
 import { orgIdToName } from '../utils/orgIdToName.js'
+import { currentUser } from '../services/userIdentity.js'
 
 class LpaDetailsController extends PageController {
+  process (req, res, next) {
+    const user = currentUser()
+    if (user) req.form.values.email = user.email
+    super.process(req, res, next)
+  }
+
   async locals (req, res, next) {
     const requestId = req.session?.checkRequestId
 

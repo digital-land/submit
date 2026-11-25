@@ -1,0 +1,11 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% set pageName = "Sign out" %}
+{% block content %}
+<h1 class="govuk-heading-l">Sign out</h1>
+<p class="govuk-body">This will sign you out of this service and clear your current progress. You may still be signed in to Internal Access.</p>
+<form method="post" action="/auth/logout">
+  <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+  {{ govukButton({ text: "Sign out" }) }}
+</form>
+{% endblock %}

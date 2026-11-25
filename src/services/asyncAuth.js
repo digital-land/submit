@@ -1,10 +1,12 @@
 import { createPrivateKey } from 'node:crypto'
 import { SignJWT } from 'jose'
+import { authenticationDisabled, currentUser } from './userIdentity.js'
 
 const JWT_ISSUER = 'submit'
 let signingConfig
 
 export function configureAuth () {
+  if (authenticationDisabled()) return
   const encoded = process.env.AUTH_JWT_PRIVATE_KEY || ''
   try {
     const pem = Buffer.from(encoded, 'base64')
@@ -23,14 +25,19 @@ export function configureAuth () {
 }
 
 export async function getAuthHeaders () {
+  if (authenticationDisabled()) return {}
   const { key, audience } = signingConfig || configureAuth()
-  const token = await new SignJWT({ role: 'submit' })
+  const user = currentUser()
+  const claims = { role: 'submit' }
+  if (user) Object.assign(claims, { auth_provider: user.issuer, email: user.email, email_verified: true })
+  const expires = Math.min(Math.floor(Date.now() / 1000) + 900, user ? Math.floor(user.expiresAt / 1000) : Infinity)
+  const token = await new SignJWT(claims)
     .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
     .setIssuer(JWT_ISSUER)
     .setAudience(audience)
-    .setSubject('submit')
+    .setSubject(user?.sub || 'submit')
     .setIssuedAt()
-    .setExpirationTime('15m')
+    .setExpirationTime(expires)
     .sign(key)
   return { Authorization: `Bearer ${token}` }
 }

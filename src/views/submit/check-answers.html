@@ -75,7 +75,7 @@
           text: "Email address"
         },
         value: {
-          text: values['email']
+          text: signedInEmail or values['email']
         },
         actions: {
           items: [
@@ -85,7 +85,7 @@
             visuallyHiddenText: "email address"
           }
           ]
-        }
+        } if not signedInEmail
       },
       {
         key: {

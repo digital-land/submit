@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test } from '../authenticatedTest.js'
 import StartPage from '../PageObjectModels/startPage'
 import DatasetPage, { datasets } from '../PageObjectModels/datasetPage'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'

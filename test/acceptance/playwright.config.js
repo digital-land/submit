@@ -27,6 +27,7 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
+    storageState: process.env.INTERNAL_ACCESS_STORAGE_STATE || undefined,
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: `${config.url}`,
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */

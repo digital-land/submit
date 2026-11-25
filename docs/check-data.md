@@ -14,8 +14,31 @@ Two audiences use it differently: people iterating on a file until it is clean, 
 further, and people preparing an endpoint to provide, for whom the check is the gate. The journey
 is the same; only the ending differs.
 
-It is open to anyone — no sign-in — so a check can come from an LPA, a consultant, or a member of
-the public.
+Check, Submit and `/api/status` require Internal Access sign-in with a verified
+`gov.uk` email address. Dashboards and guidance remain public. Sign-in confirms
+identity, not membership of the selected organisation.
+
+## Authentication setup
+
+Set `INTERNAL_ACCESS_CLIENT_ID`, `INTERNAL_ACCESS_CLIENT_SECRET` and `INTERNAL_ACCESS_CALLBACK_URL`; `INTERNAL_ACCESS_ISSUER`
+defaults to `https://sso.service.security.gov.uk`. Register the exact callback URL,
+ending in `/auth/callback`, for each environment. Use HTTPS except for loopback
+development callbacks. Missing configuration leaves protected journeys inaccessible.
+
+Deployed environments also require Redis and a non-default `SESSION_SECRET`.
+The verified sign-in email is used for contact details and submissions. Signing
+out clears the current journey, but does not sign the user out of Internal Access.
+
+Browser tests use `test/mock-oidc.js`. Live acceptance tests require an external
+`INTERNAL_ACCESS_STORAGE_STATE` Playwright credential file from a completed login; keep it
+outside the repository and renew it after expiry.
+
+For **local development without authentication**, set `AUTHENTICATION_ON=false`
+and run `npm run dev`. OIDC credentials and `AUTH_JWT_PRIVATE_KEY` are unnecessary;
+contact email is entered manually. Only `NODE_ENV=local` permits this bypass.
+Local backend Compose passes the flag to Async; recreate a running API with
+`docker compose -f docker-compose-real-backend-minus-frontend.yml up -d request-api`.
+Set the same flag in any separately launched Async checkout.
 
 ## Trigger and entry points
 

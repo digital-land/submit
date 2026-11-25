@@ -1,4 +1,5 @@
 import PageController from './pageController.js'
+import { authenticationDisabled, currentUser } from '../services/userIdentity.js'
 import { endpointAlreadyCollectedForDataset } from '../utils/datasetteQueries/endpointAlreadyCollected.js'
 import config from '../../config/index.js'
 import { addInternalNoteToIssue, attachFileToIssue, createCustomerRequest } from '../services/jiraService.js'
@@ -141,9 +142,11 @@ class CheckAnswersController extends PageController {
   }
 
   async createJiraServiceRequest (req, res, next, dataset = req.sessionModel.get('dataset')) {
+    const email = currentUser()?.email ?? (authenticationDisabled() ? req.sessionModel.get('email') : undefined)
+    if (!email) throw new Error('Sign in again before submitting')
     const data = {
       name: req.sessionModel.get('name'),
-      email: req.sessionModel.get('email'),
+      email,
       organisationId: req.sessionModel.get('orgId'),
       organisationName: req.sessionModel.get('lpa'),
       dataset,
