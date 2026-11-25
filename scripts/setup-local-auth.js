@@ -16,6 +16,7 @@ export function ensureLocalAuth (envPath = '.env', environment = process.env) {
   }
   const saved = parse(contents)
   const configured = { ...saved, ...environment }
+  if (configured.AUTHENTICATION_ON?.toLowerCase() === 'false') return false
   let privateKey
   if (configured.AUTH_JWT_PRIVATE_KEY) {
     try {
@@ -76,8 +77,7 @@ export function ensureLocalAuth (envPath = '.env', environment = process.env) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    ensureLocalAuth()
-    console.log('Local authentication keys ready in .env. Re-run npm run dev after changing keys to update Async.')
+    if (ensureLocalAuth() !== false) console.log('Local authentication keys ready in .env. Re-run npm run dev after changing keys to update Async.')
   } catch (error) {
     console.error(error.message)
     process.exitCode = 1

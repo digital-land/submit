@@ -63,7 +63,8 @@ services:
 
   zap:
     image: ghcr.io/zaproxy/zaproxy:2.15.0
-    command: bash -c "zap.sh -cmd -addonupdate; zap.sh -cmd -autorun /zap/wrk/zap.yaml"
+    # Finish within the mock provider's one-hour access-token lifetime.
+    command: timeout --kill-after=30s 30m bash -c "zap.sh -cmd -addonupdate; exec zap.sh -cmd -autorun /zap/wrk/zap.yaml"
     environment:
       ZAP_AUTH_HEADER: Cookie
       ZAP_AUTH_HEADER_SITE: web

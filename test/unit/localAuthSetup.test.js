@@ -70,6 +70,13 @@ describe('local authentication setup', () => {
     expect(readFileSync(envPath, 'utf8')).toBe(contents)
   })
 
+  it.each(['file', 'environment'])('skips key validation and writes when bypass is configured in %s', source => {
+    const contents = `${source === 'file' ? 'AUTHENTICATION_ON=false\n' : ''}SUBMIT_JWT_PUBLIC_KEY=existing\nAUTH_JWT_PRIVATE_KEY=invalid\n`
+    writeFileSync(envPath, contents)
+    expect(() => ensureLocalAuth(envPath, source === 'environment' ? { AUTHENTICATION_ON: 'false' } : {})).not.toThrow()
+    expect(readFileSync(envPath, 'utf8')).toBe(contents)
+  })
+
   it('rejects mismatched keys without modifying the file', () => {
     ensureLocalAuth(envPath, {})
     const contents = readFileSync(envPath, 'utf8')

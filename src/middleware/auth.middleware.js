@@ -29,9 +29,14 @@ async function authenticate (req, res, next, oidc) {
   if (!user) {
     delete req.session.auth
     res.clearCookie(ACCESS_TOKEN_COOKIE, tokenCookieOptions(config.secureCookies))
-    if (req.method !== 'GET' && req.method !== 'HEAD') return res.status(401).send('Sign in again before continuing')
-    if (req.originalUrl.startsWith('/api/')) return res.status(401).json({ error: 'Sign in again before continuing' })
+    if (req.originalUrl.startsWith('/api/')) {
+      if (req.method !== 'GET' && req.method !== 'HEAD') return res.status(401).send('Sign in again before continuing')
+      return res.status(401).json({ error: 'Sign in again before continuing' })
+    }
     req.session.authReturnTo = safeReturnPath(req.originalUrl)
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return req.session.save(err => err ? next(err) : res.status(401).render('auth/error.html', { expired: true }))
+    }
     req.session.authBackTo = '/'
     try {
       const previous = new URL(req.get('referer'))
@@ -54,7 +59,7 @@ export const requireUser = createRequireUser()
 export function requireSameOrigin (applicationUrl) {
   const origin = new URL(applicationUrl).origin
   return (req, res, next) => {
-    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next()
+    if (authenticationDisabled() || ['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next()
     if (req.get('origin') !== origin) return res.status(403).send('Invalid request origin')
     next()
   }

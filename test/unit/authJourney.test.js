@@ -56,7 +56,7 @@ beforeEach(() => {
     res.json({ id: req.sessionID })
   })
   app.use('/auth', createAuthRouter({ oidc }))
-  app.use(['/check', '/submit'], createRequireUser(oidc), requireSameOrigin('https://submit.example'))
+  app.use(['/check', '/submit', '/api'], createRequireUser(oidc), requireSameOrigin('https://submit.example'))
   app.get('/check/dataset', (req, res) => res.json({ id: req.sessionID, user: req.session.user, requestUser: currentUser(), wizard: req.session['hmpo-wizard-check-wizard'], unrelated: req.session.unrelated }))
   app.post('/check/upload', (req, res) => res.sendStatus(204))
   agent = request.agent(app)
@@ -125,7 +125,7 @@ it.each(['GET', 'POST'])('rejects a binding that expires during validation on %s
     session: { auth: { sub: claims.sub, tokenHash: tokenFingerprint('token'), expiresAt: 1001 }, save: callback => callback() },
     get: vi.fn()
   }
-  const res = { set: vi.fn(), clearCookie: vi.fn(), redirect: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn(), locals: {} }
+  const res = { set: vi.fn(), clearCookie: vi.fn(), redirect: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn(), render: vi.fn(), locals: {} }
   const next = vi.fn()
   const guard = createRequireUser({
     async validate () {
@@ -142,6 +142,30 @@ it.each(['GET', 'POST'])('rejects a binding that expires during validation on %s
     expect(res.locals.signedIn).toBeUndefined()
     if (method === 'GET') expect(res.redirect).toHaveBeenCalledWith('/auth')
     else expect(res.status).toHaveBeenCalledWith(401)
+  } finally { clock.mockRestore() }
+})
+
+it.each([31, 60])('respects the one-hour scan login deadline after %s minutes', async minutes => {
+  const now = Date.now()
+  const clock = vi.spyOn(Date, 'now').mockReturnValue(now + minutes * 60000)
+  const req = {
+    method: 'GET',
+    originalUrl: '/check/upload-method',
+    get: vi.fn(),
+    cookies: { submit_access_token: 'token' },
+    session: { auth: { sub: claims.sub, tokenHash: tokenFingerprint('token'), expiresAt: now + 3600000 }, save: callback => callback() }
+  }
+  const res = { set: vi.fn(), clearCookie: vi.fn(), redirect: vi.fn(), locals: {} }
+  const next = vi.fn()
+  try {
+    await createRequireUser({ validate: async () => identityFromClaims(claims) })(req, res, next)
+    if (minutes < 60) {
+      expect(next).toHaveBeenCalledOnce()
+      expect(req.session.auth.expiresAt).toBe(now + 3600000)
+    } else {
+      expect(next).not.toHaveBeenCalled()
+      expect(res.redirect).toHaveBeenCalledWith('/auth')
+    }
   } finally { clock.mockRestore() }
 })
 
@@ -204,7 +228,24 @@ it('allows local journeys without a user or sign-in when authentication is off',
   const result = await agent.get('/check/dataset')
   expect(result.status).toBe(200)
   expect(result.body.user).toBeUndefined()
-  expect((await agent.post('/check/upload').set('Origin', 'https://submit.example')).status).toBe(204)
+  expect((await agent.post('/check/upload').set('Origin', 'http://localhost:8085')).status).toBe(204)
+})
+
+it('offers sign-in after an unauthenticated form POST and resumes its safe page without replaying the body', async () => {
+  const response = await agent.post('/check/upload?dataset=tree').type('form').send({ data: 'do not retain' })
+  expect(response.status).toBe(401)
+  expect(response.body).toMatchObject({ template: 'auth/error.html', expired: true })
+  await agent.get('/auth/login')
+  const callback = await agent.get('/auth/callback?code=code&state=state')
+  expect(callback.headers.location).toBe('/check/upload?dataset=tree')
+  const sessions = await new Promise((resolve, reject) => store.all((err, data) => err ? reject(err) : resolve(data)))
+  expect(JSON.stringify(sessions)).not.toContain('do not retain')
+})
+
+it('keeps unauthenticated API POST responses plain', async () => {
+  const response = await agent.post('/api/status')
+  expect(response.status).toBe(401)
+  expect(response.text).toBe('Sign in again before continuing')
 })
 
 it.each([

@@ -35,7 +35,9 @@ for (const width of [1440, 375]) {
 }
 
 test('rejects direct unauthenticated writes and polling', async ({ request }) => {
-  expect((await request.post('/check/url', { form: { url: 'https://example.org' } })).status()).toBe(401)
+  const expired = await request.post('/check/url', { form: { url: 'https://example.org' } })
+  expect(expired.status()).toBe(401)
+  expect(await expired.text()).toContain('href="/auth">Sign in again</a>')
   expect((await request.get('/api/status/test')).status()).toBe(401)
 })
 
