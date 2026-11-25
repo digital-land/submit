@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from './asyncHttp.js'
 import config from '../../config/index.js'
 import ResultData from '../models/requestData.js'
 import logger from '../utils/logger.js'

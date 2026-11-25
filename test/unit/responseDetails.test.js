@@ -279,8 +279,8 @@ describe('ResponseDetails', () => {
 
       expect(result).toEqual(expected)
       expect(axios.get).toHaveBeenCalledWith(
-        new URL('http://localhost:8001/requests/1/geometries'),
-        { timeout: 30000 }
+        'http://localhost:8001/requests/1/geometries',
+        expect.objectContaining({ timeout: 30000, headers: { Authorization: expect.stringMatching(/^Bearer /) } })
       )
     })
 
@@ -303,8 +303,8 @@ describe('ResponseDetails', () => {
 
       expect(result).toEqual(['POINT (1 2)', 'POINT (3 4)', 'POINT (5 6)'])
       expect(axios.get).toHaveBeenCalledWith(
-        new URL('http://localhost:8001/requests/1/geometries?offset=2&limit=2'),
-        { timeout: 30000 }
+        'http://localhost:8001/requests/1/geometries?offset=2&limit=2',
+        expect.objectContaining({ timeout: 30000, headers: { Authorization: expect.stringMatching(/^Bearer /) } })
       )
     })
 

@@ -23,13 +23,22 @@ jobs:
       alerts_total: ${{ steps.report.outputs.alerts_total }}
     steps:
       - uses: actions/checkout@v7
-        
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
       - name: Setup dependencies
         run: |
           npm ci
           sudo curl -SL https://github.com/docker/compose/releases/download/v2.10.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker pull $DOCKER_REPO:${DOCKER_APPLICATION_TAG} || echo "no current latest image"
+
+      - name: Generate disposable test keys
+        run: node test/authEnvironment.js
 
       - name: Run dynamic security scan
         run: |

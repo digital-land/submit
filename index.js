@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import logger from './src/utils/logger.js'
 import { types } from './src/utils/logging.js'
 import config from './config/index.js'
+import { configureAuth } from './src/services/asyncAuth.js'
 
 import { setupMiddlewares } from './src/serverSetup/middlewares.js'
 import { setupRoutes } from './src/serverSetup/routes.js'
@@ -16,6 +17,7 @@ import { initDatasetSlugToReadableNameFilter } from './src/utils/datasetSlugToRe
 import { initOrgIdToNameFilter } from './src/utils/orgIdToName.js'
 
 dotenv.config()
+configureAuth()
 
 const datasetSlugToReadableName = await initDatasetSlugToReadableNameFilter()
 await initOrgIdToNameFilter()

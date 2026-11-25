@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
+import { PassThrough } from 'node:stream'
 import { postFileRequest, postUrlRequest, getRequestData } from '../../../src/services/asyncRequestApi.js'
 import ResultData from '../../../src/models/requestData.js'
 import logger from '../../../src/utils/logger.js'
@@ -27,6 +28,25 @@ describe('asyncRequestApi', () => {
   })
 
   describe('postFileRequest', () => {
+    it.each(['stream', 'json'])('sanitises %s error data before reporting it', async kind => {
+      let authorization
+      const stream = new PassThrough()
+      axios.post.mockImplementationOnce(async (url, data, settings) => {
+        authorization = settings.headers.Authorization
+        stream.req = { headers: { authorization } }
+        const body = kind === 'stream' ? stream : { detail: [authorization], Authorization: authorization }
+        throw Object.assign(new Error('Request failed'), { response: { status: 401, data: body } })
+      })
+
+      const error = await postFileRequest({}).catch(error => error)
+      const expected = kind === 'stream' ? undefined : { detail: ['Bearer [REDACTED]'] }
+      expect(error.cause.response.data).toEqual(expected)
+      expect(error.response.data).toEqual(expected)
+      const details = logger.warn.mock.lastCall[1].errorDetails
+      expect(details.responseData).toEqual(expected)
+      expect(JSON.stringify(details)).not.toContain(authorization)
+    })
+
     it('should post file request and return response id', async () => {
       const formData = {
         uploadedFilename: 'file.csv',
@@ -54,7 +74,8 @@ describe('asyncRequestApi', () => {
             original_filename: 'original.csv',
             type: 'check_file'
           }
-        }
+        },
+        expect.objectContaining({ headers: { Authorization: expect.stringMatching(/^Bearer /) }, maxRedirects: 0 })
       )
     })
 
@@ -100,7 +121,7 @@ describe('asyncRequestApi', () => {
             errorCode: 'ECONNREFUSED',
             errorMessage: 'Network error',
             responseData: { error: 'Internal server error' },
-            url: 'http://localhost:8080/requests'
+            url: undefined
           })
         })
       )
@@ -133,7 +154,8 @@ describe('asyncRequestApi', () => {
             url: 'https://example.com/data.csv',
             type: 'check_url'
           }
-        }
+        },
+        expect.objectContaining({ headers: { Authorization: expect.stringMatching(/^Bearer /) }, maxRedirects: 0 })
       )
     })
 
@@ -171,8 +193,8 @@ describe('asyncRequestApi', () => {
       const result = await getRequestData('request-123')
 
       expect(axios.get).toHaveBeenCalledWith(
-        expect.any(URL),
-        { timeout: 15000 }
+        'http://localhost:8080/requests/request-123',
+        expect.objectContaining({ timeout: 15000, headers: { Authorization: expect.stringMatching(/^Bearer /) } })
       )
       expect(ResultData).toHaveBeenCalledWith(mockResponseData)
       expect(result).toBe(mockResultData)

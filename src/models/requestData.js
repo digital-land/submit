@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 import logger from '../utils/logger.js'
-import axios from 'axios'
+import axios from '../services/asyncHttp.js'
 import config from '../../config/index.js'
 import ResponseDetails from './responseDetails.js'
 import { finishedProcessingStatuses } from '../utils/requestStatus.js'
