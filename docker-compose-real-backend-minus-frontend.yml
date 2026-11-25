@@ -50,7 +50,7 @@ services:
 
   request-processor:
     image: public.ecr.aws/l6z6v3j6/development-pub-async-request-processor:main
-    # image: request-processor:latest # Uncomment when working locally with this file
+    # image: request-processor:latest # Uncomment when working locally in this file
     environment:
       PYTHONUNBUFFERED: 1
       AWS_ENDPOINT_URL: http://localstack:4566
