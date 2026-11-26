@@ -24,6 +24,10 @@ for (const width of [1440, 375]) {
     await expect(page.locator('header .app-header__account')).toHaveText('test@council.gov.uk (Sign out)')
     await expect(page.locator('header .app-header__account')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    for (const path of ['/organisations', '/community', '/extract', '/roadmap', '/accessibility', '/privacy-notice', '/cookies', '/']) {
+      await page.goto(path)
+      await expect(page.locator('header .app-header__account')).toHaveText('test@council.gov.uk (Sign out)')
+    }
     await page.getByRole('link', { name: 'Sign out', exact: true }).click()
     await page.getByRole('button', { name: 'Sign out', exact: true }).click()
     await expect(page).toHaveURL('http://127.0.0.1:9456/sign-out?client_id=test-client')

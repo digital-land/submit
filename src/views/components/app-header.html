@@ -14,7 +14,8 @@
   </div>
 </header>
 
-{% set navigationItems = navigationItems or [] %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
+
 
 {{ govukServiceNavigation({
   serviceName: serviceName,

@@ -1,11 +1,9 @@
 import express from 'express'
-import nunjucks from 'nunjucks'
 
 const router = express.Router()
 
 router.get('/', (req, res) => {
-  const extractPage = nunjucks.render('extract.html', {})
-  res.send(extractPage)
+  res.render('extract.html')
 })
 
 export default router

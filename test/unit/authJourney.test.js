@@ -11,7 +11,7 @@ import { configureAuth, getAuthHeaders } from '../../src/services/asyncAuth.js'
 import request from 'supertest'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { createAuthRouter } from '../../src/routes/auth.js'
-import { createRequireUser, requireSameOrigin } from '../../src/middleware/auth.middleware.js'
+import { createRequireUser, createOptionalUser, requireSameOrigin } from '../../src/middleware/auth.middleware.js'
 import { currentUser, identityFromClaims, tokenFingerprint } from '../../src/services/userIdentity.js'
 import { InvalidAccessTokenError, IdentityProviderUnavailableError } from '../../src/services/oidc.js'
 
@@ -60,6 +60,7 @@ beforeEach(() => {
     res.json({ id: req.sessionID })
   })
   app.use('/auth', createAuthRouter({ oidc }))
+  app.get('/', createOptionalUser(oidc), (req, res) => res.json({ signedIn: res.locals.signedIn, email: res.locals.signedInEmail }))
   app.use(['/check', '/submit', '/api'], createRequireUser(oidc), requireSameOrigin('https://submit.example'))
   app.get('/check/dataset', (req, res) => res.json({ id: req.sessionID, user: req.session.user, requestUser: currentUser(), wizard: req.session['hmpo-wizard-check-wizard'], unrelated: req.session.unrelated }))
   app.post('/check/upload', (req, res) => res.sendStatus(204))
@@ -239,6 +240,26 @@ it('clears the local session even when provider logout discovery fails', async (
   expect(response.body).toEqual({ template: 'auth/logout.html', unavailable: true })
   expect(response.headers['set-cookie'].join(';')).toContain('submit_access_token=;')
   expect((await agent.get('/check/dataset')).headers.location).toBe('/auth')
+})
+
+it('keeps public pages accessible and shows an existing verified sign-in', async () => {
+  expect((await agent.get('/')).body).toEqual({})
+  await agent.get('/auth/login')
+  await agent.get('/auth/callback?code=code&state=state')
+  const response = await agent.get('/')
+  expect(response.body).toEqual({ signedIn: true, email: claims.email })
+  expect(response.headers['cache-control']).toBe('no-store')
+})
+
+it.each([InvalidAccessTokenError, IdentityProviderUnavailableError])('keeps public pages available when identity validation fails: %s', async ErrorType => {
+  await agent.get('/auth/login')
+  await agent.get('/auth/callback?code=code&state=state')
+  providerError = new ErrorType()
+  const response = await agent.get('/')
+  expect(response.status).toBe(200)
+  expect(response.body).toEqual({})
+  providerError = undefined
+  expect((await agent.get('/check/dataset')).status).toBe(ErrorType === InvalidAccessTokenError ? 302 : 200)
 })
 
 it('allows local journeys without a user or sign-in when authentication is off', async () => {

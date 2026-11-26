@@ -6,7 +6,15 @@ export function createRequireUser (oidc = createOidc()) {
   return (req, res, next) => authenticate(req, res, next, oidc).catch(next)
 }
 
-async function authenticate (req, res, next, oidc) {
+export function createOptionalUser (oidc = createOidc()) {
+  return (req, res, next) => {
+    if (res.locals.signedIn || !['GET', 'HEAD'].includes(req.method) || /^\/(?:health|api)(?:\/|$)/.test(req.path) ||
+        (!req.session.auth && !req.cookies?.[ACCESS_TOKEN_COOKIE])) return next()
+    return authenticate(req, res, next, oidc, false).catch(next)
+  }
+}
+
+async function authenticate (req, res, next, oidc, required = true) {
   res.set('Cache-Control', 'no-store')
   if (authenticationDisabled()) return next()
   const binding = req.session.auth
@@ -22,6 +30,7 @@ async function authenticate (req, res, next, oidc) {
       }
     } catch (error) {
       if (!(error instanceof InvalidAccessTokenError)) {
+        if (!required) return next()
         return res.status(503).render('auth/error.html', { unavailable: true })
       }
     }
@@ -29,6 +38,7 @@ async function authenticate (req, res, next, oidc) {
   if (!user) {
     delete req.session.auth
     res.clearCookie(ACCESS_TOKEN_COOKIE, tokenCookieOptions(config.secureCookies))
+    if (!required) return next()
     if (req.originalUrl.startsWith('/api/')) {
       if (req.method !== 'GET' && req.method !== 'HEAD') return res.status(401).send('Sign in again before continuing')
       return res.status(401).json({ error: 'Sign in again before continuing' })
@@ -53,6 +63,7 @@ async function authenticate (req, res, next, oidc) {
 }
 
 export const requireUser = createRequireUser()
+export const optionalUser = createOptionalUser()
 
 // Origin checking also covers multipart uploads before their bodies are parsed.
 // Missing/null origins fail closed; modern browser form POSTs send Origin.
