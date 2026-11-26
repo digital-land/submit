@@ -10,7 +10,8 @@ export function setupErrorHandlers (app) {
       method: req.method,
       endpoint: req.path.startsWith('/auth') ? req.path : req.originalUrl,
       message: 'error occurred',
-      error: JSON.stringify(err).substring(0, 1000),
+      errorCode: err.code,
+      responseStatus: err.response?.status,
       errorMessage: err.message,
       errorStack: err.stack
     })
