@@ -67,5 +67,7 @@ services:
     deploy:
       replicas: 2
     volumes:
-      - "./request-processor-celery/docker_volume:/opt"
+      - "request-processor-data:/opt"
 
+volumes:
+  request-processor-data:

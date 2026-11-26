@@ -114,6 +114,9 @@ services:
     deploy:
       replicas: 2
     volumes:
-      - "./request-processor-celery/docker_volume:/opt"
+      - "request-processor-data:/opt"
       # Pending specification rollout: duplicate references must block these checks.
       - "./test/acceptance/fixtures/specification/issue-type.csv:/specification/issue-type.csv:ro"
+
+volumes:
+  request-processor-data:
