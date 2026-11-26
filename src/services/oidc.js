@@ -43,6 +43,9 @@ export function createOidc (env = process.env) {
   return {
     callbackUrl,
     validate,
+    async logoutUrl () {
+      return client.buildEndSessionUrl(await getConfiguration()).href
+    },
     async start () {
       const config = await getConfiguration()
       const transaction = { state: client.randomState(), nonce: client.randomNonce(), verifier: client.randomPKCECodeVerifier(), expiresAt: Date.now() + 10 * 60 * 1000 }

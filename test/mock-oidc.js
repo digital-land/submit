@@ -20,6 +20,7 @@ createServer(async (req, res) => {
   if (url.pathname === '/.well-known/openid-configuration') {
     return json({
       issuer,
+      end_session_endpoint: browserUrl + '/sign-out',
       authorization_endpoint: browserUrl + '/authorize',
       token_endpoint: issuer + '/token',
       userinfo_endpoint: issuer + '/userinfo',
@@ -38,6 +39,7 @@ createServer(async (req, res) => {
     }
     return json({ sub: 'test-user', email: 'test@council.gov.uk', email_verified: true })
   }
+  if (url.pathname === '/sign-out') return json({ signedOut: true })
   if (url.pathname === '/authorize') {
     let redirect
     try { redirect = new URL(url.searchParams.get('redirect_uri')) } catch {

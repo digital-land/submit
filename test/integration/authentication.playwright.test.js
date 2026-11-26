@@ -26,7 +26,7 @@ for (const width of [1440, 375]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
     await page.getByRole('link', { name: 'Sign out', exact: true }).click()
     await page.getByRole('button', { name: 'Sign out', exact: true }).click()
-    await expect(page).toHaveURL('/')
+    await expect(page).toHaveURL('http://127.0.0.1:9456/sign-out?client_id=test-client')
     expect((await page.context().cookies()).find(cookie => cookie.name === 'submit_access_token')).toBeUndefined()
     await page.goto('/check/upload-method')
     await expect(page).toHaveURL(/\/auth$/)

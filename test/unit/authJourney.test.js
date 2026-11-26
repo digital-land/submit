@@ -26,6 +26,10 @@ beforeEach(() => {
   claims = { sub: 'person-1', iss: 'https://sso.service.security.gov.uk', email: 'person@council.gov.uk', email_verified: true }
   providerError = undefined
   const oidc = {
+    async logoutUrl () {
+      if (providerError) throw providerError
+      return 'https://sso.service.security.gov.uk/sign-out'
+    },
     async start () {
       transaction = { state: 'state', nonce: 'nonce', verifier: 'verifier', expiresAt: Date.now() + 600000 }
       return { transaction, url: 'https://sso.service.security.gov.uk/oauth2/authorization' }
@@ -218,8 +222,23 @@ it('blocks unauthenticated and cross-site writes, and destroys the session on lo
   expect((await agent.post('/check/upload').set('Origin', 'https://submit.example')).status).toBe(204)
   const logout = await agent.get('/auth/logout')
   expect((await agent.post('/auth/logout').type('form').send({ csrfToken: 'wrong' })).status).toBe(403)
-  expect((await agent.post('/auth/logout').type('form').send({ csrfToken: logout.body.csrfToken })).status).toBe(302)
+  const signedOut = await agent.post('/auth/logout').type('form').send({ csrfToken: logout.body.csrfToken })
+  expect(signedOut.status).toBe(302)
+  expect(signedOut.headers.location).toBe('https://sso.service.security.gov.uk/sign-out')
+  expect(signedOut.headers['set-cookie'].join(';')).toContain('submit_access_token=;')
   expect((await agent.get('/check/dataset')).status).toBe(302)
+})
+
+it('clears the local session even when provider logout discovery fails', async () => {
+  await agent.get('/auth/login')
+  await agent.get('/auth/callback?code=code&state=state')
+  const logout = await agent.get('/auth/logout')
+  providerError = new IdentityProviderUnavailableError()
+  const response = await agent.post('/auth/logout').type('form').send({ csrfToken: logout.body.csrfToken })
+  expect(response.status).toBe(503)
+  expect(response.body).toEqual({ template: 'auth/logout.html', unavailable: true })
+  expect(response.headers['set-cookie'].join(';')).toContain('submit_access_token=;')
+  expect((await agent.get('/check/dataset')).headers.location).toBe('/auth')
 })
 
 it('allows local journeys without a user or sign-in when authentication is off', async () => {

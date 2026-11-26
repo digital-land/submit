@@ -4,6 +4,7 @@ import { ACCESS_TOKEN_COOKIE, safeReturnPath, tokenCookieOptions, tokenFingerpri
 import { createOidc, IdentityProviderUnavailableError } from '../services/oidc.js'
 import { orgIdToName } from '../utils/orgIdToName.js'
 import config from '../../config/index.js'
+import logger from '../utils/logger.js'
 
 const save = session => new Promise((resolve, reject) => session.save(err => err ? reject(err) : resolve()))
 const wrap = handler => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
@@ -29,6 +30,7 @@ export function createAuthRouter ({ oidc = createOidc() } = {}) {
       await save(req.session)
       res.redirect(url)
     } catch {
+      logger.error('Internal Access sign-in could not be started')
       res.status(503).render('auth/error.html', { unavailable: true })
     }
   }))
@@ -53,6 +55,8 @@ export function createAuthRouter ({ oidc = createOidc() } = {}) {
     } catch (error) {
       // Provider errors can contain codes/tokens. Never forward them to logging middleware.
       const unavailable = error instanceof IdentityProviderUnavailableError
+      if (unavailable) logger.error('Internal Access callback failed: provider unavailable')
+      else logger.warn('Internal Access callback rejected: login could not be completed')
       res.status(unavailable ? 503 : 400).render('auth/error.html', { unavailable })
     }
   }))
@@ -68,7 +72,12 @@ export function createAuthRouter ({ oidc = createOidc() } = {}) {
     await new Promise((resolve, reject) => req.session.destroy(err => err ? reject(err) : resolve()))
     res.clearCookie('connect.sid', { path: '/' })
     res.clearCookie(ACCESS_TOKEN_COOKIE, tokenCookieOptions(config.secureCookies))
-    res.redirect('/')
+    try {
+      res.redirect(await oidc.logoutUrl())
+    } catch {
+      logger.error('Internal Access sign-out redirect failed; local session cleared')
+      res.status(503).render('auth/logout.html', { unavailable: true })
+    }
   }))
   return router
 }

@@ -26,7 +26,7 @@ beforeEach(() => {
   oidc = createOidc({ INTERNAL_ACCESS_ISSUER: issuer, INTERNAL_ACCESS_CALLBACK_URL: callbackUrl, INTERNAL_ACCESS_CLIENT_ID: 'client', INTERNAL_ACCESS_CLIENT_SECRET: 'secret' })
   vi.stubGlobal('fetch', async (url, options) => {
     const path = new URL(url).pathname
-    if (path === '/.well-known/openid-configuration') return Response.json({ issuer, authorization_endpoint: issuer + '/authorize', token_endpoint: issuer + '/token', userinfo_endpoint: issuer + '/userinfo', jwks_uri: issuer + '/jwks', response_types_supported: ['code'], subject_types_supported: ['public'], id_token_signing_alg_values_supported: ['RS256'] })
+    if (path === '/.well-known/openid-configuration') return Response.json({ issuer, end_session_endpoint: issuer + '/sign-out', authorization_endpoint: issuer + '/authorize', token_endpoint: issuer + '/token', userinfo_endpoint: issuer + '/userinfo', jwks_uri: issuer + '/jwks', response_types_supported: ['code'], subject_types_supported: ['public'], id_token_signing_alg_values_supported: ['RS256'] })
     if (path === '/jwks') return Response.json({ keys: [{ ...await exportJWK(publicKey), kid: 'key', use: 'sig', alg: 'RS256' }] })
     if (path === '/userinfo') return Response.json(info, { status: userInfoStatus })
     if (path !== '/token') throw new Error('Unexpected URL')
@@ -47,6 +47,10 @@ async function begin () {
   return new URL(start.url)
 }
 const callback = () => new URL(`${callbackUrl}?code=code&state=${pending.state}`)
+
+it('uses the discovered logout endpoint without tokens or a return URL', async () => {
+  expect(await oidc.logoutUrl()).toBe(issuer + '/sign-out?client_id=client')
+})
 
 it('uses discovery, PKCE, nonce and basic client authentication with signed ID tokens', async () => {
   const url = await begin()
