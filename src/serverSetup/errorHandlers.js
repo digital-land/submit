@@ -8,7 +8,7 @@ export function setupErrorHandlers (app) {
     logger.error({
       type: types.Response,
       method: req.method,
-      endpoint: req.originalUrl,
+      endpoint: req.path.startsWith('/auth') ? req.path : req.originalUrl,
       message: 'error occurred',
       errorCode: err.code,
       responseStatus: err.response?.status,
@@ -29,7 +29,7 @@ export function setupErrorHandlers (app) {
       res.status(middlewareError.statusCode).render(middlewareError.template, { ...errContext, err: middlewareError })
     } catch (e) {
       logger.error('Failed to render error page.', {
-        type: types.Response, errorMessage: e.message, errorStack: e.stack, originalError: err.message, endpoint: req.originalUrl
+        type: types.Response, errorMessage: e.message, errorStack: e.stack, originalError: err.message, endpoint: req.path.startsWith('/auth') ? req.path : req.originalUrl
       })
       const renderError = new MiddlewareError('Failed to render error page', 500, { cause: e })
       res.status(500).render('errorPages/error.njk', { ...errContext, err: renderError })
@@ -43,7 +43,7 @@ export function setupErrorHandlers (app) {
     logger.info({
       type: types.Response,
       method: req.method,
-      endpoint: req.originalUrl,
+      endpoint: req.path.startsWith('/auth') ? req.path : req.originalUrl,
       message: 'not found'
     })
     const err = new MiddlewareError('Not found', 404)

@@ -9,6 +9,10 @@ services:
       NODE_ENV: ci
       AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY:-}
       AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE:-async}
+      INTERNAL_ACCESS_ISSUER: http://oidc:9457
+      INTERNAL_ACCESS_CLIENT_ID: test-client
+      INTERNAL_ACCESS_CLIENT_SECRET: test-secret
+      INTERNAL_ACCESS_CALLBACK_URL: http://localhost:8085/auth/callback
       AWS_ACCESS_KEY_ID: example
       AWS_SECRET_ACCESS_KEY: example
       AWS_DEFAULT_REGION: eu-west-2
@@ -18,6 +22,18 @@ services:
         condition: service_healthy
     ports:
       - "8085:5000"
+
+  oidc:
+    image: node:${NODE_VERSION:-24.22.1}-trixie-slim
+    command: node /test/mock-oidc.js
+    environment:
+      MOCK_INTERNAL_ACCESS_PORT: 9457
+      MOCK_INTERNAL_ACCESS_ISSUER: http://oidc:9457
+      MOCK_INTERNAL_ACCESS_BROWSER_URL: http://localhost:9457
+    volumes:
+      - ./test/mock-oidc.js:/test/mock-oidc.js:ro
+    ports:
+      - "127.0.0.1:9457:9457"
 
   planning-api:
     image: wiremock/wiremock:3.4.2

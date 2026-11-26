@@ -1,16 +1,14 @@
 import express from 'express'
-import nunjucks from 'nunjucks'
 import config from '../../config/index.js'
 import { MiddlewareError, errorTemplateContext } from '../utils/errors.js'
 
 const router = express.Router()
 
 router.get('/', (req, res) => {
-  const cookiesPage = nunjucks.render('cookies.html', {
+  res.render('cookies.html', {
     cookiePreferences: req.cookies.cookies_preferences_set,
     showCookieUpdatedMessage: req.cookies.cookies_preferences_set_updated
   })
-  res.send(cookiesPage)
 })
 
 router.post('/update-preference', (req, res) => {

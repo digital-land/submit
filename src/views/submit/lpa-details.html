@@ -77,13 +77,14 @@
         id: "email",
         name: "email",
         hint: {
-          text: "This can be an individual email or a group email"
+          text: "Your email address" if signedInEmail else "This can be an individual email or a group email"
         },
         classes: "govuk-!-width-three-quarters",
         errorMessage: {
           text: 'email' | validationMessageLookup(errors['email'].type)
         } if 'email' in errors,
-        value: values.email
+        value: signedInEmail or values.email,
+        attributes: { readonly: true } if signedInEmail
       }) }}
 
       {{ govukButton({

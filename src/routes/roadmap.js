@@ -1,11 +1,9 @@
 import express from 'express'
-import nunjucks from 'nunjucks'
 
 const router = express.Router()
 
 router.get('/', (req, res) => {
-  const roadmapPage = nunjucks.render('roadmap.html', {})
-  res.send(roadmapPage)
+  res.render('roadmap.html')
 })
 
 export default router

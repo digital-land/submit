@@ -1,12 +1,21 @@
-{% from 'govuk/components/header/macro.njk' import govukHeader %}
+{% from 'govuk/macros/logo.njk' import govukLogo %}
 {% from "govuk/components/service-navigation/macro.njk" import govukServiceNavigation %}
 
-{{ govukHeader({
-  homepageUrl: mainWebsiteUrl,
-  classes: 'govuk-header--full-width-border'
-}) }}
+<header class="govuk-header govuk-header--full-width-border">
+  <div class="govuk-header__container govuk-width-container app-header__container">
+    <div class="govuk-header__logo">
+      <a href="{{ mainWebsiteUrl }}" class="govuk-header__homepage-link">
+        {{ govukLogo({ classes: 'govuk-header__logotype', ariaLabelText: 'GOV.UK' }) }}
+      </a>
+    </div>
+    {% if signedIn %}
+      <p class="app-header__account">{{ signedInEmail }} (<a class="govuk-link govuk-link--inverse" href="/auth/logout">Sign out</a>)</p>
+    {% endif %}
+  </div>
+</header>
 
-{% set navigationItems = navigationItems or [] %}
+{% set navigationItems = currentPath | getNavigationLinks(['organisations', 'guidance', 'community', 'extract']) %}
+
 
 {{ govukServiceNavigation({
   serviceName: serviceName,

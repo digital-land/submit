@@ -1,6 +1,15 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../authenticatedTest.js'
 import ResultsPage from '../PageObjectModels/resultsPage.js'
 import ConfirmationPage from '../PageObjectModels/confirmationPage.js'
+
+test('prefills the contact form with the verified email', async ({ page }) => {
+  await page.goto('/check/results/check-url-complete/1')
+  await page.goto('/check/confirmation')
+  await page.goto('/submit/lpa-details')
+  const email = page.getByLabel('Work email address')
+  await expect(email).toHaveValue('test@council.gov.uk')
+  await expect(email).not.toBeEditable()
+})
 
 test.describe('confirmation page — provide data button visibility', () => {
   test('after a file check the "Provide your data" button is not shown on confirmation', async ({ page }) => {

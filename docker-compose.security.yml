@@ -12,7 +12,12 @@ services:
         NODE_VERSION: ${NODE_VERSION:-24.22.1}
     
     environment:
-      - NODE_ENV=local
+      - NODE_ENV=ci
+      - AUTHENTICATION_ON=true
+      - INTERNAL_ACCESS_ISSUER=http://oidc:9458
+      - INTERNAL_ACCESS_CLIENT_ID=test-client
+      - INTERNAL_ACCESS_CLIENT_SECRET=test-secret
+      - INTERNAL_ACCESS_CALLBACK_URL=http://localhost:5000/auth/callback
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - CONFIG_PATH=/app/config
@@ -23,6 +28,8 @@ services:
       - ./config:/app/config
     depends_on:
       - redis
+      - oidc
+      - planning-api
 
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:5000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
@@ -36,9 +43,31 @@ services:
     ports:
       - "6379:6379"
 
+  planning-api:
+    image: wiremock/wiremock:3.4.2
+    volumes:
+      - ./docker/planning-api-stub:/home/wiremock:ro
+
+  oidc:
+    image: node:${NODE_VERSION:-24.22.1}-trixie-slim
+    command: node /test/mock-oidc.js
+    environment:
+      MOCK_INTERNAL_ACCESS_PORT: 9458
+      MOCK_INTERNAL_ACCESS_ISSUER: http://oidc:9458
+      MOCK_INTERNAL_ACCESS_BROWSER_URL: http://localhost:9458
+      MOCK_INTERNAL_ACCESS_TOKEN_LIFETIME: 3600
+    volumes:
+      - ./test/mock-oidc.js:/test/mock-oidc.js:ro
+    ports:
+      - "127.0.0.1:9458:9458"
+
   zap:
     image: ghcr.io/zaproxy/zaproxy:2.15.0
-    command: bash -c "zap.sh -cmd -addonupdate; zap.sh -cmd -autorun /zap/wrk/zap.yaml"
+    # Finish within the mock provider's one-hour access-token lifetime.
+    command: timeout --kill-after=30s 30m bash -c "zap.sh -cmd -addonupdate; exec zap.sh -cmd -autorun /zap/wrk/zap.yaml"
+    environment:
+      ZAP_AUTH_HEADER: Cookie
+      ZAP_AUTH_HEADER_SITE: web
     volumes:
       - .:/zap/wrk
       - ./zap-working-dir/zap.log:/home/zap/.ZAP/zap.log

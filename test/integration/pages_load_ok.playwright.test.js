@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../authenticatedTest.js'
 
 import StartPage from '../PageObjectModels/startPage'
 import StatusPage from '../PageObjectModels/statusPage'
@@ -64,7 +64,7 @@ for (const width of [1440, 375]) {
   })
 }
 
-test.describe('without a valid session, the user can not access the later form pages', () => {
+test.describe('without wizard progress, the signed-in user can not access the later form pages', () => {
   // /check/dataset, /check/geometry-type, /check/upload-method have checkJourney: false
   // so they render without a session — no redirect expected
 

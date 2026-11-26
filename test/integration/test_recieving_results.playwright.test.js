@@ -7,7 +7,7 @@
         - a file that failed to process (due to another reason) (ToDo)
 */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../authenticatedTest.js'
 
 import ResultsPage from '../PageObjectModels/resultsPage.js'
 

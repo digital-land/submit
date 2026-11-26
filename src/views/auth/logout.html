@@ -1,0 +1,16 @@
+{% extends "layouts/main.html" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% set pageName = "Sign out" %}
+{% block content %}
+<h1 class="govuk-heading-l">Sign out</h1>
+{% if unavailable %}
+<p class="govuk-body">You have signed out of this service, but we could not connect to Internal Access to finish signing you out.</p>
+<p class="govuk-body"><a class="govuk-link" href="/auth/logout">Try again</a></p>
+{% else %}
+<p class="govuk-body">You’ll be signed out of this service and GOV.UK Internal Access. You may need to sign in again to use other connected services.</p>
+<form method="post" action="/auth/logout">
+  <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+  {{ govukButton({ text: "Sign out" }) }}
+</form>
+{% endif %}
+{% endblock %}

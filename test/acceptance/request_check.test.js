@@ -6,7 +6,7 @@
         - request check of a datafile when javascript fails
 */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../authenticatedTest.js'
 import UploadMethodPage, { uploadMethods } from '../PageObjectModels/uploadMethodPage'
 import StartPage from '../PageObjectModels/startPage'
 import StatusPage from '../PageObjectModels/statusPage.js'

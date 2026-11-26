@@ -28,6 +28,18 @@ describe('Submit confirmation View', () => {
   it('should contain the submitter email', () => {
     expect(html).toMatch(/email&#64;example.com/)
   })
+
+  it.each(['signedInEmail', 'email'])('escapes HTML in %s', field => {
+    const email = '<img src=x onerror=alert(1)>@council.gov.uk'
+    // Include request locals as Express does, outside the wizard value schema.
+    const html = nunjucks.renderString('{% include "submit/confirmation.html" %}', {
+      ...params,
+      signedInEmail: field === 'signedInEmail' ? email : undefined,
+      values: { ...params.values, email }
+    })
+    expect(html).not.toContain('<img')
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;&#64;council.gov.uk')
+  })
 })
 
 it('shows all Jira references for a multiple-plan submission', () => {

@@ -14,8 +14,16 @@ Two audiences use it differently: people iterating on a file until it is clean, 
 further, and people preparing an endpoint to provide, for whom the check is the gate. The journey
 is the same; only the ending differs.
 
-It is open to anyone — no sign-in — so a check can come from an LPA, a consultant, or a member of
-the public.
+Check and Submit require Internal Access sign-in with a verified `gov.uk` email
+address. Dashboards and guidance remain public.
+
+## Authentication setup
+
+Configure the Internal Access settings listed in `.env.example` and register the
+callback URL for each environment.
+
+For local development without sign-in, set `AUTHENTICATION_ON=false` and restart
+with `npm run dev`. This option is available only in local mode.
 
 ## Trigger and entry points
 

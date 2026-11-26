@@ -21,7 +21,7 @@ describe('Check confirmation View', () => {
     const doc = dom.window.document
 
     runGenericPageTests(html, {
-      pageTitle: 'Publish your data - Check your planning data'
+      pageTitle: 'Publish your data - Check and provide your planning data'
     })
 
     it('should render the gov uk panel', () => {
@@ -87,7 +87,7 @@ describe('Check confirmation View', () => {
     const doc = dom.window.document
 
     runGenericPageTests(html, {
-      pageTitle: 'Data checked - Check your planning data'
+      pageTitle: 'Data checked - Check and provide your planning data'
     })
 
     it('should render the data checked panel', () => {

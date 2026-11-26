@@ -35,6 +35,7 @@ describe('Roadmap View', () => {
 describe('roadmap route', () => {
   it('returns the roadmap page', async () => {
     const app = express()
+    setupNunjucks({ app, datasetNameMapping: new Map() })
     app.use('/roadmap', roadmapRouter)
 
     const res = await request(app).get('/roadmap').expect(200)

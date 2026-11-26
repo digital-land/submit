@@ -1,0 +1,9 @@
+{% extends "layouts/main.html" %}
+{% set pageName = "Your session has expired" if expired else "We could not confirm your email address" %}
+{% block content %}
+<div class="govuk-grid-row"><div class="govuk-grid-column-two-thirds">
+  <h1 class="govuk-heading-l">{{ "Sign-in is currently unavailable" if unavailable else pageName }}</h1>
+  <p class="govuk-body">{{ "Please try again later." if unavailable else ("Sign in again, then review and resubmit your form." if expired else "Your sign-in may have expired, or your email address could not be verified. You must use a verified gov.uk email address.") }}</p>
+  <p class="govuk-body"><a class="govuk-link" href="/auth">{{ "Sign in again" if expired else "Try again" }}</a></p>
+</div></div>
+{% endblock %}
