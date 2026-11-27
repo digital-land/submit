@@ -120,6 +120,33 @@ describe('entryIssueDetails.middleware.test.js', () => {
       expect(next).toHaveBeenCalledTimes(1)
     })
 
+    it('escapes the endpoint URL and the issue value and message', () => {
+      const req = {
+        resources: [{ endpoint_url: "https://example.com/'><script>bad</script>" }],
+        entryIssues: [
+          {
+            entry_number: 1,
+            line_number: 2,
+            field: 'Field Name',
+            issue_type: 'Type',
+            message: '<b>message</b>',
+            value: '<script>bad</script>'
+          }
+        ],
+        parsedParams: { pageNumber: 1 }
+      }
+
+      prepareEntry(req, {}, vi.fn())
+
+      const [endpointField, , issueField] = req.entry.fields
+      expect(endpointField.value.html).toBe(
+        "<a href='https://example.com/&#39;&gt;&lt;script&gt;bad&lt;/script&gt;'>https://example.com/&#39;&gt;&lt;script&gt;bad&lt;/script&gt;</a>"
+      )
+      expect(issueField.value.html).toBe(
+        '&lt;script&gt;bad&lt;/script&gt;<p class="govuk-error-message">&lt;b&gt;message&lt;/b&gt;</p>'
+      )
+    })
+
     it('should call next with error if issue is missing', () => {
       const req = {
         resources: [{ endpoint_url: 'https://example.com' }],

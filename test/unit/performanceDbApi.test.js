@@ -102,6 +102,11 @@ describe('performanceDbApi', () => {
       expect(message).toContain('<span class="column-name">my_field</span>')
     })
 
+    it('escapes the field name in HTML messages', () => {
+      const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1, field: '<b>my_field</b>', format: 'html' })
+      expect(message).toContain('<span class="column-name">&lt;b&gt;my_field&lt;/b&gt;</span>')
+    })
+
     it('returns a singular message for num_issues === 1', () => {
       const message = performanceDbApi.getTaskMessage({ issue_type: 'some_issue_type', num_issues: 1 })
       expect(message).toContain('singular message for value')

@@ -240,7 +240,7 @@ panel: { html: tableTab } } } %}
 <script>
   window.serverContext = {
     containerId: 'map',
-    geometries: {{ options.geometries | dump | safe }},
+    geometries: {{ options.geometries | jsonForScript }},
     {% if boundaryOrgId %} boundaryGeoJsonUrl: "/api/lpa-boundary/{{ boundaryOrgId | urlencode }}"{% endif %}
     }
 </script>

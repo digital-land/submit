@@ -149,6 +149,14 @@ describe('issueDetails.middleware.js', () => {
       expect(req.entry.fields[0].value.html).toBe(`<p class="govuk-error-message">Error 1</p>${expected}`)
     })
 
+    it('escapes entity values that have no issue, keeping the original value', () => {
+      req.issueEntities[0].geometry = '<script>bad</script>'
+      prepareEntity(req, res, () => {})
+      const geometryField = req.entry.fields.find(field => field.key.text === 'geometry')
+      expect(geometryField.value.html).toBe('&lt;script&gt;bad&lt;/script&gt;')
+      expect(geometryField.value.originalValue).toBe('<script>bad</script>')
+    })
+
     it('retains processed geometry for the map when displaying its original issue value', () => {
       req.issues = [{ entity: 'entity1', field: 'geometry', message: 'Invalid geometry', value: 'original invalid geometry' }]
       prepareEntity(req, res, () => {})

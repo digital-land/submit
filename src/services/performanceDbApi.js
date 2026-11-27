@@ -1,6 +1,7 @@
 /**
  * Performance DB API service
  */
+import nunjucks from 'nunjucks'
 import datasette from './datasette.js'
 import logger from '../utils/logger.js'
 import { types } from '../utils/logging.js'
@@ -327,7 +328,7 @@ export default {
 
     if (!message) return defaultMessage
 
-    const fieldText = rest.format === 'html' ? `<span class="column-name">${field}</span>` : field
+    const fieldText = rest.format === 'html' ? `<span class="column-name">${nunjucks.lib.escape(String(field))}</span>` : field
     return message.replace('{num_issues}', numIssues).replace('{num_entries}', numIssues).replace('{column_name}', fieldText)
   },
 

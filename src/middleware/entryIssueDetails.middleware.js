@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import nunjucks from 'nunjucks'
 import { createPaginationTemplateParams, fetchDatasetInfo, fetchEntryIssues, fetchOrgInfo, fetchResources, fetchSources, getErrorSummaryItems, getIssueSpecification, getSetBaseSubPath, getSetDataRange, logPageError, prepareIssueDetailsTemplateParams, processSpecificationMiddlewares, show404IfPageNumberNotInRange, validateQueryParams } from './common.middleware.js'
 import { MiddlewareError } from '../utils/errors.js'
 import { fetchMany, fetchOne, FetchOptions, onlyIf, renderTemplate } from './middleware.builders.js'
@@ -88,6 +89,7 @@ export const prepareEntry = (req, res, next) => {
   }
 
   const errorMessage = issue.message || issue.issue_type
+  const endpointUrl = nunjucks.lib.escape(String(resources[0].endpoint_url ?? ''))
 
   req.entry = {
     title: `entry: ${issue.entry_number}`,
@@ -97,7 +99,7 @@ export const prepareEntry = (req, res, next) => {
           text: 'Endpoint URL'
         },
         value: {
-          html: `<a href='${resources[0].endpoint_url}'>${resources[0].endpoint_url}</a>`
+          html: `<a href='${endpointUrl}'>${endpointUrl}</a>`
         },
         classes: ''
       },

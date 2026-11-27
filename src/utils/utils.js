@@ -1,3 +1,4 @@
+import nunjucks from 'nunjucks'
 import { getDataSubjectMap } from './datasetSubjectLoader.js'
 
 export const severityLevels = {
@@ -172,5 +173,16 @@ export const getDeadlineHistory = (deadline) => {
   }
 }
 
-export const issueErrorMessageHtml = (errorMessage, issue) =>
-  `${issue && issue.value ? issue.value : (issue && issue.length ? issue : '')}<p class="govuk-error-message">${errorMessage}</p>`
+/**
+ * HTML for an issue's value followed by its error message.
+ *
+ * @param {string} errorMessage plain text, escaped here
+ * @param {Object|string|null} issue an issue, whose value is escaped here, or HTML that is already escaped
+ * @returns {string}
+ */
+export const issueErrorMessageHtml = (errorMessage, issue) => {
+  const valueHtml = issue && issue.value
+    ? nunjucks.lib.escape(String(issue.value))
+    : (issue && issue.length ? issue : '')
+  return `${valueHtml}<p class="govuk-error-message">${nunjucks.lib.escape(String(errorMessage ?? ''))}</p>`
+}
